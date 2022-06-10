@@ -25,6 +25,10 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->registerPolicies();
 
-        //
+        //Registro de superadmin
+       
+        Gate::before(function($user,$ability){
+            return $user->email== 'lgoviedo17@hotmail.com' ?? null;
+        });
     }
 }

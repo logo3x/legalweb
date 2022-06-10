@@ -237,7 +237,7 @@ return [
         ],
 
         // Sidebar items:
-        [
+       /*  [
             'type' => 'sidebar-menu-search',
             'text' => 'search',
         ],
@@ -252,8 +252,8 @@ return [
             'icon'        => 'far fa-fw fa-file',
             'label'       => 4,
             'label_color' => 'success',
-        ],
-        ['header' => 'account_settings'],
+        ], */
+       /*  ['header' => 'account_settings'],
         [
             'text' => 'profile',
             'url'  => 'admin/settings',
@@ -263,7 +263,31 @@ return [
             'text' => 'change_password',
             'url'  => 'admin/settings',
             'icon' => 'fas fa-fw fa-lock',
+        ], */
+
+
+//Administracion de usuarios y permisos
+        ['header' => 'Configuracion'],
+        [
+            'text' => 'profile',
+            'url'  => 'profile/show',
+            'icon' => 'fas fa-fw fa-user',
         ],
+        [
+            'text' => 'Usuarios',
+            'url'  => 'usuarios',
+            'icon' => 'fas fa-users',
+            'can'  => 'ver-rol' , 
+            
+        ],
+        [
+            'text' => 'Roles',
+            'url'  => 'roles',
+            'icon' => 'fas fa-user-lock',
+            'can'  => 'rol no def solo el superadmin',
+        ],
+
+        
         [
             'text'    => 'multilevel',
             'icon'    => 'fas fa-fw fa-share',

@@ -92,9 +92,12 @@
 
             @if($password_reset_url)
             <p class="my-0">
-                <a href="{{ $password_reset_url }}">
+              <a href="{{ url('vendor.auth.password.reset') }}">
+                {{ __('adminlte::adminlte.i_forgot_my_password') }}
+            </a>
+              {{--   <a href="{{ $password_reset_url }}">
                     {{ __('adminlte::adminlte.i_forgot_my_password') }}
-                </a>
+                </a> --}}
             </p>
             @endif
   
@@ -103,7 +106,7 @@
       </div>
     </div>
   </section>
-  <!-- Section: Design Block -->
+  
 
 
 
