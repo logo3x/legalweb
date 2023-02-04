@@ -14,7 +14,7 @@ return [
     |
     */
 
-    'title' => 'Iceman Services',
+    'title' => 'Legal Web',
     'title_prefix' => '',
     'title_postfix' => '',
 
@@ -45,12 +45,12 @@ return [
     |
     */
 
-    'logo' => '<b>Admin</b>LTE',
-    'logo_img' => 'vendor/adminlte/dist/img/AdminLTELogo.png',
+    'logo' => '<b>Legal</b>WEB',
+    'logo_img' => 'vendor/adminlte/dist/img/Logo.png',
     'logo_img_class' => 'brand-image img-circle elevation-3',
     'logo_img_xl' => null,
     'logo_img_xl_class' => 'brand-image-xs',
-    'logo_img_alt' => 'AdminLTE',
+    'logo_img_alt' => 'LegalWeb',
 
     /*
     |--------------------------------------------------------------------------
@@ -226,14 +226,32 @@ return [
 
     'menu' => [
         // Navbar items:
-        [
+       /*  [
             'type'         => 'navbar-search',
             'text'         => 'search',
             'topnav_right' => true,
-        ],
+        ], */
+
+
         [
             'type'         => 'fullscreen-widget',
             'topnav_right' => true,
+        ],
+        [
+            'type'         => 'navbar-notification',
+            'id'           => 'my-notification',      // An ID attribute (required).
+            'icon'         => 'fas fa-bell',          // A font awesome icon (required).
+            'icon_color'   => 'danger',              // The initial icon color (optional).
+            'label'        => 0,                      // The initial label for the badge (optional).
+            'label_color'  => 'danger',               // The initial badge color (optional).
+            'url'          => 'notifications/show',   // The url to access all notifications/elements (required).
+            'topnav_right' => true,                   // Or "topnav => true" to place on the left (required).
+            'dropdown_mode'   => true,                // Enables the dropdown mode (optional).
+            'dropdown_flabel' => 'All notifications', // The label for the dropdown footer link (optional).
+            /* 'update_cfg' => [
+                'route'  => ['notifications.get', ['param' => 'val']],
+                'period' => 30,
+            ], */
         ],
 
         // Sidebar items:
@@ -267,81 +285,129 @@ return [
 
 
 //Administracion de usuarios y permisos
-        ['header' => 'Configuracion'],
+        ['header' => 'Procesales'],
         [
-            'text' => 'profile',
-            'url'  => 'profile/show',
-            'icon' => 'fas fa-fw fa-user',
+            'text' => 'Clientes',
+            'url'  => 'clientes',
+            'icon' => 'fas fa-user-friends',
+           
         ],
         [
-            'text' => 'Usuarios',
-            'url'  => 'usuarios',
-            'icon' => 'fas fa-users',
-            'can'  => 'ver-rol' , 
-            
+            'text' => 'Preliminares',
+            'url'  => 'preliminares',
+            'icon' => 'far fa-address-card',
         ],
         [
-            'text' => 'Roles',
-            'url'  => 'roles',
-            'icon' => 'fas fa-user-lock',
-            'can'  => 'rol no def solo el superadmin',
+            'text' => 'Procesos',
+            'url'  => 'procesos',
+            'icon' => 'fas fa-balance-scale',
         ],
-
+        [
+            'text' => 'Actuaciones',
+            'url'  => 'actuaciones',
+            'icon' => 'fas fa-list-ol',
+        ],
+        [
+            'text' => 'Alertas',
+            'url'  => 'alertas',
+            'icon' => 'far fa-calendar-alt',
+        ],
+        [
+            'text' => 'Anexos',
+            'url'  => 'anexos',
+            'icon' => 'far fa-folder-open',
+        ],
         
+
         [
-            'text'    => 'multilevel',
-            'icon'    => 'fas fa-fw fa-share',
+            'text'    => 'Herramientas',
+            'icon'    => 'fas fa-tools',
             'submenu' => [
                 [
-                    'text' => 'level_one',
-                    'url'  => '#',
+                    'text' => 'Plantillas',
+                    'url'  => 'plantillas',
+                    'icon' => 'fas fa-file-signature',
                 ],
                 [
-                    'text'    => 'level_one',
-                    'url'     => '#',
-                    'submenu' => [
-                        [
-                            'text' => 'level_two',
-                            'url'  => '#',
-                        ],
-                        [
-                            'text'    => 'level_two',
-                            'url'     => '#',
-                            'submenu' => [
-                                [
-                                    'text' => 'level_three',
-                                    'url'  => '#',
-                                ],
-                                [
-                                    'text' => 'level_three',
-                                    'url'  => '#',
-                                ],
-                            ],
-                        ],
-                    ],
+                    'text' => 'Tipos de Plantillas',
+                    'url'  => 'tipoplantillas',
+                    'icon' => 'fas fa-file-invoice',
                 ],
                 [
-                    'text' => 'level_one',
-                    'url'  => '#',
+                    'text' => 'Tipos de Tramites',
+                    'url'  => 'tramites',
+                    'icon' => 'fas fa-running',
                 ],
             ],
         ],
-        ['header' => 'labels'],
-        [
-            'text'       => 'important',
-            'icon_color' => 'red',
-            'url'        => '#',
-        ],
-        [
-            'text'       => 'warning',
-            'icon_color' => 'yellow',
-            'url'        => '#',
-        ],
-        [
-            'text'       => 'information',
-            'icon_color' => 'cyan',
-            'url'        => '#',
-        ],
+
+        [   
+            'text'    => 'Configuracion',
+            'icon'    => 'fas fa-cogs',
+            'submenu' => [
+                            [
+                                'text' => 'Tipos de Proceso',
+                                'url'  => 'tipoprocesos',
+                                'icon' => 'fas fa-layer-group',
+                            ],
+                            [
+                                'text' => 'Clases de Proceso',
+                                'url'  => 'claseprocesos',
+                                'icon' => 'fas fa-th-large',
+                            ],
+                            [
+                                'text' => 'Naturalezas de Proceso',
+                                'url'  => 'naturalezas',
+                                'icon' => 'fab fa-pagelines',
+                            ],
+                            [
+                                'text' => 'Ciudades',
+                                'url'  => 'ciudades',
+                                'icon' => 'fas fa-city',
+                            ],
+                            [
+                                'text' => 'Juzgados',
+                                'url'  => 'juzgados',
+                                'icon' => 'fas fa-university',
+                            ],
+                            [
+                                'text' => 'Usuarios',
+                                'url'  => 'usuarios',
+                                'icon' => 'fas fa-users-cog',
+                                
+                                
+                            ],
+                            [
+                                'text' => 'Roles',
+                                'url'  => 'roles',
+                                'icon' => 'fas fa-user-lock',
+                                'can'  => 'rol no def solo el superadmin',
+                            ],
+                            [
+                                'text' => 'Auditoria',
+                                'url'  => 'auditoria',
+                                'icon' => 'fas fa-tasks',
+                               
+                            ],
+                        
+
+                            /*[
+                                'text'    => 'Usuarios',
+                                'icon'    => 'fas fa-users',
+                                'submenu' => [
+                                             [
+                                                'text' => 'profile',
+                                                'url'  => 'profile',
+                                                'icon' => 'fas fa-fw fa-user',
+                                            ], 
+                                          
+                                        ],
+                            ],*/
+                ],
+            ],
+        
+        
+       
     ],
 
     /*
@@ -435,17 +501,17 @@ return [
             ],
         ],
         'Pace' => [
-            'active' => false,
+            'active' => true,
             'files' => [
                 [
                     'type' => 'css',
                     'asset' => false,
-                    'location' => '//cdnjs.cloudflare.com/ajax/libs/pace/1.0.2/themes/blue/pace-theme-center-radar.min.css',
+                    'location' => 'https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-barber-shop.min.css',
                 ],
                 [
                     'type' => 'js',
                     'asset' => false,
-                    'location' => '//cdnjs.cloudflare.com/ajax/libs/pace/1.0.2/pace.min.js',
+                    'location' => 'https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js',
                 ],
             ],
         ],
