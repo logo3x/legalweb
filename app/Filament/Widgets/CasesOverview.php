@@ -10,6 +10,8 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class CasesOverview extends StatsOverviewWidget
 {
+    protected static ?int $sort = 1;
+
     protected function getStats(): array
     {
         $firmId = auth()->user()->firm_id;
@@ -21,26 +23,19 @@ class CasesOverview extends StatsOverviewWidget
             ->where('event_date', '>=', now()->subDays(30))
             ->count();
 
-        $firm = auth()->user()->firm;
-        $casesRemaining = $firm ? $firm->casesRemaining() : 0;
-
         return [
             Stat::make('Casos Activos', $activeCases)
-                ->description("{$totalCases} casos en total")
+                ->description("{$totalCases} en total")
                 ->descriptionIcon('heroicon-m-briefcase')
                 ->color('primary'),
             Stat::make('Clientes', $totalClients)
-                ->description('Registrados en la firma')
+                ->description('Registrados')
                 ->descriptionIcon('heroicon-m-users')
                 ->color('success'),
-            Stat::make('Actuaciones (30 dias)', $recentEvents)
+            Stat::make('Actuaciones', $recentEvents)
                 ->description('Ultimos 30 dias')
                 ->descriptionIcon('heroicon-m-calendar-days')
                 ->color('warning'),
-            Stat::make('Casos Disponibles', $casesRemaining)
-                ->description('Segun su plan actual')
-                ->descriptionIcon('heroicon-m-chart-bar')
-                ->color('info'),
         ];
     }
 }

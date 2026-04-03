@@ -88,6 +88,14 @@ class DatabaseSeeder extends Seeder
             'trial_ends_at' => now()->addDays(30),
         ]);
 
+        // Super admin (acceso a todas las firmas)
+        User::factory()->create([
+            'name' => 'Super Admin',
+            'email' => 'superadmin@legalweb.co',
+            'role' => 'superadmin',
+            'firm_id' => $firm->id,
+        ]);
+
         $admin = User::factory()->create([
             'name' => 'Admin LegalWeb',
             'email' => 'admin@legalweb.co',

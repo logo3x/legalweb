@@ -1,4 +1,5 @@
 <x-filament-panels::page>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <div class="max-w-3xl">
         @php
             $firm = auth()->user()->firm;
@@ -8,7 +9,7 @@
         @if($isOnboarding)
             <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
                 <div class="flex items-start gap-3">
-                    <svg class="w-6 h-6 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg width="24" height="24" style="min-width:24px;min-height:24px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                     <div>
