@@ -163,6 +163,11 @@ class FirmSettings extends Page
             ->send();
     }
 
+    public function hasFormActionsInHeader(): bool
+    {
+        return false;
+    }
+
     protected function getFormActions(): array
     {
         return [
