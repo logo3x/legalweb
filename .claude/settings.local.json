@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:laravel-news.com)",
+      "mcp__laravel-boost__application-info",
+      "mcp__laravel-boost__database-schema",
+      "mcp__laravel-boost__search-docs",
+      "Bash(mysql -u root -e \"CREATE DATABASE IF NOT EXISTS legalweb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;\")",
+      "Bash(/c/wamp64/bin/mysql/mysql9.2.0/bin/mysql -u root -e \"CREATE DATABASE IF NOT EXISTS legalweb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;\")",
+      "Bash(/c/wamp64/bin/mysql/*/bin/mysql -u root -e \"CREATE DATABASE IF NOT EXISTS legalweb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;\")",
+      "Bash(composer require:*)",
+      "Bash(php artisan:*)",
+      "Bash(/c/wamp64/bin/mysql/mysql8.4.7/bin/mysql -u root -e \"DROP DATABASE IF EXISTS legalweb; CREATE DATABASE legalweb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;\")",
+      "Bash(/c/wamp64/bin/mysql/mysql8.4.7/bin/mysql -u root -e \"SELECT @@innodb_default_row_format, @@innodb_large_prefix;\")",
+      "Bash(/c/wamp64/bin/mysql/mysql8.4.7/bin/mysql -u root -e \"SELECT @@innodb_default_row_format, @@default_storage_engine;\")",
+      "Bash(/c/wamp64/bin/mysql/mysql8.4.7/bin/mysql -u root -e \"DROP DATABASE legalweb; CREATE DATABASE legalweb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;\")",
+      "Bash(vendor/bin/pint --dirty --format agent)",
+      "Bash(git init:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}
