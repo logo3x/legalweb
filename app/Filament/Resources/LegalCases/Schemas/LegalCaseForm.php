@@ -4,6 +4,7 @@ namespace App\Filament\Resources\LegalCases\Schemas;
 
 use App\Models\CaseFlow;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -119,6 +120,21 @@ class LegalCaseForm
                             ->label('Fecha de Cierre')
                             ->hintIcon('heroicon-o-question-mark-circle', tooltip: 'Fecha en que se cerro o archivo el caso. Dejelo vacio si el caso sigue activo.'),
                     ]),
+                Section::make('Documentos Iniciales')
+                    ->hintIcon('heroicon-o-question-mark-circle', tooltip: 'Suba los documentos del caso como demanda, poder, anexos, etc. Puede agregar mas documentos despues.')
+                    ->schema([
+                        FileUpload::make('initial_documents')
+                            ->label('Archivos')
+                            ->multiple()
+                            ->directory('documents')
+                            ->preserveFilenames()
+                            ->downloadable()
+                            ->openable()
+                            ->maxFiles(10)
+                            ->columnSpanFull(),
+                    ])
+                    ->collapsible()
+                    ->collapsed(),
             ]);
     }
 }
