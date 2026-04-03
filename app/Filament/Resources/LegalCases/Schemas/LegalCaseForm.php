@@ -95,7 +95,7 @@ class LegalCaseForm
                         Select::make('user_id')
                             ->label('Abogado Responsable')
                             ->hintIcon('heroicon-o-question-mark-circle', tooltip: 'Abogado principal a cargo del caso.')
-                            ->relationship('user', 'name')
+                            ->relationship('user', 'name', fn ($query) => $query->where('firm_id', auth()->user()->firm_id))
                             ->required()
                             ->searchable()
                             ->preload(),

@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\FirmScope;
 use Database\Factories\LegalCaseFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -32,6 +34,7 @@ use Illuminate\Support\Str;
     'firm_id',
     'is_demo',
 ])]
+#[ScopedBy(FirmScope::class)]
 class LegalCase extends Model
 {
     /** @use HasFactory<LegalCaseFactory> */

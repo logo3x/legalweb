@@ -55,7 +55,7 @@ class ClientForm
                     ->columnSpanFull(),
                 Select::make('user_id')
                     ->label('Abogado Asignado')
-                    ->relationship('user', 'name')
+                    ->relationship('user', 'name', fn ($query) => $query->where('firm_id', auth()->user()->firm_id))
                     ->searchable()
                     ->preload(),
             ]);

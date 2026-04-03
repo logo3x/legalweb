@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\FirmScope;
 use Database\Factories\ClientFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -24,6 +26,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'firm_id',
     'is_demo',
 ])]
+#[ScopedBy(FirmScope::class)]
 class Client extends Model
 {
     /** @use HasFactory<ClientFactory> */

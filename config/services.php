@@ -52,4 +52,10 @@ return [
             : 'https://production.wompi.co/v1',
     ],
 
+    'openrouter' => [
+        'api_key' => env('OPENROUTER_API_KEY'),
+        'model' => env('OPENROUTER_MODEL', 'google/gemini-2.0-flash-001'),
+        'base_url' => 'https://openrouter.ai/api/v1',
+    ],
+
 ];

@@ -8,4 +8,11 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateClient extends CreateRecord
 {
     protected static string $resource = ClientResource::class;
+
+    protected function mutateFormDataBeforeCreate(array $data): array
+    {
+        $data['firm_id'] = auth()->user()->firm_id;
+
+        return $data;
+    }
 }
