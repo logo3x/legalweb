@@ -56,6 +56,7 @@ class FirmForm
                         FileUpload::make('logo_path')
                             ->label('Logo')
                             ->image()
+                            ->disk('public')
                             ->directory('logos'),
                         Toggle::make('onboarding_completed')
                             ->label('Onboarding completado'),

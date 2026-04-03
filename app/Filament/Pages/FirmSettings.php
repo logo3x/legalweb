@@ -71,6 +71,7 @@ class FirmSettings extends Page
                                     ->label('')
                                     ->image()
                                     ->avatar()
+                                    ->disk('public')
                                     ->directory('logos')
                                     ->imageResizeMode('cover')
                                     ->imageCropAspectRatio('1:1')

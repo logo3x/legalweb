@@ -8,19 +8,15 @@ use App\Services\DocumentGenerator;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 
 class ViewLegalCase extends ViewRecord
 {
     protected static string $resource = LegalCaseResource::class;
-
-    protected string $view = 'filament.resources.legal-cases.pages.view-legal-case';
-
-    public ?string $aiResult = null;
-
-    public ?string $aiTitle = null;
 
     protected function getHeaderActions(): array
     {
@@ -29,30 +25,56 @@ class ViewLegalCase extends ViewRecord
                 Action::make('ai_summary')
                     ->label('Resumen del Caso')
                     ->icon('heroicon-o-document-text')
-                    ->action(function () {
-                        $result = app(AIService::class)->summarizeCase($this->record);
+                    ->modalWidth('2xl')
+                    ->modalHeading('Resumen del Caso')
+                    ->modalCancelActionLabel('Cerrar')
+                    ->modalSubmitActionLabel('Copiar al portapapeles')
+                    ->form(function () {
+                        $ai = app(AIService::class);
+                        $result = $ai->summarizeCase($this->record);
+                        $provider = $ai->getLastProvider() ?? 'N/A';
 
-                        if ($result) {
-                            $this->aiTitle = 'Resumen del Caso';
-                            $this->aiResult = $result;
-                            $this->dispatch('open-modal', id: 'ai-result');
-                        } else {
-                            Notification::make()->title('Error')->body('No se pudo generar el resumen.')->danger()->send();
-                        }
+                        return [
+                            Textarea::make('ai_result')
+                                ->label('')
+                                ->default($result ?? 'No se pudo generar el resumen. Verifique la configuracion de la IA.')
+                                ->rows(15)
+                                ->readOnly(),
+                            Placeholder::make('provider')
+                                ->label('')
+                                ->content("Generado con {$provider} | ".now()->format('d/m/Y H:i')),
+                        ];
+                    })
+                    ->action(function (array $data) {
+                        $this->js("navigator.clipboard.writeText('".addslashes(str_replace(["\r", "\n"], ['\r', '\n'], $data['ai_result']))."')");
+                        Notification::make()->title('Texto copiado al portapapeles')->success()->send();
                     }),
                 Action::make('ai_next_step')
                     ->label('Sugerir Siguiente Paso')
                     ->icon('heroicon-o-light-bulb')
-                    ->action(function () {
-                        $result = app(AIService::class)->suggestNextStep($this->record);
+                    ->modalWidth('2xl')
+                    ->modalHeading('Siguiente Paso Sugerido')
+                    ->modalCancelActionLabel('Cerrar')
+                    ->modalSubmitActionLabel('Copiar al portapapeles')
+                    ->form(function () {
+                        $ai = app(AIService::class);
+                        $result = $ai->suggestNextStep($this->record);
+                        $provider = $ai->getLastProvider() ?? 'N/A';
 
-                        if ($result) {
-                            $this->aiTitle = 'Siguiente Paso Sugerido';
-                            $this->aiResult = $result;
-                            $this->dispatch('open-modal', id: 'ai-result');
-                        } else {
-                            Notification::make()->title('Error')->body('No se pudo generar la sugerencia.')->danger()->send();
-                        }
+                        return [
+                            Textarea::make('ai_result')
+                                ->label('')
+                                ->default($result ?? 'No se pudo generar la sugerencia.')
+                                ->rows(10)
+                                ->readOnly(),
+                            Placeholder::make('provider')
+                                ->label('')
+                                ->content("Generado con {$provider} | ".now()->format('d/m/Y H:i')),
+                        ];
+                    })
+                    ->action(function (array $data) {
+                        $this->js("navigator.clipboard.writeText('".addslashes(str_replace(["\r", "\n"], ['\r', '\n'], $data['ai_result']))."')");
+                        Notification::make()->title('Texto copiado al portapapeles')->success()->send();
                     }),
                 Action::make('ai_draft')
                     ->label('Generar Borrador Word')
@@ -89,11 +111,7 @@ class ViewLegalCase extends ViewRecord
                             $content
                         );
 
-                        Notification::make()
-                            ->title('Borrador generado')
-                            ->body('El documento Word se descargara automaticamente.')
-                            ->success()
-                            ->send();
+                        Notification::make()->title('Borrador generado')->success()->send();
 
                         return response()->download($filePath)->deleteFileAfterSend();
                     }),
@@ -137,10 +155,7 @@ class ViewLegalCase extends ViewRecord
 
                     $status = $record->fresh()->portal_enabled ? 'activado' : 'desactivado';
 
-                    Notification::make()
-                        ->title("Portal {$status}")
-                        ->success()
-                        ->send();
+                    Notification::make()->title("Portal {$status}")->success()->send();
                 })
                 ->requiresConfirmation()
                 ->modalHeading(fn () => $this->record->portal_enabled ? 'Desactivar portal del cliente' : 'Activar portal del cliente')

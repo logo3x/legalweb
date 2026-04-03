@@ -1,7 +1,13 @@
+@php
+    // Esta vista extiende la vista por defecto y agrega el modal de IA
+@endphp
+
 <x-filament-panels::page>
+    {{ \Filament\Support\Facades\FilamentView::renderHook(\Filament\View\PanelsRenderHook::PAGE_START) }}
+
     {{ $this->infolist }}
 
-    <x-filament-panels::relation-managers />
+    {{ $this->getRelationManagersSchema() }}
 
     {{-- Modal de resultados IA --}}
     <x-filament::modal id="ai-result" width="2xl">
@@ -15,17 +21,17 @@
         </x-slot>
 
         @if($this->aiResult)
-            <div style="background: #f9fafb; border-radius: 8px; padding: 16px; max-height: 400px; overflow-y: auto; white-space: pre-wrap; font-size: 14px; line-height: 1.6; color: #374151;">{{ $this->aiResult }}</div>
+            <div id="ai-content-display" style="background: #f9fafb; border-radius: 8px; padding: 16px; max-height: 400px; overflow-y: auto; white-space: pre-wrap; font-size: 14px; line-height: 1.6; color: #374151;">{{ $this->aiResult }}</div>
 
             <div style="margin-top: 12px; display: flex; justify-content: flex-end;">
                 <button
-                    onclick="navigator.clipboard.writeText(document.querySelector('#ai-content-text').innerText); this.innerText = 'Copiado!'; setTimeout(() => this.innerText = 'Copiar texto', 2000);"
+                    onclick="navigator.clipboard.writeText(document.getElementById('ai-content-display').innerText); this.innerText = 'Copiado!'; setTimeout(() => this.innerText = 'Copiar texto', 2000);"
                     style="padding: 8px 16px; background: #3A86FF; color: #fff; border: none; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer;">
                     Copiar texto
                 </button>
             </div>
-
-            <div id="ai-content-text" style="display: none;">{{ $this->aiResult }}</div>
         @endif
     </x-filament::modal>
+
+    {{ \Filament\Support\Facades\FilamentView::renderHook(\Filament\View\PanelsRenderHook::PAGE_END) }}
 </x-filament-panels::page>

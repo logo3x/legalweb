@@ -8,17 +8,45 @@ use Illuminate\Support\Facades\Log;
 
 class AIService
 {
+    private ?string $lastProvider = null;
+
+    public function getLastProvider(): ?string
+    {
+        return $this->lastProvider;
+    }
+
     private function call(string $systemPrompt, string $userMessage): ?string
     {
-        // Intentar Gemini primero
         $result = $this->callGemini($systemPrompt, $userMessage);
 
         if ($result) {
-            return $result;
+            $this->lastProvider = 'Gemini';
+
+            return $this->cleanMarkdown($result);
         }
 
-        // Fallback a OpenRouter
-        return $this->callOpenRouter($systemPrompt, $userMessage);
+        $result = $this->callOpenRouter($systemPrompt, $userMessage);
+
+        if ($result) {
+            $this->lastProvider = 'OpenRouter';
+
+            return $this->cleanMarkdown($result);
+        }
+
+        return null;
+    }
+
+    private function cleanMarkdown(string $text): string
+    {
+        $text = preg_replace('/\*\*(.+?)\*\*/', '$1', $text);
+        $text = preg_replace('/\*(.+?)\*/', '$1', $text);
+        $text = preg_replace('/^#{1,6}\s+/m', '', $text);
+        $text = preg_replace('/^\*\s+/m', '- ', $text);
+        $text = preg_replace('/^\d+\.\s+/m', '- ', $text);
+        $text = preg_replace('/`(.+?)`/', '$1', $text);
+        $text = preg_replace('/\n{3,}/', "\n\n", $text);
+
+        return trim($text);
     }
 
     private function callGemini(string $systemPrompt, string $userMessage): ?string
@@ -29,27 +57,29 @@ class AIService
             return null;
         }
 
-        $model = config('services.gemini.model');
-        $baseUrl = config('services.gemini.base_url');
+        try {
+            $model = config('services.gemini.model');
+            $baseUrl = config('services.gemini.base_url');
 
-        $response = Http::timeout(30)->post("{$baseUrl}/models/{$model}:generateContent?key={$apiKey}", [
-            'system_instruction' => [
-                'parts' => [['text' => $systemPrompt]],
-            ],
-            'contents' => [
-                ['parts' => [['text' => $userMessage]]],
-            ],
-            'generationConfig' => [
-                'maxOutputTokens' => 2000,
-                'temperature' => 0.3,
-            ],
-        ]);
+            $response = Http::timeout(30)->post("{$baseUrl}/models/{$model}:generateContent?key={$apiKey}", [
+                'system_instruction' => [
+                    'parts' => [['text' => $systemPrompt]],
+                ],
+                'contents' => [
+                    ['parts' => [['text' => $userMessage]]],
+                ],
+                'generationConfig' => [
+                    'maxOutputTokens' => 2000,
+                    'temperature' => 0.3,
+                ],
+            ]);
 
-        if ($response->successful()) {
-            return $response->json('candidates.0.content.parts.0.text');
+            if ($response->successful()) {
+                return $response->json('candidates.0.content.parts.0.text');
+            }
+        } catch (\Exception $e) {
+            Log::info('Gemini API error: '.$e->getMessage());
         }
-
-        Log::info('Gemini API failed, falling back to OpenRouter', ['status' => $response->status()]);
 
         return null;
     }
@@ -62,25 +92,27 @@ class AIService
             return null;
         }
 
-        $response = Http::timeout(30)->withHeaders([
-            'Authorization' => 'Bearer '.$apiKey,
-            'HTTP-Referer' => config('app.url'),
-            'X-Title' => 'LegalWeb',
-        ])->post(config('services.openrouter.base_url').'/chat/completions', [
-            'model' => config('services.openrouter.model'),
-            'messages' => [
-                ['role' => 'system', 'content' => $systemPrompt],
-                ['role' => 'user', 'content' => $userMessage],
-            ],
-            'max_tokens' => 2000,
-            'temperature' => 0.3,
-        ]);
+        try {
+            $response = Http::timeout(30)->withHeaders([
+                'Authorization' => 'Bearer '.$apiKey,
+                'HTTP-Referer' => config('app.url'),
+                'X-Title' => 'LegalWeb',
+            ])->post(config('services.openrouter.base_url').'/chat/completions', [
+                'model' => config('services.openrouter.model'),
+                'messages' => [
+                    ['role' => 'system', 'content' => $systemPrompt],
+                    ['role' => 'user', 'content' => $userMessage],
+                ],
+                'max_tokens' => 2000,
+                'temperature' => 0.3,
+            ]);
 
-        if ($response->successful()) {
-            return $response->json('choices.0.message.content');
+            if ($response->successful()) {
+                return $response->json('choices.0.message.content');
+            }
+        } catch (\Exception $e) {
+            Log::error('OpenRouter API error: '.$e->getMessage());
         }
-
-        Log::error('OpenRouter API failed', ['status' => $response->status()]);
 
         return null;
     }
@@ -97,19 +129,24 @@ class AIService
             fn ($p) => "- {$p->flowStep->name}: {$p->status}"
         )->implode("\n");
 
-        $context = "Caso: {$case->title}\n"
-            ."Numero: {$case->case_number}\n"
-            ."Tipo: {$case->caseType->name}\n"
+        $context = "DATOS DEL CASO:\n"
+            ."Titulo: {$case->title}\n"
+            ."Numero interno: {$case->case_number}\n"
+            ."Tipo de proceso: {$case->caseType->name}\n"
             ."Estado: {$case->status}\n"
             ."Cliente: {$case->client->full_name}\n"
             ."Abogado: {$case->user->name}\n"
-            .'Juzgado: '.($case->court ?? 'No asignado')."\n"
+            .'Juzgado: '.($case->court ?? 'Sin asignar')."\n"
             .'Contraparte: '.($case->opposing_party ?? 'No definida')."\n\n"
-            ."Actuaciones recientes:\n{$events}\n\n"
-            ."Progreso del flujo:\n{$progress}";
+            ."ACTUACIONES RECIENTES:\n{$events}\n\n"
+            ."PROGRESO DEL FLUJO PROCESAL:\n{$progress}";
 
         return $this->call(
-            'Eres un asistente legal colombiano experto. Genera un resumen ejecutivo claro y conciso del caso en espanol. Incluye: situacion actual, proximos pasos sugeridos y puntos de atencion. Maximo 300 palabras. No inventes hechos, basa tu resumen solo en la informacion proporcionada.',
+            'Eres un asistente juridico colombiano. Genera un resumen ejecutivo del caso. '
+            .'REGLAS: Escribe en texto plano sin formato markdown, sin asteriscos, sin negritas, sin encabezados con #. '
+            .'Usa guiones (-) para listas. Maximo 250 palabras. '
+            .'ESTRUCTURA: 1) Situacion actual del caso. 2) Proximos pasos recomendados. 3) Puntos de atencion o riesgos. '
+            .'No inventes hechos. Solo usa la informacion proporcionada.',
             $context
         );
     }
@@ -124,10 +161,13 @@ class AIService
 
         $context = "Tipo de proceso: {$case->caseType->name}\n"
             ."Estado del caso: {$case->status}\n\n"
-            ."Pasos del flujo:\n{$progress}";
+            ."PASOS DEL FLUJO:\n{$progress}";
 
         return $this->call(
-            'Eres un asistente legal colombiano. Basandote en el progreso del flujo procesal, sugiere cual es el siguiente paso a seguir, que debe tener en cuenta el abogado, y si hay terminos proximos a vencer. Responde en espanol, de forma clara y practica. Maximo 200 palabras.',
+            'Eres un asistente juridico colombiano. Analiza el flujo procesal e indica el siguiente paso a seguir. '
+            .'REGLAS: Escribe en texto plano sin formato markdown, sin asteriscos, sin negritas, sin encabezados con #. '
+            .'Usa guiones (-) para listas. Maximo 150 palabras. Se directo y practico. '
+            .'Indica: 1) Cual es el siguiente paso. 2) Que debe hacer el abogado. 3) Si hay plazos proximos a vencer.',
             $context
         );
     }
@@ -136,17 +176,22 @@ class AIService
     {
         $case->load(['client', 'caseType', 'user']);
 
-        $context = "Tipo de documento: {$documentType}\n"
+        $context = "DATOS PARA EL DOCUMENTO:\n"
+            ."Tipo de documento: {$documentType}\n"
             ."Caso: {$case->title}\n"
             ."Tipo de proceso: {$case->caseType->name}\n"
             ."Cliente: {$case->client->full_name} ({$case->client->document_type} {$case->client->document_number})\n"
             ."Abogado: {$case->user->name}\n"
-            .'Juzgado: '.($case->court ?? 'No asignado')."\n"
-            .'Contraparte: '.($case->opposing_party ?? 'No definida')."\n"
+            .'Juzgado: '.($case->court ?? 'Por asignar')."\n"
+            .'Contraparte: '.($case->opposing_party ?? 'Por definir')."\n"
             .'Radicado: '.($case->external_case_number ?? 'Sin radicado');
 
         return $this->call(
-            'Eres un asistente legal colombiano experto en redaccion juridica. Genera un borrador del documento solicitado basandote en la informacion del caso. Usa formato profesional y lenguaje juridico apropiado para Colombia. Incluye encabezado, cuerpo y cierre. Es un borrador que el abogado revisara y ajustara. No uses formato markdown, escribe en texto plano con saltos de linea.',
+            'Eres un abogado colombiano redactando un documento juridico. '
+            .'REGLAS: Escribe en texto plano sin formato markdown, sin asteriscos, sin negritas, sin encabezados con #. '
+            .'Usa formato profesional de documento juridico colombiano. '
+            .'Incluye: ciudad y fecha, destinatario, referencia, cuerpo del documento, peticion, firma. '
+            .'Es un borrador que el abogado revisara. Usa lenguaje juridico apropiado para Colombia.',
             $context
         );
     }
