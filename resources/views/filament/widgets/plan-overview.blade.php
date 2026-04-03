@@ -34,11 +34,11 @@
             </div>
 
             @if($nextPlan)
-                <a href="/#planes" target="_blank" style="display: inline-flex; align-items: center; gap: 6px; padding: 10px 20px; background: linear-gradient(135deg, #f59e0b, #ea580c); color: #fff; font-size: 13px; font-weight: 600; border-radius: 8px; text-decoration: none; white-space: nowrap;">
+                <a href="/admin/planes" style="display: inline-flex; align-items: center; gap: 6px; padding: 10px 20px; background: linear-gradient(135deg, #f59e0b, #ea580c); color: #fff; font-size: 13px; font-weight: 600; border-radius: 8px; text-decoration: none; white-space: nowrap;">
                     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="min-width:16px;">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                     </svg>
-                    Pasar a {{ $nextPlan->name }} &middot; {{ $nextPrice }}
+                    Aumentar mi cuota
                 </a>
             @endif
         </div>
@@ -77,8 +77,8 @@
             @endforeach
 
             @if($nextPlan)
-                <a href="/#planes" target="_blank" style="font-size: 12px; font-weight: 600; color: #3b82f6; text-decoration: none; margin-left: 4px;">
-                    Mejora a {{ $nextPlan->name }} &rarr;
+                <a href="/admin/planes" style="font-size: 12px; font-weight: 600; color: #3b82f6; text-decoration: none; margin-left: 4px;">
+                    Ver planes &rarr;
                 </a>
             @endif
         </div>
