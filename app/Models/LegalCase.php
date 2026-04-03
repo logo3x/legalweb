@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 #[Fillable([
     'case_number',
@@ -26,6 +27,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'priority',
     'started_at',
     'closed_at',
+    'portal_token',
+    'portal_enabled',
 ])]
 class LegalCase extends Model
 {
@@ -37,7 +40,18 @@ class LegalCase extends Model
         return [
             'started_at' => 'date',
             'closed_at' => 'date',
+            'portal_enabled' => 'boolean',
         ];
+    }
+
+    public function generatePortalToken(): string
+    {
+        $this->update([
+            'portal_token' => Str::random(64),
+            'portal_enabled' => true,
+        ]);
+
+        return $this->portal_token;
     }
 
     public function caseType(): BelongsTo

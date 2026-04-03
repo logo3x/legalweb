@@ -32,6 +32,7 @@ class CaseFlowForm
                     ->default(true),
                 Repeater::make('steps')
                     ->label('Pasos del Flujo')
+                    ->hintIcon('heroicon-o-question-mark-circle', tooltip: 'Los pasos se basan en las etapas procesales de la legislacion colombiana (CGP, CPT, Ley 906/2004, CPACA). Son completamente editables: puede agregar, eliminar o reordenar segun las necesidades del proceso.')
                     ->relationship()
                     ->orderColumn('order')
                     ->reorderable()

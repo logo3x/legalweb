@@ -151,6 +151,157 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Registro de sentencia', 'order' => 10, 'days_limit' => 15, 'description' => 'Inscripción en Registro Civil y Notaría'],
         ]);
 
+        // --- CIVIL: Proceso Verbal Sumario (CGP Art. 390-392) ---
+        $this->createFlow($civilType, 'Proceso Verbal Sumario', 'Proceso verbal sumario de minima cuantia (CGP Art. 390-392)', [
+            ['name' => 'Presentación de demanda', 'order' => 1, 'days_limit' => null, 'description' => 'Demanda verbal o escrita ante Juez Municipal de Pequeñas Causas'],
+            ['name' => 'Admisión de demanda', 'order' => 2, 'days_limit' => 10, 'description' => 'Auto admisorio con citación a audiencia'],
+            ['name' => 'Notificación al demandado', 'order' => 3, 'days_limit' => 15, 'description' => 'Notificación personal o por aviso'],
+            ['name' => 'Audiencia única', 'order' => 4, 'days_limit' => 30, 'description' => 'Contestación, conciliación, pruebas, alegatos y sentencia en audiencia única (Art. 392)'],
+            ['name' => 'Sentencia', 'order' => 5, 'days_limit' => null, 'description' => 'Fallo en audiencia. Única instancia en mínima cuantía'],
+        ]);
+
+        // --- CIVIL: Proceso Monitorio (CGP Art. 419-421) ---
+        $this->createFlow($civilType, 'Proceso Monitorio', 'Cobro de deudas de minima cuantia sin titulo ejecutivo (CGP Art. 419-421)', [
+            ['name' => 'Presentación de demanda monitoria', 'order' => 1, 'days_limit' => null, 'description' => 'Demanda con prueba siquiera sumaria de la obligación'],
+            ['name' => 'Requerimiento de pago', 'order' => 2, 'days_limit' => 10, 'description' => 'Auto que ordena al deudor pagar en 10 días (Art. 421)'],
+            ['name' => 'Notificación del requerimiento', 'order' => 3, 'days_limit' => 15, 'description' => 'Notificación personal al deudor'],
+            ['name' => 'Actitud del deudor', 'order' => 4, 'days_limit' => 10, 'description' => 'El deudor paga, se opone o guarda silencio'],
+            ['name' => 'Sentencia o trámite verbal sumario', 'order' => 5, 'days_limit' => 20, 'description' => 'Si no paga ni se opone: sentencia condenatoria. Si se opone: trámite verbal sumario'],
+        ]);
+
+        // --- CIVIL: Proceso de Restitución de Inmueble (CGP Art. 384) ---
+        $this->createFlow($civilType, 'Restitución de Inmueble Arrendado', 'Proceso de restitución de inmueble arrendado (CGP Art. 384)', [
+            ['name' => 'Requerimiento previo al arrendatario', 'order' => 1, 'days_limit' => null, 'description' => 'Requerimiento de entrega mediante correo certificado o notificación escrita'],
+            ['name' => 'Presentación de demanda', 'order' => 2, 'days_limit' => null, 'description' => 'Demanda de restitución con contrato y prueba del requerimiento'],
+            ['name' => 'Admisión de demanda', 'order' => 3, 'days_limit' => 10, 'description' => 'Auto admisorio con medidas cautelares'],
+            ['name' => 'Notificación al arrendatario', 'order' => 4, 'days_limit' => 20, 'description' => 'Notificación personal o por aviso'],
+            ['name' => 'Contestación de demanda', 'order' => 5, 'days_limit' => 10, 'description' => 'Contestación y consignación de cánones adeudados'],
+            ['name' => 'Audiencia', 'order' => 6, 'days_limit' => 30, 'description' => 'Audiencia de conciliación, pruebas y fallo'],
+            ['name' => 'Sentencia y restitución', 'order' => 7, 'days_limit' => 15, 'description' => 'Orden de restitución y diligencia de entrega'],
+        ]);
+
+        // --- LABORAL: Proceso Ejecutivo Laboral (CPT Art. 100-111) ---
+        $this->createFlow($laboralType, 'Proceso Ejecutivo Laboral', 'Cobro ejecutivo de obligaciones laborales (CPT Art. 100-111)', [
+            ['name' => 'Presentación de demanda ejecutiva', 'order' => 1, 'days_limit' => null, 'description' => 'Demanda con título ejecutivo laboral (sentencia, acta de conciliación, liquidación)'],
+            ['name' => 'Mandamiento de pago', 'order' => 2, 'days_limit' => 5, 'description' => 'Auto que ordena el pago de obligaciones laborales'],
+            ['name' => 'Notificación del mandamiento', 'order' => 3, 'days_limit' => 20, 'description' => 'Notificación personal al ejecutado'],
+            ['name' => 'Excepciones', 'order' => 4, 'days_limit' => 5, 'description' => 'Término para proponer excepciones de mérito'],
+            ['name' => 'Sentencia o auto de seguir adelante', 'order' => 5, 'days_limit' => 20, 'description' => 'Resolución de excepciones o auto de seguir adelante la ejecución'],
+            ['name' => 'Liquidación y remate', 'order' => 6, 'days_limit' => 30, 'is_required' => false, 'description' => 'Liquidación del crédito y eventual remate de bienes'],
+        ]);
+
+        // --- LABORAL: Proceso Especial de Fuero Sindical (CPT Art. 113-118) ---
+        $this->createFlow($laboralType, 'Fuero Sindical - Levantamiento', 'Solicitud de levantamiento de fuero sindical (CPT Art. 113-118)', [
+            ['name' => 'Solicitud del empleador', 'order' => 1, 'days_limit' => null, 'description' => 'Solicitud de autorización para despedir trabajador aforado'],
+            ['name' => 'Admisión', 'order' => 2, 'days_limit' => 5, 'description' => 'Auto admisorio con traslado al trabajador'],
+            ['name' => 'Notificación al trabajador', 'order' => 3, 'days_limit' => 10, 'description' => 'Notificación personal al trabajador aforado'],
+            ['name' => 'Contestación', 'order' => 4, 'days_limit' => 5, 'description' => 'Contestación del trabajador aforado'],
+            ['name' => 'Audiencia de trámite', 'order' => 5, 'days_limit' => 15, 'description' => 'Audiencia de pruebas y alegatos'],
+            ['name' => 'Sentencia', 'order' => 6, 'days_limit' => 10, 'description' => 'Autorización o negación del levantamiento del fuero'],
+        ]);
+
+        // --- PENAL: Preacuerdo / Negociación (Ley 906/2004 Art. 348-354) ---
+        $this->createFlow($penalType, 'Preacuerdo y Negociación', 'Terminación anticipada por preacuerdo (Ley 906/2004 Art. 348-354)', [
+            ['name' => 'Formulación de imputación', 'order' => 1, 'days_limit' => null, 'description' => 'Audiencia ante Juez de Control de Garantías'],
+            ['name' => 'Negociación entre Fiscalía y defensa', 'order' => 2, 'days_limit' => 30, 'description' => 'Conversaciones para preacuerdo sobre cargos o pena'],
+            ['name' => 'Aceptación de cargos', 'order' => 3, 'days_limit' => null, 'description' => 'El imputado acepta cargos con rebaja de pena acordada'],
+            ['name' => 'Verificación judicial', 'order' => 4, 'days_limit' => 10, 'description' => 'Juez verifica voluntariedad y legalidad del preacuerdo (Art. 351)'],
+            ['name' => 'Sentencia anticipada', 'order' => 5, 'days_limit' => 15, 'description' => 'Sentencia con la pena acordada en el preacuerdo'],
+        ]);
+
+        // --- PENAL: Incidente de Reparación Integral (Ley 906/2004 Art. 102-108) ---
+        $this->createFlow($penalType, 'Incidente de Reparación Integral', 'Reparación de víctimas en proceso penal (Ley 906/2004 Art. 102-108)', [
+            ['name' => 'Solicitud del incidente', 'order' => 1, 'days_limit' => 30, 'description' => 'La víctima solicita el incidente dentro de los 30 días siguientes a la sentencia condenatoria'],
+            ['name' => 'Audiencia de reparación', 'order' => 2, 'days_limit' => 8, 'description' => 'Citación a audiencia dentro de los 8 días siguientes'],
+            ['name' => 'Conciliación', 'order' => 3, 'days_limit' => null, 'description' => 'Intento de conciliación entre víctima y condenado'],
+            ['name' => 'Pruebas de reparación', 'order' => 4, 'days_limit' => 15, 'is_required' => false, 'description' => 'Práctica de pruebas si no hubo conciliación'],
+            ['name' => 'Sentencia de reparación', 'order' => 5, 'days_limit' => 10, 'description' => 'Decisión sobre monto y forma de reparación'],
+        ]);
+
+        // --- ADMINISTRATIVO: Acción de Tutela (Decreto 2591/1991) ---
+        $this->createFlow($adminType, 'Acción de Tutela', 'Protección de derechos fundamentales (Art. 86 CP, Decreto 2591/1991)', [
+            ['name' => 'Presentación de tutela', 'order' => 1, 'days_limit' => null, 'description' => 'Solicitud de amparo de derechos fundamentales ante cualquier juez'],
+            ['name' => 'Admisión y auto', 'order' => 2, 'days_limit' => 1, 'description' => 'Admisión inmediata. No requiere apoderado ni formalidades'],
+            ['name' => 'Traslado al accionado', 'order' => 3, 'days_limit' => 3, 'description' => 'Requerimiento para que rinda informe en máximo 3 días'],
+            ['name' => 'Práctica de pruebas', 'order' => 4, 'days_limit' => 3, 'is_required' => false, 'description' => 'Pruebas de oficio si el juez las considera necesarias'],
+            ['name' => 'Fallo de primera instancia', 'order' => 5, 'days_limit' => 10, 'description' => 'Sentencia en máximo 10 días desde la presentación'],
+            ['name' => 'Impugnación', 'order' => 6, 'days_limit' => 3, 'is_required' => false, 'description' => 'Impugnación dentro de los 3 días siguientes a la notificación'],
+            ['name' => 'Fallo de segunda instancia', 'order' => 7, 'days_limit' => 20, 'is_required' => false, 'description' => 'Decisión del superior jerárquico en 20 días'],
+            ['name' => 'Revisión Corte Constitucional', 'order' => 8, 'days_limit' => null, 'is_required' => false, 'description' => 'Envío automático a la Corte para eventual selección y revisión'],
+        ]);
+
+        // --- ADMINISTRATIVO: Reparación Directa (CPACA Art. 140) ---
+        $this->createFlow($adminType, 'Reparación Directa', 'Acción de reparación directa contra el Estado (CPACA Art. 140)', [
+            ['name' => 'Solicitud de conciliación extrajudicial', 'order' => 1, 'days_limit' => 30, 'description' => 'Requisito de procedibilidad ante Procuraduría'],
+            ['name' => 'Presentación de demanda', 'order' => 2, 'days_limit' => null, 'description' => 'Demanda dentro del término de caducidad: 2 años desde el hecho'],
+            ['name' => 'Admisión de demanda', 'order' => 3, 'days_limit' => 15, 'description' => 'Auto admisorio con notificación a la entidad'],
+            ['name' => 'Contestación', 'order' => 4, 'days_limit' => 30, 'description' => 'Contestación por la entidad demandada'],
+            ['name' => 'Audiencia inicial', 'order' => 5, 'days_limit' => 30, 'description' => 'Saneamiento, fijación del litigio, conciliación y decreto de pruebas'],
+            ['name' => 'Período probatorio', 'order' => 6, 'days_limit' => 40, 'description' => 'Práctica de pruebas decretadas'],
+            ['name' => 'Alegatos', 'order' => 7, 'days_limit' => 10, 'description' => 'Traslado para alegatos de conclusión'],
+            ['name' => 'Sentencia', 'order' => 8, 'days_limit' => 30, 'description' => 'Sentencia sobre responsabilidad del Estado'],
+        ]);
+
+        // --- COMERCIAL: Proceso de Liquidación Judicial (Ley 1116/2006) ---
+        $this->createFlow($comercialType, 'Liquidación Judicial', 'Proceso de liquidación judicial de sociedad (Ley 1116/2006 Art. 47-68)', [
+            ['name' => 'Apertura de liquidación', 'order' => 1, 'days_limit' => null, 'description' => 'Auto de apertura por la Superintendencia de Sociedades'],
+            ['name' => 'Emplazamiento a acreedores', 'order' => 2, 'days_limit' => 10, 'description' => 'Aviso para que acreedores presenten sus créditos'],
+            ['name' => 'Presentación de créditos', 'order' => 3, 'days_limit' => 20, 'description' => 'Los acreedores presentan sus acreencias'],
+            ['name' => 'Calificación y graduación', 'order' => 4, 'days_limit' => 30, 'description' => 'Calificación y graduación de créditos por el liquidador'],
+            ['name' => 'Inventario de bienes', 'order' => 5, 'days_limit' => 20, 'description' => 'Inventario valorado de activos de la sociedad'],
+            ['name' => 'Proyecto de adjudicación', 'order' => 6, 'days_limit' => 30, 'description' => 'Proyecto de distribución de activos entre acreedores'],
+            ['name' => 'Objeciones', 'order' => 7, 'days_limit' => 10, 'is_required' => false, 'description' => 'Objeciones al proyecto de adjudicación'],
+            ['name' => 'Providencia de adjudicación', 'order' => 8, 'days_limit' => 15, 'description' => 'Aprobación del proyecto y adjudicación de bienes'],
+            ['name' => 'Registro y cancelación', 'order' => 9, 'days_limit' => 30, 'description' => 'Registro de la providencia y cancelación de matrícula mercantil'],
+        ]);
+
+        // --- COMERCIAL: Proceso de Competencia Desleal (Ley 256/1996) ---
+        $this->createFlow($comercialType, 'Competencia Desleal', 'Acción de competencia desleal ante Superintendencia de Industria y Comercio (Ley 256/1996)', [
+            ['name' => 'Presentación de demanda', 'order' => 1, 'days_limit' => null, 'description' => 'Demanda ante la SIC o juez civil del circuito'],
+            ['name' => 'Medidas cautelares', 'order' => 2, 'days_limit' => 5, 'is_required' => false, 'description' => 'Solicitud de cese provisional de la conducta desleal'],
+            ['name' => 'Admisión y traslado', 'order' => 3, 'days_limit' => 10, 'description' => 'Auto admisorio con traslado al demandado'],
+            ['name' => 'Contestación', 'order' => 4, 'days_limit' => 10, 'description' => 'Contestación y proposición de excepciones'],
+            ['name' => 'Audiencia de conciliación y pruebas', 'order' => 5, 'days_limit' => 30, 'description' => 'Intento de conciliación y práctica de pruebas'],
+            ['name' => 'Alegatos', 'order' => 6, 'days_limit' => 5, 'description' => 'Alegatos de conclusión por las partes'],
+            ['name' => 'Decisión', 'order' => 7, 'days_limit' => 30, 'description' => 'Resolución que declara o no la competencia desleal e indemnización'],
+        ]);
+
+        // --- FAMILIA: Proceso de Alimentos (Ley 1098/2006 y CGP) ---
+        $this->createFlow($familiaType, 'Fijación de Cuota Alimentaria', 'Proceso de fijación de alimentos para menores (Ley 1098/2006, CGP)', [
+            ['name' => 'Conciliación extrajudicial', 'order' => 1, 'days_limit' => null, 'is_required' => false, 'description' => 'Intento de conciliación ante ICBF, comisaría de familia o centro de conciliación'],
+            ['name' => 'Presentación de demanda', 'order' => 2, 'days_limit' => null, 'description' => 'Demanda de alimentos con prueba de necesidad y capacidad'],
+            ['name' => 'Admisión y fijación de alimentos provisionales', 'order' => 3, 'days_limit' => 10, 'description' => 'Auto admisorio con fijación de cuota provisional (Ley 1098/2006 Art. 129)'],
+            ['name' => 'Notificación al demandado', 'order' => 4, 'days_limit' => 20, 'description' => 'Notificación personal al obligado alimentario'],
+            ['name' => 'Contestación', 'order' => 5, 'days_limit' => 10, 'description' => 'Contestación de la demanda'],
+            ['name' => 'Audiencia de conciliación y fallo', 'order' => 6, 'days_limit' => 30, 'description' => 'Audiencia de conciliación, pruebas y sentencia'],
+            ['name' => 'Sentencia', 'order' => 7, 'days_limit' => null, 'description' => 'Fijación definitiva de cuota alimentaria'],
+        ]);
+
+        // --- FAMILIA: Proceso de Custodia y Cuidado Personal ---
+        $this->createFlow($familiaType, 'Custodia y Cuidado Personal', 'Proceso de custodia y regulación de visitas (CGP, Ley 1098/2006)', [
+            ['name' => 'Conciliación extrajudicial', 'order' => 1, 'days_limit' => null, 'is_required' => false, 'description' => 'Intento de conciliación ante ICBF o comisaría de familia'],
+            ['name' => 'Presentación de demanda', 'order' => 2, 'days_limit' => null, 'description' => 'Demanda de custodia con prueba del interés superior del menor'],
+            ['name' => 'Admisión y medidas provisionales', 'order' => 3, 'days_limit' => 10, 'description' => 'Auto admisorio con custodia provisional si es urgente'],
+            ['name' => 'Informe del ICBF/Defensoría', 'order' => 4, 'days_limit' => 30, 'description' => 'Informe del equipo interdisciplinario sobre entorno del menor'],
+            ['name' => 'Audiencia', 'order' => 5, 'days_limit' => 30, 'description' => 'Audiencia de pruebas y escucha del menor (si tiene edad)'],
+            ['name' => 'Sentencia', 'order' => 6, 'days_limit' => 20, 'description' => 'Sentencia sobre custodia, régimen de visitas y alimentos'],
+        ]);
+
+        // --- FAMILIA: Proceso de Sucesión (CGP Art. 487-531) ---
+        $this->createFlow($familiaType, 'Proceso de Sucesión', 'Sucesión por causa de muerte (CGP Art. 487-531)', [
+            ['name' => 'Solicitud de apertura', 'order' => 1, 'days_limit' => null, 'description' => 'Demanda de apertura de sucesión con registro de defunción'],
+            ['name' => 'Auto de apertura', 'order' => 2, 'days_limit' => 10, 'description' => 'Auto que abre la sucesión y nombra curador de bienes'],
+            ['name' => 'Emplazamiento a herederos', 'order' => 3, 'days_limit' => 20, 'description' => 'Edicto emplazando a herederos conocidos y desconocidos'],
+            ['name' => 'Reconocimiento de herederos', 'order' => 4, 'days_limit' => 30, 'description' => 'Auto que reconoce calidad de herederos'],
+            ['name' => 'Inventario y avalúo', 'order' => 5, 'days_limit' => 20, 'description' => 'Inventario de bienes y avalúo de la masa sucesoral'],
+            ['name' => 'Objeciones al inventario', 'order' => 6, 'days_limit' => 10, 'is_required' => false, 'description' => 'Objeciones al inventario por herederos o acreedores'],
+            ['name' => 'Trabajo de partición', 'order' => 7, 'days_limit' => 40, 'description' => 'Elaboración del trabajo de partición por el partidor'],
+            ['name' => 'Objeciones a la partición', 'order' => 8, 'days_limit' => 10, 'is_required' => false, 'description' => 'Objeciones al trabajo de partición'],
+            ['name' => 'Sentencia aprobatoria', 'order' => 9, 'days_limit' => 20, 'description' => 'Auto que aprueba la partición'],
+            ['name' => 'Registro de sentencia', 'order' => 10, 'days_limit' => 30, 'description' => 'Registro de la sentencia en oficina de instrumentos públicos y notaría'],
+        ]);
+
+        // Recoger todos los flujos primarios (uno por tipo) para crear casos demo
         $flows = [
             $civilType->id => $civilFlow,
             $laboralType->id => $laboralFlow,
