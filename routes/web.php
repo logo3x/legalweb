@@ -29,7 +29,9 @@ Route::get('/download/{filename}', function (string $filename) {
         abort(404);
     }
 
-    return response()->download($path)->deleteFileAfterSend();
+    return response()->download($path, $filename, [
+        'Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    ]);
 })->middleware('auth')->name('download.file')->where('filename', '.*');
 
 // Wompi Payments

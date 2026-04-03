@@ -113,7 +113,7 @@ class ViewLegalCase extends ViewRecord
 
                         $fileName = basename($filePath);
 
-                        $this->js("window.open('".route('download.file', $fileName)."', '_blank')");
+                        $this->js("window.location.href = '".route('download.file', $fileName)."'");
 
                         Notification::make()->title('Borrador generado')->body('La descarga iniciara automaticamente.')->success()->send();
                     }),
