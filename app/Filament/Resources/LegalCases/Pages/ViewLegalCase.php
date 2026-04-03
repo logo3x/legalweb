@@ -111,9 +111,11 @@ class ViewLegalCase extends ViewRecord
                             $content
                         );
 
-                        Notification::make()->title('Borrador generado')->success()->send();
+                        $fileName = basename($filePath);
 
-                        return response()->download($filePath)->deleteFileAfterSend();
+                        $this->js("window.open('".route('download.file', $fileName)."', '_blank')");
+
+                        Notification::make()->title('Borrador generado')->body('La descarga iniciara automaticamente.')->success()->send();
                     }),
             ])
                 ->label('Asistente IA')

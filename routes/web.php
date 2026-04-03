@@ -21,6 +21,17 @@ Route::prefix('portal')->name('portal.')->group(function () {
     Route::post('/{token}/aceptar', [PortalController::class, 'accept'])->name('accept');
 });
 
+// Download generated documents
+Route::get('/download/{filename}', function (string $filename) {
+    $path = storage_path('app/public/generated/'.$filename);
+
+    if (! file_exists($path)) {
+        abort(404);
+    }
+
+    return response()->download($path)->deleteFileAfterSend();
+})->middleware('auth')->name('download.file')->where('filename', '.*');
+
 // Wompi Payments
 Route::middleware('auth')->group(function () {
     Route::match(['get', 'post'], '/wompi/checkout', [WompiController::class, 'checkout'])->name('wompi.checkout');
