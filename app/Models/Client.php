@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'city',
     'notes',
     'user_id',
+    'firm_id',
 ])]
 class Client extends Model
 {

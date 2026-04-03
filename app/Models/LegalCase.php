@@ -29,6 +29,7 @@ use Illuminate\Support\Str;
     'closed_at',
     'portal_token',
     'portal_enabled',
+    'firm_id',
 ])]
 class LegalCase extends Model
 {

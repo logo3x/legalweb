@@ -8,8 +8,11 @@ use App\Models\CaseFlowProgress;
 use App\Models\CaseType;
 use App\Models\Client;
 use App\Models\Document;
+use App\Models\Firm;
 use App\Models\FlowStep;
 use App\Models\LegalCase;
+use App\Models\Plan;
+use App\Models\Subscription;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -20,19 +23,104 @@ class DatabaseSeeder extends Seeder
 
     public function run(): void
     {
+        // Planes de suscripción
+        $freePlan = Plan::create([
+            'name' => 'Gratuito',
+            'slug' => 'gratuito',
+            'description' => 'Ideal para abogados independientes que inician',
+            'price_monthly' => 0,
+            'price_yearly' => 0,
+            'max_cases' => 5,
+            'max_users' => 1,
+            'max_storage_mb' => 100,
+            'has_portal' => false,
+            'has_notifications' => false,
+            'sort_order' => 1,
+        ]);
+
+        Plan::create([
+            'name' => 'Profesional',
+            'slug' => 'profesional',
+            'description' => 'Para abogados con práctica activa',
+            'price_monthly' => 79900,
+            'price_yearly' => 799000,
+            'max_cases' => 50,
+            'max_users' => 3,
+            'max_storage_mb' => 1024,
+            'has_portal' => true,
+            'has_notifications' => true,
+            'sort_order' => 2,
+        ]);
+
+        Plan::create([
+            'name' => 'Firma',
+            'slug' => 'firma',
+            'description' => 'Para firmas de abogados con varios profesionales',
+            'price_monthly' => 199900,
+            'price_yearly' => 1999000,
+            'max_cases' => 200,
+            'max_users' => 10,
+            'max_storage_mb' => 5120,
+            'has_portal' => true,
+            'has_notifications' => true,
+            'sort_order' => 3,
+        ]);
+
+        Plan::create([
+            'name' => 'Empresarial',
+            'slug' => 'empresarial',
+            'description' => 'Para grandes firmas sin límites',
+            'price_monthly' => 499900,
+            'price_yearly' => 4999000,
+            'max_cases' => 0,
+            'max_users' => 0,
+            'max_storage_mb' => 0,
+            'has_portal' => true,
+            'has_notifications' => true,
+            'sort_order' => 4,
+        ]);
+
+        // Firma demo
+        $firm = Firm::create([
+            'name' => 'Rodríguez & López Abogados',
+            'nit' => '901234567-1',
+            'legal_name' => 'Rodríguez & López Abogados S.A.S.',
+            'email' => 'contacto@rodriguezlopez.co',
+            'phone' => '6017654321',
+            'address' => 'Calle 72 #10-07 Oficina 301',
+            'city' => 'Bogotá',
+            'department' => 'Cundinamarca',
+            'description' => 'Firma especializada en derecho civil, laboral y de familia',
+            'onboarding_completed' => true,
+        ]);
+
+        Subscription::create([
+            'firm_id' => $firm->id,
+            'plan_id' => $freePlan->id,
+            'status' => 'active',
+            'starts_at' => now(),
+            'trial_ends_at' => now()->addDays(30),
+        ]);
+
         $admin = User::factory()->create([
             'name' => 'Admin LegalWeb',
             'email' => 'admin@legalweb.co',
+            'firm_id' => $firm->id,
+            'role' => 'admin',
         ]);
 
         $lawyer = User::factory()->create([
             'name' => 'Carlos Rodríguez',
             'email' => 'carlos@legalweb.co',
+            'firm_id' => $firm->id,
+            'role' => 'abogado',
         ]);
 
         $lawyer2 = User::factory()->create([
             'name' => 'María López',
             'email' => 'maria@legalweb.co',
+            'firm_id' => $firm->id,
+            'role' => 'abogado',
         ]);
 
         $caseTypes = collect([
@@ -44,7 +132,7 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Familia', 'description' => 'Procesos de familia, custodia, alimentos y divorcio', 'color' => '#EC4899'],
         ])->map(fn (array $data) => CaseType::create($data));
 
-        $clients = Client::factory(15)->create(['user_id' => $lawyer->id]);
+        $clients = Client::factory(15)->create(['user_id' => $lawyer->id, 'firm_id' => $firm->id]);
 
         $civilType = $caseTypes->firstWhere('name', 'Civil');
         $laboralType = $caseTypes->firstWhere('name', 'Laboral');
@@ -319,6 +407,7 @@ class DatabaseSeeder extends Seeder
             $caseLawyer = $type->name === 'Penal' || $type->name === 'Familia' ? $lawyer2 : $lawyer;
 
             $cases = LegalCase::factory(3)->create([
+                'firm_id' => $firm->id,
                 'case_type_id' => $type->id,
                 'case_flow_id' => $flow->id,
                 'client_id' => fn () => $clients->random()->id,
