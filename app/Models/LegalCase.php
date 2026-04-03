@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'title',
     'description',
     'case_type_id',
+    'case_flow_id',
     'client_id',
     'user_id',
     'status',
@@ -42,6 +43,11 @@ class LegalCase extends Model
     public function caseType(): BelongsTo
     {
         return $this->belongsTo(CaseType::class);
+    }
+
+    public function caseFlow(): BelongsTo
+    {
+        return $this->belongsTo(CaseFlow::class);
     }
 
     public function client(): BelongsTo

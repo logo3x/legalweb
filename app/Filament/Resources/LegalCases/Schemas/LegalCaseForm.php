@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\LegalCases\Schemas;
 
+use App\Models\CaseFlow;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -38,7 +39,17 @@ class LegalCaseForm
                             ->relationship('caseType', 'name')
                             ->required()
                             ->searchable()
-                            ->preload(),
+                            ->preload()
+                            ->live(),
+                        Select::make('case_flow_id')
+                            ->label('Flujo de Proceso')
+                            ->options(fn ($get) => CaseFlow::query()
+                                ->where('case_type_id', $get('case_type_id'))
+                                ->where('is_active', true)
+                                ->pluck('name', 'id'))
+                            ->searchable()
+                            ->preload()
+                            ->placeholder('Seleccionar flujo (opcional)'),
                         Select::make('status')
                             ->label('Estado')
                             ->options([

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\LegalCases\RelationManagers;
 
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
@@ -14,6 +15,7 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Storage;
 
 class DocumentsRelationManager extends RelationManager
 {
@@ -34,6 +36,9 @@ class DocumentsRelationManager extends RelationManager
                 FileUpload::make('file_path')
                     ->label('Archivo')
                     ->directory('documents')
+                    ->preserveFilenames()
+                    ->downloadable()
+                    ->openable()
                     ->required()
                     ->columnSpanFull(),
             ]);
@@ -65,6 +70,10 @@ class DocumentsRelationManager extends RelationManager
                     ->label('Subir Documento'),
             ])
             ->recordActions([
+                Action::make('download')
+                    ->label('Descargar')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->action(fn ($record) => Storage::download($record->file_path, $record->name)),
                 EditAction::make(),
                 DeleteAction::make(),
             ])

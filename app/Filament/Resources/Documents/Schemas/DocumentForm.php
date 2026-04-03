@@ -35,6 +35,9 @@ class DocumentForm
                 FileUpload::make('file_path')
                     ->label('Archivo')
                     ->directory('documents')
+                    ->preserveFilenames()
+                    ->downloadable()
+                    ->openable()
                     ->required()
                     ->columnSpanFull(),
             ]);

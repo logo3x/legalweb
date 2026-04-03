@@ -8,6 +8,7 @@ use App\Filament\Resources\LegalCases\Pages\ListLegalCases;
 use App\Filament\Resources\LegalCases\Pages\ViewLegalCase;
 use App\Filament\Resources\LegalCases\RelationManagers\DocumentsRelationManager;
 use App\Filament\Resources\LegalCases\RelationManagers\EventsRelationManager;
+use App\Filament\Resources\LegalCases\RelationManagers\FlowProgressRelationManager;
 use App\Filament\Resources\LegalCases\Schemas\LegalCaseForm;
 use App\Filament\Resources\LegalCases\Tables\LegalCasesTable;
 use App\Models\LegalCase;
@@ -16,6 +17,7 @@ use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Filament\Support\Enums\TextSize;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -43,22 +45,21 @@ class LegalCaseResource extends Resource
         return $schema
             ->components([
                 Section::make('Información del Caso')
-                    ->columns(3)
+                    ->icon(Heroicon::OutlinedBriefcase)
+                    ->columns(4)
                     ->schema([
                         TextEntry::make('case_number')
-                            ->label('No. Caso'),
+                            ->label('No. Caso')
+                            ->icon('heroicon-m-hashtag')
+                            ->weight('bold')
+                            ->size(TextSize::Large),
                         TextEntry::make('external_case_number')
                             ->label('Radicado Judicial')
-                            ->default('-'),
+                            ->icon('heroicon-m-document-text')
+                            ->placeholder('Sin radicado'),
                         TextEntry::make('caseType.name')
                             ->label('Tipo de Proceso')
                             ->badge(),
-                        TextEntry::make('title')
-                            ->label('Título')
-                            ->columnSpanFull(),
-                        TextEntry::make('description')
-                            ->label('Descripción')
-                            ->columnSpanFull(),
                         TextEntry::make('status')
                             ->label('Estado')
                             ->badge()
@@ -69,7 +70,22 @@ class LegalCaseResource extends Resource
                                 'cerrado' => 'success',
                                 'archivado' => 'danger',
                                 default => 'gray',
+                            })
+                            ->formatStateUsing(fn (string $state): string => match ($state) {
+                                'abierto' => 'Abierto',
+                                'en_progreso' => 'En Progreso',
+                                'en_espera' => 'En Espera',
+                                'cerrado' => 'Cerrado',
+                                'archivado' => 'Archivado',
+                                default => $state,
                             }),
+                        TextEntry::make('title')
+                            ->label('Título')
+                            ->columnSpanFull(),
+                        TextEntry::make('description')
+                            ->label('Descripción')
+                            ->columnSpanFull()
+                            ->placeholder('Sin descripción'),
                         TextEntry::make('priority')
                             ->label('Prioridad')
                             ->badge()
@@ -79,42 +95,52 @@ class LegalCaseResource extends Resource
                                 'alta' => 'warning',
                                 'urgente' => 'danger',
                                 default => 'gray',
-                            }),
+                            })
+                            ->formatStateUsing(fn (string $state): string => ucfirst($state)),
+                        TextEntry::make('court')
+                            ->label('Juzgado / Despacho')
+                            ->icon('heroicon-m-building-office')
+                            ->placeholder('Sin asignar'),
+                        TextEntry::make('judge')
+                            ->label('Juez')
+                            ->icon('heroicon-m-user')
+                            ->placeholder('Sin asignar'),
+                        TextEntry::make('started_at')
+                            ->label('Fecha de Inicio')
+                            ->icon('heroicon-m-calendar')
+                            ->date('d/m/Y')
+                            ->placeholder('Sin definir'),
+                        TextEntry::make('closed_at')
+                            ->label('Fecha de Cierre')
+                            ->icon('heroicon-m-calendar')
+                            ->date('d/m/Y')
+                            ->placeholder('Caso abierto'),
                     ]),
-                Section::make('Partes Involucradas')
+                Section::make('Partes')
+                    ->icon(Heroicon::OutlinedUserGroup)
                     ->columns(3)
                     ->schema([
                         TextEntry::make('client')
                             ->label('Cliente')
+                            ->icon('heroicon-m-user')
                             ->formatStateUsing(fn ($record) => "{$record->client->first_name} {$record->client->last_name}"),
                         TextEntry::make('client.document_number')
-                            ->label('Documento del Cliente'),
+                            ->label('Documento')
+                            ->icon('heroicon-m-identification'),
                         TextEntry::make('client.phone')
-                            ->label('Teléfono del Cliente')
-                            ->default('-'),
+                            ->label('Teléfono')
+                            ->icon('heroicon-m-phone')
+                            ->placeholder('Sin teléfono'),
                         TextEntry::make('user.name')
-                            ->label('Abogado Responsable'),
+                            ->label('Abogado Responsable')
+                            ->icon('heroicon-m-academic-cap'),
+                        TextEntry::make('user.email')
+                            ->label('Correo del Abogado')
+                            ->icon('heroicon-m-envelope'),
                         TextEntry::make('opposing_party')
                             ->label('Contraparte')
-                            ->default('-'),
-                    ]),
-                Section::make('Información Judicial')
-                    ->columns(2)
-                    ->schema([
-                        TextEntry::make('court')
-                            ->label('Juzgado / Despacho')
-                            ->default('-'),
-                        TextEntry::make('judge')
-                            ->label('Juez')
-                            ->default('-'),
-                        TextEntry::make('started_at')
-                            ->label('Fecha de Inicio')
-                            ->date('d/m/Y')
-                            ->default('-'),
-                        TextEntry::make('closed_at')
-                            ->label('Fecha de Cierre')
-                            ->date('d/m/Y')
-                            ->default('-'),
+                            ->icon('heroicon-m-user-group')
+                            ->placeholder('Sin contraparte'),
                     ]),
             ]);
     }
@@ -127,6 +153,7 @@ class LegalCaseResource extends Resource
     public static function getRelations(): array
     {
         return [
+            FlowProgressRelationManager::class,
             EventsRelationManager::class,
             DocumentsRelationManager::class,
         ];
