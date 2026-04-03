@@ -77,6 +77,7 @@ class DemoDataService
         Client::create([
             'firm_id' => $firm->id,
             'user_id' => $owner->id,
+            'is_demo' => true,
             'document_type' => 'CC',
             'document_number' => '1234567890',
             'first_name' => 'Juan',
@@ -89,6 +90,7 @@ class DemoDataService
         Client::create([
             'firm_id' => $firm->id,
             'user_id' => $owner->id,
+            'is_demo' => true,
             'document_type' => 'CC',
             'document_number' => '9876543210',
             'first_name' => 'María',
@@ -101,6 +103,7 @@ class DemoDataService
         Client::create([
             'firm_id' => $firm->id,
             'user_id' => $owner->id,
+            'is_demo' => true,
             'document_type' => 'NIT',
             'document_number' => '900123456-1',
             'first_name' => 'Empresa',
@@ -119,6 +122,7 @@ class DemoDataService
 
         $case1 = LegalCase::create([
             'firm_id' => $firm->id,
+            'is_demo' => true,
             'case_number' => 'LW-0001-2026',
             'title' => 'Cobro de obligación contractual - Contrato de arrendamiento',
             'case_type_id' => $civilType->id,
@@ -137,6 +141,7 @@ class DemoDataService
 
         $case2 = LegalCase::create([
             'firm_id' => $firm->id,
+            'is_demo' => true,
             'case_number' => 'LW-0002-2026',
             'title' => 'Demanda laboral por despido sin justa causa',
             'case_type_id' => $laboralType->id,
@@ -153,6 +158,7 @@ class DemoDataService
 
         $case3 = LegalCase::create([
             'firm_id' => $firm->id,
+            'is_demo' => true,
             'case_number' => 'LW-0003-2026',
             'title' => 'Divorcio contencioso por causal de abandono',
             'case_type_id' => $familiaType->id,

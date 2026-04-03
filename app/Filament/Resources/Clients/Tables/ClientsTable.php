@@ -26,6 +26,7 @@ class ClientsTable
                 TextColumn::make('first_name')
                     ->label('Nombres')
                     ->searchable()
+                    ->description(fn ($record) => $record->is_demo ? 'Ejemplo' : null)
                     ->sortable(),
                 TextColumn::make('last_name')
                     ->label('Apellidos')

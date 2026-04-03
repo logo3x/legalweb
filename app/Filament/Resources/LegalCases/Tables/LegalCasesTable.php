@@ -22,7 +22,9 @@ class LegalCasesTable
                 TextColumn::make('case_number')
                     ->label('No. Caso')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->description(fn ($record) => $record->is_demo ? 'Ejemplo' : null)
+                    ->color(fn ($record) => $record->is_demo ? 'gray' : null),
                 TextColumn::make('title')
                     ->label('Título')
                     ->searchable()

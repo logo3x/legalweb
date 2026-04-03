@@ -27,13 +27,13 @@ class DatabaseSeeder extends Seeder
         $freePlan = Plan::create([
             'name' => 'Gratuito',
             'slug' => 'gratuito',
-            'description' => 'Ideal para abogados independientes que inician',
+            'description' => 'Para explorar la plataforma',
             'price_monthly' => 0,
             'price_yearly' => 0,
-            'max_cases' => 5,
+            'max_cases' => 3,
             'max_users' => 1,
-            'max_storage_mb' => 100,
-            'has_portal' => false,
+            'max_storage_mb' => 50,
+            'has_portal' => true,
             'has_notifications' => false,
             'sort_order' => 1,
         ]);
@@ -42,9 +42,9 @@ class DatabaseSeeder extends Seeder
             'name' => 'Profesional',
             'slug' => 'profesional',
             'description' => 'Para abogados con práctica activa',
-            'price_monthly' => 79900,
-            'price_yearly' => 799000,
-            'max_cases' => 50,
+            'price_monthly' => 39900,
+            'price_yearly' => 199000,
+            'max_cases' => 20,
             'max_users' => 3,
             'max_storage_mb' => 1024,
             'has_portal' => true,
@@ -55,29 +55,15 @@ class DatabaseSeeder extends Seeder
         Plan::create([
             'name' => 'Firma',
             'slug' => 'firma',
-            'description' => 'Para firmas de abogados con varios profesionales',
-            'price_monthly' => 199900,
-            'price_yearly' => 1999000,
-            'max_cases' => 200,
+            'description' => 'Para firmas con varios abogados',
+            'price_monthly' => 69900,
+            'price_yearly' => 349000,
+            'max_cases' => 60,
             'max_users' => 10,
             'max_storage_mb' => 5120,
             'has_portal' => true,
             'has_notifications' => true,
             'sort_order' => 3,
-        ]);
-
-        Plan::create([
-            'name' => 'Empresarial',
-            'slug' => 'empresarial',
-            'description' => 'Para grandes firmas sin límites',
-            'price_monthly' => 499900,
-            'price_yearly' => 4999000,
-            'max_cases' => 0,
-            'max_users' => 0,
-            'max_storage_mb' => 0,
-            'has_portal' => true,
-            'has_notifications' => true,
-            'sort_order' => 4,
         ]);
 
         // Firma demo
@@ -132,7 +118,7 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Familia', 'description' => 'Procesos de familia, custodia, alimentos y divorcio', 'color' => '#EC4899'],
         ])->map(fn (array $data) => CaseType::create($data));
 
-        $clients = Client::factory(15)->create(['user_id' => $lawyer->id, 'firm_id' => $firm->id]);
+        $clients = Client::factory(15)->create(['user_id' => $lawyer->id, 'firm_id' => $firm->id, 'is_demo' => true]);
 
         $civilType = $caseTypes->firstWhere('name', 'Civil');
         $laboralType = $caseTypes->firstWhere('name', 'Laboral');
@@ -408,6 +394,7 @@ class DatabaseSeeder extends Seeder
 
             $cases = LegalCase::factory(3)->create([
                 'firm_id' => $firm->id,
+                'is_demo' => true,
                 'case_type_id' => $type->id,
                 'case_flow_id' => $flow->id,
                 'client_id' => fn () => $clients->random()->id,

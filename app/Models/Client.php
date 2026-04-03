@@ -22,11 +22,19 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'notes',
     'user_id',
     'firm_id',
+    'is_demo',
 ])]
 class Client extends Model
 {
     /** @use HasFactory<ClientFactory> */
     use HasFactory, SoftDeletes;
+
+    protected function casts(): array
+    {
+        return [
+            'is_demo' => 'boolean',
+        ];
+    }
 
     public function user(): BelongsTo
     {

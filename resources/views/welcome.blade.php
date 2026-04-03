@@ -6,6 +6,7 @@
     <title>LegalWeb - Control inteligente de tus procesos legales</title>
     <meta name="description" content="Plataforma SaaS para abogados en Colombia. Gestiona casos, clientes y actuaciones con seguimiento en tiempo real para tus clientes.">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
     <script>
@@ -28,14 +29,9 @@
 
     {{-- Navbar --}}
     <nav class="bg-white/80 backdrop-blur-md border-b border-gray-100 fixed w-full z-50">
-        <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-            <a href="/" class="flex items-center gap-2">
-                <div class="w-9 h-9 bg-brand rounded-lg flex items-center justify-center">
-                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/>
-                    </svg>
-                </div>
-                <span class="text-xl font-display font-bold text-brand">Legal<span class="text-brand-light">Web</span></span>
+        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+            <a href="/" class="flex items-center">
+                <img src="/images/logo.png" alt="LegalWeb" class="h-10">
             </a>
             <div class="hidden md:flex items-center gap-8 text-sm">
                 <a href="#funcionalidades" class="hover:text-brand-light transition">Funcionalidades</a>
@@ -52,7 +48,7 @@
     </nav>
 
     {{-- Hero --}}
-    <section class="pt-32 pb-20 px-4">
+    <section class="pt-28 pb-20 px-4">
         <div class="max-w-6xl mx-auto text-center">
             <div class="inline-flex items-center gap-2 bg-blue-50 text-brand-light text-sm font-medium px-4 py-2 rounded-full mb-6">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -83,7 +79,7 @@
                     </svg>
                 </a>
             </div>
-            <p class="text-sm text-gray-400">5 casos gratis para siempre. Sin tarjeta de credito.</p>
+            <p class="text-sm text-gray-400">3 casos gratis para siempre. Sin tarjeta de credito.</p>
         </div>
     </section>
 
@@ -95,7 +91,6 @@
                 <p class="text-gray-500 max-w-xl mx-auto">Herramientas disenadas por y para abogados colombianos</p>
             </div>
             <div class="grid md:grid-cols-3 gap-8">
-                {{-- Feature 1 --}}
                 <div class="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm hover:shadow-md transition">
                     <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mb-5">
                         <svg class="w-6 h-6 text-brand-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -105,7 +100,6 @@
                     <h3 class="font-semibold text-brand text-lg mb-2">Expediente Digital</h3>
                     <p class="text-gray-500 text-sm leading-relaxed">Centraliza documentos, actuaciones y evidencias de cada caso en un expediente organizado con linea de tiempo.</p>
                 </div>
-                {{-- Feature 2 --}}
                 <div class="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm hover:shadow-md transition">
                     <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center mb-5">
                         <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -115,7 +109,6 @@
                     <h3 class="font-semibold text-brand text-lg mb-2">Flujos de Proceso</h3>
                     <p class="text-gray-500 text-sm leading-relaxed">21 flujos basados en la legislacion colombiana (CGP, CPT, Ley 906, CPACA). Completamente editables y personalizables.</p>
                 </div>
-                {{-- Feature 3 --}}
                 <div class="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm hover:shadow-md transition">
                     <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center mb-5">
                         <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -125,7 +118,6 @@
                     <h3 class="font-semibold text-brand text-lg mb-2">Portal del Cliente</h3>
                     <p class="text-gray-500 text-sm leading-relaxed">Sus clientes consultan el estado de su proceso en tiempo real. Reduzca llamadas y aumente la confianza.</p>
                 </div>
-                {{-- Feature 4 --}}
                 <div class="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm hover:shadow-md transition">
                     <div class="w-12 h-12 bg-yellow-50 rounded-xl flex items-center justify-center mb-5">
                         <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -135,7 +127,6 @@
                     <h3 class="font-semibold text-brand text-lg mb-2">Control de Terminos</h3>
                     <p class="text-gray-500 text-sm leading-relaxed">Cada paso del flujo tiene plazos definidos. Nunca mas venza un termino por falta de seguimiento.</p>
                 </div>
-                {{-- Feature 5 --}}
                 <div class="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm hover:shadow-md transition">
                     <div class="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center mb-5">
                         <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -145,7 +136,6 @@
                     <h3 class="font-semibold text-brand text-lg mb-2">Dashboard Inteligente</h3>
                     <p class="text-gray-500 text-sm leading-relaxed">Visualice el estado de su firma con graficos de casos por tipo, estado, actuaciones recientes y mas.</p>
                 </div>
-                {{-- Feature 6 --}}
                 <div class="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm hover:shadow-md transition">
                     <div class="w-12 h-12 bg-brand/5 rounded-xl flex items-center justify-center mb-5">
                         <svg class="w-6 h-6 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -193,97 +183,122 @@
     </section>
 
     {{-- Planes --}}
-    <section id="planes" class="py-20 px-4">
-        <div class="max-w-6xl mx-auto">
-            <div class="text-center mb-16">
+    <section id="planes" class="py-20 px-4" x-data="{ billing: 'monthly' }">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center mb-10">
                 <h2 class="font-display text-3xl md:text-4xl font-bold text-brand mb-4">Planes que crecen con su firma</h2>
-                <p class="text-gray-500">Comience gratis. Escale cuando lo necesite.</p>
+                <p class="text-gray-500 mb-8">Comience gratis. Escale cuando lo necesite.</p>
+
+                {{-- Switch mensual/semestral --}}
+                <div class="inline-flex items-center bg-gray-100 rounded-full p-1">
+                    <button @click="billing = 'monthly'" :class="billing === 'monthly' ? 'bg-white shadow text-brand font-semibold' : 'text-gray-500'" class="px-5 py-2 rounded-full text-sm transition">
+                        Mensual
+                    </button>
+                    <button @click="billing = 'biannual'" :class="billing === 'biannual' ? 'bg-white shadow text-brand font-semibold' : 'text-gray-500'" class="px-5 py-2 rounded-full text-sm transition flex items-center gap-1.5">
+                        Semestral
+                        <span class="bg-green-100 text-green-700 text-xs font-semibold px-2 py-0.5 rounded-full">-17%</span>
+                    </button>
+                </div>
             </div>
-            <div class="grid md:grid-cols-4 gap-6">
-                {{-- Plan Gratuito --}}
+
+            <div class="grid md:grid-cols-3 gap-6">
+                {{-- Gratuito --}}
                 <div class="bg-white rounded-2xl p-8 border border-gray-200 shadow-sm">
-                    <h3 class="font-semibold text-brand text-lg mb-1">Gratuito</h3>
-                    <p class="text-sm text-gray-500 mb-4">Para iniciar</p>
+                    <h3 class="font-semibold text-brand text-xl mb-1">Gratuito</h3>
+                    <p class="text-sm text-gray-500 mb-5">Para explorar la plataforma</p>
                     <div class="mb-6">
                         <span class="text-4xl font-display font-bold text-brand">$0</span>
-                        <span class="text-gray-400 text-sm">/mes</span>
+                        <span class="text-gray-400 text-sm">/siempre</span>
                     </div>
                     <ul class="space-y-3 text-sm text-gray-600 mb-8">
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> 5 casos</li>
+                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> <strong>3</strong> casos</li>
+                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> <strong>3</strong> clientes</li>
                         <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> 1 usuario</li>
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> 100 MB almacenamiento</li>
+                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Portal del cliente</li>
                         <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> 21 flujos de proceso</li>
-                        <li class="flex items-center gap-2 text-gray-400"><svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg> Portal del cliente</li>
+                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> 50 MB almacenamiento</li>
+                        <li class="flex items-center gap-2 text-gray-400"><svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg> Notificaciones</li>
                     </ul>
-                    <a href="{{ route('auth.google') }}" class="block text-center py-3 px-4 rounded-lg border border-brand text-brand font-medium hover:bg-brand hover:text-white transition">
+                    <a href="{{ route('auth.google') }}" class="block text-center py-3 px-4 rounded-lg border-2 border-brand text-brand font-medium hover:bg-brand hover:text-white transition">
                         Comenzar gratis
                     </a>
                 </div>
-                {{-- Plan Profesional --}}
-                <div class="bg-white rounded-2xl p-8 border-2 border-brand-light shadow-lg relative">
-                    <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-brand-light text-white text-xs font-semibold px-3 py-1 rounded-full">Popular</div>
-                    <h3 class="font-semibold text-brand text-lg mb-1">Profesional</h3>
-                    <p class="text-sm text-gray-500 mb-4">Practica activa</p>
+
+                {{-- Profesional --}}
+                <div class="bg-white rounded-2xl p-8 border-2 border-brand-light shadow-xl relative">
+                    <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-brand-light text-white text-xs font-semibold px-4 py-1 rounded-full">Mas popular</div>
+                    <h3 class="font-semibold text-brand text-xl mb-1">Profesional</h3>
+                    <p class="text-sm text-gray-500 mb-5">Para practica activa</p>
                     <div class="mb-6">
-                        <span class="text-4xl font-display font-bold text-brand">$79.900</span>
-                        <span class="text-gray-400 text-sm">/mes</span>
+                        <template x-if="billing === 'monthly'">
+                            <div>
+                                <span class="text-4xl font-display font-bold text-brand">$39.900</span>
+                                <span class="text-gray-400 text-sm">/mes</span>
+                            </div>
+                        </template>
+                        <template x-if="billing === 'biannual'">
+                            <div>
+                                <span class="text-4xl font-display font-bold text-brand">$199.000</span>
+                                <span class="text-gray-400 text-sm">/6 meses</span>
+                                <p class="text-xs text-green-600 font-medium mt-1">$33.200/mes - Ahorra $40.400</p>
+                            </div>
+                        </template>
                     </div>
                     <ul class="space-y-3 text-sm text-gray-600 mb-8">
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> 50 casos</li>
+                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> <strong>20</strong> casos</li>
+                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> <strong>20</strong> clientes</li>
                         <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> 3 usuarios</li>
+                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Portal del cliente</li>
+                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Notificaciones</li>
                         <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> 1 GB almacenamiento</li>
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Portal del cliente</li>
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Notificaciones</li>
+                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> 21 flujos de proceso</li>
                     </ul>
-                    <a href="{{ route('auth.google') }}" class="block text-center py-3 px-4 rounded-lg bg-brand-light text-white font-medium hover:bg-blue-600 transition">
+                    <a href="{{ route('auth.google') }}" class="block text-center py-3 px-4 rounded-lg bg-brand-light text-white font-medium hover:bg-blue-600 transition shadow-lg shadow-blue-100">
                         Comenzar prueba gratis
                     </a>
                 </div>
-                {{-- Plan Firma --}}
+
+                {{-- Firma --}}
                 <div class="bg-white rounded-2xl p-8 border border-gray-200 shadow-sm">
-                    <h3 class="font-semibold text-brand text-lg mb-1">Firma</h3>
-                    <p class="text-sm text-gray-500 mb-4">Varios abogados</p>
+                    <h3 class="font-semibold text-brand text-xl mb-1">Firma</h3>
+                    <p class="text-sm text-gray-500 mb-5">Para firmas con varios abogados</p>
                     <div class="mb-6">
-                        <span class="text-4xl font-display font-bold text-brand">$199.900</span>
-                        <span class="text-gray-400 text-sm">/mes</span>
+                        <template x-if="billing === 'monthly'">
+                            <div>
+                                <span class="text-4xl font-display font-bold text-brand">$69.900</span>
+                                <span class="text-gray-400 text-sm">/mes</span>
+                            </div>
+                        </template>
+                        <template x-if="billing === 'biannual'">
+                            <div>
+                                <span class="text-4xl font-display font-bold text-brand">$349.000</span>
+                                <span class="text-gray-400 text-sm">/6 meses</span>
+                                <p class="text-xs text-green-600 font-medium mt-1">$58.200/mes - Ahorra $70.400</p>
+                            </div>
+                        </template>
                     </div>
                     <ul class="space-y-3 text-sm text-gray-600 mb-8">
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> 200 casos</li>
+                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> <strong>60</strong> casos</li>
+                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> <strong>60</strong> clientes</li>
                         <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> 10 usuarios</li>
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> 5 GB almacenamiento</li>
                         <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Portal del cliente</li>
                         <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Notificaciones</li>
+                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> 5 GB almacenamiento</li>
+                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> 21 flujos de proceso</li>
                     </ul>
-                    <a href="{{ route('auth.google') }}" class="block text-center py-3 px-4 rounded-lg border border-brand text-brand font-medium hover:bg-brand hover:text-white transition">
+                    <a href="{{ route('auth.google') }}" class="block text-center py-3 px-4 rounded-lg border-2 border-brand text-brand font-medium hover:bg-brand hover:text-white transition">
                         Comenzar prueba gratis
-                    </a>
-                </div>
-                {{-- Plan Empresarial --}}
-                <div class="bg-white rounded-2xl p-8 border border-gray-200 shadow-sm">
-                    <h3 class="font-semibold text-brand text-lg mb-1">Empresarial</h3>
-                    <p class="text-sm text-gray-500 mb-4">Sin limites</p>
-                    <div class="mb-6">
-                        <span class="text-4xl font-display font-bold text-brand">$499.900</span>
-                        <span class="text-gray-400 text-sm">/mes</span>
-                    </div>
-                    <ul class="space-y-3 text-sm text-gray-600 mb-8">
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Casos ilimitados</li>
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Usuarios ilimitados</li>
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Almacenamiento ilimitado</li>
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Portal del cliente</li>
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Soporte prioritario</li>
-                    </ul>
-                    <a href="{{ route('auth.google') }}" class="block text-center py-3 px-4 rounded-lg border border-brand text-brand font-medium hover:bg-brand hover:text-white transition">
-                        Contactar ventas
                     </a>
                 </div>
             </div>
+            <p class="text-center text-sm text-gray-400 mt-8">Todos los planes incluyen 21 flujos basados en legislacion colombiana. Prueba de 30 dias en planes de pago.</p>
         </div>
     </section>
 
     {{-- CTA Final --}}
     <section class="py-20 px-4 bg-brand">
         <div class="max-w-3xl mx-auto text-center">
+            <img src="/images/logo-square.png" alt="LegalWeb" class="w-20 h-20 mx-auto mb-6 rounded-xl">
             <h2 class="font-display text-3xl md:text-4xl font-bold text-white mb-4">Lleve el control total de su practica legal</h2>
             <p class="text-blue-200 text-lg mb-8">Unase a los abogados colombianos que estan modernizando su ejercicio profesional con LegalWeb.</p>
             <a href="{{ route('auth.google') }}" class="inline-flex items-center gap-2 bg-white text-brand font-semibold px-8 py-4 rounded-xl hover:bg-gray-100 transition text-lg">
@@ -303,14 +318,7 @@
         <div class="max-w-6xl mx-auto">
             <div class="grid md:grid-cols-4 gap-8 mb-8">
                 <div>
-                    <div class="flex items-center gap-2 mb-4">
-                        <div class="w-8 h-8 bg-brand rounded-lg flex items-center justify-center">
-                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/>
-                            </svg>
-                        </div>
-                        <span class="font-display font-bold text-brand">Legal<span class="text-brand-light">Web</span></span>
-                    </div>
+                    <img src="/images/logo.png" alt="LegalWeb" class="h-8 mb-4">
                     <p class="text-sm text-gray-500">Control inteligente de tus procesos legales.</p>
                 </div>
                 <div>

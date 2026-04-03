@@ -30,6 +30,7 @@ use Illuminate\Support\Str;
     'portal_token',
     'portal_enabled',
     'firm_id',
+    'is_demo',
 ])]
 class LegalCase extends Model
 {
@@ -42,6 +43,7 @@ class LegalCase extends Model
             'started_at' => 'date',
             'closed_at' => 'date',
             'portal_enabled' => 'boolean',
+            'is_demo' => 'boolean',
         ];
     }
 

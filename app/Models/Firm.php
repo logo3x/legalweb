@@ -70,37 +70,61 @@ class Firm extends Model
         return '/images/default-firm-logo.svg';
     }
 
+    public function realCasesCount(): int
+    {
+        return $this->legalCases()->where('is_demo', false)->count();
+    }
+
+    public function realClientsCount(): int
+    {
+        return $this->clients()->where('is_demo', false)->count();
+    }
+
     public function canCreateCase(): bool
     {
         $subscription = $this->activeSubscription;
+        $limit = $subscription ? $subscription->plan->max_cases : 5;
 
-        if (! $subscription) {
-            return $this->legalCases()->count() < 5;
-        }
-
-        $plan = $subscription->plan;
-
-        if ($plan->max_cases === 0) {
+        if ($limit === 0) {
             return true;
         }
 
-        return $this->legalCases()->count() < $plan->max_cases;
+        return $this->realCasesCount() < $limit;
+    }
+
+    public function canCreateClient(): bool
+    {
+        $subscription = $this->activeSubscription;
+        $limit = $subscription ? $subscription->plan->max_cases : 5;
+
+        if ($limit === 0) {
+            return true;
+        }
+
+        return $this->realClientsCount() < $limit;
     }
 
     public function casesRemaining(): int|string
     {
         $subscription = $this->activeSubscription;
+        $limit = $subscription ? $subscription->plan->max_cases : 5;
 
-        if (! $subscription) {
-            return max(0, 5 - $this->legalCases()->count());
-        }
-
-        $plan = $subscription->plan;
-
-        if ($plan->max_cases === 0) {
+        if ($limit === 0) {
             return 'Ilimitados';
         }
 
-        return max(0, $plan->max_cases - $this->legalCases()->count());
+        return max(0, $limit - $this->realCasesCount());
+    }
+
+    public function clientsRemaining(): int|string
+    {
+        $subscription = $this->activeSubscription;
+        $limit = $subscription ? $subscription->plan->max_cases : 5;
+
+        if ($limit === 0) {
+            return 'Ilimitados';
+        }
+
+        return max(0, $limit - $this->realClientsCount());
     }
 }
