@@ -86,10 +86,16 @@ class DocumentGenerator
         $header = $section->addHeader();
 
         if ($firm?->logo_path && file_exists(storage_path('app/public/'.$firm->logo_path))) {
-            $header->addImage(
-                storage_path('app/public/'.$firm->logo_path),
-                ['width' => 60, 'height' => 60, 'alignment' => Jc::LEFT]
-            );
+            try {
+                $logoPath = storage_path('app/public/'.$firm->logo_path);
+                $pngPath = $this->ensurePng($logoPath);
+
+                if ($pngPath) {
+                    $header->addImage($pngPath, ['width' => 60, 'height' => 60, 'alignment' => Jc::LEFT]);
+                }
+            } catch (\Exception $e) {
+                // Si la imagen falla, continuar sin logo
+            }
         }
 
         if ($firm) {
@@ -136,6 +142,31 @@ class DocumentGenerator
             ['size' => 8, 'color' => 'CCCCCC'],
             ['spaceAfter' => 200]
         );
+    }
+
+    private function ensurePng(string $path): ?string
+    {
+        $pngPath = storage_path('app/public/generated/'.md5($path).'.png');
+
+        if (file_exists($pngPath)) {
+            return $pngPath;
+        }
+
+        if (! is_dir(dirname($pngPath))) {
+            mkdir(dirname($pngPath), 0755, true);
+        }
+
+        $image = @imagecreatefromstring(file_get_contents($path));
+
+        if (! $image) {
+            return null;
+        }
+
+        imagesavealpha($image, true);
+        imagepng($image, $pngPath);
+        imagedestroy($image);
+
+        return file_exists($pngPath) ? $pngPath : null;
     }
 
     private function addLineWithHighlights($section, string $line, string $alignment): void
