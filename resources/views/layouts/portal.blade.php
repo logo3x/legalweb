@@ -13,6 +13,9 @@
                 @if(isset($portalToken))
                     <a href="{{ route('portal.show', $portalToken) }}" class="flex items-center gap-2 hover:opacity-80">
                 @endif
+                    @if(isset($firmLogo) && $firmLogo)
+                        <img src="{{ $firmLogo }}" alt="Logo" class="h-9 w-9 rounded-lg object-cover">
+                    @endif
                     <img src="/images/logo.png" alt="LegalWeb" class="h-8">
                     <span class="text-sm text-gray-500 ml-2">Portal del Cliente</span>
                 @if(isset($portalToken))

@@ -25,6 +25,11 @@ class WompiController extends Controller
             'billing_cycle' => 'required|in:monthly,biannual',
         ]);
 
+        // Si viene por GET, redirigir con datos
+        if ($request->isMethod('get') && ! $request->has('_token')) {
+            // Permitir GET para links desde Livewire
+        }
+
         $plan = Plan::findOrFail($validated['plan_id']);
         $firm = auth()->user()->firm;
 

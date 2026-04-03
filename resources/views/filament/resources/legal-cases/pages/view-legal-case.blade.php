@@ -1,0 +1,31 @@
+<x-filament-panels::page>
+    {{ $this->infolist }}
+
+    <x-filament-panels::relation-managers />
+
+    {{-- Modal de resultados IA --}}
+    <x-filament::modal id="ai-result" width="2xl">
+        <x-slot name="heading">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <svg width="24" height="24" fill="none" stroke="#f59e0b" viewBox="0 0 24 24" style="min-width:24px;">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z"/>
+                </svg>
+                {{ $this->aiTitle ?? 'Asistente IA' }}
+            </div>
+        </x-slot>
+
+        @if($this->aiResult)
+            <div style="background: #f9fafb; border-radius: 8px; padding: 16px; max-height: 400px; overflow-y: auto; white-space: pre-wrap; font-size: 14px; line-height: 1.6; color: #374151;">{{ $this->aiResult }}</div>
+
+            <div style="margin-top: 12px; display: flex; justify-content: flex-end;">
+                <button
+                    onclick="navigator.clipboard.writeText(document.querySelector('#ai-content-text').innerText); this.innerText = 'Copiado!'; setTimeout(() => this.innerText = 'Copiar texto', 2000);"
+                    style="padding: 8px 16px; background: #3A86FF; color: #fff; border: none; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer;">
+                    Copiar texto
+                </button>
+            </div>
+
+            <div id="ai-content-text" style="display: none;">{{ $this->aiResult }}</div>
+        @endif
+    </x-filament::modal>
+</x-filament-panels::page>

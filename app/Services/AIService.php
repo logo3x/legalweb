@@ -4,13 +4,66 @@ namespace App\Services;
 
 use App\Models\LegalCase;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class AIService
 {
     private function call(string $systemPrompt, string $userMessage): ?string
     {
-        $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.config('services.openrouter.api_key'),
+        // Intentar Gemini primero
+        $result = $this->callGemini($systemPrompt, $userMessage);
+
+        if ($result) {
+            return $result;
+        }
+
+        // Fallback a OpenRouter
+        return $this->callOpenRouter($systemPrompt, $userMessage);
+    }
+
+    private function callGemini(string $systemPrompt, string $userMessage): ?string
+    {
+        $apiKey = config('services.gemini.api_key');
+
+        if (! $apiKey) {
+            return null;
+        }
+
+        $model = config('services.gemini.model');
+        $baseUrl = config('services.gemini.base_url');
+
+        $response = Http::timeout(30)->post("{$baseUrl}/models/{$model}:generateContent?key={$apiKey}", [
+            'system_instruction' => [
+                'parts' => [['text' => $systemPrompt]],
+            ],
+            'contents' => [
+                ['parts' => [['text' => $userMessage]]],
+            ],
+            'generationConfig' => [
+                'maxOutputTokens' => 2000,
+                'temperature' => 0.3,
+            ],
+        ]);
+
+        if ($response->successful()) {
+            return $response->json('candidates.0.content.parts.0.text');
+        }
+
+        Log::info('Gemini API failed, falling back to OpenRouter', ['status' => $response->status()]);
+
+        return null;
+    }
+
+    private function callOpenRouter(string $systemPrompt, string $userMessage): ?string
+    {
+        $apiKey = config('services.openrouter.api_key');
+
+        if (! $apiKey) {
+            return null;
+        }
+
+        $response = Http::timeout(30)->withHeaders([
+            'Authorization' => 'Bearer '.$apiKey,
             'HTTP-Referer' => config('app.url'),
             'X-Title' => 'LegalWeb',
         ])->post(config('services.openrouter.base_url').'/chat/completions', [
@@ -26,6 +79,8 @@ class AIService
         if ($response->successful()) {
             return $response->json('choices.0.message.content');
         }
+
+        Log::error('OpenRouter API failed', ['status' => $response->status()]);
 
         return null;
     }
@@ -91,7 +146,7 @@ class AIService
             .'Radicado: '.($case->external_case_number ?? 'Sin radicado');
 
         return $this->call(
-            'Eres un asistente legal colombiano experto en redaccion juridica. Genera un borrador del documento solicitado basandote en la informacion del caso. Usa formato profesional y lenguaje juridico apropiado para Colombia. Incluye encabezado, cuerpo y cierre. Es un borrador que el abogado revisara y ajustara.',
+            'Eres un asistente legal colombiano experto en redaccion juridica. Genera un borrador del documento solicitado basandote en la informacion del caso. Usa formato profesional y lenguaje juridico apropiado para Colombia. Incluye encabezado, cuerpo y cierre. Es un borrador que el abogado revisara y ajustara. No uses formato markdown, escribe en texto plano con saltos de linea.',
             $context
         );
     }

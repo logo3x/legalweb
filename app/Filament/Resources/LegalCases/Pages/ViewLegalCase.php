@@ -4,6 +4,7 @@ namespace App\Filament\Resources\LegalCases\Pages;
 
 use App\Filament\Resources\LegalCases\LegalCaseResource;
 use App\Services\AIService;
+use App\Services\DocumentGenerator;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\EditAction;
@@ -14,6 +15,12 @@ use Filament\Resources\Pages\ViewRecord;
 class ViewLegalCase extends ViewRecord
 {
     protected static string $resource = LegalCaseResource::class;
+
+    protected string $view = 'filament.resources.legal-cases.pages.view-legal-case';
+
+    public ?string $aiResult = null;
+
+    public ?string $aiTitle = null;
 
     protected function getHeaderActions(): array
     {
@@ -26,18 +33,11 @@ class ViewLegalCase extends ViewRecord
                         $result = app(AIService::class)->summarizeCase($this->record);
 
                         if ($result) {
-                            Notification::make()
-                                ->title('Resumen IA')
-                                ->body($result)
-                                ->success()
-                                ->persistent()
-                                ->send();
+                            $this->aiTitle = 'Resumen del Caso';
+                            $this->aiResult = $result;
+                            $this->dispatch('open-modal', id: 'ai-result');
                         } else {
-                            Notification::make()
-                                ->title('Error')
-                                ->body('No se pudo generar el resumen. Intente nuevamente.')
-                                ->danger()
-                                ->send();
+                            Notification::make()->title('Error')->body('No se pudo generar el resumen.')->danger()->send();
                         }
                     }),
                 Action::make('ai_next_step')
@@ -47,22 +47,15 @@ class ViewLegalCase extends ViewRecord
                         $result = app(AIService::class)->suggestNextStep($this->record);
 
                         if ($result) {
-                            Notification::make()
-                                ->title('Sugerencia IA')
-                                ->body($result)
-                                ->success()
-                                ->persistent()
-                                ->send();
+                            $this->aiTitle = 'Siguiente Paso Sugerido';
+                            $this->aiResult = $result;
+                            $this->dispatch('open-modal', id: 'ai-result');
                         } else {
-                            Notification::make()
-                                ->title('Error')
-                                ->body('No se pudo generar la sugerencia. Intente nuevamente.')
-                                ->danger()
-                                ->send();
+                            Notification::make()->title('Error')->body('No se pudo generar la sugerencia.')->danger()->send();
                         }
                     }),
                 Action::make('ai_draft')
-                    ->label('Generar Borrador')
+                    ->label('Generar Borrador Word')
                     ->icon('heroicon-o-pencil-square')
                     ->form([
                         Select::make('document_type')
@@ -82,22 +75,27 @@ class ViewLegalCase extends ViewRecord
                             ->required(),
                     ])
                     ->action(function (array $data) {
-                        $result = app(AIService::class)->draftDocument($this->record, $data['document_type']);
+                        $content = app(AIService::class)->draftDocument($this->record, $data['document_type']);
 
-                        if ($result) {
-                            Notification::make()
-                                ->title('Borrador: '.$data['document_type'])
-                                ->body($result)
-                                ->success()
-                                ->persistent()
-                                ->send();
-                        } else {
-                            Notification::make()
-                                ->title('Error')
-                                ->body('No se pudo generar el borrador. Intente nuevamente.')
-                                ->danger()
-                                ->send();
+                        if (! $content) {
+                            Notification::make()->title('Error')->body('No se pudo generar el borrador.')->danger()->send();
+
+                            return;
                         }
+
+                        $filePath = app(DocumentGenerator::class)->generateWord(
+                            $this->record,
+                            $data['document_type'],
+                            $content
+                        );
+
+                        Notification::make()
+                            ->title('Borrador generado')
+                            ->body('El documento Word se descargara automaticamente.')
+                            ->success()
+                            ->send();
+
+                        return response()->download($filePath)->deleteFileAfterSend();
                     }),
             ])
                 ->label('Asistente IA')

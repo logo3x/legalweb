@@ -67,7 +67,13 @@
                     &middot; {{ $case->caseType->name }}
                 </p>
             </div>
-            <div class="text-right text-sm text-gray-500">
+            <div class="text-right text-sm text-gray-500 flex flex-col items-end gap-2">
+                @if($firmLogo)
+                    <img src="{{ $firmLogo }}" alt="Logo Firma" class="h-12 w-12 rounded-lg object-cover">
+                @endif
+                @if($case->user->firm)
+                    <p class="font-semibold text-gray-700">{{ $case->user->firm->name }}</p>
+                @endif
                 <p>Abogado: <strong>{{ $case->user->name }}</strong></p>
                 @if($case->started_at)
                     <p>Inicio: {{ $case->started_at->format('d/m/Y') }}</p>

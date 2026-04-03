@@ -1,5 +1,4 @@
-<x-filament-panels::page>
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+<x-filament-panels::page></script>
 
     @php
         $plans = $this->getPlans();
@@ -12,11 +11,19 @@
         {{-- Switch mensual/semestral --}}
         <div style="text-align: center; margin-bottom: 32px;">
             <p style="font-size: 14px; color: #6b7280; margin-bottom: 12px;">Seleccione su ciclo de facturacion</p>
-            <div style="display: inline-flex; background: #f3f4f6; border-radius: 999px; padding: 4px;">
-                <button @click="billing = 'monthly'" :style="billing === 'monthly' ? 'background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); color: #111827; font-weight: 600;' : 'background: transparent; color: #6b7280;'" style="padding: 8px 20px; border-radius: 999px; font-size: 14px; border: none; cursor: pointer; transition: all 0.2s;">
+            <div style="display: inline-flex; background: #f3f4f6; border-radius: 999px; padding: 4px; gap: 2px;">
+                <button
+                    x-on:click="billing = 'monthly'"
+                    x-bind:style="billing === 'monthly' ? 'background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.1);color:#111827;font-weight:600' : 'background:transparent;color:#6b7280;font-weight:400'"
+                    style="padding: 8px 24px; border-radius: 999px; font-size: 14px; border: none; cursor: pointer;"
+                    type="button">
                     Mensual
                 </button>
-                <button @click="billing = 'biannual'" :style="billing === 'biannual' ? 'background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); color: #111827; font-weight: 600;' : 'background: transparent; color: #6b7280;'" style="padding: 8px 20px; border-radius: 999px; font-size: 14px; border: none; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px;">
+                <button
+                    x-on:click="billing = 'biannual'"
+                    x-bind:style="billing === 'biannual' ? 'background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.1);color:#111827;font-weight:600' : 'background:transparent;color:#6b7280;font-weight:400'"
+                    style="padding: 8px 24px; border-radius: 999px; font-size: 14px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;"
+                    type="button">
                     Semestral
                     <span style="background: #dcfce7; color: #166534; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px;">-17%</span>
                 </button>
@@ -107,14 +114,12 @@
                             Plan actual
                         </div>
                     @elseif($isUpgrade && $plan->price_monthly > 0)
-                        <form method="POST" action="{{ route('wompi.checkout') }}">
-                            @csrf
-                            <input type="hidden" name="plan_id" value="{{ $plan->id }}">
-                            <input type="hidden" name="billing_cycle" x-bind:value="billing">
-                            <button type="submit" style="width: 100%; padding: 12px; background: {{ $isPopular ? 'linear-gradient(135deg, #3A86FF, #2563eb)' : '#111827' }}; color: #fff; font-size: 14px; font-weight: 600; border: none; border-radius: 8px; cursor: pointer; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
-                                Aumentar mi cuota
-                            </button>
-                        </form>
+                        <a
+                            x-bind:href="'{{ route('wompi.checkout') }}?plan_id={{ $plan->id }}&billing_cycle=' + billing"
+                            style="display: block; width: 100%; padding: 12px; background: {{ $isPopular ? 'linear-gradient(135deg, #3A86FF, #2563eb)' : '#111827' }}; color: #fff; font-size: 14px; font-weight: 600; border: none; border-radius: 8px; cursor: pointer; text-align: center; text-decoration: none;"
+                            onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+                            Mejorar plan
+                        </a>
                     @elseif($plan->price_monthly === 0)
                         <div style="text-align: center; padding: 12px; color: #6b7280; font-size: 13px;">
                             Plan base incluido

@@ -38,7 +38,7 @@
                     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="min-width:16px;">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                     </svg>
-                    Aumentar mi cuota
+                    Mejorar plan
                 </a>
             @endif
         </div>

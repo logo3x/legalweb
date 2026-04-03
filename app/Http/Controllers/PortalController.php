@@ -16,7 +16,7 @@ class PortalController extends Controller
             ->with([
                 'client',
                 'caseType',
-                'user',
+                'user.firm',
                 'caseFlow',
                 'events' => fn ($q) => $q->orderByDesc('event_date'),
                 'flowProgress.flowStep',
@@ -28,8 +28,10 @@ class PortalController extends Controller
 
         $hasAccepted = session()->has("portal_accepted_{$case->id}");
         $portalToken = $token;
+        $firm = $case->user->firm;
+        $firmLogo = $firm?->logo_path ? asset('storage/'.$firm->logo_path) : null;
 
-        return view('portal.show', compact('case', 'hasAccepted', 'portalToken'));
+        return view('portal.show', compact('case', 'hasAccepted', 'portalToken', 'firmLogo'));
     }
 
     public function accept(Request $request, string $token)

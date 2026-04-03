@@ -23,7 +23,7 @@ Route::prefix('portal')->name('portal.')->group(function () {
 
 // Wompi Payments
 Route::middleware('auth')->group(function () {
-    Route::post('/wompi/checkout', [WompiController::class, 'checkout'])->name('wompi.checkout');
+    Route::match(['get', 'post'], '/wompi/checkout', [WompiController::class, 'checkout'])->name('wompi.checkout');
     Route::get('/wompi/callback', [WompiController::class, 'callback'])->name('wompi.callback');
 });
 Route::post('/wompi/webhook', [WompiController::class, 'webhook'])->name('wompi.webhook');
