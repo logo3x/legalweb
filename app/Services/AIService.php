@@ -174,24 +174,64 @@ class AIService
 
     public function draftDocument(LegalCase $case, string $documentType): ?string
     {
-        $case->load(['client', 'caseType', 'user']);
+        $case->load(['client', 'caseType', 'user', 'user.firm', 'events', 'flowProgress.flowStep']);
 
-        $context = "DATOS PARA EL DOCUMENTO:\n"
-            ."Tipo de documento: {$documentType}\n"
-            ."Caso: {$case->title}\n"
-            ."Tipo de proceso: {$case->caseType->name}\n"
-            ."Cliente: {$case->client->full_name} ({$case->client->document_type} {$case->client->document_number})\n"
-            ."Abogado: {$case->user->name}\n"
-            .'Juzgado: '.($case->court ?? 'Por asignar')."\n"
-            .'Contraparte: '.($case->opposing_party ?? 'Por definir')."\n"
-            .'Radicado: '.($case->external_case_number ?? 'Sin radicado');
+        $firm = $case->user->firm;
+
+        $lastEvents = $case->events->sortByDesc('event_date')->take(5)->map(
+            fn ($e) => "- [{$e->event_date->format('d/m/Y')}] {$e->event_type}: {$e->title}"
+        )->implode("\n");
+
+        $currentStep = $case->flowProgress
+            ->sortBy('flowStep.order')
+            ->firstWhere('status', 'en_progreso');
+
+        $context = "DATOS COMPLETOS PARA EL DOCUMENTO:\n\n"
+            ."Tipo de documento a generar: {$documentType}\n\n"
+            ."DATOS DEL CASO:\n"
+            ."- Titulo: {$case->title}\n"
+            ."- Numero interno: {$case->case_number}\n"
+            .'- Radicado judicial: '.($case->external_case_number ?? '<<<PENDIENTE DE RADICADO>>>')."\n"
+            ."- Tipo de proceso: {$case->caseType->name}\n"
+            ."- Estado actual: {$case->status}\n"
+            ."- Prioridad: {$case->priority}\n"
+            .'- Juzgado/Despacho: '.($case->court ?? '<<<NOMBRE DEL JUZGADO>>>')."\n"
+            .'- Juez: '.($case->judge ?? '<<<NOMBRE DEL JUEZ>>>')."\n"
+            .'- Fecha de inicio: '.($case->started_at?->format('d/m/Y') ?? '<<<FECHA>>>')."\n\n"
+            ."DATOS DEL CLIENTE (demandante/solicitante):\n"
+            ."- Nombre completo: {$case->client->full_name}\n"
+            ."- Tipo documento: {$case->client->document_type}\n"
+            ."- Numero documento: {$case->client->document_number}\n"
+            .'- Direccion: '.($case->client->address ?? '<<<DIRECCION DEL CLIENTE>>>')."\n"
+            .'- Ciudad: '.($case->client->city ?? '<<<CIUDAD>>>')."\n"
+            .'- Telefono: '.($case->client->phone ?? '<<<TELEFONO>>>')."\n"
+            .'- Email: '.($case->client->email ?? '<<<EMAIL>>>')."\n\n"
+            .'CONTRAPARTE: '.($case->opposing_party ?? '<<<NOMBRE COMPLETO DE LA CONTRAPARTE>>>')."\n\n"
+            ."DATOS DEL ABOGADO:\n"
+            ."- Nombre: {$case->user->name}\n"
+            .'- Email: '.($case->user->email ?? '<<<EMAIL DEL ABOGADO>>>')."\n"
+            .'- Tarjeta Profesional: <<<NUMERO DE TARJETA PROFESIONAL>>>'."\n\n"
+            ."DATOS DE LA FIRMA:\n"
+            .'- Firma: '.($firm?->name ?? '<<<NOMBRE DE LA FIRMA>>>')."\n"
+            .'- NIT: '.($firm?->nit ?? '<<<NIT>>>')."\n"
+            .'- Direccion: '.($firm?->address ?? '<<<DIRECCION>>>')."\n"
+            .'- Ciudad: '.($firm?->city ?? '<<<CIUDAD>>>')."\n\n"
+            ."ACTUACIONES RECIENTES:\n{$lastEvents}\n\n"
+            .'ETAPA PROCESAL ACTUAL: '.($currentStep ? $currentStep->flowStep->name : 'No definida');
 
         return $this->call(
-            'Eres un abogado colombiano redactando un documento juridico. '
-            .'REGLAS: Escribe en texto plano sin formato markdown, sin asteriscos, sin negritas, sin encabezados con #. '
-            .'Usa formato profesional de documento juridico colombiano. '
-            .'Incluye: ciudad y fecha, destinatario, referencia, cuerpo del documento, peticion, firma. '
-            .'Es un borrador que el abogado revisara. Usa lenguaje juridico apropiado para Colombia.',
+            'Eres un abogado colombiano experto redactando un documento juridico formal. '
+            .'REGLAS ESTRICTAS: '
+            .'1) Escribe en texto plano sin formato markdown, sin asteriscos, sin negritas, sin encabezados con #. '
+            .'2) Usa TODOS los datos proporcionados en el documento. No omitas informacion disponible. '
+            .'3) Cuando un dato dice <<<TEXTO>>> significa que el abogado debe completarlo. '
+            .'Dejalo EXACTAMENTE como <<<TEXTO>>> para que sea visible y el abogado lo reemplace. '
+            .'4) Formato de documento juridico colombiano profesional. '
+            .'5) Incluye: ciudad y fecha, senor juez/destinatario con despacho, referencia con radicado, '
+            .'identificacion del apoderado y poderdante, hechos numerados basados en el caso, '
+            .'fundamentos de derecho citando normas colombianas aplicables, '
+            .'pretensiones/peticiones concretas, pruebas, notificaciones, firma con tarjeta profesional. '
+            .'6) Cita articulos especificos del CGP, Codigo Civil, Codigo Laboral, Ley 906 o norma aplicable segun el tipo de proceso.',
             $context
         );
     }

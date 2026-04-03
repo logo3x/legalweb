@@ -44,13 +44,27 @@ class DocumentGenerator
                 str_starts_with($line, 'HONORABLE') ||
                 str_starts_with($line, 'REF:') ||
                 str_starts_with($line, 'ASUNTO:') ||
-                mb_strtoupper($line) === $line && mb_strlen($line) > 3;
+                str_starts_with($line, 'REFERENCIA:') ||
+                str_starts_with($line, 'HECHOS') ||
+                str_starts_with($line, 'PRETENSIONES') ||
+                str_starts_with($line, 'PETICION') ||
+                str_starts_with($line, 'FUNDAMENTOS') ||
+                str_starts_with($line, 'PRUEBAS') ||
+                str_starts_with($line, 'NOTIFICACIONES') ||
+                (mb_strtoupper($line) === $line && mb_strlen($line) > 3);
 
-            $section->addText(
-                $line,
-                ['bold' => $isBold, 'size' => $isBold ? 12 : 11],
-                ['alignment' => $isBold ? Jc::CENTER : Jc::BOTH, 'spaceAfter' => 120]
-            );
+            $alignment = $isBold ? Jc::CENTER : Jc::BOTH;
+
+            // Detectar placeholders <<<TEXTO>>> y resaltarlos
+            if (preg_match('/<<<(.+?)>>>/', $line)) {
+                $this->addLineWithHighlights($section, $line, $alignment);
+            } else {
+                $section->addText(
+                    $line,
+                    ['bold' => $isBold, 'size' => $isBold ? 12 : 11],
+                    ['alignment' => $alignment, 'spaceAfter' => 120]
+                );
+            }
         }
 
         $this->addFooter($section, $firm);
@@ -122,6 +136,32 @@ class DocumentGenerator
             ['size' => 8, 'color' => 'CCCCCC'],
             ['spaceAfter' => 200]
         );
+    }
+
+    private function addLineWithHighlights($section, string $line, string $alignment): void
+    {
+        $textRun = $section->addTextRun(['alignment' => $alignment, 'spaceAfter' => 120]);
+
+        // Dividir la linea en partes normales y placeholders
+        $parts = preg_split('/(<<<.+?>>>)/', $line, -1, PREG_SPLIT_DELIM_CAPTURE);
+
+        foreach ($parts as $part) {
+            if (preg_match('/^<<<(.+?)>>>$/', $part, $match)) {
+                // Placeholder: fondo amarillo, texto rojo, negrita
+                $textRun->addText(
+                    '['.$match[1].']',
+                    [
+                        'bold' => true,
+                        'size' => 11,
+                        'color' => 'CC0000',
+                        'bgColor' => 'FFFF00',
+                        'italic' => true,
+                    ]
+                );
+            } elseif ($part !== '') {
+                $textRun->addText($part, ['size' => 11]);
+            }
+        }
     }
 
     private function addFooter($section, ?Firm $firm): void
