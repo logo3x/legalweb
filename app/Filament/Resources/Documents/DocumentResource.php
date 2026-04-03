@@ -20,6 +20,17 @@ class DocumentResource extends Resource
 {
     protected static ?string $model = Document::class;
 
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        if (auth()->user()?->role !== 'superadmin') {
+            $query->whereHas('legalCase', fn (Builder $q) => $q->where('firm_id', auth()->user()->firm_id));
+        }
+
+        return $query;
+    }
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentText;
 
     protected static ?string $modelLabel = 'Documento';

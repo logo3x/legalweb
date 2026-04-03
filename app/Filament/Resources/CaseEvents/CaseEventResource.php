@@ -13,10 +13,22 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class CaseEventResource extends Resource
 {
     protected static ?string $model = CaseEvent::class;
+
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        if (auth()->user()?->role !== 'superadmin') {
+            $query->whereHas('legalCase', fn (Builder $q) => $q->where('firm_id', auth()->user()->firm_id));
+        }
+
+        return $query;
+    }
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendarDays;
 

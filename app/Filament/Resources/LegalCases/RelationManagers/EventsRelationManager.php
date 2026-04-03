@@ -53,7 +53,7 @@ class EventsRelationManager extends RelationManager
                     ->label('Hito importante'),
                 Select::make('user_id')
                     ->label('Registrado por')
-                    ->relationship('user', 'name')
+                    ->relationship('user', 'name', fn ($query) => $query->where('firm_id', auth()->user()->firm_id))
                     ->searchable()
                     ->preload(),
             ]);
