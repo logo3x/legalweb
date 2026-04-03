@@ -16,7 +16,12 @@
       "Bash(/c/wamp64/bin/mysql/mysql8.4.7/bin/mysql -u root -e \"DROP DATABASE legalweb; CREATE DATABASE legalweb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;\")",
       "Bash(vendor/bin/pint --dirty --format agent)",
       "Bash(git init:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit -m ':*)",
+      "Bash(git config:*)",
+      "Bash(git branch:*)",
+      "Bash(git remote:*)",
+      "Bash(git push:*)"
     ]
   }
 }
