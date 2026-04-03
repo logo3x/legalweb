@@ -25,7 +25,8 @@
       "Bash(composer show:*)",
       "Bash(composer dump-autoload:*)",
       "Bash(xargs grep:*)",
-      "Bash(grep -n \"modifyQueryUsing\" /c/wamp64/www/legalweb/app/Filament/Resources/*/Tables/*.php)"
+      "Bash(grep -n \"modifyQueryUsing\" /c/wamp64/www/legalweb/app/Filament/Resources/*/Tables/*.php)",
+      "Bash(composer install:*)"
     ]
   }
 }
