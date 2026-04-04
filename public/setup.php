@@ -61,6 +61,8 @@ try {
         echo "<a href='?key=$secret&step=cache'>5. Cache</a>\n";
         echo "<a href='?key=$secret&step=clear'>6. Clear All Cache</a>\n";
         echo "<a href='?key=$secret&step=fresh'>7. Fresh Migrate + Seed (DANGER)</a>\n";
+        echo "<a href='?key=$secret&step=users'>8. List Users</a>\n";
+        echo "<a href='?key=$secret&step=superadmin&email='>9. Make Superadmin (add ?email=)</a>\n";
     }
 
     if ($step === 'key') {
@@ -101,6 +103,32 @@ try {
         echo "Views cleared\n";
         Artisan::call('cache:clear');
         echo "Cache cleared\n";
+    }
+
+    if ($step === 'superadmin') {
+        $email = $_GET['email'] ?? '';
+        if (! $email) {
+            echo "ERROR: Debe pasar ?email=correo@ejemplo.com\n";
+        } else {
+            $user = \App\Models\User::where('email', $email)->first();
+            if ($user) {
+                $user->update(['role' => 'superadmin']);
+                echo "Usuario {$user->name} ({$user->email}) ahora es SUPERADMIN\n";
+            } else {
+                echo "Usuario con email {$email} no encontrado\n";
+                echo "\nUsuarios disponibles:\n";
+                \App\Models\User::all()->each(fn ($u) => print("- {$u->email} ({$u->role})\n"));
+            }
+        }
+    }
+
+    if ($step === 'users') {
+        $users = \App\Models\User::with('firm')->get();
+        echo "=== Usuarios Registrados ===\n\n";
+        foreach ($users as $u) {
+            echo "ID: {$u->id} | {$u->name} | {$u->email} | Rol: {$u->role} | Firma: " . ($u->firm?->name ?? 'Sin firma') . " | Google: " . ($u->google_id ? 'Si' : 'No') . "\n";
+        }
+        echo "\nTotal: " . $users->count() . " usuarios\n";
     }
 
     if ($step === 'fresh') {
