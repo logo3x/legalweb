@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'firm_id', 'role', 'google_id', 'avatar'])]
+#[Fillable(['name', 'email', 'password', 'firm_id', 'role', 'google_id', 'avatar', 'permissions'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements FilamentUser
 {
@@ -26,12 +26,44 @@ class User extends Authenticatable implements FilamentUser
      *
      * @return array<string, string>
      */
+    public const AVAILABLE_PERMISSIONS = [
+        'cases.view' => 'Ver casos',
+        'cases.create' => 'Crear casos',
+        'cases.edit' => 'Editar casos',
+        'cases.delete' => 'Eliminar casos',
+        'clients.view' => 'Ver clientes',
+        'clients.create' => 'Crear clientes',
+        'clients.edit' => 'Editar clientes',
+        'events.create' => 'Crear actuaciones',
+        'events.edit' => 'Editar actuaciones',
+        'documents.upload' => 'Subir documentos',
+        'flow.manage' => 'Gestionar flujo de proceso',
+        'portal.share' => 'Compartir portal con cliente',
+        'ai.use' => 'Usar asistente IA',
+        'reminders.manage' => 'Gestionar agenda',
+    ];
+
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'permissions' => 'array',
         ];
+    }
+
+    public function hasPermission(string $permission): bool
+    {
+        if (in_array($this->role, ['superadmin', 'admin'])) {
+            return true;
+        }
+
+        return in_array($permission, $this->permissions ?? []);
+    }
+
+    public function isAdmin(): bool
+    {
+        return in_array($this->role, ['superadmin', 'admin']);
     }
 
     public function canAccessPanel(Panel $panel): bool
