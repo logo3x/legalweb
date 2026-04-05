@@ -7,7 +7,6 @@ use App\Models\LegalCase;
 use App\Models\User;
 use BackedEnum;
 use Filament\Actions\Action;
-use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
@@ -67,7 +66,8 @@ class TeamMembers extends Page
                         ->label('Correo de Google del colaborador')
                         ->email()
                         ->required()
-                        ->placeholder('colaborador@gmail.com'),
+                        ->placeholder('colaborador@gmail.com')
+                        ->helperText('El colaborador debera iniciar sesion con esta cuenta de Google'),
                     Select::make('role')
                         ->label('Rol')
                         ->options([
@@ -75,12 +75,8 @@ class TeamMembers extends Page
                             'asistente' => 'Asistente',
                         ])
                         ->required()
-                        ->default('abogado'),
-                    CheckboxList::make('permissions')
-                        ->label('Permisos generales')
-                        ->options(User::AVAILABLE_PERMISSIONS)
-                        ->columns(2)
-                        ->default(array_keys(User::AVAILABLE_PERMISSIONS)),
+                        ->default('abogado')
+                        ->helperText('Despues de vincularse podra asignarle casos y permisos especificos'),
                 ])
                 ->action(function (array $data) {
                     $email = strtolower(trim($data['email']));
@@ -109,7 +105,6 @@ class TeamMembers extends Page
                         auth()->user(),
                         $email,
                         $data['role'],
-                        $data['permissions'] ?? [],
                     );
 
                     Notification::make()

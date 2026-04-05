@@ -10,6 +10,7 @@ use App\Models\Client;
 use App\Models\Firm;
 use App\Models\FlowStep;
 use App\Models\LegalCase;
+use App\Models\Reminder;
 use App\Models\User;
 
 class DemoDataService
@@ -18,7 +19,8 @@ class DemoDataService
     {
         $this->createCaseTypesAndFlows();
         $this->createDemoClients($firm, $owner);
-        $this->createDemoCases($firm, $owner);
+        $cases = $this->createDemoCases($firm, $owner);
+        $this->createDemoReminders($firm, $owner, $cases);
     }
 
     private function createCaseTypesAndFlows(): void
@@ -114,7 +116,7 @@ class DemoDataService
         ]);
     }
 
-    private function createDemoCases(Firm $firm, User $owner): void
+    private function createDemoCases(Firm $firm, User $owner): array
     {
         $civilType = CaseType::where('name', 'Civil')->first();
         $civilFlow = CaseFlow::where('case_type_id', $civilType->id)->first();
@@ -200,6 +202,35 @@ class DemoDataService
                 }
             }
         }
+
+        return [$case1, $case2, $case3];
+    }
+
+    private function createDemoReminders(Firm $firm, User $owner, array $cases): void
+    {
+        Reminder::create([
+            'firm_id' => $firm->id,
+            'user_id' => $owner->id,
+            'legal_case_id' => $cases[0]->id ?? null,
+            'title' => 'Audiencia inicial - Juzgado 5 Civil',
+            'description' => 'Preparar alegatos y revisar pruebas documentales antes de la audiencia.',
+            'type' => 'audiencia',
+            'priority' => 'alta',
+            'due_date' => now()->addDays(5)->setHour(9)->setMinute(0),
+            'remind_at' => now()->addDays(4)->setHour(8)->setMinute(0),
+        ]);
+
+        Reminder::create([
+            'firm_id' => $firm->id,
+            'user_id' => $owner->id,
+            'legal_case_id' => $cases[1]->id ?? null,
+            'title' => 'Vencimiento termino para contestar demanda',
+            'description' => 'Revisar expediente y preparar contestacion con excepciones.',
+            'type' => 'vencimiento',
+            'priority' => 'urgente',
+            'due_date' => now()->addDays(2)->setHour(17)->setMinute(0),
+            'remind_at' => now()->addDay()->setHour(8)->setMinute(0),
+        ]);
     }
 
     private function createFlow(CaseType $type, string $name, string $description, array $steps): void
