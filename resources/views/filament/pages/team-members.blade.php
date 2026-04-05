@@ -114,9 +114,18 @@
                             Expira {{ $invitation->expires_at->format('d/m/Y') }}
                         </div>
                     </div>
-                    <span style="display: inline-flex; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; background: #fef3c7; color: #92400e;">
-                        Pendiente - {{ ucfirst($invitation->role) }}
-                    </span>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="display: inline-flex; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; background: #fef3c7; color: #92400e;">
+                            Pendiente - {{ ucfirst($invitation->role) }}
+                        </span>
+                        <form method="POST" action="{{ url('/admin/team/delete-invite/' . $invitation->id) }}" onsubmit="return confirm('Cancelar esta invitacion?')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" style="padding: 4px 10px; background: #fee2e2; color: #991b1b; border: none; border-radius: 6px; font-size: 11px; cursor: pointer;">
+                                Cancelar
+                            </button>
+                        </form>
+                    </div>
                 </div>
             @endforeach
         </div>

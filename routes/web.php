@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\PortalController;
 use App\Http\Controllers\WompiController;
 use App\Models\CasePermission;
+use App\Models\FirmInvitation;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -23,6 +24,17 @@ Route::prefix('portal')->name('portal.')->group(function () {
     Route::get('/{token}', [PortalController::class, 'show'])->name('show');
     Route::post('/{token}/aceptar', [PortalController::class, 'accept'])->name('accept');
 });
+
+// Delete invitation
+Route::delete('/admin/team/delete-invite/{invitation}', function (FirmInvitation $invitation) {
+    if (! auth()->user()->isAdmin() || $invitation->firm_id !== auth()->user()->firm_id) {
+        abort(403);
+    }
+
+    $invitation->delete();
+
+    return redirect('/admin/team-members');
+})->middleware('auth')->name('team.delete-invite');
 
 // Assign cases to team member
 Route::post('/admin/team/assign-cases/{user}', function (User $user, Request $request) {
