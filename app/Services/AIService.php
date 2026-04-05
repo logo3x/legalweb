@@ -146,7 +146,9 @@ class AIService
             .'REGLAS: Escribe en texto plano sin formato markdown, sin asteriscos, sin negritas, sin encabezados con #. '
             .'Usa guiones (-) para listas. Maximo 250 palabras. '
             .'ESTRUCTURA: 1) Situacion actual del caso. 2) Proximos pasos recomendados. 3) Puntos de atencion o riesgos. '
-            .'No inventes hechos. Solo usa la informacion proporcionada.',
+            .'VERIFICACION DE DATOS: No inventes hechos, leyes, articulos ni normas. Solo usa la informacion proporcionada. '
+            .'Si mencionas una ley o articulo, asegurate de que exista en la legislacion colombiana vigente. '
+            .'Si no estas seguro de un dato legal, indica "verificar con la norma aplicable" en vez de inventar.',
             $context
         );
     }
@@ -167,7 +169,9 @@ class AIService
             'Eres un asistente juridico colombiano. Analiza el flujo procesal e indica el siguiente paso a seguir. '
             .'REGLAS: Escribe en texto plano sin formato markdown, sin asteriscos, sin negritas, sin encabezados con #. '
             .'Usa guiones (-) para listas. Maximo 150 palabras. Se directo y practico. '
-            .'Indica: 1) Cual es el siguiente paso. 2) Que debe hacer el abogado. 3) Si hay plazos proximos a vencer.',
+            .'Indica: 1) Cual es el siguiente paso. 2) Que debe hacer el abogado. 3) Si hay plazos proximos a vencer. '
+            .'VERIFICACION: Solo cita normas que existan realmente en la legislacion colombiana (CGP, CPT, Ley 906/2004, CPACA, etc). '
+            .'No inventes articulos ni numeros de ley. Si no estas seguro del articulo exacto, menciona solo el nombre de la norma.',
             $context
         );
     }
@@ -229,9 +233,15 @@ class AIService
             .'4) Formato de documento juridico colombiano profesional. '
             .'5) Incluye: ciudad y fecha, senor juez/destinatario con despacho, referencia con radicado, '
             .'identificacion del apoderado y poderdante, hechos numerados basados en el caso, '
-            .'fundamentos de derecho citando normas colombianas aplicables, '
+            .'fundamentos de derecho citando UNICAMENTE normas colombianas reales y vigentes, '
             .'pretensiones/peticiones concretas, pruebas, notificaciones, firma con tarjeta profesional. '
-            .'6) Cita articulos especificos del CGP, Codigo Civil, Codigo Laboral, Ley 906 o norma aplicable segun el tipo de proceso.',
+            .'6) VERIFICACION LEGAL OBLIGATORIA: Solo cita leyes, articulos y normas que existan realmente en Colombia. '
+            .'Normas validas: Constitucion Politica, Codigo General del Proceso (Ley 1564/2012), Codigo Civil, '
+            .'Codigo Sustantivo del Trabajo, Codigo Procesal del Trabajo (DL 2158/1948), Ley 906/2004 (Sistema Penal Acusatorio), '
+            .'CPACA (Ley 1437/2011), Codigo de Comercio, Ley 1581/2012 (Datos Personales), Ley 1098/2006 (Infancia), '
+            .'Ley 1116/2006 (Insolvencia), Ley 1010/2006 (Acoso Laboral), Ley 25/1992 (Divorcio). '
+            .'NO inventes numeros de articulos. Si no estas seguro del articulo exacto, escribe <<<VERIFICAR ARTICULO>>> '
+            .'para que el abogado lo confirme. Es preferible dejar un placeholder a citar un articulo inexistente.',
             $context
         );
     }
