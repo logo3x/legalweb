@@ -85,11 +85,12 @@ class TeamMembers extends Page
                         ])
                         ->required()
                         ->default('abogado'),
-                    CheckboxList::make('case_ids')
+                    Select::make('case_ids')
                         ->label('Casos a compartir')
                         ->options($firmCases)
-                        ->columns(1)
-                        ->searchable(),
+                        ->multiple()
+                        ->searchable()
+                        ->preload(),
                     CheckboxList::make('case_permissions')
                         ->label('Permisos sobre los casos')
                         ->options(CasePermission::CASE_PERMISSIONS)

@@ -1,8 +1,11 @@
 <?php
 
+use App\Models\User;
+use Illuminate\Contracts\Console\Kernel;
+
 $secret = 'legalweb-setup-2026';
 if (($_GET['key'] ?? '') !== $secret) {
-    die('No autorizado');
+    exit('No autorizado');
 }
 
 $step = $_GET['step'] ?? 'info';
@@ -11,7 +14,7 @@ $step = $_GET['step'] ?? 'info';
 define('LARAVEL_START', microtime(true));
 require __DIR__.'/../vendor/autoload.php';
 $app = require_once __DIR__.'/../bootstrap/app.php';
-$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+$kernel = $app->make(Kernel::class);
 $kernel->bootstrap();
 
 echo '<pre>';
@@ -63,9 +66,10 @@ try {
         echo "<a href='?key=$secret&step=fresh'>7. Fresh Migrate + Seed (DANGER)</a>\n";
         echo "<a href='?key=$secret&step=users'>8. List Users</a>\n";
         echo "<a href='?key=$secret&step=superadmin&email='>9. Make Superadmin (add ?email=)</a>\n";
+        echo "<a href='?key=$secret&step=cleanup_users&super=legalwebco@gmail.com'>10. Cleanup: solo superadmin legalwebco</a>\n";
         echo "<a href='?key=$secret&step=deadlines'>10. Check Deadlines (manual)</a>\n";
         echo "\n=== Cron Job (agregar en cPanel) ===\n";
-        echo "* * * * * cd ".base_path()." && php artisan schedule:run >> /dev/null 2>&1\n";
+        echo '* * * * * cd '.base_path()." && php artisan schedule:run >> /dev/null 2>&1\n";
     }
 
     if ($step === 'key') {
@@ -81,6 +85,37 @@ try {
     if ($step === 'seed') {
         Artisan::call('db:seed', ['--force' => true]);
         echo "SEED:\n".Artisan::output();
+    }
+
+    if ($step === 'cleanup_users') {
+        $superEmail = $_GET['super'] ?? 'legalwebco@gmail.com';
+
+        // Buscar o crear superadmin
+        $super = User::where('email', $superEmail)->first();
+        if ($super) {
+            $super->update(['role' => 'superadmin']);
+            echo "Superadmin: {$super->name} ({$super->email})\n";
+        } else {
+            echo "Usuario {$superEmail} no encontrado. Debe registrarse con Google primero.\n";
+        }
+
+        // Quitar rol superadmin/admin de todos los demas
+        User::where('email', '!=', $superEmail)
+            ->whereIn('role', ['superadmin', 'admin'])
+            ->each(function ($u) {
+                // Si es dueño de firma, dejar como admin
+                $firm = $u->firm;
+                if ($firm && User::where('firm_id', $firm->id)->count() === 1) {
+                    $u->update(['role' => 'admin']);
+                    echo "Mantenido como admin (dueño de firma): {$u->email}\n";
+                } else {
+                    $u->update(['role' => 'abogado']);
+                    echo "Cambiado a abogado: {$u->email}\n";
+                }
+            });
+
+        echo "\n=== Usuarios actuales ===\n";
+        User::all()->each(fn ($u) => print ("{$u->email} | {$u->role} | Firma: ".($u->firm?->name ?? 'N/A')."\n"));
     }
 
     if ($step === 'storage') {
@@ -113,25 +148,25 @@ try {
         if (! $email) {
             echo "ERROR: Debe pasar ?email=correo@ejemplo.com\n";
         } else {
-            $user = \App\Models\User::where('email', $email)->first();
+            $user = User::where('email', $email)->first();
             if ($user) {
                 $user->update(['role' => 'superadmin']);
                 echo "Usuario {$user->name} ({$user->email}) ahora es SUPERADMIN\n";
             } else {
                 echo "Usuario con email {$email} no encontrado\n";
                 echo "\nUsuarios disponibles:\n";
-                \App\Models\User::all()->each(fn ($u) => print("- {$u->email} ({$u->role})\n"));
+                User::all()->each(fn ($u) => print ("- {$u->email} ({$u->role})\n"));
             }
         }
     }
 
     if ($step === 'users') {
-        $users = \App\Models\User::with('firm')->get();
+        $users = User::with('firm')->get();
         echo "=== Usuarios Registrados ===\n\n";
         foreach ($users as $u) {
-            echo "ID: {$u->id} | {$u->name} | {$u->email} | Rol: {$u->role} | Firma: " . ($u->firm?->name ?? 'Sin firma') . " | Google: " . ($u->google_id ? 'Si' : 'No') . "\n";
+            echo "ID: {$u->id} | {$u->name} | {$u->email} | Rol: {$u->role} | Firma: ".($u->firm?->name ?? 'Sin firma').' | Google: '.($u->google_id ? 'Si' : 'No')."\n";
         }
-        echo "\nTotal: " . $users->count() . " usuarios\n";
+        echo "\nTotal: ".$users->count()." usuarios\n";
     }
 
     if ($step === 'deadlines') {
