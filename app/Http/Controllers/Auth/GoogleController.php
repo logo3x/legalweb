@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\CasePermission;
 use App\Models\Firm;
 use App\Models\FirmInvitation;
 use App\Models\Plan;
@@ -70,9 +71,22 @@ class GoogleController extends Controller
             'avatar' => $googleUser->getAvatar(),
             'firm_id' => $invitation->firm_id,
             'role' => $invitation->role,
-            'permissions' => $invitation->permissions,
             'password' => bcrypt(str()->random(32)),
         ]);
+
+        // Crear permisos por caso pre-asignados
+        $invitationData = $invitation->permissions ?? [];
+        $caseIds = $invitationData['case_ids'] ?? [];
+        $casePermissions = $invitationData['case_permissions'] ?? [];
+
+        foreach ($caseIds as $caseId) {
+            CasePermission::create([
+                'user_id' => $user->id,
+                'legal_case_id' => $caseId,
+                'permissions' => $casePermissions,
+                'assigned_by' => $invitation->invited_by,
+            ]);
+        }
 
         $invitation->update([
             'status' => 'accepted',

@@ -109,7 +109,9 @@
                     <div>
                         <div style="font-size: 14px; font-weight: 500; color: #111827;">{{ $invitation->email }}</div>
                         <div style="font-size: 12px; color: #9ca3af;">
-                            Invitado por {{ $invitation->invitedBy->name }} &middot; Expira {{ $invitation->expires_at->format('d/m/Y') }}
+                            Invitado por {{ $invitation->invitedBy->name }} &middot;
+                            {{ count($invitation->permissions['case_ids'] ?? []) }} caso(s) pre-asignados &middot;
+                            Expira {{ $invitation->expires_at->format('d/m/Y') }}
                         </div>
                     </div>
                     <span style="display: inline-flex; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; background: #fef3c7; color: #92400e;">

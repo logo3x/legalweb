@@ -2,11 +2,13 @@
 
 namespace App\Filament\Pages;
 
+use App\Models\CasePermission;
 use App\Models\FirmInvitation;
 use App\Models\LegalCase;
 use App\Models\User;
 use BackedEnum;
 use Filament\Actions\Action;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
@@ -45,6 +47,7 @@ class TeamMembers extends Page
         return FirmInvitation::where('firm_id', auth()->user()->firm_id)
             ->where('status', 'pending')
             ->where('expires_at', '>', now())
+            ->with('invitedBy')
             ->get();
     }
 
@@ -57,17 +60,23 @@ class TeamMembers extends Page
 
     protected function getHeaderActions(): array
     {
+        $firmCases = LegalCase::where('firm_id', auth()->user()->firm_id)
+            ->where('is_demo', false)
+            ->get()
+            ->mapWithKeys(fn ($c) => [$c->id => "{$c->case_number} - {$c->title}"])
+            ->toArray();
+
         return [
             Action::make('invite')
                 ->label('Invitar Colaborador')
                 ->icon('heroicon-o-user-plus')
+                ->modalWidth('2xl')
                 ->form([
                     TextInput::make('email')
                         ->label('Correo de Google del colaborador')
                         ->email()
                         ->required()
-                        ->placeholder('colaborador@gmail.com')
-                        ->helperText('El colaborador debera iniciar sesion con esta cuenta de Google'),
+                        ->placeholder('colaborador@gmail.com'),
                     Select::make('role')
                         ->label('Rol')
                         ->options([
@@ -75,8 +84,18 @@ class TeamMembers extends Page
                             'asistente' => 'Asistente',
                         ])
                         ->required()
-                        ->default('abogado')
-                        ->helperText('Despues de vincularse podra asignarle casos y permisos especificos'),
+                        ->default('abogado'),
+                    CheckboxList::make('case_ids')
+                        ->label('Casos a compartir')
+                        ->options($firmCases)
+                        ->columns(1)
+                        ->searchable(),
+                    CheckboxList::make('case_permissions')
+                        ->label('Permisos sobre los casos')
+                        ->options(CasePermission::CASE_PERMISSIONS)
+                        ->columns(2)
+                        ->default(array_keys(CasePermission::CASE_PERMISSIONS))
+                        ->helperText('Estos permisos aplican a todos los casos seleccionados arriba'),
                 ])
                 ->action(function (array $data) {
                     $email = strtolower(trim($data['email']));
@@ -100,25 +119,28 @@ class TeamMembers extends Page
                         return;
                     }
 
-                    FirmInvitation::createForEmail(
+                    $invitation = FirmInvitation::createForEmail(
                         $firm,
                         auth()->user(),
                         $email,
                         $data['role'],
+                        $data['case_permissions'] ?? [],
                     );
 
+                    // Guardar casos pre-asignados en la invitacion
+                    $invitation->update([
+                        'permissions' => [
+                            'case_ids' => $data['case_ids'] ?? [],
+                            'case_permissions' => $data['case_permissions'] ?? [],
+                        ],
+                    ]);
+
                     Notification::make()
-                        ->title('Invitacion creada')
-                        ->body("Cuando {$email} inicie sesion con Google se vinculara automaticamente. Despues podra asignarle casos especificos.")
+                        ->title('Invitacion enviada')
+                        ->body("Cuando {$email} inicie sesion con Google se vinculara automaticamente con acceso a ".count($data['case_ids'] ?? []).' caso(s).')
                         ->success()
-                        ->persistent()
                         ->send();
                 }),
         ];
-    }
-
-    public function assignCases(int $userId): void
-    {
-        // This is called from the view via wire:click
     }
 }
