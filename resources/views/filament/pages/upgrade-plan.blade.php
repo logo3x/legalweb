@@ -57,20 +57,19 @@
                     <p style="font-size: 13px; color: #6b7280; margin-bottom: 16px;">{{ $plan->description }}</p>
 
                     {{-- Precio --}}
-                    <div style="margin-bottom: 20px; min-height: 70px;">
+                    <div style="margin-bottom: 20px;">
                         @if($plan->price_monthly === 0)
-                            <div style="font-size: 36px; font-weight: 800; color: #111827;">$0</div>
-                            <div style="font-size: 13px; color: #6b7280;">Gratis para siempre</div>
+                            <div style="font-size: 28px; font-weight: 800; color: #111827;">Gratis</div>
+                            <div style="font-size: 13px; color: #6b7280;">Para siempre</div>
                         @else
                             <template x-if="billing === 'monthly'">
                                 <div>
-                                    <div><span style="font-size: 36px; font-weight: 800; color: #111827;">${{ $monthlyPrice }}</span><span style="font-size: 14px; color: #6b7280;">/mes</span></div>
+                                    <div style="font-size: 22px; font-weight: 700; color: #111827;">Proximamente</div>
                                 </div>
                             </template>
                             <template x-if="billing === 'biannual'">
                                 <div>
-                                    <div><span style="font-size: 36px; font-weight: 800; color: #111827;">${{ $biannualPrice }}</span><span style="font-size: 14px; color: #6b7280;">/6 meses</span></div>
-                                    <div style="font-size: 12px; color: #16a34a; font-weight: 500; margin-top: 2px;">${{ $monthlySaved }}/mes &middot; Ahorras ${{ $savings }}</div>
+                                    <div style="font-size: 22px; font-weight: 700; color: #111827;">Proximamente</div>
                                 </div>
                             </template>
                         @endif

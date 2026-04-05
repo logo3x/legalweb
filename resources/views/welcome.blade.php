@@ -189,16 +189,7 @@
                 <h2 class="font-display text-3xl md:text-4xl font-bold text-brand mb-4">Planes que crecen con su firma</h2>
                 <p class="text-gray-500 mb-8">Comience gratis. Escale cuando lo necesite.</p>
 
-                {{-- Switch mensual/semestral --}}
-                <div class="inline-flex items-center bg-gray-100 rounded-full p-1">
-                    <button @click="billing = 'monthly'" :class="billing === 'monthly' ? 'bg-white shadow text-brand font-semibold' : 'text-gray-500'" class="px-5 py-2 rounded-full text-sm transition">
-                        Mensual
-                    </button>
-                    <button @click="billing = 'biannual'" :class="billing === 'biannual' ? 'bg-white shadow text-brand font-semibold' : 'text-gray-500'" class="px-5 py-2 rounded-full text-sm transition flex items-center gap-1.5">
-                        Semestral
-                        <span class="bg-green-100 text-green-700 text-xs font-semibold px-2 py-0.5 rounded-full">-17%</span>
-                    </button>
-                </div>
+                {{-- Switch oculto hasta definir precios --}}
             </div>
 
             <div class="grid md:grid-cols-3 gap-6">
@@ -207,8 +198,8 @@
                     <h3 class="font-semibold text-brand text-xl mb-1">Gratuito</h3>
                     <p class="text-sm text-gray-500 mb-5">Para explorar la plataforma</p>
                     <div class="mb-6">
-                        <span class="text-4xl font-display font-bold text-brand">$0</span>
-                        <span class="text-gray-400 text-sm">/siempre</span>
+                        <span class="text-3xl font-display font-bold text-brand">Gratis</span>
+                        <span class="text-gray-400 text-sm">para siempre</span>
                     </div>
                     <ul class="space-y-3 text-sm text-gray-600 mb-8">
                         <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> <strong>3</strong> casos</li>
@@ -230,19 +221,8 @@
                     <h3 class="font-semibold text-brand text-xl mb-1">Profesional</h3>
                     <p class="text-sm text-gray-500 mb-5">Para practica activa</p>
                     <div class="mb-6">
-                        <template x-if="billing === 'monthly'">
-                            <div>
-                                <span class="text-4xl font-display font-bold text-brand">$39.900</span>
-                                <span class="text-gray-400 text-sm">/mes</span>
-                            </div>
-                        </template>
-                        <template x-if="billing === 'biannual'">
-                            <div>
-                                <span class="text-4xl font-display font-bold text-brand">$199.000</span>
-                                <span class="text-gray-400 text-sm">/6 meses</span>
-                                <p class="text-xs text-green-600 font-medium mt-1">$33.200/mes - Ahorra $40.400</p>
-                            </div>
-                        </template>
+                    <div class="mb-6">
+                        <span class="text-3xl font-display font-bold text-brand">Proximamente</span>
                     </div>
                     <ul class="space-y-3 text-sm text-gray-600 mb-8">
                         <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> <strong>20</strong> casos</li>
@@ -263,19 +243,7 @@
                     <h3 class="font-semibold text-brand text-xl mb-1">Firma</h3>
                     <p class="text-sm text-gray-500 mb-5">Para firmas con varios abogados</p>
                     <div class="mb-6">
-                        <template x-if="billing === 'monthly'">
-                            <div>
-                                <span class="text-4xl font-display font-bold text-brand">$69.900</span>
-                                <span class="text-gray-400 text-sm">/mes</span>
-                            </div>
-                        </template>
-                        <template x-if="billing === 'biannual'">
-                            <div>
-                                <span class="text-4xl font-display font-bold text-brand">$349.000</span>
-                                <span class="text-gray-400 text-sm">/6 meses</span>
-                                <p class="text-xs text-green-600 font-medium mt-1">$58.200/mes - Ahorra $70.400</p>
-                            </div>
-                        </template>
+                        <span class="text-3xl font-display font-bold text-brand">Proximamente</span>
                     </div>
                     <ul class="space-y-3 text-sm text-gray-600 mb-8">
                         <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> <strong>60</strong> casos</li>
