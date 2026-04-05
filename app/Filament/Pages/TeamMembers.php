@@ -14,6 +14,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Str;
 use UnitEnum;
 
 class TeamMembers extends Page
@@ -53,17 +54,17 @@ class TeamMembers extends Page
 
     public function getFirmCases()
     {
-        return LegalCase::where('firm_id', auth()->user()->firm_id)
-            ->where('is_demo', false)
+        return LegalCase::withoutGlobalScopes()
+            ->where('firm_id', auth()->user()->firm_id)
             ->get();
     }
 
     protected function getHeaderActions(): array
     {
-        $firmCases = LegalCase::where('firm_id', auth()->user()->firm_id)
-            ->where('is_demo', false)
+        $firmCases = LegalCase::withoutGlobalScopes()
+            ->where('firm_id', auth()->user()->firm_id)
             ->get()
-            ->mapWithKeys(fn ($c) => [$c->id => "{$c->case_number} - {$c->title}"])
+            ->mapWithKeys(fn ($c) => [$c->id => "{$c->case_number} - ".Str::limit($c->title, 40)])
             ->toArray();
 
         return [

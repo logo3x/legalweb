@@ -121,7 +121,7 @@ class LegalCaseForm
                             ->hintIcon('heroicon-o-question-mark-circle', tooltip: 'Fecha en que se cerro o archivo el caso. Dejelo vacio si el caso sigue activo.'),
                     ]),
                 Section::make('Documentos Iniciales')
-                    ->hintIcon('heroicon-o-question-mark-circle', tooltip: 'Suba los documentos del caso como demanda, poder, anexos, etc. Puede agregar mas documentos despues.')
+                    ->description('Suba los documentos del caso como demanda, poder, anexos, etc.')
                     ->schema([
                         FileUpload::make('initial_documents')
                             ->label('Archivos')
