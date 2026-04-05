@@ -169,6 +169,46 @@ try {
         echo "\nTotal: ".$users->count()." usuarios\n";
     }
 
+    if ($step === 'demo_reminders') {
+        $userId = $_GET['user_id'] ?? null;
+        if (! $userId) {
+            echo "ERROR: Pase ?user_id=X\n";
+        } else {
+            $user = User::find($userId);
+            if (! $user) {
+                echo "Usuario no encontrado\n";
+            } else {
+                $cases = \App\Models\LegalCase::withoutGlobalScopes()->where('firm_id', $user->firm_id)->take(2)->get();
+
+                \App\Models\Reminder::create([
+                    'firm_id' => $user->firm_id,
+                    'user_id' => $user->id,
+                    'legal_case_id' => $cases->first()?->id,
+                    'title' => 'Audiencia inicial - Juzgado 5 Civil',
+                    'description' => 'Preparar alegatos y revisar pruebas documentales.',
+                    'type' => 'audiencia',
+                    'priority' => 'alta',
+                    'due_date' => now()->addDays(5)->setHour(9)->setMinute(0),
+                    'remind_at' => now()->addDays(4)->setHour(8)->setMinute(0),
+                ]);
+
+                \App\Models\Reminder::create([
+                    'firm_id' => $user->firm_id,
+                    'user_id' => $user->id,
+                    'legal_case_id' => $cases->skip(1)->first()?->id,
+                    'title' => 'Vencimiento termino para contestar demanda',
+                    'description' => 'Revisar expediente y preparar contestacion con excepciones.',
+                    'type' => 'vencimiento',
+                    'priority' => 'urgente',
+                    'due_date' => now()->addDays(2)->setHour(17)->setMinute(0),
+                    'remind_at' => now()->addDay()->setHour(8)->setMinute(0),
+                ]);
+
+                echo "2 recordatorios demo creados para {$user->name} ({$user->email})\n";
+            }
+        }
+    }
+
     if ($step === 'deadlines') {
         Artisan::call('app:check-deadlines');
         echo "CHECK DEADLINES:\n".Artisan::output();
