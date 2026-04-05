@@ -5,7 +5,7 @@
 @section('content')
     {{-- Modal de aceptacion de terminos --}}
     @unless($hasAccepted)
-        <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div style="position:fixed;inset:0;background:rgba(255,255,255,0.97);backdrop-filter:blur(20px);z-index:50;display:flex;align-items:center;justify-content:center;padding:16px;">
             <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6">
                 <div class="text-center mb-4">
                     <svg class="w-12 h-12 text-blue-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -44,6 +44,7 @@
         </div>
     @endunless
 
+    @if($hasAccepted)
     {{-- Encabezado del caso --}}
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -240,4 +241,5 @@
             </div>
         </div>
     @endif
+    @endif {{-- end hasAccepted --}}
 @endsection

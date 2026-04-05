@@ -11,6 +11,7 @@ use Filament\Actions\EditAction;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 
@@ -126,21 +127,41 @@ class ViewLegalCase extends ViewRecord
                 ->label('Compartir con Cliente')
                 ->icon('heroicon-o-share')
                 ->color('info')
-                ->action(function () {
+                ->modalWidth('lg')
+                ->modalHeading('Compartir Portal con Cliente')
+                ->modalSubmitActionLabel('Copiar enlace')
+                ->modalCancelActionLabel('Cerrar')
+                ->form(function () {
                     $record = $this->record;
 
                     if (! $record->portal_token) {
                         $record->generatePortalToken();
+                        $record->refresh();
                     }
 
                     $url = route('portal.show', $record->portal_token);
 
-                    Notification::make()
-                        ->title('Enlace del Portal')
-                        ->body("Copie este enlace y compartalo con su cliente:\n{$url}")
-                        ->success()
-                        ->persistent()
-                        ->send();
+                    return [
+                        Placeholder::make('security_info')
+                            ->label('')
+                            ->content(
+                                "Este enlace permite al cliente ver el estado de su caso. Al compartirlo tenga en cuenta:\n\n"
+                                ."- El enlace es unico y exclusivo para este caso\n"
+                                ."- El cliente debera aceptar los terminos de uso antes de ver la informacion\n"
+                                ."- Se registra la IP y fecha de cada acceso para trazabilidad\n"
+                                ."- La informacion esta protegida por el secreto profesional (Art. 74 CP)\n"
+                                .'- Puede desactivar el portal en cualquier momento'
+                            ),
+                        TextInput::make('portal_url')
+                            ->label('Enlace del portal')
+                            ->default($url)
+                            ->readOnly(),
+                    ];
+                })
+                ->action(function () {
+                    $url = route('portal.show', $this->record->portal_token);
+                    $this->js("navigator.clipboard.writeText('".$url."')");
+                    Notification::make()->title('Enlace copiado al portapapeles')->success()->send();
                 }),
             Action::make('toggle_portal')
                 ->label(fn () => $this->record->portal_enabled ? 'Desactivar Portal' : 'Activar Portal')
