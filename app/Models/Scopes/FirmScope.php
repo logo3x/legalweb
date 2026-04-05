@@ -20,7 +20,7 @@ class FirmScope implements Scope
             return;
         }
 
-        if ($model->getTable() === 'clients' || $model->getTable() === 'legal_cases') {
+        if (in_array($model->getTable(), ['clients', 'legal_cases', 'reminders'])) {
             $builder->where($model->getTable().'.firm_id', $user->firm_id);
         }
     }
