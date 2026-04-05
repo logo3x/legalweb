@@ -56,6 +56,11 @@ class EventsRelationManager extends RelationManager
                     ->relationship('user', 'name', fn ($query) => $query->where('firm_id', auth()->user()->firm_id))
                     ->searchable()
                     ->preload(),
+                Toggle::make('notify_client')
+                    ->label('Notificar al cliente por email')
+                    ->helperText('Se enviara un correo al cliente informando sobre esta actuacion')
+                    ->default(false)
+                    ->dehydrated(false),
             ]);
     }
 
@@ -89,7 +94,25 @@ class EventsRelationManager extends RelationManager
             ->defaultSort('event_date', 'desc')
             ->headerActions([
                 CreateAction::make()
-                    ->label('Nueva Actuación'),
+                    ->label('Nueva Actuación')
+                    ->after(function ($record, array $data) {
+                        if (! ($data['notify_client'] ?? false)) {
+                            return;
+                        }
+
+                        $case = $record->legalCase;
+                        $client = $case->client;
+
+                        if ($client?->email) {
+                            $client->notify(new \App\Notifications\CaseUpdatedNotification($case, $record));
+
+                            \Filament\Notifications\Notification::make()
+                                ->title('Cliente notificado')
+                                ->body("Se envio email a {$client->email}")
+                                ->success()
+                                ->send();
+                        }
+                    }),
             ])
             ->recordActions([
                 EditAction::make(),

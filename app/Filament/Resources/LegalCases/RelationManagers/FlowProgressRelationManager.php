@@ -76,6 +76,10 @@ class FlowProgressRelationManager extends RelationManager
                     ->form([
                         Textarea::make('notes')
                             ->label('Notas (opcional)'),
+                        \Filament\Forms\Components\Toggle::make('notify_client')
+                            ->label('Notificar al cliente por email')
+                            ->helperText('Se informara al cliente que esta etapa fue completada')
+                            ->default(false),
                     ])
                     ->action(function ($record, array $data): void {
                         $record->update([
@@ -84,6 +88,32 @@ class FlowProgressRelationManager extends RelationManager
                             'completed_by' => auth()->id(),
                             'notes' => $data['notes'] ?? null,
                         ]);
+
+                        if (! ($data['notify_client'] ?? false)) {
+                            return;
+                        }
+
+                        $case = $record->legalCase;
+                        $client = $case->client;
+                        $nextStep = $case->flowProgress()
+                            ->whereIn('status', ['pendiente', 'en_progreso'])
+                            ->join('flow_steps', 'flow_steps.id', '=', 'case_flow_progress.flow_step_id')
+                            ->orderBy('flow_steps.order')
+                            ->first();
+
+                        if ($client?->email) {
+                            $client->notify(new \App\Notifications\FlowStepCompletedNotification(
+                                $case,
+                                $record,
+                                $nextStep?->flowStep?->name
+                            ));
+
+                            \Filament\Notifications\Notification::make()
+                                ->title('Cliente notificado')
+                                ->body("Se envio email a {$client->email}")
+                                ->success()
+                                ->send();
+                        }
                     })
                     ->visible(fn ($record) => in_array($record->status, ['pendiente', 'en_progreso']))
                     ->requiresConfirmation()

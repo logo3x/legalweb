@@ -63,6 +63,9 @@ try {
         echo "<a href='?key=$secret&step=fresh'>7. Fresh Migrate + Seed (DANGER)</a>\n";
         echo "<a href='?key=$secret&step=users'>8. List Users</a>\n";
         echo "<a href='?key=$secret&step=superadmin&email='>9. Make Superadmin (add ?email=)</a>\n";
+        echo "<a href='?key=$secret&step=deadlines'>10. Check Deadlines (manual)</a>\n";
+        echo "\n=== Cron Job (agregar en cPanel) ===\n";
+        echo "* * * * * cd ".base_path()." && php artisan schedule:run >> /dev/null 2>&1\n";
     }
 
     if ($step === 'key') {
@@ -129,6 +132,11 @@ try {
             echo "ID: {$u->id} | {$u->name} | {$u->email} | Rol: {$u->role} | Firma: " . ($u->firm?->name ?? 'Sin firma') . " | Google: " . ($u->google_id ? 'Si' : 'No') . "\n";
         }
         echo "\nTotal: " . $users->count() . " usuarios\n";
+    }
+
+    if ($step === 'deadlines') {
+        Artisan::call('app:check-deadlines');
+        echo "CHECK DEADLINES:\n".Artisan::output();
     }
 
     if ($step === 'fresh') {
