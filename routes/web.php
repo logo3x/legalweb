@@ -3,6 +3,9 @@
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\PortalController;
 use App\Http\Controllers\WompiController;
+use App\Models\CasePermission;
+use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -20,6 +23,36 @@ Route::prefix('portal')->name('portal.')->group(function () {
     Route::get('/{token}', [PortalController::class, 'show'])->name('show');
     Route::post('/{token}/aceptar', [PortalController::class, 'accept'])->name('accept');
 });
+
+// Assign cases to team member
+Route::post('/admin/team/assign-cases/{user}', function (User $user, Request $request) {
+    $authUser = auth()->user();
+
+    if (! $authUser->isAdmin() || $user->firm_id !== $authUser->firm_id) {
+        abort(403);
+    }
+
+    $cases = $request->input('cases', []);
+
+    // Eliminar permisos anteriores
+    CasePermission::where('user_id', $user->id)->delete();
+
+    // Crear nuevos permisos
+    foreach ($cases as $caseId => $data) {
+        if (! isset($data['enabled'])) {
+            continue;
+        }
+
+        CasePermission::create([
+            'user_id' => $user->id,
+            'legal_case_id' => $caseId,
+            'permissions' => $data['permissions'] ?? [],
+            'assigned_by' => $authUser->id,
+        ]);
+    }
+
+    return redirect('/admin/team-members')->with('success', 'Casos asignados correctamente.');
+})->middleware('auth')->name('team.assign-cases');
 
 // Download generated documents
 Route::get('/download/{filename}', function (string $filename) {

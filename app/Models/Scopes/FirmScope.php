@@ -2,6 +2,7 @@
 
 namespace App\Models\Scopes;
 
+use App\Models\CasePermission;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Scope;
@@ -20,8 +21,16 @@ class FirmScope implements Scope
             return;
         }
 
-        if (in_array($model->getTable(), ['clients', 'legal_cases', 'reminders'])) {
-            $builder->where($model->getTable().'.firm_id', $user->firm_id);
+        $table = $model->getTable();
+
+        if (in_array($table, ['clients', 'legal_cases', 'reminders'])) {
+            $builder->where($table.'.firm_id', $user->firm_id);
+        }
+
+        // Colaboradores (no admin): solo ven casos asignados
+        if ($table === 'legal_cases' && ! $user->isAdmin()) {
+            $allowedCaseIds = CasePermission::where('user_id', $user->id)->pluck('legal_case_id');
+            $builder->whereIn($table.'.id', $allowedCaseIds);
         }
     }
 }

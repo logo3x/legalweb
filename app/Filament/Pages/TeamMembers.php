@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Models\FirmInvitation;
+use App\Models\LegalCase;
 use App\Models\User;
 use BackedEnum;
 use Filament\Actions\Action;
@@ -35,7 +36,9 @@ class TeamMembers extends Page
 
     public function getMembers()
     {
-        return User::where('firm_id', auth()->user()->firm_id)->get();
+        return User::where('firm_id', auth()->user()->firm_id)
+            ->with('casePermissions.legalCase')
+            ->get();
     }
 
     public function getPendingInvitations()
@@ -43,6 +46,13 @@ class TeamMembers extends Page
         return FirmInvitation::where('firm_id', auth()->user()->firm_id)
             ->where('status', 'pending')
             ->where('expires_at', '>', now())
+            ->get();
+    }
+
+    public function getFirmCases()
+    {
+        return LegalCase::where('firm_id', auth()->user()->firm_id)
+            ->where('is_demo', false)
             ->get();
     }
 
@@ -67,7 +77,7 @@ class TeamMembers extends Page
                         ->required()
                         ->default('abogado'),
                     CheckboxList::make('permissions')
-                        ->label('Permisos')
+                        ->label('Permisos generales')
                         ->options(User::AVAILABLE_PERMISSIONS)
                         ->columns(2)
                         ->default(array_keys(User::AVAILABLE_PERMISSIONS)),
@@ -76,7 +86,6 @@ class TeamMembers extends Page
                     $email = strtolower(trim($data['email']));
                     $firm = auth()->user()->firm;
 
-                    // Verificar que no exista ya
                     $existingUser = User::where('email', $email)->where('firm_id', $firm->id)->first();
                     if ($existingUser) {
                         Notification::make()->title('Este usuario ya es parte de su equipo.')->warning()->send();
@@ -104,12 +113,17 @@ class TeamMembers extends Page
                     );
 
                     Notification::make()
-                        ->title('Invitacion enviada')
-                        ->body("Se ha creado una invitacion para {$email}. El colaborador debe iniciar sesion con Google usando ese correo.")
+                        ->title('Invitacion creada')
+                        ->body("Cuando {$email} inicie sesion con Google se vinculara automaticamente. Despues podra asignarle casos especificos.")
                         ->success()
                         ->persistent()
                         ->send();
                 }),
         ];
+    }
+
+    public function assignCases(int $userId): void
+    {
+        // This is called from the view via wire:click
     }
 }

@@ -76,6 +76,31 @@ class User extends Authenticatable implements FilamentUser
         return $this->belongsTo(Firm::class);
     }
 
+    public function casePermissions(): HasMany
+    {
+        return $this->hasMany(CasePermission::class);
+    }
+
+    public function hasCasePermission(int $caseId, string $permission): bool
+    {
+        if ($this->isAdmin()) {
+            return true;
+        }
+
+        $cp = $this->casePermissions()->where('legal_case_id', $caseId)->first();
+
+        return $cp ? $cp->hasPermission($permission) : false;
+    }
+
+    public function accessibleCaseIds(): array
+    {
+        if ($this->isAdmin()) {
+            return [];
+        }
+
+        return $this->casePermissions()->pluck('legal_case_id')->toArray();
+    }
+
     public function clients(): HasMany
     {
         return $this->hasMany(Client::class);
