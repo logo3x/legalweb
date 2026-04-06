@@ -279,6 +279,30 @@ try {
                 $tyba = new TybaService;
                 $info = $tyba->extractProcessInfo($case->external_case_number);
 
+                // Debug: ver HTML raw alrededor del campo codigo
+                $tyba = new TybaService;
+                $debugUrl = dirname(config('services.tyba.url')).'/frmConsultaProceso.aspx?IdProceso='.preg_replace('/[^0-9]/', '', $case->external_case_number);
+                $debugResp = Http::timeout(30)->withHeaders(['User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'])->get($debugUrl);
+                $debugHtml = $debugResp->body();
+
+                // Buscar el input del codigo
+                if (preg_match('/<input[^>]*MainContent_txtCodigoProceso[^>]*>/si', $debugHtml, $dm)) {
+                    setup_log('Raw input CodigoProceso: '.htmlspecialchars($dm[0]), 'info');
+                } else {
+                    setup_log('Input MainContent_txtCodigoProceso NO encontrado en HTML', 'error');
+                }
+
+                // Buscar el input del despacho
+                if (preg_match('/<input[^>]*MainContent_txtNomDespacho[^>]*>/si', $debugHtml, $dm)) {
+                    setup_log('Raw input Despacho: '.htmlspecialchars($dm[0]), 'info');
+                }
+
+                // Buscar cualquier input con value no vacio
+                preg_match_all('/<input[^>]*MainContent_txt[^>]*value="([^"]+)"[^>]*>/si', $debugHtml, $allInputs);
+                setup_log('Inputs MainContent_txt con valor: '.count($allInputs[0] ?? []), count($allInputs[0] ?? []) > 0 ? 'success' : 'error');
+
+                $info = $tyba->extractProcessInfo($case->external_case_number);
+
                 if ($info) {
                     setup_log('Proceso encontrado!:', 'success');
                     foreach (['codigo_proceso', 'tipo_proceso', 'clase_proceso', 'especialidad', 'departamento', 'ciudad', 'despacho', 'fecha_publicacion', 'email', 'telefono'] as $field) {
