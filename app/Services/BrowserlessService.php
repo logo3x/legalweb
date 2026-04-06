@@ -103,7 +103,7 @@ JS;
         $response = Http::timeout(90)
             ->withHeaders(['Content-Type' => 'application/javascript'])
             ->withBody($script, 'application/javascript')
-            ->post("{$this->baseUrl}/function?token={$this->apiKey}");
+            ->post("{$this->baseUrl}/function?token={$this->apiKey}&proxy=residential");
 
         if (! $response->successful()) {
             Log::error('Browserless: error HTTP', [
@@ -118,7 +118,10 @@ JS;
         $data = $result['data'] ?? $result;
 
         if (isset($data['error'])) {
-            Log::error('Browserless: error en flujo', ['error' => $data['error']]);
+            Log::error('Browserless: error en flujo', [
+                'error' => $data['error'],
+                'html_snippet' => substr($data['html'] ?? '', 0, 300),
+            ]);
 
             return null;
         }
