@@ -31,85 +31,61 @@ class BrowserlessService
         // Script Puppeteer que automatiza el flujo completo de Tyba
         $script = <<<'JS'
 export default async function ({ page }) {
-    const radicado = BPL_RADICADO;
-    function delay(ms) { return new Promise(function(r) { setTimeout(r, ms); }); }
+    const radicado = "RADICADO_PLACEHOLDER";
 
-    // Paso 1: Ir a la pagina de busqueda
     await page.goto('https://procesojudicial.ramajudicial.gov.co/Justicia21/Administracion/Ciudadanos/frmConsulta', {
         waitUntil: 'networkidle2',
         timeout: 30000
     });
 
-    // Paso 2: Esperar que cargue el campo de codigo
     await page.waitForSelector('#MainContent_txtCodigoProceso', { timeout: 10000 });
-
-    // Paso 3: Escribir el radicado
     await page.type('#MainContent_txtCodigoProceso', radicado, { delay: 50 });
 
-    // Paso 4: Esperar que reCAPTCHA v3 este listo y generar token
-    await delay(3000);
-
-    try {
-        await page.evaluate(async () => {
-            if (typeof grecaptcha !== 'undefined') {
-                await new Promise((resolve) => {
-                    grecaptcha.ready(async () => {
-                        const siteKey = '6Ldf8zAiAAAAAAq1LUwvTCwki5C6uuIg0zVw4of0';
-                        const token = await grecaptcha.execute(siteKey, { action: 'submit' });
-                        document.getElementById('recaptchaResponse').value = token;
-                        resolve();
-                    });
-                });
-            }
+    // Esperar reCAPTCHA
+    await page.waitForFunction('typeof grecaptcha !== "undefined"', { timeout: 10000 }).catch(function() {});
+    await page.evaluate(function() {
+        return new Promise(function(resolve) {
+            if (typeof grecaptcha === 'undefined') { resolve(); return; }
+            grecaptcha.ready(function() {
+                grecaptcha.execute('6Ldf8zAiAAAAAAq1LUwvTCwki5C6uuIg0zVw4of0', { action: 'submit' }).then(function(token) {
+                    document.getElementById('recaptchaResponse').value = token;
+                    resolve();
+                }).catch(function() { resolve(); });
+            });
         });
-    } catch (e) {
-        // Continuar sin captcha si falla
-    }
-
-    // Paso 5: Click en Consultar via __doPostBack
-    await page.evaluate(() => {
-        __doPostBack('ctl00$MainContent$btnConsultar', '');
     });
 
-    // Paso 6: Esperar resultados
-    await delay(8000);
+    // Click Consultar
+    await page.evaluate(function() {
+        __doPostBack('ctl00\$MainContent\$btnConsultar', '');
+    });
 
-    // Verificar si hay error de captcha
-    const pageContent = await page.content();
+    // Esperar resultados
+    await page.waitForSelector('[id*="grdProceso"]', { timeout: 15000 }).catch(function() {});
+
+    var pageContent = await page.content();
     if (pageContent.includes('El valor de la Capcha no coincide')) {
         return { type: 'error', data: 'captcha_failed' };
     }
 
-    // Paso 7: Buscar y click en la lupa del resultado
+    // Click en la lupa
     try {
-        await page.waitForSelector('[id*="grdProceso"] [id*="imgbConsultarGrilla"]', { timeout: 10000 });
-        await page.click('[id*="grdProceso"] [id*="imgbConsultarGrilla"]');
+        await page.waitForSelector('input[title="Consultar registro"]', { timeout: 10000 });
+        await page.click('input[title="Consultar registro"]');
     } catch (e) {
-        try {
-            await page.waitForSelector('input[title="Consultar registro"]', { timeout: 5000 });
-            await page.click('input[title="Consultar registro"]');
-        } catch (e2) {
-            return { type: 'error', data: 'no_results', html: pageContent.substring(0, 500) };
-        }
+        return { type: 'error', data: 'no_results' };
     }
 
-    // Paso 8: Esperar que cargue la pagina del proceso
-    await delay(8000);
+    // Esperar pagina del proceso
+    await page.waitForSelector('#MainContent_txtCodigoProceso[value]', { timeout: 15000 }).catch(function() {});
+    await page.waitForFunction('document.querySelector("#MainContent_txtCodigoProceso") && document.querySelector("#MainContent_txtCodigoProceso").value.length > 5', { timeout: 10000 }).catch(function() {});
 
-    // Verificar que estamos en frmConsultaProceso
-    const finalUrl = page.url();
-    const html = await page.content();
-
-    if (!html.includes('del Proceso')) {
-        return { type: 'error', data: 'no_process_page' };
-    }
-
-    return { type: 'html', data: html, url: finalUrl };
+    var html = await page.content();
+    return { type: 'html', data: html, url: page.url() };
 }
 JS;
 
-        // Reemplazar el placeholder del radicado
-        $script = str_replace('BPL_RADICADO', json_encode($radicado), $script);
+        $script = str_replace('RADICADO_PLACEHOLDER', $radicado, $script);
 
         Log::info('Browserless: iniciando flujo Tyba', ['radicado' => $radicado]);
 
