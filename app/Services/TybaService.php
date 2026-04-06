@@ -32,7 +32,7 @@ class TybaService
             return null;
         }
 
-        // Paso 1: Obtener sesion y viewstate de Tyba
+        // Paso 1: Intentar SIN captcha primero (Tyba no siempre lo exige)
         $session = $this->initSession();
 
         if (! $session) {
@@ -41,25 +41,20 @@ class TybaService
             return null;
         }
 
-        // Paso 2: Intentar resolver CAPTCHA v3 via 2Captcha
-        $captchaToken = $this->resolveCaptcha();
+        Log::info('Tyba: intento 1 - sin captcha', ['radicado' => $radicado]);
+        $html = $this->submitQuery($radicado, null, $session);
 
-        // Paso 3: Enviar consulta (con o sin captcha)
-        $html = $this->submitQuery($radicado, $captchaToken, $session);
+        // Paso 2: Si fallo, intentar con captcha v3
+        if (! $html) {
+            Log::info('Tyba: intento 1 fallo, probando con captcha v3', ['radicado' => $radicado]);
+            $captchaToken = $this->resolveCaptcha();
 
-        // Si fallo con captcha, intentar sin captcha
-        if (! $html && $captchaToken) {
-            Log::info('Tyba: reintentando sin captcha', ['radicado' => $radicado]);
-            $session = $this->initSession();
-            if ($session) {
-                $html = $this->submitQuery($radicado, null, $session);
+            if ($captchaToken) {
+                $session = $this->initSession();
+                if ($session) {
+                    $html = $this->submitQuery($radicado, $captchaToken, $session);
+                }
             }
-        }
-
-        // Si fallo sin captcha, intentar sin captcha directamente
-        if (! $html && ! $captchaToken) {
-            Log::info('Tyba: captcha fallo, intentando sin captcha', ['radicado' => $radicado]);
-            $html = $this->submitQuery($radicado, null, $session);
         }
 
         if (! $html) {
@@ -206,19 +201,42 @@ class TybaService
             ->asForm()
             ->post($this->tybaUrl, $formData);
 
-        if (! $response->successful()) {
-            return null;
-        }
-
+        $status = $response->status();
         $body = $response->body();
+        $bodyLen = strlen($body);
 
-        if (str_contains($body, 'El valor de la Capcha no coincide') || str_contains($body, 'Captcha')) {
-            Log::warning('Tyba: captcha rechazado', ['radicado' => $radicado]);
+        Log::info('Tyba: respuesta recibida', [
+            'status' => $status,
+            'body_length' => $bodyLen,
+            'con_captcha' => $captchaToken !== null,
+            'tiene_actuaciones' => str_contains($body, 'grdActuaciones'),
+            'tiene_proceso' => str_contains($body, 'Información del Proceso'),
+        ]);
+
+        if (! $response->successful()) {
+            Log::warning('Tyba: HTTP error', ['status' => $status]);
 
             return null;
         }
 
-        return $body;
+        // Solo rechazar si Tyba dice explicitamente que el captcha fallo
+        if (str_contains($body, 'El valor de la Capcha no coincide')) {
+            Log::warning('Tyba: captcha rechazado explicitamente', ['radicado' => $radicado]);
+
+            return null;
+        }
+
+        // Verificar que la respuesta tiene contenido de proceso (no es solo el form vacio)
+        if (str_contains($body, 'grdActuaciones') || str_contains($body, 'Información del Proceso')) {
+            return $body;
+        }
+
+        Log::info('Tyba: respuesta no contiene datos del proceso', [
+            'radicado' => $radicado,
+            'snippet' => substr(strip_tags($body), 0, 500),
+        ]);
+
+        return null;
     }
 
     private function parseActuaciones(string $html, string $radicado): array
