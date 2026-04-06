@@ -148,19 +148,28 @@ class TybaService
             $cookies[$cookie->getName()] = $cookie->getValue();
         }
 
-        // Extraer __VIEWSTATE y __EVENTVALIDATION
-        $viewstate = $this->extractHiddenField($html, '__VIEWSTATE');
-        $viewstateGenerator = $this->extractHiddenField($html, '__VIEWSTATEGENERATOR');
-        $eventValidation = $this->extractHiddenField($html, '__EVENTVALIDATION');
+        // Extraer todos los campos hidden de ASP.NET
+        $hiddenFields = [];
+        preg_match_all('/<input[^>]*type=["\']hidden["\'][^>]*>/si', $html, $inputs);
+        foreach ($inputs[0] ?? [] as $input) {
+            $name = $value = null;
+            if (preg_match('/name="([^"]*)"/', $input, $nm)) {
+                $name = $nm[1];
+            }
+            if (preg_match('/value="([^"]*)"/', $input, $vm)) {
+                $value = $vm[1];
+            }
+            if ($name !== null) {
+                $hiddenFields[$name] = $value ?? '';
+            }
+        }
 
-        if (! $viewstate) {
+        if (empty($hiddenFields['__VIEWSTATE'])) {
             return null;
         }
 
         return [
-            'viewstate' => $viewstate,
-            'viewstate_generator' => $viewstateGenerator,
-            'event_validation' => $eventValidation,
+            'hidden_fields' => $hiddenFields,
             'cookies' => $cookies,
         ];
     }
@@ -193,15 +202,16 @@ class TybaService
      */
     private function submitQuery(string $radicado, ?string $captchaToken, array $session): array
     {
-        $formData = [
-            '__VIEWSTATE' => $session['viewstate'],
-            '__VIEWSTATEGENERATOR' => $session['viewstate_generator'] ?? '',
-            '__EVENTVALIDATION' => $session['event_validation'] ?? '',
-            'ctl00$MainContent$txtCodigoProceso' => $radicado,
-            'ctl00$MainContent$btnConsultar' => 'Consultar',
-        ];
+        // Incluir todos los campos hidden de ASP.NET
+        $formData = $session['hidden_fields'];
 
+        // Agregar campos del formulario
+        $formData['ctl00$MainContent$txtCodigoProceso'] = $radicado;
+        $formData['ctl00$MainContent$btnConsultar'] = 'Consultar';
+
+        // El campo captcha en Tyba se llama "recaptchaResponse", no "g-recaptcha-response"
         if ($captchaToken) {
+            $formData['recaptchaResponse'] = $captchaToken;
             $formData['g-recaptcha-response'] = $captchaToken;
         }
 

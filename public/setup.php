@@ -313,60 +313,30 @@ try {
                     setup_log('Tipo: no determinado (posible v2/v3)', 'warning');
                 }
 
-                // Prueba directa: POST al form de Tyba sin captcha
+                // Prueba directa: POST con todos los hidden fields
                 setup_log('---debug---');
-                setup_log('Probando POST directo sin captcha...', 'info');
+                setup_log('Probando POST directo...', 'info');
 
                 $tybaUrl = config('services.tyba.url');
                 $tybaHtml = $tybaResp->body();
 
-                // Extraer campos ocultos (atributos en cualquier orden)
-                preg_match('/id="__VIEWSTATE"[^>]*value="([^"]*)"/si', $tybaHtml, $vs);
-                if (empty($vs[1])) {
-                    preg_match('/name="__VIEWSTATE"[^>]*value="([^"]*)"/si', $tybaHtml, $vs);
-                }
-                preg_match('/id="__VIEWSTATEGENERATOR"[^>]*value="([^"]*)"/si', $tybaHtml, $vsg);
-                if (empty($vsg[1])) {
-                    preg_match('/name="__VIEWSTATEGENERATOR"[^>]*value="([^"]*)"/si', $tybaHtml, $vsg);
-                }
-                preg_match('/id="__EVENTVALIDATION"[^>]*value="([^"]*)"/si', $tybaHtml, $ev);
-                if (empty($ev[1])) {
-                    preg_match('/name="__EVENTVALIDATION"[^>]*value="([^"]*)"/si', $tybaHtml, $ev);
-                    if (empty($ev[1])) {
-                        preg_match('/value="([^"]*)"[^>]*id="__EVENTVALIDATION"/si', $tybaHtml, $ev);
-                    }
-                }
-
-                $viewstate = $vs[1] ?? '';
-                $viewstateGen = $vsg[1] ?? '';
-                $eventVal = $ev[1] ?? '';
-
-                setup_log('VIEWSTATE: '.($viewstate ? strlen($viewstate).' chars' : 'NO'), $viewstate ? 'success' : 'error');
-                setup_log('EVENTVALIDATION: '.($eventVal ? strlen($eventVal).' chars' : 'NO'), $eventVal ? 'success' : 'error');
-
-                // Debug: mostrar TODOS los inputs hidden
+                // Extraer TODOS los hidden fields automaticamente
+                $hiddenFields = [];
                 preg_match_all('/<input[^>]*type=["\']hidden["\'][^>]*>/si', $tybaHtml, $hiddenInputs);
-                if (! empty($hiddenInputs[0])) {
-                    setup_log('Campos hidden encontrados: '.count($hiddenInputs[0]), 'info');
-                    foreach ($hiddenInputs[0] as $h) {
-                        $nameMatch = $idMatch = $valLen = '';
-                        preg_match('/name="([^"]*)"/', $h, $nm);
-                        preg_match('/id="([^"]*)"/', $h, $im);
-                        preg_match('/value="([^"]*)"/', $h, $vm);
-                        $name = $nm[1] ?? $im[1] ?? '?';
-                        $valLen = isset($vm[1]) ? strlen($vm[1]).' chars' : 'vacio';
-                        setup_log("  {$name}: {$valLen}", 'muted');
-                    }
-                } else {
-                    // Buscar inputs hidden sin type explicitamente
-                    preg_match_all('/<input[^>]*name="__[^"]*"[^>]*>/si', $tybaHtml, $aspInputs);
-                    setup_log('Inputs hidden: 0 (buscando por name="__*"...)', 'warning');
-                    foreach ($aspInputs[0] ?? [] as $h) {
-                        setup_log('  '.htmlspecialchars(substr($h, 0, 200)), 'muted');
+                foreach ($hiddenInputs[0] ?? [] as $h) {
+                    preg_match('/name="([^"]*)"/', $h, $nm);
+                    preg_match('/value="([^"]*)"/', $h, $vm);
+                    if (! empty($nm[1])) {
+                        $hiddenFields[$nm[1]] = $vm[1] ?? '';
                     }
                 }
 
-                // Extraer cookies
+                setup_log('Hidden fields: '.count($hiddenFields), 'info');
+                foreach ($hiddenFields as $name => $val) {
+                    setup_log("  {$name}: ".(strlen($val) > 0 ? strlen($val).' chars' : 'vacio'), 'muted');
+                }
+
+                // Cookies
                 $cookieJar = $tybaResp->cookies();
                 $cookies = [];
                 foreach ($cookieJar as $c) {
@@ -377,6 +347,13 @@ try {
                 $domain = parse_url($tybaUrl, PHP_URL_HOST);
                 $radicadoNum = preg_replace('/[^0-9]/', '', $case->external_case_number);
 
+                // Construir form data con TODOS los hidden fields + datos del form
+                $formData = $hiddenFields;
+                $formData['ctl00$MainContent$txtCodigoProceso'] = $radicadoNum;
+                $formData['ctl00$MainContent$btnConsultar'] = 'Consultar';
+
+                setup_log('POST fields: '.implode(', ', array_keys($formData)), 'muted');
+
                 $postResp = Http::timeout(30)
                     ->withHeaders([
                         'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -384,13 +361,7 @@ try {
                     ])
                     ->withCookies($cookies, $domain)
                     ->asForm()
-                    ->post($tybaUrl, [
-                        '__VIEWSTATE' => $viewstate,
-                        '__VIEWSTATEGENERATOR' => $viewstateGen,
-                        '__EVENTVALIDATION' => $eventVal,
-                        'ctl00$MainContent$txtCodigoProceso' => $radicadoNum,
-                        'ctl00$MainContent$btnConsultar' => 'Consultar',
-                    ]);
+                    ->post($tybaUrl, $formData);
 
                 $postStatus = $postResp->status();
                 $postBody = $postResp->body();
@@ -401,9 +372,10 @@ try {
                 setup_log('Tiene "del Proceso": '.(str_contains($postBody, 'del Proceso') ? 'SI' : 'NO'), str_contains($postBody, 'del Proceso') ? 'success' : 'warning');
                 setup_log('Tiene "grdActuaciones": '.(str_contains($postBody, 'grdActuaciones') ? 'SI' : 'NO'), str_contains($postBody, 'grdActuaciones') ? 'success' : 'warning');
                 setup_log('Tiene "Capcha": '.(str_contains($postBody, 'Capcha') ? 'SI' : 'NO'), str_contains($postBody, 'Capcha') ? 'warning' : 'success');
+                setup_log('Tiene "error": '.(str_contains($postBody, 'lblMensajeError') ? 'SI' : 'NO'), str_contains($postBody, 'lblMensajeError') ? 'warning' : 'success');
 
-                // Mostrar snippet del texto
-                $snippet = substr(strip_tags($postBody), 0, 800);
+                // Mostrar snippet
+                $snippet = substr(strip_tags($postBody), 0, 1000);
                 $snippet = preg_replace('/\s+/', ' ', $snippet);
                 setup_log('---snippet---');
                 setup_log(trim($snippet), 'muted');
