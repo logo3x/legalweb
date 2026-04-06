@@ -347,10 +347,77 @@ try {
                 $domain = parse_url($tybaUrl, PHP_URL_HOST);
                 $radicadoNum = preg_replace('/[^0-9]/', '', $case->external_case_number);
 
+                // Resolver captcha v3 via 2Captcha
+                setup_log('---captchasolve---');
+                setup_log('Enviando a 2Captcha (v3, action=submit)...', 'info');
+
+                $captchaToken = null;
+                $captchaResp = Http::timeout(10)->get('https://2captcha.com/in.php', [
+                    'key' => $apiKey,
+                    'method' => 'userrecaptcha',
+                    'googlekey' => config('services.tyba.sitekey'),
+                    'pageurl' => $tybaUrl,
+                    'version' => 'v3',
+                    'action' => 'submit',
+                    'min_score' => 0.3,
+                    'json' => 1,
+                ]);
+
+                $captchaJson = $captchaResp->json();
+                setup_log('2Captcha in.php: '.json_encode($captchaJson), $captchaJson['status'] ?? 0 ? 'success' : 'error');
+
+                if (($captchaJson['status'] ?? 0) === 1) {
+                    $captchaId = $captchaJson['request'];
+                    setup_log("Captcha ID: {$captchaId}, esperando resolucion...", 'info');
+
+                    ob_flush();
+                    flush();
+
+                    for ($i = 0; $i < 24; $i++) {
+                        sleep(5);
+                        $solveResp = Http::timeout(10)->get('https://2captcha.com/res.php', [
+                            'key' => $apiKey,
+                            'action' => 'get',
+                            'id' => $captchaId,
+                            'json' => 1,
+                        ]);
+                        $solveJson = $solveResp->json();
+
+                        if (($solveJson['status'] ?? 0) === 1) {
+                            $captchaToken = $solveJson['request'];
+                            setup_log('Captcha resuelto! Token: '.substr($captchaToken, 0, 40).'...', 'success');
+
+                            break;
+                        }
+
+                        if (($solveJson['request'] ?? '') !== 'CAPCHA_NOT_READY') {
+                            setup_log('2Captcha error: '.json_encode($solveJson), 'error');
+
+                            break;
+                        }
+
+                        if ($i % 4 === 0) {
+                            setup_log('Esperando... ('.($i * 5).'s)', 'muted');
+                        }
+                    }
+
+                    if (! $captchaToken) {
+                        setup_log('Captcha no resuelto despues de esperar', 'error');
+                    }
+                }
+
                 // Construir form data con TODOS los hidden fields + datos del form
                 $formData = $hiddenFields;
                 $formData['ctl00$MainContent$txtCodigoProceso'] = $radicadoNum;
                 $formData['ctl00$MainContent$btnConsultar'] = 'Consultar';
+
+                if ($captchaToken) {
+                    $formData['recaptchaResponse'] = $captchaToken;
+                    $formData['g-recaptcha-response'] = $captchaToken;
+                    setup_log('POST con captcha token', 'success');
+                } else {
+                    setup_log('POST sin captcha token', 'warning');
+                }
 
                 setup_log('POST fields: '.implode(', ', array_keys($formData)), 'muted');
 
@@ -781,6 +848,7 @@ $baseUrl = "?key={$secret}";
                                     'debug' => 'Prueba directa',
                                     'snippet' => 'Respuesta de Tyba (texto)',
                                     'sync' => 'Sincronizacion',
+                                    'captchasolve' => 'Resolucion Captcha',
                                     'captchajs' => 'JavaScript reCAPTCHA',
                                     'logs' => 'Logs recientes',
                                 ];
