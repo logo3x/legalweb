@@ -300,6 +300,28 @@ try {
         }
     }
 
+    if ($step === 'logs') {
+        $logFile = storage_path('logs/laravel.log');
+        if (file_exists($logFile)) {
+            $lines = array_slice(file($logFile), -30);
+            foreach ($lines as $l) {
+                $l = trim($l);
+                if (! $l) {
+                    continue;
+                }
+                if (str_contains($l, 'ERROR')) {
+                    setup_log(substr($l, 0, 400), 'error');
+                } elseif (str_contains($l, 'WARNING')) {
+                    setup_log(substr($l, 0, 400), 'warning');
+                } else {
+                    setup_log(substr($l, 0, 400), 'muted');
+                }
+            }
+        } else {
+            setup_log('Archivo de log no encontrado', 'warning');
+        }
+    }
+
     if ($step === 'deadlines') {
         Artisan::call('app:check-deadlines');
         setup_log('Deadlines verificados', 'success');
@@ -541,6 +563,7 @@ $baseUrl = "?key={$secret}";
             <a href="<?= $baseUrl ?>&step=sync_tyba&case_id=" class="<?= $step === 'sync_tyba' ? 'active' : '' ?>">Sincronizar</a>
 
             <div class="group-title">Otros</div>
+            <a href="<?= $baseUrl ?>&step=logs" class="<?= $step === 'logs' ? 'active' : '' ?>">Logs</a>
             <a href="<?= $baseUrl ?>&step=deadlines" class="<?= $step === 'deadlines' ? 'active' : '' ?>">Deadlines</a>
             <a href="<?= $baseUrl ?>&step=demo_reminders&user_id=" class="<?= $step === 'demo_reminders' ? 'active' : '' ?>">Reminders demo</a>
             <a href="<?= $baseUrl ?>&step=fresh" class="danger <?= $step === 'fresh' ? 'active' : '' ?>">Fresh (peligro)</a>
