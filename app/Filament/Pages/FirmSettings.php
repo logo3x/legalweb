@@ -2,8 +2,10 @@
 
 namespace App\Filament\Pages;
 
+use App\Models\LegalAcceptance;
 use BackedEnum;
 use Filament\Actions\Action;
+use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Textarea;
@@ -129,6 +131,17 @@ class FirmSettings extends Page
                             ->columnSpanFull()
                             ->rows(3),
                     ]),
+                Section::make('Terminos y Condiciones')
+                    ->schema([
+                        Placeholder::make('terms_info')
+                            ->content('Al utilizar LegalWeb usted acepta nuestros Terminos y Condiciones y la Politica de Privacidad. Puede consultarlos en cualquier momento.'),
+                        Checkbox::make('accept_terms')
+                            ->label('He leido y acepto los Terminos y Condiciones y la Politica de Privacidad y Tratamiento de Datos Personales')
+                            ->required(fn () => ! (auth()->user()->firm?->onboarding_completed ?? false))
+                            ->dehydrated(false)
+                            ->visible(fn () => ! (auth()->user()->firm?->onboarding_completed ?? false)),
+                    ])
+                    ->visible(fn () => ! (auth()->user()->firm?->onboarding_completed ?? false)),
             ]);
     }
 
@@ -138,9 +151,20 @@ class FirmSettings extends Page
 
         $firm = auth()->user()->firm;
         $wasOnboarding = ! $firm->onboarding_completed;
+        unset($data['accept_terms']);
         $firm->update(array_merge($data, ['onboarding_completed' => true]));
 
         if ($wasOnboarding) {
+            LegalAcceptance::create([
+                'acceptor_type' => 'abogado',
+                'acceptor_name' => auth()->user()->name,
+                'acceptor_email' => auth()->user()->email,
+                'document_type' => 'terminos_registro',
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+                'user_id' => auth()->id(),
+            ]);
+
             $this->js("
                 Swal.fire({
                     icon: 'success',
