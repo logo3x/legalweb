@@ -380,15 +380,54 @@ try {
                 setup_log('---snippet---');
                 setup_log(trim($snippet), 'muted');
 
-                // Debug: analizar JavaScript de reCAPTCHA
+                // Debug: analizar reCAPTCHA en HTML
                 setup_log('---captchajs---');
-                $lines = explode("\n", $tybaHtml);
-                foreach ($lines as $line) {
-                    if (stripos($line, 'grecaptcha') !== false || stripos($line, 'recaptchaResponse') !== false || stripos($line, 'onSubmit') !== false || stripos($line, 'callback') !== false) {
-                        $clean = trim($line);
-                        if (strlen($clean) > 5 && strlen($clean) < 500) {
-                            setup_log($clean, 'muted');
-                        }
+
+                // Buscar grecaptcha.execute con contexto
+                if (preg_match('/grecaptcha\.execute\s*\(([^)]{0,200})\)/si', $tybaHtml, $execMatch)) {
+                    setup_log('grecaptcha.execute('.($execMatch[1] ?? '...').')', 'info');
+                } else {
+                    setup_log('grecaptcha.execute no encontrado en HTML', 'warning');
+                }
+
+                // Buscar grecaptcha.render
+                if (preg_match('/grecaptcha\.render\s*\(([^)]{0,200})\)/si', $tybaHtml, $renderMatch)) {
+                    setup_log('grecaptcha.render('.($renderMatch[1] ?? '...').')', 'info');
+                }
+
+                // Buscar data-sitekey
+                if (preg_match('/data-sitekey=["\']([^"\']+)["\']/i', $tybaHtml, $dsk)) {
+                    setup_log('data-sitekey: '.$dsk[1], 'info');
+                }
+
+                // Buscar data-callback
+                if (preg_match('/data-callback=["\']([^"\']+)["\']/i', $tybaHtml, $dcb)) {
+                    setup_log('data-callback: '.$dcb[1], 'info');
+                }
+
+                // Buscar data-size=invisible
+                if (preg_match('/data-size=["\']invisible["\']/i', $tybaHtml)) {
+                    setup_log('data-size: invisible (es v2 invisible!)', 'warning');
+                }
+
+                // Buscar recaptchaResponse asignacion
+                if (preg_match('/recaptchaResponse[^;]{0,100}/si', $tybaHtml, $rrm)) {
+                    setup_log('recaptchaResponse usage: '.trim($rrm[0]), 'muted');
+                }
+
+                // Buscar la URL del script de recaptcha (v2 vs v3)
+                if (preg_match('/recaptcha\/api\.js\?([^"\'>\s]+)/i', $tybaHtml, $apiJs)) {
+                    setup_log('reCAPTCHA API: api.js?'.$apiJs[1], 'info');
+                } elseif (preg_match('/recaptcha\/(enterprise|api)\.js/i', $tybaHtml, $apiJs)) {
+                    setup_log('reCAPTCHA API: '.$apiJs[0], 'info');
+                }
+
+                // Buscar todo el bloque de script que menciona recaptcha
+                preg_match_all('/<script[^>]*>([^<]*(?:recaptcha|grecaptcha)[^<]*)<\/script>/si', $tybaHtml, $scripts);
+                foreach ($scripts[1] ?? [] as $i => $script) {
+                    $script = trim($script);
+                    if (strlen($script) > 5) {
+                        setup_log('Script '.($i + 1).': '.substr($script, 0, 400), 'muted');
                     }
                 }
 
