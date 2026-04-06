@@ -331,9 +331,9 @@ class TybaService
     {
         $actuaciones = [];
 
-        // Buscar tabla de actuaciones
-        if (! preg_match('/<table[^>]*id="[^"]*grdActuaciones[^"]*"[^>]*>(.*?)<\/table>/si', $html, $tableMatch)) {
-            Log::warning('Tyba: no se encontro tabla de actuaciones', ['radicado' => $radicado]);
+        // Buscar tabla MainContent_grdActuaciones
+        if (! preg_match('/<table[^>]*id="MainContent_grdActuaciones"[^>]*>(.*?)<\/table>/si', $html, $tableMatch)) {
+            Log::error('Tyba: tabla MainContent_grdActuaciones no encontrada', ['radicado' => $radicado]);
 
             return [];
         }
@@ -347,28 +347,33 @@ class TybaService
             return [];
         }
 
+        // Columnas: (icono), Ciclo, Tipo Actuación, Fecha Actuación, Fecha Registro
         foreach (array_slice($rows[1], 1) as $row) {
             preg_match_all('/<td[^>]*>(.*?)<\/td>/si', $row, $cells);
 
-            if (empty($cells[1]) || count($cells[1]) < 2) {
+            if (empty($cells[1]) || count($cells[1]) < 4) {
                 continue;
             }
 
-            $date = strip_tags(trim($cells[1][0] ?? ''));
-            $description = strip_tags(trim($cells[1][1] ?? ''));
+            $ciclo = strip_tags(trim($cells[1][1] ?? ''));
+            $tipoActuacion = strip_tags(trim($cells[1][2] ?? ''));
+            $fechaActuacion = strip_tags(trim($cells[1][3] ?? ''));
+            $fechaRegistro = strip_tags(trim($cells[1][4] ?? ''));
 
-            if (! $date || ! $description) {
+            if (! $fechaActuacion || ! $tipoActuacion) {
                 continue;
             }
+
+            $description = $tipoActuacion.($ciclo ? " ({$ciclo})" : '');
 
             $actuaciones[] = [
-                'date' => $date,
+                'date' => $fechaActuacion,
                 'description' => $description,
-                'attachments' => isset($cells[1][2]) ? (int) strip_tags(trim($cells[1][2])) : 0,
+                'attachments' => 0,
             ];
         }
 
-        Log::warning('Tyba: actuaciones encontradas', ['radicado' => $radicado, 'count' => count($actuaciones)]);
+        Log::error('Tyba: actuaciones encontradas', ['radicado' => $radicado, 'count' => count($actuaciones)]);
 
         return $actuaciones;
     }
