@@ -79,7 +79,7 @@ class TybaService
             'googlekey' => $this->sitekey,
             'pageurl' => $this->tybaUrl,
             'version' => 'v3',
-            'action' => 'consultar',
+            'action' => 'submit',
             'min_score' => 0.3,
             'json' => 1,
         ]);
