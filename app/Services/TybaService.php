@@ -91,22 +91,31 @@ class TybaService
             $formFields[$select[1]] = $value;
         }
 
-        // POST normal: click en "Consultar" de Actuaciones (sin AJAX/ScriptManager)
-        $formFields['ctl00$MainContent$btnConsultar'] = 'Consultar';
-        $formFields['ctl00$MainContent$ddlCicloBusqueda'] = '0';
+        // POST: simular cambio en dropdown ddlCicloBusqueda (trigger __doPostBack valido)
+        // El dropdown tiene onchange=__doPostBack registrado en EventValidation
+        $formFields['__EVENTTARGET'] = 'ctl00$MainContent$ddlCicloBusqueda';
+        $formFields['__EVENTARGUMENT'] = '';
+        $formFields['ctl00$MainContent$ddlCicloBusqueda'] = '52'; // GENERALES
+        // ScriptManager async postback
+        $formFields['ctl00$ctl09'] = 'ctl00$MainContent$UpdatePanel_Actuaciones|ctl00$MainContent$ddlCicloBusqueda';
 
         $domain = parse_url($processUrl, PHP_URL_HOST);
         $postUrl = $baseUrl.'/frmConsultaProceso.aspx';
 
         $postResp = Http::timeout(30)
-            ->withHeaders(['User-Agent' => $ua, 'Referer' => $processUrl])
+            ->withHeaders([
+                'User-Agent' => $ua,
+                'Referer' => $processUrl,
+                'X-MicrosoftAjax' => 'Delta=true',
+                'X-Requested-With' => 'XMLHttpRequest',
+            ])
             ->withCookies($cookies, $domain)
             ->asForm()
             ->post($postUrl, $formFields);
 
         if ($postResp->successful()) {
             $postHtml = $postResp->body();
-            Log::error('Tyba: POST actuaciones', [
+            Log::error('Tyba: POST actuaciones dropdown', [
                 'size' => strlen($postHtml),
                 'has_grid' => str_contains($postHtml, 'MainContent_grdActuaciones'),
                 'snippet' => substr($postHtml, 0, 300),
@@ -115,6 +124,8 @@ class TybaService
             if (str_contains($postHtml, 'MainContent_grdActuaciones')) {
                 return $this->parseActuaciones($postHtml, $radicado);
             }
+        } else {
+            Log::error('Tyba: POST fallo', ['status' => $postResp->status()]);
         }
 
         Log::error('Tyba: no se pudieron cargar actuaciones', ['radicado' => $radicado]);
