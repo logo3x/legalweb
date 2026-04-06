@@ -7,6 +7,7 @@ use App\Models\CaseType;
 use App\Models\Client;
 use App\Models\LegalCase;
 use App\Models\User;
+use App\Services\TybaService;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Forms\Components\Select;
@@ -23,13 +24,13 @@ class ListLegalCases extends ListRecords
     {
         return [
             Action::make('import_tyba')
-                ->label('Importar Radicado')
+                ->label('Importar desde Tyba')
                 ->icon('heroicon-o-arrow-down-tray')
                 ->color('info')
                 ->modalWidth('xl')
-                ->modalHeading('Importar Proceso por Radicado')
-                ->modalDescription('Cree un caso rapidamente a partir del radicado judicial.')
-                ->modalSubmitActionLabel('Crear Caso')
+                ->modalHeading('Importar Proceso desde Rama Judicial')
+                ->modalDescription('Ingrese el radicado judicial. El sistema intentara importar la informacion automaticamente desde Tyba.')
+                ->modalSubmitActionLabel('Importar Proceso')
                 ->form([
                     TextInput::make('radicado')
                         ->label('Codigo de Proceso (Radicado)')
@@ -38,16 +39,6 @@ class ListLegalCases extends ListRecords
                         ->maxLength(50)
                         ->placeholder('Ej: 68081310300120240001800')
                         ->helperText('23 digitos del radicado asignado por la Rama Judicial.'),
-                    TextInput::make('title')
-                        ->label('Titulo del Caso')
-                        ->required()
-                        ->maxLength(255)
-                        ->placeholder('Ej: Demanda laboral contra Empresa XYZ'),
-                    Select::make('case_type_id')
-                        ->label('Tipo de Proceso')
-                        ->options(fn () => CaseType::pluck('name', 'id'))
-                        ->required()
-                        ->searchable(),
                     Select::make('client_id')
                         ->label('Cliente')
                         ->options(fn () => Client::where('firm_id', auth()->user()->firm_id)
@@ -60,12 +51,6 @@ class ListLegalCases extends ListRecords
                         ->options(fn () => User::where('firm_id', auth()->user()->firm_id)->pluck('name', 'id'))
                         ->default(fn () => auth()->id())
                         ->required(),
-                    TextInput::make('court')
-                        ->label('Juzgado / Despacho')
-                        ->placeholder('Ej: Juzgado 1 Civil del Circuito'),
-                    TextInput::make('opposing_party')
-                        ->label('Contraparte')
-                        ->placeholder('Nombre de la parte contraria'),
                 ])
                 ->action(function (array $data) {
                     $radicado = preg_replace('/[^0-9]/', '', $data['radicado']);
@@ -86,6 +71,47 @@ class ListLegalCases extends ListRecords
                         return;
                     }
 
+                    // Intentar importar datos de Tyba
+                    $tyba = app(TybaService::class);
+                    $info = $tyba->extractProcessInfo($radicado);
+
+                    // Datos del proceso (de Tyba o defaults)
+                    $title = 'Proceso Judicial';
+                    $court = null;
+                    $opposingParty = null;
+                    $description = null;
+                    $caseTypeId = CaseType::first()?->id;
+
+                    if ($info && ! empty($info['despacho'])) {
+                        $title = ($info['clase_proceso'] ?: 'Proceso Judicial').' - '.$radicado;
+                        $court = $info['despacho'];
+                        $caseTypeId = CaseType::firstOrCreate(['name' => $info['especialidad'] ?: 'General'])->id;
+
+                        // Sujetos
+                        $demandados = collect($info['sujetos'])->filter(fn ($s) => str_contains(strtolower($s['rol']), 'demandado'))->pluck('nombre')->join(', ');
+                        $demandantes = collect($info['sujetos'])->filter(fn ($s) => str_contains(strtolower($s['rol']), 'demandante'))->pluck('nombre')->join(', ');
+                        $opposingParty = $demandados ?: $demandantes;
+
+                        if ($demandantes && $demandados) {
+                            $title = ($info['clase_proceso'] ?: 'Proceso').' - '.mb_substr($demandantes, 0, 40).' vs '.mb_substr($demandados, 0, 40);
+                        }
+
+                        $description = "Importado desde Tyba\n";
+                        $description .= "Tipo: {$info['tipo_proceso']}\n";
+                        $description .= "Clase: {$info['clase_proceso']}\n";
+                        $description .= "Departamento: {$info['departamento']} - {$info['ciudad']}\n";
+                        $description .= "Despacho: {$info['despacho']}\n";
+                        if ($info['email']) {
+                            $description .= "Email: {$info['email']}\n";
+                        }
+                        if (! empty($info['sujetos'])) {
+                            $description .= "\nSujetos:\n";
+                            foreach ($info['sujetos'] as $s) {
+                                $description .= "- {$s['rol']}: {$s['nombre']}\n";
+                            }
+                        }
+                    }
+
                     // Generar case_number unico
                     $year = now()->format('Y');
                     $lastCase = LegalCase::withoutGlobalScopes()
@@ -103,14 +129,15 @@ class ListLegalCases extends ListRecords
                             'firm_id' => auth()->user()->firm_id,
                             'case_number' => $caseNumber,
                             'external_case_number' => $radicado,
-                            'title' => $data['title'],
-                            'case_type_id' => $data['case_type_id'],
+                            'title' => $title,
+                            'description' => $description,
+                            'case_type_id' => $caseTypeId,
                             'client_id' => $data['client_id'],
                             'user_id' => $data['user_id'],
                             'status' => 'abierto',
                             'priority' => 'media',
-                            'court' => $data['court'] ?? null,
-                            'opposing_party' => $data['opposing_party'] ?? null,
+                            'court' => $court,
+                            'opposing_party' => $opposingParty,
                         ]);
                     } catch (QueryException) {
                         Notification::make()
@@ -122,9 +149,13 @@ class ListLegalCases extends ListRecords
                         return;
                     }
 
+                    $msg = $info && ! empty($info['despacho'])
+                        ? "Caso {$caseNumber} creado con datos importados de Tyba."
+                        : "Caso {$caseNumber} creado. No se pudieron importar datos de Tyba, complete la informacion manualmente.";
+
                     Notification::make()
-                        ->title('Caso creado exitosamente')
-                        ->body("Caso {$caseNumber} creado con radicado {$radicado}.")
+                        ->title('Caso creado')
+                        ->body($msg)
                         ->success()
                         ->persistent()
                         ->send();
