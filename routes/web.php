@@ -13,12 +13,14 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// Google Auth
-Route::get('/auth/google', [GoogleController::class, 'redirect'])->name('auth.google');
-Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name('auth.google.callback');
+// Google Auth (rate limited)
+Route::middleware('throttle:10,1')->group(function () {
+    Route::get('/auth/google', [GoogleController::class, 'redirect'])->name('auth.google');
+    Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name('auth.google.callback');
+});
 
-// Portal del Cliente
-Route::prefix('portal')->name('portal.')->group(function () {
+// Portal del Cliente (rate limited)
+Route::prefix('portal')->name('portal.')->middleware('throttle:30,1')->group(function () {
     Route::get('/terminos', [PortalController::class, 'terms'])->name('terms');
     Route::get('/privacidad', [PortalController::class, 'privacy'])->name('privacy');
     Route::get('/{token}', [PortalController::class, 'show'])->name('show');
@@ -68,20 +70,24 @@ Route::post('/admin/team/assign-cases/{user}', function (User $user, Request $re
 
 // Download generated documents
 Route::get('/download/{filename}', function (string $filename) {
+    $filename = basename($filename);
+
+    if (! preg_match('/^[a-zA-Z0-9_\-\.]+\.(docx|pdf|xlsx|csv)$/', $filename)) {
+        abort(403, 'Tipo de archivo no permitido.');
+    }
+
     $path = storage_path('app/public/generated/'.$filename);
 
     if (! file_exists($path)) {
         abort(404);
     }
 
-    return response()->download($path, $filename, [
-        'Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    ]);
-})->middleware('auth')->name('download.file')->where('filename', '.*');
+    return response()->download($path, $filename);
+})->middleware('auth')->name('download.file');
 
 // Wompi Payments
 Route::middleware('auth')->group(function () {
     Route::match(['get', 'post'], '/wompi/checkout', [WompiController::class, 'checkout'])->name('wompi.checkout');
     Route::get('/wompi/callback', [WompiController::class, 'callback'])->name('wompi.callback');
 });
-Route::post('/wompi/webhook', [WompiController::class, 'webhook'])->name('wompi.webhook');
+Route::post('/wompi/webhook', [WompiController::class, 'webhook'])->middleware('throttle:60,1')->name('wompi.webhook');

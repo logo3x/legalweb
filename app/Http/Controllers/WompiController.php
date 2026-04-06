@@ -145,20 +145,24 @@ class WompiController extends Controller
             return response()->json(['status' => 'ignored']);
         }
 
-        // Verificar firma
+        // Verificar firma (OBLIGATORIO)
         $signature = $request->json('signature.checksum');
         $properties = $request->json('signature.properties', []);
         $timestamp = $request->json('timestamp');
 
-        if ($signature && $properties) {
-            $values = collect($properties)->map(fn ($prop) => data_get($request->json(), "data.transaction.{$prop}"))->implode('');
-            $expectedSignature = hash('sha256', $values.$timestamp.config('services.wompi.events_secret'));
+        if (! $signature || empty($properties) || ! $timestamp) {
+            Log::warning('Wompi webhook: firma faltante', ['reference' => $reference]);
 
-            if ($signature !== $expectedSignature) {
-                Log::warning('Wompi webhook: firma invalida', ['reference' => $reference]);
+            return response()->json(['status' => 'missing_signature'], 401);
+        }
 
-                return response()->json(['status' => 'invalid_signature'], 401);
-            }
+        $values = collect($properties)->map(fn ($prop) => data_get($request->json(), "data.transaction.{$prop}"))->implode('');
+        $expectedSignature = hash('sha256', $values.$timestamp.config('services.wompi.events_secret'));
+
+        if (! hash_equals($expectedSignature, $signature)) {
+            Log::warning('Wompi webhook: firma invalida', ['reference' => $reference]);
+
+            return response()->json(['status' => 'invalid_signature'], 401);
         }
 
         $event = $request->json('event');

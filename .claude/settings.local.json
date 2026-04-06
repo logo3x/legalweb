@@ -27,7 +27,8 @@
       "Bash(xargs grep:*)",
       "Bash(grep -n \"modifyQueryUsing\" /c/wamp64/www/legalweb/app/Filament/Resources/*/Tables/*.php)",
       "Bash(composer install:*)",
-      "Bash(ls c:/wamp64/www/legalweb/vendor/bin/pint*)"
+      "Bash(ls c:/wamp64/www/legalweb/vendor/bin/pint*)",
+      "Bash(grep -v \"Resources$\")"
     ]
   }
 }
