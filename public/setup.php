@@ -466,12 +466,39 @@ try {
                 setup_log('Tiene "grdActuaciones": '.(str_contains($postBody, 'grdActuaciones') ? 'SI' : 'NO'), str_contains($postBody, 'grdActuaciones') ? 'success' : 'warning');
                 setup_log('Tiene "Capcha": '.(str_contains($postBody, 'Capcha') ? 'SI' : 'NO'), str_contains($postBody, 'Capcha') ? 'warning' : 'success');
                 setup_log('Tiene "error": '.(str_contains($postBody, 'lblMensajeError') ? 'SI' : 'NO'), str_contains($postBody, 'lblMensajeError') ? 'warning' : 'success');
+                setup_log('Tiene "pnlResultado": '.(str_contains($postBody, 'pnlResultadoConsulta') ? 'SI' : 'NO'), str_contains($postBody, 'pnlResultadoConsulta') ? 'success' : 'info');
+                setup_log('Tiene "MensajeInformativo": '.(str_contains($postBody, 'MensajeInformativo') ? 'SI' : 'NO'), str_contains($postBody, 'MensajeInformativo') ? 'warning' : 'info');
+                setup_log('Tiene "grdProceso": '.(str_contains($postBody, 'grdProceso') ? 'SI' : 'NO'), str_contains($postBody, 'grdProceso') ? 'success' : 'info');
+                setup_log('Tiene "text-danger": '.(str_contains($postBody, 'text-danger') ? 'SI' : 'NO'), str_contains($postBody, 'text-danger') ? 'warning' : 'info');
 
-                // Mostrar snippet
-                $snippet = substr(strip_tags($postBody), 0, 1000);
+                // Buscar cualquier mensaje visible (display != none)
+                if (preg_match('/style="[^"]*display:\s*block[^"]*"[^>]*>(.*?)</si', $postBody, $visibleMsg)) {
+                    setup_log('Mensaje visible: '.strip_tags($visibleMsg[1]), 'warning');
+                }
+
+                // Buscar validation summary contenido
+                if (preg_match('/ValidationSummary[^>]*>(.*?)<\/div>/si', $postBody, $valSum)) {
+                    $valText = trim(strip_tags($valSum[1]));
+                    if ($valText) {
+                        setup_log('Validation: '.$valText, 'error');
+                    }
+                }
+
+                // Comparar VIEWSTATE del POST response vs original
+                if (preg_match('/name="__VIEWSTATE"[^>]*value="([^"]{0,20})/', $postBody, $newVs)) {
+                    $origVsStart = substr($formFields['__VIEWSTATE'] ?? '', 0, 20);
+                    $sameVs = ($newVs[1] === $origVsStart);
+                    setup_log('ViewState cambio: '.($sameVs ? 'NO (identico)' : 'SI (diferente)'), $sameVs ? 'warning' : 'success');
+                }
+
+                // Mostrar snippet con mas contexto
+                $snippet = strip_tags($postBody);
                 $snippet = preg_replace('/\s+/', ' ', $snippet);
                 setup_log('---snippet---');
-                setup_log(trim($snippet), 'muted');
+                // Mostrar parte del medio (no solo el inicio con Analytics)
+                $mid = substr($snippet, (int) (strlen($snippet) / 3), 500);
+                setup_log('Inicio: '.substr(trim($snippet), 0, 300), 'muted');
+                setup_log('Medio: '.trim($mid), 'muted');
 
                 // Debug: analizar reCAPTCHA en HTML
                 setup_log('---captchajs---');
