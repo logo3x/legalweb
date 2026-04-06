@@ -28,16 +28,26 @@ class TybaService
             return null;
         }
 
-        // Usar Browserless para automatizar el flujo completo:
-        // frmConsulta → buscar → click resultado → frmConsultaProceso
+        // Usar Browserless con reintentos (captcha es intermitente)
         $browserless = app(BrowserlessService::class);
-        $html = $browserless->fetchTybaProcess($radicado);
+        $html = null;
 
-        if (! $html || ! str_contains($html, 'del Proceso')) {
-            Log::error('Tyba: no se pudo obtener proceso via Browserless', [
-                'radicado' => $radicado,
-                'html_size' => $html ? strlen($html) : 0,
-            ]);
+        for ($attempt = 1; $attempt <= 3; $attempt++) {
+            Log::info('Browserless: intento '.$attempt.' de 3', ['radicado' => $radicado]);
+            $html = $browserless->fetchTybaProcess($radicado);
+
+            if ($html && str_contains($html, 'del Proceso')) {
+                break;
+            }
+
+            $html = null;
+            if ($attempt < 3) {
+                sleep(2);
+            }
+        }
+
+        if (! $html) {
+            Log::error('Tyba: no se pudo obtener proceso despues de 3 intentos', ['radicado' => $radicado]);
 
             return null;
         }
