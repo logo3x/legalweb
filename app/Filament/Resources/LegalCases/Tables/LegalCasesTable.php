@@ -100,9 +100,16 @@ class LegalCasesTable
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                    ForceDeleteBulkAction::make(),
-                    RestoreBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->visible(fn () => auth()->user()->isAdmin())
+                        ->modalHeading('Eliminar casos seleccionados')
+                        ->modalDescription('Los casos seleccionados se moveran a la papelera. Podra restaurarlos despues.'),
+                    ForceDeleteBulkAction::make()
+                        ->visible(fn () => auth()->user()->isAdmin())
+                        ->modalHeading('Eliminar permanentemente')
+                        ->modalDescription('ADVERTENCIA IRREVERSIBLE: Se eliminaran permanentemente todos los casos seleccionados con sus documentos, actuaciones y registros. Esta accion NO se puede deshacer.'),
+                    RestoreBulkAction::make()
+                        ->visible(fn () => auth()->user()->isAdmin()),
                 ]),
             ]);
     }

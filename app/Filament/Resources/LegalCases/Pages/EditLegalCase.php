@@ -18,10 +18,21 @@ class EditLegalCase extends EditRecord
 
     protected function getHeaderActions(): array
     {
+        $isAdmin = auth()->user()->isAdmin();
+
         return [
-            DeleteAction::make(),
-            ForceDeleteAction::make(),
-            RestoreAction::make(),
+            DeleteAction::make()
+                ->visible($isAdmin)
+                ->modalHeading('Eliminar caso')
+                ->modalDescription('Esta accion movera el caso a la papelera. Podra restaurarlo despues si lo necesita. Se conservaran los documentos, actuaciones y registros asociados.')
+                ->modalSubmitActionLabel('Si, eliminar caso'),
+            ForceDeleteAction::make()
+                ->visible($isAdmin)
+                ->modalHeading('Eliminar caso permanentemente')
+                ->modalDescription('ADVERTENCIA: Esta accion es IRREVERSIBLE. Se eliminaran permanentemente el caso, todos sus documentos, actuaciones, flujos de proceso y registros asociados. Esta informacion NO podra recuperarse.')
+                ->modalSubmitActionLabel('Entiendo, eliminar permanentemente'),
+            RestoreAction::make()
+                ->visible($isAdmin),
         ];
     }
 
