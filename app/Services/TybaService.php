@@ -197,11 +197,16 @@ class TybaService
         // Incluir todos los campos hidden de ASP.NET
         $formData = $session['hidden_fields'];
 
-        // Agregar campos del formulario
-        $formData['ctl00$MainContent$txtCodigoProceso'] = $radicado;
-        $formData['ctl00$MainContent$btnConsultar'] = 'Consultar';
+        // ASP.NET __doPostBack: el boton no se envia como valor,
+        // sino via __EVENTTARGET (como lo hace el JavaScript del form)
+        $formData['__EVENTTARGET'] = 'ctl00$MainContent$btnConsultar';
+        $formData['__EVENTARGUMENT'] = '';
 
-        // El campo captcha en Tyba se llama "recaptchaResponse", no "g-recaptcha-response"
+        // Campo del radicado + tab activa (1 = Proceso)
+        $formData['ctl00$MainContent$txtCodigoProceso'] = $radicado;
+        $formData['ctl00$MainContent$txttp'] = '1';
+
+        // Token de captcha
         if ($captchaToken) {
             $formData['recaptchaResponse'] = $captchaToken;
             $formData['g-recaptcha-response'] = $captchaToken;

@@ -406,17 +406,19 @@ try {
                     }
                 }
 
-                // Construir form data con TODOS los hidden fields + datos del form
+                // Construir form data usando __doPostBack (como lo hace Tyba JS)
                 $formData = $hiddenFields;
+                $formData['__EVENTTARGET'] = 'ctl00$MainContent$btnConsultar';
+                $formData['__EVENTARGUMENT'] = '';
                 $formData['ctl00$MainContent$txtCodigoProceso'] = $radicadoNum;
-                $formData['ctl00$MainContent$btnConsultar'] = 'Consultar';
+                $formData['ctl00$MainContent$txttp'] = '1';
 
                 if ($captchaToken) {
                     $formData['recaptchaResponse'] = $captchaToken;
                     $formData['g-recaptcha-response'] = $captchaToken;
-                    setup_log('POST con captcha token', 'success');
+                    setup_log('POST con captcha + __doPostBack', 'success');
                 } else {
-                    setup_log('POST sin captcha token', 'warning');
+                    setup_log('POST sin captcha + __doPostBack', 'warning');
                 }
 
                 setup_log('POST fields: '.implode(', ', array_keys($formData)), 'muted');
