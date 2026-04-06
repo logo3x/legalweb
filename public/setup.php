@@ -279,27 +279,50 @@ try {
                 $tyba = new TybaService;
                 $info = $tyba->extractProcessInfo($case->external_case_number);
 
-                // Debug: ver HTML raw alrededor del campo codigo
                 $tyba = new TybaService;
-                $debugUrl = dirname(config('services.tyba.url')).'/frmConsultaProceso.aspx?IdProceso='.preg_replace('/[^0-9]/', '', $case->external_case_number);
-                $debugResp = Http::timeout(30)->withHeaders(['User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'])->get($debugUrl);
-                $debugHtml = $debugResp->body();
+                $radicadoNum = preg_replace('/[^0-9]/', '', $case->external_case_number);
+                $baseUrl = dirname(config('services.tyba.url'));
+                $ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 
-                // Buscar el input del codigo
-                if (preg_match('/<input[^>]*MainContent_txtCodigoProceso[^>]*>/si', $debugHtml, $dm)) {
-                    setup_log('Raw input CodigoProceso: '.htmlspecialchars($dm[0]), 'info');
-                } else {
-                    setup_log('Input MainContent_txtCodigoProceso NO encontrado en HTML', 'error');
+                // Paso 1: visitar frmConsulta para obtener session
+                $searchUrl = config('services.tyba.url');
+                $searchResp = Http::timeout(15)->withHeaders(['User-Agent' => $ua])->get($searchUrl);
+                $cookieJar = $searchResp->cookies();
+                $cookies = [];
+                foreach ($cookieJar as $c) {
+                    $cookies[$c->getName()] = $c->getValue();
+                }
+                $domain = parse_url($searchUrl, PHP_URL_HOST);
+                setup_log('Session cookies: '.implode(', ', array_keys($cookies)), ! empty($cookies) ? 'success' : 'error');
+
+                // Paso 2: acceder a frmConsultaProceso CON las cookies de session
+                $processUrl = $baseUrl.'/frmConsultaProceso.aspx?IdProceso='.$radicadoNum;
+                $processResp = Http::timeout(30)
+                    ->withHeaders(['User-Agent' => $ua, 'Referer' => $searchUrl])
+                    ->withCookies($cookies, $domain)
+                    ->get($processUrl);
+
+                $html = $processResp->body();
+                setup_log("GET con session: {$processResp->status()} | ".strlen($html).' bytes', $processResp->successful() ? 'success' : 'error');
+
+                // Verificar si los campos tienen valor
+                preg_match_all('/<input[^>]*MainContent_txt[^>]*value="([^"]+)"[^>]*>/si', $html, $filledInputs);
+                setup_log('Campos con valor: '.count($filledInputs[0] ?? []), count($filledInputs[0] ?? []) > 0 ? 'success' : 'error');
+
+                // Mostrar raw del campo codigo
+                if (preg_match('/<input[^>]*MainContent_txtCodigoProceso[^>]*>/si', $html, $dm)) {
+                    setup_log('CodigoProceso: '.htmlspecialchars(substr($dm[0], 0, 200)), 'info');
+                }
+                if (preg_match('/<input[^>]*MainContent_txtNomDespacho[^>]*>/si', $html, $dm)) {
+                    setup_log('Despacho: '.htmlspecialchars(substr($dm[0], 0, 200)), 'info');
                 }
 
-                // Buscar el input del despacho
-                if (preg_match('/<input[^>]*MainContent_txtNomDespacho[^>]*>/si', $debugHtml, $dm)) {
-                    setup_log('Raw input Despacho: '.htmlspecialchars($dm[0]), 'info');
-                }
-
-                // Buscar cualquier input con value no vacio
-                preg_match_all('/<input[^>]*MainContent_txt[^>]*value="([^"]+)"[^>]*>/si', $debugHtml, $allInputs);
-                setup_log('Inputs MainContent_txt con valor: '.count($allInputs[0] ?? []), count($allInputs[0] ?? []) > 0 ? 'success' : 'error');
+                // Paso 3: probar sin cookies (directo)
+                setup_log('---sincookies---');
+                $directResp = Http::timeout(30)->withHeaders(['User-Agent' => $ua])->get($processUrl);
+                $directHtml = $directResp->body();
+                preg_match_all('/<input[^>]*MainContent_txt[^>]*value="([^"]+)"[^>]*>/si', $directHtml, $directInputs);
+                setup_log('Sin cookies - campos con valor: '.count($directInputs[0] ?? []), count($directInputs[0] ?? []) > 0 ? 'success' : 'error');
 
                 $info = $tyba->extractProcessInfo($case->external_case_number);
 
@@ -615,6 +638,7 @@ $baseUrl = "?key={$secret}";
                                     'cron' => 'Cron Job',
                                     'usuarios' => 'Usuarios',
                                     'importar' => 'Importar Proceso',
+                                    'sincookies' => 'Sin cookies (comparacion)',
                                     'sujetos' => 'Sujetos Procesales',
                                 ];
                                 ?>
