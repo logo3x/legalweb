@@ -380,6 +380,18 @@ try {
                 setup_log('---snippet---');
                 setup_log(trim($snippet), 'muted');
 
+                // Debug: analizar JavaScript de reCAPTCHA
+                setup_log('---captchajs---');
+                $lines = explode("\n", $tybaHtml);
+                foreach ($lines as $line) {
+                    if (stripos($line, 'grecaptcha') !== false || stripos($line, 'recaptchaResponse') !== false || stripos($line, 'onSubmit') !== false || stripos($line, 'callback') !== false) {
+                        $clean = trim($line);
+                        if (strlen($clean) > 5 && strlen($clean) < 500) {
+                            setup_log($clean, 'muted');
+                        }
+                    }
+                }
+
                 setup_log('---sync---');
                 setup_log('Ejecutando TybaService...', 'info');
 
@@ -730,6 +742,7 @@ $baseUrl = "?key={$secret}";
                                     'debug' => 'Prueba directa',
                                     'snippet' => 'Respuesta de Tyba (texto)',
                                     'sync' => 'Sincronizacion',
+                                    'captchajs' => 'JavaScript reCAPTCHA',
                                     'logs' => 'Logs recientes',
                                 ];
                                 ?>

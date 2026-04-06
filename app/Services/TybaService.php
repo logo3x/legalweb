@@ -32,7 +32,14 @@ class TybaService
             return null;
         }
 
-        // Paso 1: Obtener sesion (VIEWSTATE + cookies)
+        // Paso 1: Resolver captcha via 2Captcha (Tyba lo valida server-side)
+        $captchaToken = $this->resolveCaptcha();
+
+        if (! $captchaToken) {
+            Log::error('Tyba: no se pudo resolver captcha, intentando sin token');
+        }
+
+        // Paso 2: Obtener sesion (VIEWSTATE + cookies)
         $session = $this->initSession();
 
         if (! $session) {
@@ -41,24 +48,9 @@ class TybaService
             return null;
         }
 
-        // Paso 2: Enviar consulta sin captcha (Tyba no lo exige en consultas normales)
-        $result = $this->submitQuery($radicado, null, $session);
+        // Paso 3: Enviar consulta con captcha token
+        $result = $this->submitQuery($radicado, $captchaToken, $session);
         $html = $result['html'] ?? null;
-        $captchaRequired = $result['captcha_required'] ?? false;
-
-        // Paso 3: Solo si Tyba exige captcha explicitamente, resolver via 2Captcha
-        if ($captchaRequired && ! $html) {
-            Log::warning('Tyba: captcha requerido, resolviendo via 2Captcha', ['radicado' => $radicado]);
-            $captchaToken = $this->resolveCaptcha();
-
-            if ($captchaToken) {
-                $session = $this->initSession();
-                if ($session) {
-                    $result = $this->submitQuery($radicado, $captchaToken, $session);
-                    $html = $result['html'] ?? null;
-                }
-            }
-        }
 
         if (! $html) {
             Log::error('Tyba: no se obtuvo respuesta', ['radicado' => $radicado]);
