@@ -73,12 +73,13 @@ class TybaService
             return null;
         }
 
-        // Enviar captcha a 2Captcha
+        // Enviar captcha a 2Captcha (invisible reCAPTCHA v2)
         $response = Http::timeout(10)->get('https://2captcha.com/in.php', [
             'key' => $apiKey,
             'method' => 'userrecaptcha',
             'googlekey' => $this->sitekey,
             'pageurl' => $this->tybaUrl,
+            'invisible' => 1,
             'json' => 1,
         ]);
 

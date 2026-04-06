@@ -322,6 +322,16 @@ try {
                     }
                 }
 
+                // Debug: mostrar campos del formulario
+                preg_match_all('/name="([^"]*)"/', $tybaResp->body(), $formFields);
+                $relevantFields = array_filter($formFields[1] ?? [], fn ($f) => str_contains($f, 'Codigo') || str_contains($f, 'Proceso') || str_contains($f, 'btn') || str_contains($f, 'Consultar') || str_contains($f, 'txt'));
+                if ($relevantFields) {
+                    echo "Campos relevantes del form:\n";
+                    foreach ($relevantFields as $f) {
+                        echo "  - {$f}\n";
+                    }
+                }
+
                 echo "\nResolviendo captcha via 2Captcha...\n";
                 ob_flush();
                 flush();
