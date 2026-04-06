@@ -64,4 +64,13 @@ return [
         'base_url' => 'https://openrouter.ai/api/v1',
     ],
 
+    'twocaptcha' => [
+        'api_key' => env('TWOCAPTCHA_API_KEY'),
+    ],
+
+    'tyba' => [
+        'url' => 'https://procesojudicial.ramajudicial.gov.co/Justicia21/Administracion/Ciudadanos/frmConsulta.aspx',
+        'sitekey' => '6LcSExYTAAAAAHJdgCEH1IKkfPGzhKR1xjj6wOvi',
+    ],
+
 ];

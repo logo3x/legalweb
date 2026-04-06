@@ -20,3 +20,5 @@ Schedule::call(function () {
         }
     }
 })->everyFiveMinutes()->name('send-reminders');
+
+Schedule::command('app:sync-tyba-actuaciones')->dailyAt('03:00');

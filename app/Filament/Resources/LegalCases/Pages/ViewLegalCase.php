@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\LegalCases\Pages;
 
 use App\Filament\Resources\LegalCases\LegalCaseResource;
+use App\Jobs\SyncCaseActuaciones;
 use App\Services\AIService;
 use App\Services\DocumentGenerator;
 use Filament\Actions\Action;
@@ -123,6 +124,29 @@ class ViewLegalCase extends ViewRecord
                 ->icon('heroicon-o-sparkles')
                 ->color('warning')
                 ->button(),
+            Action::make('sync_tyba')
+                ->label('Sincronizar Tyba')
+                ->icon('heroicon-o-arrow-path')
+                ->color('gray')
+                ->visible(fn () => (bool) $this->record->external_case_number)
+                ->requiresConfirmation()
+                ->modalHeading('Sincronizar con Rama Judicial')
+                ->modalDescription('Se consultara el radicado en Tyba y se importaran actuaciones nuevas. Consume 1 credito de consulta.')
+                ->action(function () {
+                    if (! config('services.twocaptcha.api_key')) {
+                        Notification::make()->title('Servicio no disponible')->body('La consulta automatica a Tyba no esta configurada.')->warning()->send();
+
+                        return;
+                    }
+
+                    SyncCaseActuaciones::dispatch($this->record);
+
+                    Notification::make()
+                        ->title('Sincronizacion en proceso')
+                        ->body('La consulta a Tyba puede tomar hasta 2 minutos. Le notificaremos si hay nuevas actuaciones.')
+                        ->success()
+                        ->send();
+                }),
             Action::make('compartir')
                 ->label('Compartir con Cliente')
                 ->icon('heroicon-o-share')

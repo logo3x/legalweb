@@ -28,7 +28,10 @@
       "Bash(grep -n \"modifyQueryUsing\" /c/wamp64/www/legalweb/app/Filament/Resources/*/Tables/*.php)",
       "Bash(composer install:*)",
       "Bash(ls c:/wamp64/www/legalweb/vendor/bin/pint*)",
-      "Bash(grep -v \"Resources$\")"
+      "Bash(grep -v \"Resources$\")",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:api.github.com)"
     ]
   }
 }
