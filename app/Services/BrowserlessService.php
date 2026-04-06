@@ -115,21 +115,22 @@ JS;
         }
 
         $result = $response->json();
+        $data = $result['data'] ?? $result;
 
-        if (isset($result['error'])) {
-            Log::error('Browserless: error en flujo', ['error' => $result['error']]);
+        if (isset($data['error'])) {
+            Log::error('Browserless: error en flujo', ['error' => $data['error']]);
 
             return null;
         }
 
-        if (isset($result['html'])) {
-            $htmlSize = strlen($result['html']);
-            Log::info('Browserless: HTML obtenido', ['size' => $htmlSize, 'url' => $result['url'] ?? '']);
+        if (isset($data['html'])) {
+            $htmlSize = strlen($data['html']);
+            Log::info('Browserless: HTML obtenido', ['size' => $htmlSize, 'url' => $data['url'] ?? '']);
 
-            return $result['html'];
+            return $data['html'];
         }
 
-        Log::error('Browserless: respuesta sin HTML', ['keys' => array_keys($result)]);
+        Log::error('Browserless: respuesta sin HTML', ['keys' => array_keys($result), 'data_keys' => array_keys($data)]);
 
         return null;
     }
