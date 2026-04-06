@@ -28,8 +28,7 @@ class AIService
         $result = $this->callOpenRouter($systemPrompt, $userMessage);
 
         if ($result) {
-            $this->lastProvider = 'OpenRouter';
-
+            // lastProvider ya fue seteado por callOpenRouter con el modelo usado
             return $this->cleanMarkdown($result);
         }
 
@@ -92,27 +91,45 @@ class AIService
             return null;
         }
 
-        try {
-            $response = Http::timeout(30)->withHeaders([
-                'Authorization' => 'Bearer '.$apiKey,
-                'HTTP-Referer' => config('app.url'),
-                'X-Title' => 'LegalWeb',
-            ])->post(config('services.openrouter.base_url').'/chat/completions', [
-                'model' => config('services.openrouter.model'),
-                'messages' => [
-                    ['role' => 'system', 'content' => $systemPrompt],
-                    ['role' => 'user', 'content' => $userMessage],
-                ],
-                'max_tokens' => 2000,
-                'temperature' => 0.3,
-            ]);
+        // Modelos gratuitos ordenados por preferencia
+        $models = [
+            config('services.openrouter.model'),
+            'qwen/qwen3.6-plus:free',
+            'nvidia/nemotron-3-super-120b-a12b:free',
+            'stepfun/step-3.5-flash:free',
+        ];
 
-            if ($response->successful()) {
-                return $response->json('choices.0.message.content');
+        foreach ($models as $model) {
+            try {
+                $response = Http::timeout(45)->withHeaders([
+                    'Authorization' => 'Bearer '.$apiKey,
+                    'HTTP-Referer' => config('app.url'),
+                    'X-Title' => 'LegalWeb',
+                ])->post(config('services.openrouter.base_url').'/chat/completions', [
+                    'model' => $model,
+                    'messages' => [
+                        ['role' => 'system', 'content' => $systemPrompt],
+                        ['role' => 'user', 'content' => $userMessage],
+                    ],
+                    'max_tokens' => 2000,
+                    'temperature' => 0.3,
+                ]);
+
+                if ($response->successful() && $response->json('choices.0.message.content')) {
+                    $this->lastProvider = "OpenRouter ({$model})";
+
+                    return $response->json('choices.0.message.content');
+                }
+
+                Log::info("OpenRouter model {$model} failed, trying next", ['status' => $response->status()]);
+            } catch (\Exception $e) {
+                Log::info("OpenRouter model {$model} error: ".$e->getMessage());
+
+                continue;
             }
-        } catch (\Exception $e) {
-            Log::error('OpenRouter API error: '.$e->getMessage());
         }
+
+        Log::error('OpenRouter: todos los modelos fallaron');
 
         return null;
     }
