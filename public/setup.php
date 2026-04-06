@@ -315,6 +315,7 @@ try {
 
                 // Prueba 0: Acceso directo a frmConsultaProceso
                 setup_log('---directa---');
+                $tybaUrl = config('services.tyba.url');
                 $baseUrl = dirname($tybaUrl);
                 $radicadoNum = preg_replace('/[^0-9]/', '', $case->external_case_number);
 
