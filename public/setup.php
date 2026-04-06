@@ -273,8 +273,42 @@ try {
                 echo "El caso no tiene radicado judicial\n";
             } else {
                 echo "Sincronizando caso {$case->case_number} (radicado: {$case->external_case_number})...\n";
-                echo "Resolviendo captcha via 2Captcha (esto puede tomar 30-60 segundos)...\n\n";
 
+                // Debug: verificar 2Captcha balance
+                $apiKey = config('services.twocaptcha.api_key');
+                echo "2Captcha key: ".($apiKey ? substr($apiKey, 0, 8).'...' : 'NO CONFIGURADA')."\n";
+
+                $balanceResp = \Illuminate\Support\Facades\Http::get('https://2captcha.com/res.php', [
+                    'key' => $apiKey,
+                    'action' => 'getbalance',
+                    'json' => 1,
+                ]);
+                echo '2Captcha balance: '.$balanceResp->body()."\n";
+
+                // Debug: verificar conexion a Tyba
+                echo "Conectando a Tyba...\n";
+                $tybaResp = \Illuminate\Support\Facades\Http::timeout(15)
+                    ->withHeaders(['User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'])
+                    ->get(config('services.tyba.url'));
+                echo 'Tyba status: '.$tybaResp->status()."\n";
+                echo 'Tyba tiene VIEWSTATE: '.(str_contains($tybaResp->body(), '__VIEWSTATE') ? 'SI' : 'NO')."\n";
+                echo 'Tyba tiene reCAPTCHA: '.(str_contains($tybaResp->body(), 'recaptcha') ? 'SI' : 'NO')."\n";
+
+                // Debug: verificar sitekey
+                $sitekey = config('services.tyba.sitekey');
+                echo "Sitekey configurado: {$sitekey}\n";
+
+                // Verificar si el sitekey real es diferente
+                if (preg_match('/data-sitekey="([^"]+)"/', $tybaResp->body(), $matches)) {
+                    echo 'Sitekey real en Tyba: '.$matches[1]."\n";
+                    if ($matches[1] !== $sitekey) {
+                        echo "ALERTA: El sitekey no coincide!\n";
+                    }
+                } else {
+                    echo "No se encontro sitekey en el HTML de Tyba\n";
+                }
+
+                echo "\nResolviendo captcha via 2Captcha...\n";
                 ob_flush();
                 flush();
 
@@ -282,10 +316,8 @@ try {
                 $actuaciones = $tyba->consultarProceso($case->external_case_number);
 
                 if ($actuaciones === null) {
-                    echo "ERROR: No se pudieron obtener actuaciones. Verifique:\n";
-                    echo "- Saldo de 2Captcha\n";
-                    echo "- Que el radicado sea correcto\n";
-                    echo "- Que Tyba este disponible\n";
+                    echo "\nERROR: No se pudieron obtener actuaciones.\n";
+                    echo "Revise los logs de Laravel: storage/logs/laravel.log\n";
                 } elseif (empty($actuaciones)) {
                     echo "No se encontraron actuaciones para este radicado.\n";
                 } else {
