@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\TybaService;
 use Carbon\Carbon;
 use Illuminate\Contracts\Console\Kernel;
+use Illuminate\Support\Facades\Http;
 
 $secret = 'legalweb-setup-2026';
 if (($_GET['key'] ?? '') !== $secret) {
@@ -24,168 +25,168 @@ $app = require_once __DIR__.'/../bootstrap/app.php';
 $kernel = $app->make(Kernel::class);
 $kernel->bootstrap();
 
-echo '<pre>';
+// Capture output
+ob_start();
+$hasError = false;
+$output = [];
+
+function setup_log(string $msg, string $type = 'info'): void
+{
+    global $output;
+    $output[] = ['msg' => $msg, 'type' => $type];
+}
 
 try {
     if ($step === 'info') {
-        echo "=== LegalWeb Setup ===\n\n";
-        echo 'PHP: '.PHP_VERSION."\n";
-        echo 'Laravel: '.app()->version()."\n";
-        echo 'ENV: '.app()->environment()."\n";
-        echo 'APP_URL: '.config('app.url')."\n";
-        echo 'DB: '.config('database.connections.mysql.database')."\n";
-        echo 'DB Host: '.config('database.connections.mysql.host')."\n";
+        setup_log('PHP: '.PHP_VERSION);
+        setup_log('Laravel: '.app()->version());
+        setup_log('ENV: '.app()->environment());
+        setup_log('APP_URL: '.config('app.url'));
+        setup_log('DB: '.config('database.connections.mysql.database'));
+        setup_log('DB Host: '.config('database.connections.mysql.host'));
 
-        // Test DB connection
         try {
             $pdo = DB::connection()->getPdo();
-            echo "DB Connection: OK\n";
+            setup_log('DB Connection: OK', 'success');
             $tables = DB::select('SHOW TABLES');
-            echo 'Tables: '.count($tables)."\n";
+            setup_log('Tablas: '.count($tables));
             foreach ($tables as $t) {
                 $vals = array_values((array) $t);
-                echo '  - '.$vals[0]."\n";
+                setup_log('  '.$vals[0], 'muted');
             }
         } catch (Exception $e) {
-            echo 'DB Error: '.$e->getMessage()."\n";
+            setup_log('DB Error: '.$e->getMessage(), 'error');
         }
 
-        // Check extensions
-        echo "\n=== Extensions ===\n";
-        echo 'GD: '.(extension_loaded('gd') ? 'OK' : 'MISSING')."\n";
-        echo 'BCMath: '.(extension_loaded('bcmath') ? 'OK' : 'MISSING')."\n";
-        echo 'Zip: '.(extension_loaded('zip') ? 'OK' : 'MISSING')."\n";
-        echo 'Fileinfo: '.(extension_loaded('fileinfo') ? 'OK' : 'MISSING')."\n";
+        setup_log('---extensions---');
+        setup_log('GD: '.(extension_loaded('gd') ? 'OK' : 'FALTA'), extension_loaded('gd') ? 'success' : 'error');
+        setup_log('BCMath: '.(extension_loaded('bcmath') ? 'OK' : 'FALTA'), extension_loaded('bcmath') ? 'success' : 'error');
+        setup_log('Zip: '.(extension_loaded('zip') ? 'OK' : 'FALTA'), extension_loaded('zip') ? 'success' : 'error');
+        setup_log('Fileinfo: '.(extension_loaded('fileinfo') ? 'OK' : 'FALTA'), extension_loaded('fileinfo') ? 'success' : 'error');
 
-        // Check storage
-        echo "\n=== Storage ===\n";
-        echo 'Storage writable: '.(is_writable(storage_path()) ? 'OK' : 'NO')."\n";
-        echo 'Bootstrap/cache writable: '.(is_writable(base_path('bootstrap/cache')) ? 'OK' : 'NO')."\n";
-        echo 'Storage link: '.(file_exists(public_path('storage')) ? 'EXISTS' : 'MISSING')."\n";
+        setup_log('---storage---');
+        setup_log('Storage writable: '.(is_writable(storage_path()) ? 'OK' : 'NO'), is_writable(storage_path()) ? 'success' : 'error');
+        setup_log('Bootstrap/cache writable: '.(is_writable(base_path('bootstrap/cache')) ? 'OK' : 'NO'), is_writable(base_path('bootstrap/cache')) ? 'success' : 'error');
+        setup_log('Storage link: '.(file_exists(public_path('storage')) ? 'Existe' : 'Falta'), file_exists(public_path('storage')) ? 'success' : 'warning');
 
-        echo "\n=== Actions ===\n";
-        echo "<a href='?key=$secret&step=key'>1. Generate Key</a>\n";
-        echo "<a href='?key=$secret&step=migrate'>2. Migrate</a>\n";
-        echo "<a href='?key=$secret&step=seed'>3. Seed</a>\n";
-        echo "<a href='?key=$secret&step=storage'>4. Storage Link</a>\n";
-        echo "<a href='?key=$secret&step=cache'>5. Cache</a>\n";
-        echo "<a href='?key=$secret&step=clear'>6. Clear All Cache</a>\n";
-        echo "<a href='?key=$secret&step=fresh'>7. Fresh Migrate + Seed (DANGER)</a>\n";
-        echo "<a href='?key=$secret&step=users'>8. List Users</a>\n";
-        echo "<a href='?key=$secret&step=superadmin&email='>9. Make Superadmin (add ?email=)</a>\n";
-        echo "<a href='?key=$secret&step=cleanup_users&super=legalwebco@gmail.com'>10. Cleanup: solo superadmin legalwebco</a>\n";
-        echo "<a href='?key=$secret&step=deadlines'>11. Check Deadlines (manual)</a>\n";
-        echo "<a href='?key=$secret&step=test_tyba&user_id=&radicado=68081310300120240001800'>12. Crear caso prueba Tyba</a>\n";
-        echo "<a href='?key=$secret&step=sync_tyba&case_id='>13. Sincronizar Tyba (add ?case_id=)</a>\n";
-        echo "\n=== Cron Job (agregar en cPanel) ===\n";
-        echo '* * * * * cd '.base_path()." && php artisan schedule:run >> /dev/null 2>&1\n";
+        setup_log('---cron---');
+        setup_log('* * * * * cd '.base_path().' && php artisan schedule:run >> /dev/null 2>&1', 'muted');
     }
 
     if ($step === 'key') {
         Artisan::call('key:generate', ['--force' => true]);
-        echo 'KEY: '.Artisan::output();
+        setup_log('App key generada correctamente', 'success');
+        setup_log(trim(Artisan::output()), 'muted');
     }
 
     if ($step === 'migrate') {
         Artisan::call('migrate', ['--force' => true]);
-        echo "MIGRATE:\n".Artisan::output();
+        $migrationOutput = trim(Artisan::output());
+        setup_log('Migraciones ejecutadas', 'success');
+        foreach (explode("\n", $migrationOutput) as $line) {
+            if (trim($line)) {
+                setup_log(trim($line), 'muted');
+            }
+        }
     }
 
     if ($step === 'seed') {
         Artisan::call('db:seed', ['--force' => true]);
-        echo "SEED:\n".Artisan::output();
+        setup_log('Seeders ejecutados', 'success');
+        $seedOutput = trim(Artisan::output());
+        foreach (explode("\n", $seedOutput) as $line) {
+            if (trim($line)) {
+                setup_log(trim($line), 'muted');
+            }
+        }
     }
 
     if ($step === 'cleanup_users') {
         $superEmail = $_GET['super'] ?? 'legalwebco@gmail.com';
 
-        // Buscar o crear superadmin
         $super = User::where('email', $superEmail)->first();
         if ($super) {
             $super->update(['role' => 'superadmin']);
-            echo "Superadmin: {$super->name} ({$super->email})\n";
+            setup_log("Superadmin: {$super->name} ({$super->email})", 'success');
         } else {
-            echo "Usuario {$superEmail} no encontrado. Debe registrarse con Google primero.\n";
+            setup_log("Usuario {$superEmail} no encontrado. Debe registrarse con Google primero.", 'error');
         }
 
-        // Quitar rol superadmin/admin de todos los demas
         User::where('email', '!=', $superEmail)
             ->whereIn('role', ['superadmin', 'admin'])
             ->each(function ($u) {
-                // Si es dueño de firma, dejar como admin
                 $firm = $u->firm;
                 if ($firm && User::where('firm_id', $firm->id)->count() === 1) {
                     $u->update(['role' => 'admin']);
-                    echo "Mantenido como admin (dueño de firma): {$u->email}\n";
+                    setup_log("Mantenido como admin (firma): {$u->email}", 'warning');
                 } else {
                     $u->update(['role' => 'abogado']);
-                    echo "Cambiado a abogado: {$u->email}\n";
+                    setup_log("Cambiado a abogado: {$u->email}", 'info');
                 }
             });
 
-        echo "\n=== Usuarios actuales ===\n";
-        User::all()->each(fn ($u) => print ("{$u->email} | {$u->role} | Firma: ".($u->firm?->name ?? 'N/A')."\n"));
+        setup_log('---usuarios---');
+        User::all()->each(fn ($u) => setup_log("{$u->email} | {$u->role} | Firma: ".($u->firm?->name ?? 'N/A'), 'muted'));
     }
 
     if ($step === 'storage') {
         Artisan::call('storage:link');
-        echo "STORAGE:\n".Artisan::output();
+        setup_log('Storage link creado', 'success');
     }
 
     if ($step === 'cache') {
         Artisan::call('config:cache');
-        echo "Config cached\n";
+        setup_log('Config cached', 'success');
         Artisan::call('route:cache');
-        echo "Routes cached\n";
+        setup_log('Routes cached', 'success');
         Artisan::call('view:cache');
-        echo "Views cached\n";
+        setup_log('Views cached', 'success');
     }
 
     if ($step === 'clear') {
         Artisan::call('config:clear');
-        echo "Config cleared\n";
+        setup_log('Config cleared', 'success');
         Artisan::call('route:clear');
-        echo "Routes cleared\n";
+        setup_log('Routes cleared', 'success');
         Artisan::call('view:clear');
-        echo "Views cleared\n";
+        setup_log('Views cleared', 'success');
         Artisan::call('cache:clear');
-        echo "Cache cleared\n";
+        setup_log('Cache cleared', 'success');
     }
 
     if ($step === 'superadmin') {
         $email = $_GET['email'] ?? '';
         if (! $email) {
-            echo "ERROR: Debe pasar ?email=correo@ejemplo.com\n";
+            setup_log('Debe pasar ?email=correo@ejemplo.com', 'error');
         } else {
             $user = User::where('email', $email)->first();
             if ($user) {
                 $user->update(['role' => 'superadmin']);
-                echo "Usuario {$user->name} ({$user->email}) ahora es SUPERADMIN\n";
+                setup_log("{$user->name} ({$user->email}) ahora es SUPERADMIN", 'success');
             } else {
-                echo "Usuario con email {$email} no encontrado\n";
-                echo "\nUsuarios disponibles:\n";
-                User::all()->each(fn ($u) => print ("- {$u->email} ({$u->role})\n"));
+                setup_log("Usuario con email {$email} no encontrado", 'error');
+                User::all()->each(fn ($u) => setup_log("  {$u->email} ({$u->role})", 'muted'));
             }
         }
     }
 
     if ($step === 'users') {
         $users = User::with('firm')->get();
-        echo "=== Usuarios Registrados ===\n\n";
         foreach ($users as $u) {
-            echo "ID: {$u->id} | {$u->name} | {$u->email} | Rol: {$u->role} | Firma: ".($u->firm?->name ?? 'Sin firma').' | Google: '.($u->google_id ? 'Si' : 'No')."\n";
+            $google = $u->google_id ? 'Google' : 'Email';
+            setup_log("#{$u->id} {$u->name} | {$u->email} | {$u->role} | Firma: ".($u->firm?->name ?? 'Sin firma')." | {$google}");
         }
-        echo "\nTotal: ".$users->count()." usuarios\n";
+        setup_log("Total: {$users->count()} usuarios", 'success');
     }
 
     if ($step === 'demo_reminders') {
         $userId = $_GET['user_id'] ?? null;
         if (! $userId) {
-            echo "ERROR: Pase ?user_id=X\n";
+            setup_log('Pase ?user_id=X', 'error');
         } else {
             $user = User::find($userId);
             if (! $user) {
-                echo "Usuario no encontrado\n";
+                setup_log('Usuario no encontrado', 'error');
             } else {
                 $cases = LegalCase::withoutGlobalScopes()->where('firm_id', $user->firm_id)->take(2)->get();
 
@@ -213,7 +214,7 @@ try {
                     'remind_at' => now()->addDay()->setHour(8)->setMinute(0),
                 ]);
 
-                echo "2 recordatorios demo creados para {$user->name} ({$user->email})\n";
+                setup_log("2 recordatorios demo creados para {$user->name}", 'success');
             }
         }
     }
@@ -223,20 +224,19 @@ try {
         $radicado = $_GET['radicado'] ?? '68081310300120240001800';
 
         if (! $userId) {
-            echo "ERROR: Pase ?user_id=X&radicado=XXXXX\n";
-            echo "\nUsuarios:\n";
-            User::all()->each(fn ($u) => print ("- ID: {$u->id} | {$u->name} ({$u->email}) | Firma: ".($u->firm?->name ?? 'N/A')."\n"));
+            setup_log('Pase ?user_id=X&radicado=XXXXX', 'error');
+            User::all()->each(fn ($u) => setup_log("  #{$u->id} {$u->name} ({$u->email}) | Firma: ".($u->firm?->name ?? 'N/A'), 'muted'));
         } else {
             $user = User::find($userId);
 
             if (! $user || ! $user->firm_id) {
-                echo "Usuario no encontrado o sin firma\n";
+                setup_log('Usuario no encontrado o sin firma', 'error');
             } else {
                 $caseType = CaseType::first();
                 $client = Client::withoutGlobalScopes()->where('firm_id', $user->firm_id)->first();
 
                 if (! $client) {
-                    echo "No hay clientes en la firma. Cree uno primero.\n";
+                    setup_log('No hay clientes en la firma. Cree uno primero.', 'error');
                 } else {
                     $case = LegalCase::create([
                         'firm_id' => $user->firm_id,
@@ -250,10 +250,10 @@ try {
                         'priority' => 'alta',
                     ]);
 
-                    echo "Caso creado: ID {$case->id} | {$case->case_number}\n";
-                    echo "Radicado: {$radicado}\n";
-                    echo "Abogado: {$user->name}\n";
-                    echo "\nAhora use: ?step=sync_tyba&case_id={$case->id}\n";
+                    setup_log("Caso creado: ID {$case->id} | {$case->case_number}", 'success');
+                    setup_log("Radicado: {$radicado}");
+                    setup_log("Abogado: {$user->name}");
+                    setup_log("Siguiente paso: sync_tyba con case_id={$case->id}", 'warning');
                 }
             }
         }
@@ -263,76 +263,59 @@ try {
         $caseId = $_GET['case_id'] ?? null;
 
         if (! $caseId) {
-            echo "ERROR: Pase ?case_id=X\n";
+            setup_log('Pase ?case_id=X', 'error');
         } else {
             $case = LegalCase::withoutGlobalScopes()->find($caseId);
 
             if (! $case) {
-                echo "Caso no encontrado\n";
+                setup_log('Caso no encontrado', 'error');
             } elseif (! $case->external_case_number) {
-                echo "El caso no tiene radicado judicial\n";
+                setup_log('El caso no tiene radicado judicial', 'error');
             } else {
-                echo "Sincronizando caso {$case->case_number} (radicado: {$case->external_case_number})...\n";
+                setup_log("Caso: {$case->case_number}");
+                setup_log("Radicado: {$case->external_case_number}");
 
-                // Debug: verificar 2Captcha balance
                 $apiKey = config('services.twocaptcha.api_key');
-                echo "2Captcha key: ".($apiKey ? substr($apiKey, 0, 8).'...' : 'NO CONFIGURADA')."\n";
+                setup_log('2Captcha key: '.($apiKey ? substr($apiKey, 0, 8).'...' : 'NO CONFIGURADA'), $apiKey ? 'success' : 'error');
 
-                $balanceResp = \Illuminate\Support\Facades\Http::get('https://2captcha.com/res.php', [
+                $balanceResp = Http::get('https://2captcha.com/res.php', [
                     'key' => $apiKey,
                     'action' => 'getbalance',
                     'json' => 1,
                 ]);
-                echo '2Captcha balance: '.$balanceResp->body()."\n";
+                $balance = json_decode($balanceResp->body(), true);
+                $balanceAmount = $balance['request'] ?? '?';
+                setup_log("2Captcha balance: \${$balanceAmount}", ((float) $balanceAmount > 0) ? 'success' : 'warning');
 
-                // Debug: verificar conexion a Tyba
-                echo "Conectando a Tyba...\n";
-                $tybaResp = \Illuminate\Support\Facades\Http::timeout(15)
+                $tybaResp = Http::timeout(15)
                     ->withHeaders(['User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'])
                     ->get(config('services.tyba.url'));
-                echo 'Tyba status: '.$tybaResp->status()."\n";
-                echo 'Tyba tiene VIEWSTATE: '.(str_contains($tybaResp->body(), '__VIEWSTATE') ? 'SI' : 'NO')."\n";
-                echo 'Tyba tiene reCAPTCHA: '.(str_contains($tybaResp->body(), 'recaptcha') ? 'SI' : 'NO')."\n";
 
-                // Debug: verificar sitekey
+                $tybaOk = $tybaResp->successful();
+                setup_log('Tyba: '.($tybaOk ? 'Conectado' : 'Error '.$tybaResp->status()), $tybaOk ? 'success' : 'error');
+                setup_log('VIEWSTATE: '.(str_contains($tybaResp->body(), '__VIEWSTATE') ? 'OK' : 'No'), str_contains($tybaResp->body(), '__VIEWSTATE') ? 'success' : 'error');
+
+                $hasCaptcha = str_contains($tybaResp->body(), 'recaptcha');
+                setup_log('reCAPTCHA: '.($hasCaptcha ? 'Detectado' : 'No detectado'), $hasCaptcha ? 'info' : 'warning');
+
                 $sitekey = config('services.tyba.sitekey');
-                echo "Sitekey configurado: {$sitekey}\n";
-
-                // Verificar si el sitekey real es diferente
                 if (preg_match('/sitekey["\s:=]+["\']?([0-9a-zA-Z_-]{40})/i', $tybaResp->body(), $matches)) {
-                    echo 'Sitekey real en Tyba: '.$matches[1]."\n";
-                    if ($matches[1] !== $sitekey) {
-                        echo "ALERTA: El sitekey no coincide!\n";
-                    }
+                    $realKey = $matches[1];
+                    $keysMatch = $realKey === $sitekey;
+                    setup_log('Sitekey: '.($keysMatch ? 'Coincide' : "NO coincide (real: {$realKey})"), $keysMatch ? 'success' : 'error');
+                }
+
+                if (preg_match('/grecaptcha\.execute/i', $tybaResp->body())) {
+                    setup_log('Tipo: reCAPTCHA v3 (score-based)', 'info');
+                } elseif (preg_match('/invisible/i', $tybaResp->body()) && $hasCaptcha) {
+                    setup_log('Tipo: reCAPTCHA v2 invisible', 'info');
                 } else {
-                    echo "No se encontro sitekey con patron estandar\n";
-                    // Buscar cualquier referencia a recaptcha
-                    preg_match_all('/([0-9a-zA-Z_-]{40})/', $tybaResp->body(), $allKeys);
-                    $captchaLines = [];
-                    foreach (explode("\n", $tybaResp->body()) as $line) {
-                        if (stripos($line, 'captcha') !== false || stripos($line, 'recaptcha') !== false || stripos($line, 'sitekey') !== false) {
-                            $captchaLines[] = trim($line);
-                        }
-                    }
-                    if ($captchaLines) {
-                        echo "Lineas con referencia a captcha:\n";
-                        foreach (array_slice($captchaLines, 0, 5) as $l) {
-                            echo '  '.substr($l, 0, 200)."\n";
-                        }
-                    }
+                    setup_log('Tipo: no determinado (posible v2/v3)', 'warning');
                 }
 
-                // Debug: mostrar campos del formulario
-                preg_match_all('/name="([^"]*)"/', $tybaResp->body(), $formFields);
-                $relevantFields = array_filter($formFields[1] ?? [], fn ($f) => str_contains($f, 'Codigo') || str_contains($f, 'Proceso') || str_contains($f, 'btn') || str_contains($f, 'Consultar') || str_contains($f, 'txt'));
-                if ($relevantFields) {
-                    echo "Campos relevantes del form:\n";
-                    foreach ($relevantFields as $f) {
-                        echo "  - {$f}\n";
-                    }
-                }
+                setup_log('---sync---');
+                setup_log('Consultando proceso...', 'info');
 
-                echo "\nResolviendo captcha via 2Captcha...\n";
                 ob_flush();
                 flush();
 
@@ -340,17 +323,15 @@ try {
                 $actuaciones = $tyba->consultarProceso($case->external_case_number);
 
                 if ($actuaciones === null) {
-                    echo "\nERROR: No se pudieron obtener actuaciones.\n";
-                    echo "Revise los logs de Laravel: storage/logs/laravel.log\n";
+                    setup_log('No se pudieron obtener actuaciones', 'error');
+                    setup_log('Revise storage/logs/laravel.log', 'muted');
                 } elseif (empty($actuaciones)) {
-                    echo "No se encontraron actuaciones para este radicado.\n";
+                    setup_log('No se encontraron actuaciones para este radicado', 'warning');
                 } else {
-                    echo 'Actuaciones encontradas: '.count($actuaciones)."\n\n";
+                    setup_log('Actuaciones encontradas: '.count($actuaciones), 'success');
                     $new = 0;
 
                     foreach ($actuaciones as $a) {
-                        echo "- [{$a['date']}] {$a['description']}\n";
-
                         $date = null;
                         foreach (['d/m/Y', 'Y-m-d', 'd-m-Y'] as $fmt) {
                             try {
@@ -363,6 +344,8 @@ try {
                         }
 
                         if (! $date) {
+                            setup_log("[{$a['date']}] {$a['description']}", 'muted');
+
                             continue;
                         }
 
@@ -381,11 +364,14 @@ try {
                                 'user_id' => $case->user_id,
                             ]);
                             $new++;
+                            setup_log("[{$a['date']}] {$a['description']}", 'success');
+                        } else {
+                            setup_log("[{$a['date']}] {$a['description']}", 'muted');
                         }
                     }
 
                     $case->update(['last_tyba_sync' => now()]);
-                    echo "\nNuevas actuaciones registradas: {$new}\n";
+                    setup_log("Nuevas actuaciones: {$new}", $new > 0 ? 'success' : 'info');
                 }
             }
         }
@@ -393,17 +379,283 @@ try {
 
     if ($step === 'deadlines') {
         Artisan::call('app:check-deadlines');
-        echo "CHECK DEADLINES:\n".Artisan::output();
+        setup_log('Deadlines verificados', 'success');
+        $dOutput = trim(Artisan::output());
+        foreach (explode("\n", $dOutput) as $line) {
+            if (trim($line)) {
+                setup_log(trim($line), 'muted');
+            }
+        }
     }
 
     if ($step === 'fresh') {
         Artisan::call('migrate:fresh', ['--seed' => true, '--force' => true]);
-        echo "FRESH MIGRATE + SEED:\n".Artisan::output();
+        setup_log('Fresh migrate + seed completado', 'success');
+        $freshOutput = trim(Artisan::output());
+        foreach (explode("\n", $freshOutput) as $line) {
+            if (trim($line)) {
+                setup_log(trim($line), 'muted');
+            }
+        }
     }
 } catch (Throwable $e) {
-    echo 'ERROR: '.$e->getMessage()."\n";
-    echo 'File: '.$e->getFile().':'.$e->getLine()."\n";
-    echo "Trace:\n".$e->getTraceAsString();
+    $hasError = true;
+    setup_log($e->getMessage(), 'error');
+    setup_log($e->getFile().':'.$e->getLine(), 'muted');
 }
 
-echo "\n\nDONE</pre>";
+ob_end_clean();
+
+// Step titles
+$stepTitles = [
+    'info' => 'Estado del sistema',
+    'key' => 'Generar App Key',
+    'migrate' => 'Migraciones',
+    'seed' => 'Seeders',
+    'storage' => 'Storage Link',
+    'cache' => 'Cache Config',
+    'clear' => 'Limpiar Cache',
+    'fresh' => 'Fresh Migrate + Seed',
+    'users' => 'Usuarios',
+    'superadmin' => 'Superadmin',
+    'cleanup_users' => 'Limpiar Usuarios',
+    'deadlines' => 'Verificar Deadlines',
+    'demo_reminders' => 'Recordatorios Demo',
+    'test_tyba' => 'Crear Caso Tyba',
+    'sync_tyba' => 'Sincronizar Tyba',
+];
+
+$baseUrl = "?key={$secret}";
+?>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LegalWeb Setup</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #F5F7FA;
+            color: #1E3A5F;
+            min-height: 100vh;
+        }
+        .header {
+            background: #1E3A5F;
+            color: #fff;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 2px 8px rgba(30,58,95,0.2);
+        }
+        .header h1 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 20px;
+            font-weight: 600;
+        }
+        .header .badge {
+            background: #3A86FF;
+            font-size: 11px;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+        .layout {
+            display: flex;
+            min-height: calc(100vh - 56px);
+        }
+        .sidebar {
+            width: 240px;
+            background: #fff;
+            border-right: 1px solid #E2E8F0;
+            padding: 16px 0;
+            flex-shrink: 0;
+        }
+        .sidebar .group-title {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #94A3B8;
+            padding: 12px 20px 6px;
+        }
+        .sidebar a {
+            display: block;
+            padding: 8px 20px;
+            color: #475569;
+            text-decoration: none;
+            font-size: 13px;
+            border-left: 3px solid transparent;
+            transition: all 0.15s;
+        }
+        .sidebar a:hover {
+            background: #F1F5F9;
+            color: #1E3A5F;
+        }
+        .sidebar a.active {
+            background: #EFF6FF;
+            color: #3A86FF;
+            border-left-color: #3A86FF;
+            font-weight: 600;
+        }
+        .sidebar a.danger { color: #DC2626; }
+        .sidebar a.danger:hover { background: #FEF2F2; }
+        .main {
+            flex: 1;
+            padding: 24px 32px;
+            max-width: 900px;
+        }
+        .page-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #1E3A5F;
+        }
+        .card {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            border: 1px solid #E2E8F0;
+            overflow: hidden;
+        }
+        .card-body { padding: 20px; }
+        .log-line {
+            padding: 6px 0;
+            font-size: 13px;
+            font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            line-height: 1.5;
+        }
+        .log-line + .log-line { border-top: 1px solid #F1F5F9; }
+        .log-line .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            margin-top: 6px;
+            flex-shrink: 0;
+        }
+        .log-line.success .dot { background: #22C55E; }
+        .log-line.error .dot { background: #EF4444; }
+        .log-line.warning .dot { background: #F59E0B; }
+        .log-line.info .dot { background: #3A86FF; }
+        .log-line.muted .dot { background: #CBD5E1; }
+        .log-line.muted { color: #94A3B8; }
+        .log-line.error { color: #DC2626; font-weight: 500; }
+        .log-line.success { color: #16A34A; }
+        .log-line.warning { color: #D97706; }
+        .separator {
+            border: none;
+            border-top: 1px solid #E2E8F0;
+            margin: 12px 0;
+        }
+        .section-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #94A3B8;
+            padding: 8px 0 4px;
+        }
+        @media (max-width: 768px) {
+            .layout { flex-direction: column; }
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #E2E8F0;
+                display: flex;
+                flex-wrap: wrap;
+                padding: 8px;
+                gap: 4px;
+            }
+            .sidebar .group-title { display: none; }
+            .sidebar a {
+                border-left: none;
+                border-radius: 6px;
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+            .sidebar a.active { border-left: none; }
+            .main { padding: 16px; }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="header">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+            <path d="M9 12l2 2 4-4"/>
+        </svg>
+        <h1>LegalWeb</h1>
+        <span class="badge">Setup</span>
+    </div>
+
+    <div class="layout">
+        <nav class="sidebar">
+            <div class="group-title">Sistema</div>
+            <a href="<?= $baseUrl ?>&step=info" class="<?= $step === 'info' ? 'active' : '' ?>">Estado</a>
+            <a href="<?= $baseUrl ?>&step=key" class="<?= $step === 'key' ? 'active' : '' ?>">App Key</a>
+            <a href="<?= $baseUrl ?>&step=migrate" class="<?= $step === 'migrate' ? 'active' : '' ?>">Migrar</a>
+            <a href="<?= $baseUrl ?>&step=seed" class="<?= $step === 'seed' ? 'active' : '' ?>">Seed</a>
+            <a href="<?= $baseUrl ?>&step=storage" class="<?= $step === 'storage' ? 'active' : '' ?>">Storage Link</a>
+
+            <div class="group-title">Cache</div>
+            <a href="<?= $baseUrl ?>&step=cache" class="<?= $step === 'cache' ? 'active' : '' ?>">Cachear</a>
+            <a href="<?= $baseUrl ?>&step=clear" class="<?= $step === 'clear' ? 'active' : '' ?>">Limpiar</a>
+
+            <div class="group-title">Usuarios</div>
+            <a href="<?= $baseUrl ?>&step=users" class="<?= $step === 'users' ? 'active' : '' ?>">Listar</a>
+            <a href="<?= $baseUrl ?>&step=superadmin&email=" class="<?= $step === 'superadmin' ? 'active' : '' ?>">Superadmin</a>
+            <a href="<?= $baseUrl ?>&step=cleanup_users&super=legalwebco@gmail.com" class="<?= $step === 'cleanup_users' ? 'active' : '' ?>">Limpiar roles</a>
+
+            <div class="group-title">Tyba</div>
+            <a href="<?= $baseUrl ?>&step=test_tyba&user_id=&radicado=68081310300120240001800" class="<?= $step === 'test_tyba' ? 'active' : '' ?>">Crear caso</a>
+            <a href="<?= $baseUrl ?>&step=sync_tyba&case_id=" class="<?= $step === 'sync_tyba' ? 'active' : '' ?>">Sincronizar</a>
+
+            <div class="group-title">Otros</div>
+            <a href="<?= $baseUrl ?>&step=deadlines" class="<?= $step === 'deadlines' ? 'active' : '' ?>">Deadlines</a>
+            <a href="<?= $baseUrl ?>&step=demo_reminders&user_id=" class="<?= $step === 'demo_reminders' ? 'active' : '' ?>">Reminders demo</a>
+            <a href="<?= $baseUrl ?>&step=fresh" class="danger <?= $step === 'fresh' ? 'active' : '' ?>">Fresh (peligro)</a>
+        </nav>
+
+        <main class="main">
+            <h2 class="page-title"><?= $stepTitles[$step] ?? ucfirst($step) ?></h2>
+
+            <div class="card">
+                <div class="card-body">
+                    <?php if (empty($output)) { ?>
+                        <div class="log-line muted"><span class="dot"></span><span>Sin resultados</span></div>
+                    <?php } else { ?>
+                        <?php foreach ($output as $entry) { ?>
+                            <?php if (str_starts_with($entry['msg'], '---')) { ?>
+                                <?php
+                                    $label = trim($entry['msg'], '-');
+                                $labels = [
+                                    'extensions' => 'Extensiones PHP',
+                                    'storage' => 'Almacenamiento',
+                                    'cron' => 'Cron Job',
+                                    'usuarios' => 'Usuarios',
+                                    'sync' => 'Sincronizacion',
+                                ];
+                                ?>
+                                <hr class="separator">
+                                <div class="section-label"><?= $labels[$label] ?? ucfirst($label) ?></div>
+                            <?php } else { ?>
+                                <div class="log-line <?= $entry['type'] ?>">
+                                    <span class="dot"></span>
+                                    <span><?= htmlspecialchars($entry['msg']) ?></span>
+                                </div>
+                            <?php } ?>
+                        <?php } ?>
+                    <?php } ?>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

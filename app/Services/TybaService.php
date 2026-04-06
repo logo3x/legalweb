@@ -32,16 +32,7 @@ class TybaService
             return null;
         }
 
-        // Paso 1: Resolver CAPTCHA via 2Captcha
-        $captchaToken = $this->resolveCaptcha();
-
-        if (! $captchaToken) {
-            Log::error('Tyba: no se pudo resolver el captcha');
-
-            return null;
-        }
-
-        // Paso 2: Obtener sesion y viewstate de Tyba
+        // Paso 1: Obtener sesion y viewstate de Tyba
         $session = $this->initSession();
 
         if (! $session) {
@@ -50,11 +41,29 @@ class TybaService
             return null;
         }
 
-        // Paso 3: Enviar consulta con captcha resuelto
+        // Paso 2: Intentar resolver CAPTCHA v3 via 2Captcha
+        $captchaToken = $this->resolveCaptcha();
+
+        // Paso 3: Enviar consulta (con o sin captcha)
         $html = $this->submitQuery($radicado, $captchaToken, $session);
 
+        // Si fallo con captcha, intentar sin captcha
+        if (! $html && $captchaToken) {
+            Log::info('Tyba: reintentando sin captcha', ['radicado' => $radicado]);
+            $session = $this->initSession();
+            if ($session) {
+                $html = $this->submitQuery($radicado, null, $session);
+            }
+        }
+
+        // Si fallo sin captcha, intentar sin captcha directamente
+        if (! $html && ! $captchaToken) {
+            Log::info('Tyba: captcha fallo, intentando sin captcha', ['radicado' => $radicado]);
+            $html = $this->submitQuery($radicado, null, $session);
+        }
+
         if (! $html) {
-            Log::error('Tyba: no se obtuvo respuesta', ['radicado' => $radicado]);
+            Log::error('Tyba: no se obtuvo respuesta de ningún intento', ['radicado' => $radicado]);
 
             return null;
         }
@@ -73,13 +82,15 @@ class TybaService
             return null;
         }
 
-        // Enviar captcha a 2Captcha (invisible reCAPTCHA v2)
+        // Enviar captcha a 2Captcha (reCAPTCHA v3 score-based)
         $response = Http::timeout(10)->get('https://2captcha.com/in.php', [
             'key' => $apiKey,
             'method' => 'userrecaptcha',
             'googlekey' => $this->sitekey,
             'pageurl' => $this->tybaUrl,
-            'invisible' => 1,
+            'version' => 'v3',
+            'action' => 'consultar',
+            'min_score' => 0.3,
             'json' => 1,
         ]);
 
@@ -160,8 +171,25 @@ class TybaService
         return null;
     }
 
-    private function submitQuery(string $radicado, string $captchaToken, array $session): ?string
+    private function submitQuery(string $radicado, ?string $captchaToken, array $session): ?string
     {
+        $formData = [
+            '__VIEWSTATE' => $session['viewstate'],
+            '__VIEWSTATEGENERATOR' => $session['viewstate_generator'] ?? '',
+            '__EVENTVALIDATION' => $session['event_validation'] ?? '',
+            'ctl00$MainContent$txtCodigoProceso' => $radicado,
+            'ctl00$MainContent$btnConsultar' => 'Consultar',
+        ];
+
+        if ($captchaToken) {
+            $formData['g-recaptcha-response'] = $captchaToken;
+        }
+
+        Log::info('Tyba: enviando consulta', [
+            'radicado' => $radicado,
+            'con_captcha' => $captchaToken !== null,
+        ]);
+
         $response = Http::timeout(30)
             ->withHeaders([
                 'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -170,14 +198,7 @@ class TybaService
             ])
             ->withCookies($session['cookies']->toArray(), parse_url($this->tybaUrl, PHP_URL_HOST))
             ->asForm()
-            ->post($this->tybaUrl, [
-                '__VIEWSTATE' => $session['viewstate'],
-                '__VIEWSTATEGENERATOR' => $session['viewstate_generator'] ?? '',
-                '__EVENTVALIDATION' => $session['event_validation'] ?? '',
-                'ctl00$MainContent$txtCodigoProceso' => $radicado,
-                'ctl00$MainContent$btnConsultar' => 'Consultar',
-                'g-recaptcha-response' => $captchaToken,
-            ]);
+            ->post($this->tybaUrl, $formData);
 
         if (! $response->successful()) {
             return null;
