@@ -280,11 +280,10 @@ try {
                 $info = $tyba->extractProcessInfo($case->external_case_number);
 
                 if ($info) {
-                    setup_log('Proceso encontrado!', 'success');
-                    foreach (['codigo_proceso', 'tipo_proceso', 'clase_proceso', 'especialidad', 'departamento', 'ciudad', 'despacho', 'fecha_publicacion'] as $field) {
-                        if (! empty($info[$field])) {
-                            setup_log("  {$field}: {$info[$field]}", 'muted');
-                        }
+                    setup_log('Proceso encontrado!:', 'success');
+                    foreach (['codigo_proceso', 'tipo_proceso', 'clase_proceso', 'especialidad', 'departamento', 'ciudad', 'despacho', 'fecha_publicacion', 'email', 'telefono'] as $field) {
+                        $val = $info[$field] ?? '';
+                        setup_log("  {$field}: ".($val ?: '(vacio)'), $val ? 'success' : 'warning');
                     }
 
                     if (! empty($info['sujetos'])) {

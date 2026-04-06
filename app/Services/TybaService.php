@@ -58,7 +58,20 @@ class TybaService
         }
 
         $info = $this->parseProcessInfo($html);
-        Log::info('Tyba: extractProcessInfo', ['radicado' => $radicado, 'codigo' => $info['codigo_proceso'] ?? 'N/A']);
+
+        // Validar que el proceso tenga datos reales (no solo la pagina vacia)
+        if (empty($info['codigo_proceso']) && empty($info['despacho']) && empty($info['clase_proceso'])) {
+            Log::error('Tyba: proceso sin datos', ['radicado' => $radicado, 'fields' => array_filter($info, fn ($v) => is_string($v) && $v !== '')]);
+
+            return null;
+        }
+
+        Log::error('Tyba: proceso extraido', [
+            'radicado' => $radicado,
+            'codigo' => $info['codigo_proceso'],
+            'despacho' => $info['despacho'],
+            'sujetos' => count($info['sujetos']),
+        ]);
 
         return $info;
     }
@@ -162,14 +175,22 @@ class TybaService
 
     private function extractInputValue(string $html, string $id): string
     {
-        // Buscar input por id con value
-        if (preg_match('/id="'.preg_quote($id, '/').'"[^>]*value="([^"]*)"/si', $html, $m)) {
-            return html_entity_decode(trim($m[1]), ENT_QUOTES, 'UTF-8');
+        $escaped = preg_quote($id, '/');
+
+        // Buscar el tag completo que contiene este id
+        if (preg_match('/<input[^>]*id="'.$escaped.'"[^>]*>/si', $html, $tagMatch)) {
+            // Extraer value del tag encontrado
+            if (preg_match('/value="([^"]*)"/', $tagMatch[0], $valMatch)) {
+                return html_entity_decode(trim($valMatch[1]), ENT_QUOTES, 'UTF-8');
+            }
         }
 
-        // Buscar value antes de id
-        if (preg_match('/value="([^"]*)"[^>]*id="'.preg_quote($id, '/').'"[^>]*/si', $html, $m)) {
-            return html_entity_decode(trim($m[1]), ENT_QUOTES, 'UTF-8');
+        // Fallback: buscar por name (ctl00$MainContent$txtXxx)
+        $name = str_replace('_', '$', str_replace('MainContent_', 'ctl00$MainContent$', $id));
+        if (preg_match('/<input[^>]*name="'.preg_quote($name, '/').'"[^>]*>/si', $html, $tagMatch)) {
+            if (preg_match('/value="([^"]*)"/', $tagMatch[0], $valMatch)) {
+                return html_entity_decode(trim($valMatch[1]), ENT_QUOTES, 'UTF-8');
+            }
         }
 
         return '';
