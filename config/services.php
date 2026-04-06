@@ -69,7 +69,7 @@ return [
     ],
 
     'tyba' => [
-        'url' => 'https://procesojudicial.ramajudicial.gov.co/Justicia21/Administracion/Ciudadanos/frmConsulta.aspx',
+        'url' => 'https://procesojudicial.ramajudicial.gov.co/Justicia21/Administracion/Ciudadanos/frmConsulta',
         'sitekey' => '6Ldf8zAiAAAAAAq1LUwvTCwki5C6uuIg0zVw4of0',
     ],
 
