@@ -44,16 +44,23 @@ class TybaService
         $radicado = preg_replace('/[^0-9]/', '', $radicado);
 
         if (strlen($radicado) < 20) {
+            Log::error('Tyba: radicado muy corto', ['radicado' => $radicado, 'len' => strlen($radicado)]);
+
             return null;
         }
 
         $html = $this->fetchProcessPage($radicado);
 
         if (! $html) {
+            Log::error('Tyba: fetchProcessPage retorno null', ['radicado' => $radicado]);
+
             return null;
         }
 
-        return $this->parseProcessInfo($html);
+        $info = $this->parseProcessInfo($html);
+        Log::info('Tyba: extractProcessInfo', ['radicado' => $radicado, 'codigo' => $info['codigo_proceso'] ?? 'N/A']);
+
+        return $info;
     }
 
     /**
@@ -96,15 +103,21 @@ class TybaService
             ->get($url);
 
         if (! $response->successful()) {
-            Log::error('Tyba: error accediendo proceso', ['url' => $url, 'status' => $response->status()]);
+            Log::error('Tyba: error HTTP accediendo proceso', ['url' => $url, 'status' => $response->status()]);
 
             return null;
         }
 
         $html = $response->body();
+        Log::error('Tyba: respuesta proceso', [
+            'url' => $url,
+            'size' => strlen($html),
+            'has_proceso' => str_contains($html, 'del Proceso'),
+            'has_codigo' => str_contains($html, 'MainContent_txtCodigoProceso'),
+        ]);
 
         if (! str_contains($html, 'del Proceso')) {
-            Log::error('Tyba: pagina no contiene info del proceso', ['radicado' => $radicado]);
+            Log::error('Tyba: pagina no contiene info del proceso', ['radicado' => $radicado, 'snippet' => substr(strip_tags($html), 0, 200)]);
 
             return null;
         }
