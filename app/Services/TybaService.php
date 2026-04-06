@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class TybaService
@@ -16,126 +15,50 @@ class TybaService
     }
 
     /**
-     * Extraer información completa de un proceso desde Tyba via URL directa.
-     * No requiere captcha.
+     * Extraer información completa de un proceso desde Tyba via Browserless.
+     * Usa un navegador real en la nube para obtener la pagina renderizada.
      *
-     * @return array{
-     *     codigo_proceso: string,
-     *     tipo_proceso: string,
-     *     clase_proceso: string,
-     *     subclase: string,
-     *     departamento: string,
-     *     ciudad: string,
-     *     corporacion: string,
-     *     especialidad: string,
-     *     despacho: string,
-     *     direccion: string,
-     *     telefono: string,
-     *     celular: string,
-     *     email: string,
-     *     fecha_publicacion: string,
-     *     distrito_circuito: string,
-     *     numero_despacho: string,
-     *     sujetos: array<int, array{rol: string, nombre: string, documento: string}>,
-     * }|null
+     * @return array<string, mixed>|null
      */
     public function extractProcessInfo(string $radicado): ?array
     {
         $radicado = preg_replace('/[^0-9]/', '', $radicado);
 
         if (strlen($radicado) < 20) {
-            Log::error('Tyba: radicado muy corto', ['radicado' => $radicado, 'len' => strlen($radicado)]);
-
             return null;
         }
 
-        $html = $this->fetchProcessPage($radicado);
+        $url = $this->processPageUrl.'?IdProceso='.$radicado;
 
-        if (! $html) {
-            Log::error('Tyba: fetchProcessPage retorno null', ['radicado' => $radicado]);
+        $browserless = app(BrowserlessService::class);
+        $html = $browserless->getRenderedHtml($url);
+
+        if (! $html || ! str_contains($html, 'del Proceso')) {
+            Log::error('Tyba: no se pudo obtener pagina via Browserless', [
+                'radicado' => $radicado,
+                'html_size' => $html ? strlen($html) : 0,
+            ]);
 
             return null;
         }
 
         $info = $this->parseProcessInfo($html);
 
-        // Validar que el proceso tenga datos reales (no solo la pagina vacia)
+        // Validar que tenga datos reales
         if (empty($info['codigo_proceso']) && empty($info['despacho']) && empty($info['clase_proceso'])) {
-            Log::error('Tyba: proceso sin datos', ['radicado' => $radicado, 'fields' => array_filter($info, fn ($v) => is_string($v) && $v !== '')]);
+            Log::error('Tyba: proceso sin datos', ['radicado' => $radicado]);
 
             return null;
         }
 
-        Log::error('Tyba: proceso extraido', [
+        Log::info('Tyba: proceso importado', [
             'radicado' => $radicado,
-            'codigo' => $info['codigo_proceso'],
             'despacho' => $info['despacho'],
             'sujetos' => count($info['sujetos']),
+            'actuaciones' => count($info['actuaciones']),
         ]);
 
         return $info;
-    }
-
-    /**
-     * Consultar actuaciones de un proceso (acceso directo, sin captcha).
-     * Las actuaciones pueden no estar disponibles via URL directa.
-     *
-     * @return array|null Lista de actuaciones o null si falla
-     */
-    public function consultarProceso(string $radicado): ?array
-    {
-        $radicado = preg_replace('/[^0-9]/', '', $radicado);
-
-        if (strlen($radicado) < 20) {
-            return null;
-        }
-
-        $html = $this->fetchProcessPage($radicado);
-
-        if (! $html) {
-            return null;
-        }
-
-        if (str_contains($html, 'MainContent_grdActuaciones')) {
-            return $this->parseActuaciones($html, $radicado);
-        }
-
-        Log::warning('Tyba: actuaciones no disponibles via URL directa', ['radicado' => $radicado]);
-
-        return [];
-    }
-
-    private function fetchProcessPage(string $radicado): ?string
-    {
-        $url = $this->processPageUrl.'?IdProceso='.$radicado;
-
-        $response = Http::timeout(30)
-            ->withHeaders([
-                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            ])
-            ->get($url);
-
-        if (! $response->successful()) {
-            Log::error('Tyba: error HTTP accediendo proceso', ['url' => $url, 'status' => $response->status()]);
-
-            return null;
-        }
-
-        $html = $response->body();
-        Log::error('Tyba: respuesta proceso', [
-            'url' => $url,
-            'size' => strlen($html),
-            'has_proceso' => str_contains($html, 'del Proceso'),
-            'has_codigo' => str_contains($html, 'MainContent_txtCodigoProceso'),
-        ]);
-
-        if (! str_contains($html, 'del Proceso')) {
-            Log::error('Tyba: pagina no contiene info del proceso', ['radicado' => $radicado, 'snippet' => substr(strip_tags($html), 0, 200)]);
-
-            return null;
-        }
-
-        return $html;
     }
 
     /**
@@ -143,7 +66,6 @@ class TybaService
      */
     private function parseProcessInfo(string $html): array
     {
-        // Campos del proceso (inputs readonly con value)
         $fieldMap = [
             'codigo_proceso' => 'MainContent_txtCodigoProceso',
             'tipo_proceso' => 'MainContent_txtTipoProceso',
@@ -169,6 +91,7 @@ class TybaService
         }
 
         $info['sujetos'] = $this->parseSujetos($html);
+        $info['actuaciones'] = $this->parseActuaciones($html);
 
         return $info;
     }
@@ -179,13 +102,12 @@ class TybaService
 
         // Buscar el tag completo que contiene este id
         if (preg_match('/<input[^>]*id="'.$escaped.'"[^>]*>/si', $html, $tagMatch)) {
-            // Extraer value del tag encontrado
             if (preg_match('/value="([^"]*)"/', $tagMatch[0], $valMatch)) {
                 return html_entity_decode(trim($valMatch[1]), ENT_QUOTES, 'UTF-8');
             }
         }
 
-        // Fallback: buscar por name (ctl00$MainContent$txtXxx)
+        // Fallback: buscar por name
         $name = str_replace('_', '$', str_replace('MainContent_', 'ctl00$MainContent$', $id));
         if (preg_match('/<input[^>]*name="'.preg_quote($name, '/').'"[^>]*>/si', $html, $tagMatch)) {
             if (preg_match('/value="([^"]*)"/', $tagMatch[0], $valMatch)) {
@@ -235,9 +157,9 @@ class TybaService
     }
 
     /**
-     * @return array<int, array{date: string, description: string, attachments: int}>
+     * @return array<int, array{ciclo: string, tipo: string, fecha: string, fecha_registro: string}>
      */
-    private function parseActuaciones(string $html, string $radicado): array
+    private function parseActuaciones(string $html): array
     {
         $actuaciones = [];
 
@@ -256,17 +178,19 @@ class TybaService
             }
 
             $ciclo = strip_tags(trim($cells[1][1] ?? ''));
-            $tipoActuacion = strip_tags(trim($cells[1][2] ?? ''));
-            $fechaActuacion = strip_tags(trim($cells[1][3] ?? ''));
+            $tipo = strip_tags(trim($cells[1][2] ?? ''));
+            $fecha = strip_tags(trim($cells[1][3] ?? ''));
+            $fechaRegistro = strip_tags(trim($cells[1][4] ?? ''));
 
-            if (! $fechaActuacion || ! $tipoActuacion) {
+            if (! $fecha || ! $tipo) {
                 continue;
             }
 
             $actuaciones[] = [
-                'date' => $fechaActuacion,
-                'description' => $tipoActuacion.($ciclo ? " ({$ciclo})" : ''),
-                'attachments' => 0,
+                'ciclo' => html_entity_decode($ciclo, ENT_QUOTES, 'UTF-8'),
+                'tipo' => html_entity_decode($tipo, ENT_QUOTES, 'UTF-8'),
+                'fecha' => $fecha,
+                'fecha_registro' => $fechaRegistro,
             ];
         }
 

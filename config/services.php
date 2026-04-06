@@ -73,4 +73,8 @@ return [
         'sitekey' => '6Ldf8zAiAAAAAAq1LUwvTCwki5C6uuIg0zVw4of0',
     ],
 
+    'browserless' => [
+        'api_key' => env('BROWSERLESS_API_KEY'),
+    ],
+
 ];
