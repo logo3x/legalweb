@@ -299,13 +299,27 @@ try {
                 echo "Sitekey configurado: {$sitekey}\n";
 
                 // Verificar si el sitekey real es diferente
-                if (preg_match('/data-sitekey="([^"]+)"/', $tybaResp->body(), $matches)) {
+                if (preg_match('/sitekey["\s:=]+["\']?([0-9a-zA-Z_-]{40})/i', $tybaResp->body(), $matches)) {
                     echo 'Sitekey real en Tyba: '.$matches[1]."\n";
                     if ($matches[1] !== $sitekey) {
                         echo "ALERTA: El sitekey no coincide!\n";
                     }
                 } else {
-                    echo "No se encontro sitekey en el HTML de Tyba\n";
+                    echo "No se encontro sitekey con patron estandar\n";
+                    // Buscar cualquier referencia a recaptcha
+                    preg_match_all('/([0-9a-zA-Z_-]{40})/', $tybaResp->body(), $allKeys);
+                    $captchaLines = [];
+                    foreach (explode("\n", $tybaResp->body()) as $line) {
+                        if (stripos($line, 'captcha') !== false || stripos($line, 'recaptcha') !== false || stripos($line, 'sitekey') !== false) {
+                            $captchaLines[] = trim($line);
+                        }
+                    }
+                    if ($captchaLines) {
+                        echo "Lineas con referencia a captcha:\n";
+                        foreach (array_slice($captchaLines, 0, 5) as $l) {
+                            echo '  '.substr($l, 0, 200)."\n";
+                        }
+                    }
                 }
 
                 echo "\nResolviendo captcha via 2Captcha...\n";
