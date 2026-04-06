@@ -32,6 +32,7 @@ class BrowserlessService
         $script = <<<'JS'
 export default async function ({ page }) {
     const radicado = BPL_RADICADO;
+    const delay = ms => new Promise(r => setTimeout(r, ms));
 
     // Paso 1: Ir a la pagina de busqueda
     await page.goto('https://procesojudicial.ramajudicial.gov.co/Justicia21/Administracion/Ciudadanos/frmConsulta', {
@@ -46,7 +47,7 @@ export default async function ({ page }) {
     await page.type('#MainContent_txtCodigoProceso', radicado, { delay: 50 });
 
     // Paso 4: Esperar que reCAPTCHA v3 este listo y generar token
-    await page.waitForTimeout(2000);
+    await delay(3000);
 
     try {
         await page.evaluate(async () => {
@@ -71,7 +72,7 @@ export default async function ({ page }) {
     });
 
     // Paso 6: Esperar resultados
-    await page.waitForTimeout(5000);
+    await delay(8000);
 
     // Verificar si hay error de captcha
     const pageContent = await page.content();
@@ -84,17 +85,16 @@ export default async function ({ page }) {
         await page.waitForSelector('[id*="grdProceso"] [id*="imgbConsultarGrilla"]', { timeout: 10000 });
         await page.click('[id*="grdProceso"] [id*="imgbConsultarGrilla"]');
     } catch (e) {
-        // Intentar click en cualquier imagen de consultar
         try {
             await page.waitForSelector('input[title="Consultar registro"]', { timeout: 5000 });
             await page.click('input[title="Consultar registro"]');
         } catch (e2) {
-            return { type: 'error', data: 'no_results' };
+            return { type: 'error', data: 'no_results', html: pageContent.substring(0, 500) };
         }
     }
 
     // Paso 8: Esperar que cargue la pagina del proceso
-    await page.waitForTimeout(5000);
+    await delay(8000);
 
     // Verificar que estamos en frmConsultaProceso
     const finalUrl = page.url();
