@@ -344,6 +344,28 @@ try {
                 setup_log('VIEWSTATE: '.($viewstate ? strlen($viewstate).' chars' : 'NO'), $viewstate ? 'success' : 'error');
                 setup_log('EVENTVALIDATION: '.($eventVal ? strlen($eventVal).' chars' : 'NO'), $eventVal ? 'success' : 'error');
 
+                // Debug: mostrar TODOS los inputs hidden
+                preg_match_all('/<input[^>]*type=["\']hidden["\'][^>]*>/si', $tybaHtml, $hiddenInputs);
+                if (! empty($hiddenInputs[0])) {
+                    setup_log('Campos hidden encontrados: '.count($hiddenInputs[0]), 'info');
+                    foreach ($hiddenInputs[0] as $h) {
+                        $nameMatch = $idMatch = $valLen = '';
+                        preg_match('/name="([^"]*)"/', $h, $nm);
+                        preg_match('/id="([^"]*)"/', $h, $im);
+                        preg_match('/value="([^"]*)"/', $h, $vm);
+                        $name = $nm[1] ?? $im[1] ?? '?';
+                        $valLen = isset($vm[1]) ? strlen($vm[1]).' chars' : 'vacio';
+                        setup_log("  {$name}: {$valLen}", 'muted');
+                    }
+                } else {
+                    // Buscar inputs hidden sin type explicitamente
+                    preg_match_all('/<input[^>]*name="__[^"]*"[^>]*>/si', $tybaHtml, $aspInputs);
+                    setup_log('Inputs hidden: 0 (buscando por name="__*"...)', 'warning');
+                    foreach ($aspInputs[0] ?? [] as $h) {
+                        setup_log('  '.htmlspecialchars(substr($h, 0, 200)), 'muted');
+                    }
+                }
+
                 // Extraer cookies
                 $cookieJar = $tybaResp->cookies();
                 $cookies = [];
