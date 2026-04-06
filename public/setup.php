@@ -346,7 +346,7 @@ try {
                         setup_log('  Pagina del proceso encontrada!', 'success');
 
                         // Buscar tabs
-                        preg_match_all('/<a[^>]*href="#([^"]*)"[^>]*>([^<]*)</a>/si', $dBody, $tabs);
+                        preg_match_all('~<a[^>]*href="#([^"]*)"[^>]*>([^<]*)</a>~si', $dBody, $tabs);
                         if (! empty($tabs[2])) {
                             setup_log('  Tabs: '.implode(', ', array_map('trim', $tabs[2])), 'info');
                         }
