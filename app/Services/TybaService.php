@@ -91,16 +91,23 @@ class TybaService
             $formFields[$select[1]] = $value;
         }
 
-        // Simular click en "Consultar" del tab Actuaciones
+        // Simular click en "Consultar" del tab Actuaciones via ScriptManager
         $formFields['__EVENTTARGET'] = 'ctl00$MainContent$btnConsultar';
         $formFields['__EVENTARGUMENT'] = '';
         $formFields['ctl00$MainContent$ddlCicloBusqueda'] = '0';
+        // ScriptManager: indica que UpdatePanel de Actuaciones debe actualizarse
+        $formFields['ctl00$ctl09'] = 'ctl00$MainContent$UpdatePanel_Actuaciones|ctl00$MainContent$btnConsultar';
 
         $domain = parse_url($processUrl, PHP_URL_HOST);
         $postUrl = $baseUrl.'/frmConsultaProceso.aspx';
 
         $postResp = Http::timeout(30)
-            ->withHeaders(['User-Agent' => $ua, 'Referer' => $processUrl])
+            ->withHeaders([
+                'User-Agent' => $ua,
+                'Referer' => $processUrl,
+                'X-MicrosoftAjax' => 'Delta=true',
+                'X-Requested-With' => 'XMLHttpRequest',
+            ])
             ->withCookies($cookies, $domain)
             ->asForm()
             ->post($postUrl, $formFields);
@@ -110,10 +117,31 @@ class TybaService
             Log::error('Tyba: POST actuaciones', [
                 'size' => strlen($postHtml),
                 'has_grid' => str_contains($postHtml, 'MainContent_grdActuaciones'),
+                'snippet' => substr($postHtml, 0, 200),
             ]);
 
             if (str_contains($postHtml, 'MainContent_grdActuaciones')) {
                 return $this->parseActuaciones($postHtml, $radicado);
+            }
+
+            // Si no funciono con async, intentar POST normal (sin ScriptManager)
+            unset($formFields['ctl00$ctl09']);
+            $postResp2 = Http::timeout(30)
+                ->withHeaders(['User-Agent' => $ua, 'Referer' => $processUrl])
+                ->withCookies($cookies, $domain)
+                ->asForm()
+                ->post($postUrl, $formFields);
+
+            if ($postResp2->successful()) {
+                $postHtml2 = $postResp2->body();
+                Log::error('Tyba: POST normal actuaciones', [
+                    'size' => strlen($postHtml2),
+                    'has_grid' => str_contains($postHtml2, 'MainContent_grdActuaciones'),
+                ]);
+
+                if (str_contains($postHtml2, 'MainContent_grdActuaciones')) {
+                    return $this->parseActuaciones($postHtml2, $radicado);
+                }
             }
         }
 
