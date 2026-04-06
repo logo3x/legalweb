@@ -3,9 +3,11 @@
 namespace App\Filament\Resources\LegalCases\Pages;
 
 use App\Filament\Resources\LegalCases\LegalCaseResource;
-use App\Jobs\SyncCaseActuaciones;
+use App\Models\CaseEvent;
 use App\Services\AIService;
 use App\Services\DocumentGenerator;
+use App\Services\TybaService;
+use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\EditAction;
@@ -131,7 +133,8 @@ class ViewLegalCase extends ViewRecord
                 ->visible(fn () => (bool) $this->record->external_case_number)
                 ->requiresConfirmation()
                 ->modalHeading('Sincronizar con Rama Judicial')
-                ->modalDescription('Se consultara el radicado en Tyba y se importaran actuaciones nuevas. Consume 1 credito de consulta.')
+                ->modalDescription(fn () => "Se consultara el radicado {$this->record->external_case_number} en Tyba. Consume 1 credito. El proceso puede tomar 30-60 segundos.")
+                ->modalSubmitActionLabel('Iniciar sincronizacion')
                 ->action(function () {
                     if (! config('services.twocaptcha.api_key')) {
                         Notification::make()->title('Servicio no disponible')->body('La consulta automatica a Tyba no esta configurada.')->warning()->send();
@@ -139,13 +142,85 @@ class ViewLegalCase extends ViewRecord
                         return;
                     }
 
-                    SyncCaseActuaciones::dispatch($this->record);
+                    $tyba = app(TybaService::class);
+                    $actuaciones = $tyba->consultarProceso($this->record->external_case_number);
 
-                    Notification::make()
-                        ->title('Sincronizacion en proceso')
-                        ->body('La consulta a Tyba puede tomar hasta 2 minutos. Le notificaremos si hay nuevas actuaciones.')
-                        ->success()
-                        ->send();
+                    if ($actuaciones === null) {
+                        Notification::make()
+                            ->title('No se pudo consultar')
+                            ->body('Verifique que el radicado sea correcto y que tenga saldo en 2Captcha.')
+                            ->danger()
+                            ->persistent()
+                            ->send();
+
+                        return;
+                    }
+
+                    if (empty($actuaciones)) {
+                        Notification::make()
+                            ->title('Sin actuaciones')
+                            ->body('No se encontraron actuaciones para este radicado.')
+                            ->warning()
+                            ->send();
+
+                        return;
+                    }
+
+                    // Registrar actuaciones nuevas
+                    $newCount = 0;
+                    foreach ($actuaciones as $a) {
+                        $date = null;
+                        foreach (['d/m/Y', 'Y-m-d', 'd-m-Y'] as $fmt) {
+                            try {
+                                $date = Carbon::createFromFormat($fmt, trim($a['date']));
+                                break;
+                            } catch (\Exception) {
+                                continue;
+                            }
+                        }
+
+                        if (! $date) {
+                            continue;
+                        }
+
+                        $exists = CaseEvent::where('legal_case_id', $this->record->id)
+                            ->where('event_date', $date)
+                            ->where('title', $a['description'])
+                            ->exists();
+
+                        if (! $exists) {
+                            CaseEvent::create([
+                                'legal_case_id' => $this->record->id,
+                                'title' => $a['description'],
+                                'event_date' => $date,
+                                'event_type' => 'actuacion',
+                                'description' => 'Sincronizado desde Rama Judicial (Tyba). Radicado: '.$this->record->external_case_number,
+                                'user_id' => auth()->id(),
+                            ]);
+                            $newCount++;
+                        }
+                    }
+
+                    $this->record->update(['last_tyba_sync' => now()]);
+
+                    // Incrementar creditos usados
+                    $firm = auth()->user()->firm;
+                    $firm?->increment('tyba_queries_used');
+
+                    if ($newCount > 0) {
+                        Notification::make()
+                            ->title('Sincronizacion exitosa')
+                            ->body('Se encontraron '.count($actuaciones)." actuaciones en Tyba. Se registraron {$newCount} nueva(s) en el expediente.")
+                            ->success()
+                            ->persistent()
+                            ->send();
+                    } else {
+                        Notification::make()
+                            ->title('Sin novedades')
+                            ->body('Se consultaron '.count($actuaciones).' actuaciones pero todas ya estaban registradas.')
+                            ->info()
+                            ->send();
+                    }
                 }),
             Action::make('compartir')
                 ->label('Compartir con Cliente')
