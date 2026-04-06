@@ -15,6 +15,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
+use Illuminate\Database\QueryException;
 
 class ListLegalCases extends ListRecords
 {
@@ -91,12 +92,11 @@ class ListLegalCases extends ListRecords
                         ['name' => $info['especialidad'] ?: 'General'],
                     );
 
-                    // Generar case_number
+                    // Generar case_number unico global
                     $year = now()->format('Y');
                     $lastCase = LegalCase::withoutGlobalScopes()
-                        ->where('firm_id', auth()->user()->firm_id)
                         ->where('case_number', 'like', "LW-%-{$year}")
-                        ->orderByDesc('case_number')
+                        ->orderByRaw('CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(case_number, "-", 2), "-", -1) AS UNSIGNED) DESC')
                         ->first();
                     $nextNum = 1;
                     if ($lastCase && preg_match('/LW-(\d+)-/', $lastCase->case_number, $m)) {
@@ -152,25 +152,35 @@ class ListLegalCases extends ListRecords
                         }
                     }
 
-                    $case = LegalCase::create([
-                        'firm_id' => auth()->user()->firm_id,
-                        'case_number' => $caseNumber,
-                        'external_case_number' => $info['codigo_proceso'],
-                        'title' => $title,
-                        'description' => $description,
-                        'case_type_id' => $caseType->id,
-                        'client_id' => $data['client_id'],
-                        'user_id' => $data['user_id'],
-                        'status' => 'abierto',
-                        'priority' => 'media',
-                        'court' => $info['despacho'],
-                        'opposing_party' => $demandados ?: $demandantes,
-                        'started_at' => $startedAt,
-                    ]);
+                    try {
+                        $case = LegalCase::create([
+                            'firm_id' => auth()->user()->firm_id,
+                            'case_number' => $caseNumber,
+                            'external_case_number' => $radicado,
+                            'title' => $title,
+                            'description' => $description,
+                            'case_type_id' => $caseType->id,
+                            'client_id' => $data['client_id'],
+                            'user_id' => $data['user_id'],
+                            'status' => 'abierto',
+                            'priority' => 'media',
+                            'court' => $info['despacho'],
+                            'opposing_party' => $demandados ?: $demandantes,
+                            'started_at' => $startedAt,
+                        ]);
+                    } catch (QueryException $e) {
+                        Notification::make()
+                            ->title('Error al crear caso')
+                            ->body('No se pudo crear el caso. Es posible que el numero de caso ya exista. Intente nuevamente.')
+                            ->danger()
+                            ->send();
+
+                        return;
+                    }
 
                     Notification::make()
                         ->title('Proceso importado exitosamente')
-                        ->body("Caso {$caseNumber} creado con la informacion de Tyba. Radicado: {$info['codigo_proceso']}")
+                        ->body("Caso {$caseNumber} creado con informacion de Tyba. Radicado: {$radicado}")
                         ->success()
                         ->persistent()
                         ->send();
