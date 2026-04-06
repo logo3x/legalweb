@@ -55,7 +55,7 @@ class ListLegalCases extends ListRecords
                     $tyba = app(TybaService::class);
                     $info = $tyba->extractProcessInfo($data['radicado']);
 
-                    if (! $info || empty($info['codigo_proceso'])) {
+                    if (! $info) {
                         Notification::make()
                             ->title('Proceso no encontrado')
                             ->body('No se encontro informacion para el radicado ingresado. Verifique el numero e intente nuevamente.')
@@ -65,16 +65,20 @@ class ListLegalCases extends ListRecords
                         return;
                     }
 
+                    // Usar radicado del input si no se extrajo del HTML
+                    $radicado = $info['codigo_proceso'] ?: preg_replace('/[^0-9]/', '', $data['radicado']);
+                    $info['codigo_proceso'] = $radicado;
+
                     // Verificar que no exista ya
                     $exists = LegalCase::withoutGlobalScopes()
                         ->where('firm_id', auth()->user()->firm_id)
-                        ->where('external_case_number', $info['codigo_proceso'])
+                        ->where('external_case_number', $radicado)
                         ->exists();
 
                     if ($exists) {
                         Notification::make()
                             ->title('Proceso ya existe')
-                            ->body("Ya existe un caso con el radicado {$info['codigo_proceso']} en su firma.")
+                            ->body("Ya existe un caso con el radicado {$radicado} en su firma.")
                             ->warning()
                             ->send();
 
