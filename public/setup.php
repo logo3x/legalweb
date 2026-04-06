@@ -1,6 +1,13 @@
 <?php
 
+use App\Models\CaseEvent;
+use App\Models\CaseType;
+use App\Models\Client;
+use App\Models\LegalCase;
+use App\Models\Reminder;
 use App\Models\User;
+use App\Services\TybaService;
+use Carbon\Carbon;
 use Illuminate\Contracts\Console\Kernel;
 
 $secret = 'legalweb-setup-2026';
@@ -67,7 +74,9 @@ try {
         echo "<a href='?key=$secret&step=users'>8. List Users</a>\n";
         echo "<a href='?key=$secret&step=superadmin&email='>9. Make Superadmin (add ?email=)</a>\n";
         echo "<a href='?key=$secret&step=cleanup_users&super=legalwebco@gmail.com'>10. Cleanup: solo superadmin legalwebco</a>\n";
-        echo "<a href='?key=$secret&step=deadlines'>10. Check Deadlines (manual)</a>\n";
+        echo "<a href='?key=$secret&step=deadlines'>11. Check Deadlines (manual)</a>\n";
+        echo "<a href='?key=$secret&step=test_tyba&user_id=&radicado=68081310300120240001800'>12. Crear caso prueba Tyba</a>\n";
+        echo "<a href='?key=$secret&step=sync_tyba&case_id='>13. Sincronizar Tyba (add ?case_id=)</a>\n";
         echo "\n=== Cron Job (agregar en cPanel) ===\n";
         echo '* * * * * cd '.base_path()." && php artisan schedule:run >> /dev/null 2>&1\n";
     }
@@ -178,9 +187,9 @@ try {
             if (! $user) {
                 echo "Usuario no encontrado\n";
             } else {
-                $cases = \App\Models\LegalCase::withoutGlobalScopes()->where('firm_id', $user->firm_id)->take(2)->get();
+                $cases = LegalCase::withoutGlobalScopes()->where('firm_id', $user->firm_id)->take(2)->get();
 
-                \App\Models\Reminder::create([
+                Reminder::create([
                     'firm_id' => $user->firm_id,
                     'user_id' => $user->id,
                     'legal_case_id' => $cases->first()?->id,
@@ -192,7 +201,7 @@ try {
                     'remind_at' => now()->addDays(4)->setHour(8)->setMinute(0),
                 ]);
 
-                \App\Models\Reminder::create([
+                Reminder::create([
                     'firm_id' => $user->firm_id,
                     'user_id' => $user->id,
                     'legal_case_id' => $cases->skip(1)->first()?->id,
@@ -205,6 +214,123 @@ try {
                 ]);
 
                 echo "2 recordatorios demo creados para {$user->name} ({$user->email})\n";
+            }
+        }
+    }
+
+    if ($step === 'test_tyba') {
+        $userId = $_GET['user_id'] ?? null;
+        $radicado = $_GET['radicado'] ?? '68081310300120240001800';
+
+        if (! $userId) {
+            echo "ERROR: Pase ?user_id=X&radicado=XXXXX\n";
+            echo "\nUsuarios:\n";
+            User::all()->each(fn ($u) => print ("- ID: {$u->id} | {$u->name} ({$u->email}) | Firma: ".($u->firm?->name ?? 'N/A')."\n"));
+        } else {
+            $user = User::find($userId);
+
+            if (! $user || ! $user->firm_id) {
+                echo "Usuario no encontrado o sin firma\n";
+            } else {
+                $caseType = CaseType::first();
+                $client = Client::withoutGlobalScopes()->where('firm_id', $user->firm_id)->first();
+
+                if (! $client) {
+                    echo "No hay clientes en la firma. Cree uno primero.\n";
+                } else {
+                    $case = LegalCase::create([
+                        'firm_id' => $user->firm_id,
+                        'case_number' => 'LW-TYBA-'.now()->timestamp,
+                        'external_case_number' => $radicado,
+                        'title' => 'Prueba consulta Tyba - Radicado '.$radicado,
+                        'case_type_id' => $caseType->id,
+                        'client_id' => $client->id,
+                        'user_id' => $user->id,
+                        'status' => 'en_progreso',
+                        'priority' => 'alta',
+                    ]);
+
+                    echo "Caso creado: ID {$case->id} | {$case->case_number}\n";
+                    echo "Radicado: {$radicado}\n";
+                    echo "Abogado: {$user->name}\n";
+                    echo "\nAhora use: ?step=sync_tyba&case_id={$case->id}\n";
+                }
+            }
+        }
+    }
+
+    if ($step === 'sync_tyba') {
+        $caseId = $_GET['case_id'] ?? null;
+
+        if (! $caseId) {
+            echo "ERROR: Pase ?case_id=X\n";
+        } else {
+            $case = LegalCase::withoutGlobalScopes()->find($caseId);
+
+            if (! $case) {
+                echo "Caso no encontrado\n";
+            } elseif (! $case->external_case_number) {
+                echo "El caso no tiene radicado judicial\n";
+            } else {
+                echo "Sincronizando caso {$case->case_number} (radicado: {$case->external_case_number})...\n";
+                echo "Resolviendo captcha via 2Captcha (esto puede tomar 30-60 segundos)...\n\n";
+
+                ob_flush();
+                flush();
+
+                $tyba = new TybaService;
+                $actuaciones = $tyba->consultarProceso($case->external_case_number);
+
+                if ($actuaciones === null) {
+                    echo "ERROR: No se pudieron obtener actuaciones. Verifique:\n";
+                    echo "- Saldo de 2Captcha\n";
+                    echo "- Que el radicado sea correcto\n";
+                    echo "- Que Tyba este disponible\n";
+                } elseif (empty($actuaciones)) {
+                    echo "No se encontraron actuaciones para este radicado.\n";
+                } else {
+                    echo 'Actuaciones encontradas: '.count($actuaciones)."\n\n";
+                    $new = 0;
+
+                    foreach ($actuaciones as $a) {
+                        echo "- [{$a['date']}] {$a['description']}\n";
+
+                        $date = null;
+                        foreach (['d/m/Y', 'Y-m-d', 'd-m-Y'] as $fmt) {
+                            try {
+                                $date = Carbon::createFromFormat($fmt, trim($a['date']));
+
+                                break;
+                            } catch (Exception $e) {
+                                continue;
+                            }
+                        }
+
+                        if (! $date) {
+                            continue;
+                        }
+
+                        $exists = CaseEvent::where('legal_case_id', $case->id)
+                            ->where('event_date', $date)
+                            ->where('title', $a['description'])
+                            ->exists();
+
+                        if (! $exists) {
+                            CaseEvent::create([
+                                'legal_case_id' => $case->id,
+                                'title' => $a['description'],
+                                'event_date' => $date,
+                                'event_type' => 'actuacion',
+                                'description' => 'Sincronizado desde Rama Judicial (Tyba). Radicado: '.$case->external_case_number,
+                                'user_id' => $case->user_id,
+                            ]);
+                            $new++;
+                        }
+                    }
+
+                    $case->update(['last_tyba_sync' => now()]);
+                    echo "\nNuevas actuaciones registradas: {$new}\n";
+                }
             }
         }
     }
