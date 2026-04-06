@@ -4,6 +4,7 @@ namespace App\Filament\Resources\LegalCases\Pages;
 
 use App\Filament\Resources\LegalCases\LegalCaseResource;
 use App\Models\CaseType;
+use App\Models\Client;
 use App\Models\LegalCase;
 use App\Models\User;
 use App\Services\TybaService;
@@ -40,11 +41,11 @@ class ListLegalCases extends ListRecords
                         ->helperText('23 digitos del radicado judicial asignado por la Rama Judicial.'),
                     Select::make('client_id')
                         ->label('Cliente')
-                        ->relationship('client', 'first_name', modifyQueryUsing: fn ($query) => $query->where('firm_id', auth()->user()->firm_id))
-                        ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->first_name} {$record->last_name}")
+                        ->options(fn () => Client::where('firm_id', auth()->user()->firm_id)
+                            ->get()
+                            ->mapWithKeys(fn ($c) => [$c->id => "{$c->first_name} {$c->last_name}"]))
                         ->required()
-                        ->searchable()
-                        ->preload(),
+                        ->searchable(),
                     Select::make('user_id')
                         ->label('Abogado Responsable')
                         ->options(fn () => User::where('firm_id', auth()->user()->firm_id)->pluck('name', 'id'))
