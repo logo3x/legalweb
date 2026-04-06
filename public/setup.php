@@ -324,7 +324,27 @@ try {
 
                 if ($actuaciones === null) {
                     setup_log('No se pudieron obtener actuaciones', 'error');
-                    setup_log('Revise storage/logs/laravel.log', 'muted');
+
+                    // Mostrar logs recientes de Tyba
+                    $logFile = storage_path('logs/laravel.log');
+                    if (file_exists($logFile)) {
+                        $logLines = array_slice(file($logFile), -50);
+                        $tybaLogs = array_filter($logLines, fn ($l) => str_contains($l, 'Tyba'));
+                        $tybaLogs = array_slice($tybaLogs, -10);
+                        if ($tybaLogs) {
+                            setup_log('---logs---');
+                            foreach ($tybaLogs as $l) {
+                                $l = trim($l);
+                                if (str_contains($l, 'ERROR')) {
+                                    setup_log(substr($l, 0, 300), 'error');
+                                } elseif (str_contains($l, 'WARNING')) {
+                                    setup_log(substr($l, 0, 300), 'warning');
+                                } else {
+                                    setup_log(substr($l, 0, 300), 'muted');
+                                }
+                            }
+                        }
+                    }
                 } elseif (empty($actuaciones)) {
                     setup_log('No se encontraron actuaciones para este radicado', 'warning');
                 } else {
@@ -641,6 +661,7 @@ $baseUrl = "?key={$secret}";
                                     'cron' => 'Cron Job',
                                     'usuarios' => 'Usuarios',
                                     'sync' => 'Sincronizacion',
+                                    'logs' => 'Logs recientes',
                                 ];
                                 ?>
                                 <hr class="separator">
