@@ -48,7 +48,7 @@ class TybaService
 
         // Paso 3: Solo si Tyba exige captcha explicitamente, resolver via 2Captcha
         if ($captchaRequired && ! $html) {
-            Log::info('Tyba: captcha requerido, resolviendo via 2Captcha', ['radicado' => $radicado]);
+            Log::warning('Tyba: captcha requerido, resolviendo via 2Captcha', ['radicado' => $radicado]);
             $captchaToken = $this->resolveCaptcha();
 
             if ($captchaToken) {
@@ -192,7 +192,7 @@ class TybaService
             $formData['g-recaptcha-response'] = $captchaToken;
         }
 
-        Log::info('Tyba: enviando consulta', [
+        Log::warning('Tyba: enviando consulta', [
             'radicado' => $radicado,
             'con_captcha' => $captchaToken !== null,
         ]);
@@ -210,7 +210,7 @@ class TybaService
         $status = $response->status();
         $body = $response->body();
 
-        Log::info('Tyba: respuesta recibida', [
+        Log::warning('Tyba: respuesta recibida', [
             'status' => $status,
             'body_length' => strlen($body),
             'con_captcha' => $captchaToken !== null,
@@ -233,13 +233,13 @@ class TybaService
 
         // Verificar que la respuesta tiene datos del proceso
         if (str_contains($body, 'grdActuaciones') || str_contains($body, 'del Proceso')) {
-            Log::info('Tyba: datos del proceso obtenidos');
+            Log::warning('Tyba: datos del proceso obtenidos');
 
             return ['html' => $body, 'captcha_required' => false];
         }
 
         // Respuesta sin datos - loguear snippet para debug
-        Log::info('Tyba: respuesta sin datos del proceso', [
+        Log::warning('Tyba: respuesta sin datos del proceso', [
             'radicado' => $radicado,
             'snippet' => substr(strip_tags($body), 0, 500),
         ]);
@@ -253,7 +253,7 @@ class TybaService
 
         // Buscar tabla de actuaciones
         if (! preg_match('/<table[^>]*id="[^"]*grdActuaciones[^"]*"[^>]*>(.*?)<\/table>/si', $html, $tableMatch)) {
-            Log::info('Tyba: no se encontro tabla de actuaciones', ['radicado' => $radicado]);
+            Log::warning('Tyba: no se encontro tabla de actuaciones', ['radicado' => $radicado]);
 
             return [];
         }
@@ -288,7 +288,7 @@ class TybaService
             ];
         }
 
-        Log::info('Tyba: actuaciones encontradas', ['radicado' => $radicado, 'count' => count($actuaciones)]);
+        Log::warning('Tyba: actuaciones encontradas', ['radicado' => $radicado, 'count' => count($actuaciones)]);
 
         return $actuaciones;
     }

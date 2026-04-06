@@ -313,8 +313,69 @@ try {
                     setup_log('Tipo: no determinado (posible v2/v3)', 'warning');
                 }
 
+                // Prueba directa: POST al form de Tyba sin captcha
+                setup_log('---debug---');
+                setup_log('Probando POST directo sin captcha...', 'info');
+
+                $tybaUrl = config('services.tyba.url');
+                $tybaHtml = $tybaResp->body();
+
+                // Extraer campos ocultos
+                preg_match('/id="__VIEWSTATE"\s+value="([^"]*)"/', $tybaHtml, $vs);
+                preg_match('/id="__VIEWSTATEGENERATOR"\s+value="([^"]*)"/', $tybaHtml, $vsg);
+                preg_match('/id="__EVENTVALIDATION"\s+value="([^"]*)"/', $tybaHtml, $ev);
+
+                $viewstate = $vs[1] ?? '';
+                $viewstateGen = $vsg[1] ?? '';
+                $eventVal = $ev[1] ?? '';
+
+                setup_log('VIEWSTATE: '.($viewstate ? strlen($viewstate).' chars' : 'NO'), $viewstate ? 'success' : 'error');
+                setup_log('EVENTVALIDATION: '.($eventVal ? strlen($eventVal).' chars' : 'NO'), $eventVal ? 'success' : 'error');
+
+                // Extraer cookies
+                $cookieJar = $tybaResp->cookies();
+                $cookies = [];
+                foreach ($cookieJar as $c) {
+                    $cookies[$c->getName()] = $c->getValue();
+                }
+                setup_log('Cookies: '.implode(', ', array_keys($cookies)), ! empty($cookies) ? 'success' : 'warning');
+
+                $domain = parse_url($tybaUrl, PHP_URL_HOST);
+                $radicadoNum = preg_replace('/[^0-9]/', '', $case->external_case_number);
+
+                $postResp = Http::timeout(30)
+                    ->withHeaders([
+                        'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                        'Referer' => $tybaUrl,
+                    ])
+                    ->withCookies($cookies, $domain)
+                    ->asForm()
+                    ->post($tybaUrl, [
+                        '__VIEWSTATE' => $viewstate,
+                        '__VIEWSTATEGENERATOR' => $viewstateGen,
+                        '__EVENTVALIDATION' => $eventVal,
+                        'ctl00$MainContent$txtCodigoProceso' => $radicadoNum,
+                        'ctl00$MainContent$btnConsultar' => 'Consultar',
+                    ]);
+
+                $postStatus = $postResp->status();
+                $postBody = $postResp->body();
+                $postLen = strlen($postBody);
+
+                setup_log("HTTP status: {$postStatus}", $postResp->successful() ? 'success' : 'error');
+                setup_log("Respuesta: {$postLen} bytes");
+                setup_log('Tiene "del Proceso": '.(str_contains($postBody, 'del Proceso') ? 'SI' : 'NO'), str_contains($postBody, 'del Proceso') ? 'success' : 'warning');
+                setup_log('Tiene "grdActuaciones": '.(str_contains($postBody, 'grdActuaciones') ? 'SI' : 'NO'), str_contains($postBody, 'grdActuaciones') ? 'success' : 'warning');
+                setup_log('Tiene "Capcha": '.(str_contains($postBody, 'Capcha') ? 'SI' : 'NO'), str_contains($postBody, 'Capcha') ? 'warning' : 'success');
+
+                // Mostrar snippet del texto
+                $snippet = substr(strip_tags($postBody), 0, 800);
+                $snippet = preg_replace('/\s+/', ' ', $snippet);
+                setup_log('---snippet---');
+                setup_log(trim($snippet), 'muted');
+
                 setup_log('---sync---');
-                setup_log('Consultando proceso...', 'info');
+                setup_log('Ejecutando TybaService...', 'info');
 
                 ob_flush();
                 flush();
@@ -660,6 +721,8 @@ $baseUrl = "?key={$secret}";
                                     'storage' => 'Almacenamiento',
                                     'cron' => 'Cron Job',
                                     'usuarios' => 'Usuarios',
+                                    'debug' => 'Prueba directa',
+                                    'snippet' => 'Respuesta de Tyba (texto)',
                                     'sync' => 'Sincronizacion',
                                     'logs' => 'Logs recientes',
                                 ];
