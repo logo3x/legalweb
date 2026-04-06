@@ -18,7 +18,7 @@ class BrowserlessService
     }
 
     /**
-     * Ejecutar flujo completo en Tyba: buscar radicado → click resultado → obtener HTML del proceso.
+     * Ejecutar flujo completo en Tyba via Browserless /function endpoint.
      */
     public function fetchTybaProcess(string $radicado): ?string
     {
@@ -28,61 +28,72 @@ class BrowserlessService
             return null;
         }
 
-        // Script Puppeteer que automatiza el flujo completo de Tyba
         $script = <<<'JS'
-export default async function ({ page }) {
+export default async ({ page }) => {
     const radicado = "RADICADO_PLACEHOLDER";
 
-    await page.goto('https://procesojudicial.ramajudicial.gov.co/Justicia21/Administracion/Ciudadanos/frmConsulta', {
-        waitUntil: 'networkidle2',
+    await page.goto("https://procesojudicial.ramajudicial.gov.co/Justicia21/Administracion/Ciudadanos/frmConsulta", {
+        waitUntil: "networkidle2",
         timeout: 30000
     });
 
-    await page.waitForSelector('#MainContent_txtCodigoProceso', { timeout: 10000 });
-    await page.type('#MainContent_txtCodigoProceso', radicado, { delay: 50 });
+    await page.waitForSelector("#MainContent_txtCodigoProceso", { timeout: 10000 });
+    await page.type("#MainContent_txtCodigoProceso", radicado, { delay: 50 });
 
-    // Esperar reCAPTCHA
-    await page.waitForFunction('typeof grecaptcha !== "undefined"', { timeout: 10000 }).catch(function() {});
-    await page.evaluate(function() {
-        return new Promise(function(resolve) {
-            if (typeof grecaptcha === 'undefined') { resolve(); return; }
-            grecaptcha.ready(function() {
-                grecaptcha.execute('6Ldf8zAiAAAAAAq1LUwvTCwki5C6uuIg0zVw4of0', { action: 'submit' }).then(function(token) {
-                    document.getElementById('recaptchaResponse').value = token;
-                    resolve();
-                }).catch(function() { resolve(); });
+    // Esperar reCAPTCHA y generar token
+    try {
+        await page.waitForFunction("typeof grecaptcha !== 'undefined'", { timeout: 10000 });
+        await page.evaluate(function() {
+            return new Promise(function(resolve) {
+                grecaptcha.ready(function() {
+                    grecaptcha.execute("6Ldf8zAiAAAAAAq1LUwvTCwki5C6uuIg0zVw4of0", { action: "submit" }).then(function(token) {
+                        document.getElementById("recaptchaResponse").value = token;
+                        resolve();
+                    }).catch(function() { resolve(); });
+                });
             });
         });
-    });
+    } catch (e) {}
 
     // Click Consultar
     await page.evaluate(function() {
-        __doPostBack('ctl00\$MainContent\$btnConsultar', '');
+        __doPostBack("ctl00$MainContent$btnConsultar", "");
     });
 
     // Esperar resultados
-    await page.waitForSelector('[id*="grdProceso"]', { timeout: 15000 }).catch(function() {});
-
-    var pageContent = await page.content();
-    if (pageContent.includes('El valor de la Capcha no coincide')) {
-        return { type: 'error', data: 'captcha_failed' };
+    try {
+        await page.waitForSelector("[id*='grdProceso']", { timeout: 15000 });
+    } catch (e) {
+        const html = await page.content();
+        if (html.includes("Capcha no coincide")) {
+            return { data: { error: "captcha_failed" }, type: "application/json" };
+        }
+        return { data: { error: "no_results" }, type: "application/json" };
     }
 
     // Click en la lupa
     try {
-        await page.waitForSelector('input[title="Consultar registro"]', { timeout: 10000 });
-        await page.click('input[title="Consultar registro"]');
+        await page.waitForSelector("input[title='Consultar registro']", { timeout: 10000 });
+        await page.click("input[title='Consultar registro']");
     } catch (e) {
-        return { type: 'error', data: 'no_results' };
+        return { data: { error: "no_lupa" }, type: "application/json" };
     }
 
-    // Esperar pagina del proceso
-    await page.waitForSelector('#MainContent_txtCodigoProceso[value]', { timeout: 15000 }).catch(function() {});
-    await page.waitForFunction('document.querySelector("#MainContent_txtCodigoProceso") && document.querySelector("#MainContent_txtCodigoProceso").value.length > 5', { timeout: 10000 }).catch(function() {});
+    // Esperar pagina del proceso con datos
+    try {
+        await page.waitForNavigation({ waitUntil: "networkidle2", timeout: 15000 });
+    } catch (e) {}
 
-    var html = await page.content();
-    return { type: 'html', data: html, url: page.url() };
-}
+    try {
+        await page.waitForFunction(
+            "document.querySelector('#MainContent_txtCodigoProceso') && document.querySelector('#MainContent_txtCodigoProceso').value && document.querySelector('#MainContent_txtCodigoProceso').value.length > 5",
+            { timeout: 10000 }
+        );
+    } catch (e) {}
+
+    const html = await page.content();
+    return { data: { html: html, url: page.url() }, type: "application/json" };
+};
 JS;
 
         $script = str_replace('RADICADO_PLACEHOLDER', $radicado, $script);
@@ -105,22 +116,20 @@ JS;
 
         $result = $response->json();
 
-        if (($result['type'] ?? '') === 'error') {
-            Log::error('Browserless: error en flujo', ['error' => $result['data'] ?? 'unknown']);
+        if (isset($result['error'])) {
+            Log::error('Browserless: error en flujo', ['error' => $result['error']]);
 
             return null;
         }
 
-        if (($result['type'] ?? '') === 'html') {
-            Log::info('Browserless: HTML obtenido', [
-                'size' => strlen($result['data'] ?? ''),
-                'url' => $result['url'] ?? '',
-            ]);
+        if (isset($result['html'])) {
+            $htmlSize = strlen($result['html']);
+            Log::info('Browserless: HTML obtenido', ['size' => $htmlSize, 'url' => $result['url'] ?? '']);
 
-            return $result['data'];
+            return $result['html'];
         }
 
-        Log::error('Browserless: respuesta inesperada', ['result' => substr(json_encode($result), 0, 500)]);
+        Log::error('Browserless: respuesta sin HTML', ['keys' => array_keys($result)]);
 
         return null;
     }
