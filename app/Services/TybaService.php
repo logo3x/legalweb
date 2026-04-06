@@ -32,55 +32,94 @@ class TybaService
             return null;
         }
 
-        // Acceder directamente a frmConsultaProceso con el codigo del proceso
+        // Paso 1: Acceder directamente a frmConsultaProceso (sin captcha)
         $baseUrl = dirname($this->tybaUrl);
         $processUrl = $baseUrl.'/frmConsultaProceso.aspx?IdProceso='.$radicado;
+        $ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 
-        Log::error('Tyba: consultando proceso directo', ['url' => $processUrl]);
+        $response = Http::timeout(30)->withHeaders(['User-Agent' => $ua])->get($processUrl);
 
-        $response = Http::timeout(30)
-            ->withHeaders([
-                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            ])
-            ->get($processUrl);
+        if (! $response->successful() || ! str_contains($response->body(), 'del Proceso')) {
+            Log::error('Tyba: no se pudo acceder al proceso', ['radicado' => $radicado]);
 
-        if ($response->successful()) {
-            $html = $response->body();
-            if (str_contains($html, 'grdActuaciones') || str_contains($html, 'del Proceso')) {
-                Log::error('Tyba: proceso obtenido via URL directa');
+            return null;
+        }
 
-                return $this->parseActuaciones($html, $radicado);
+        $pageHtml = $response->body();
+
+        // Si las actuaciones ya están en la respuesta inicial
+        if (str_contains($pageHtml, 'MainContent_grdActuaciones')) {
+            $actuaciones = $this->parseActuaciones($pageHtml, $radicado);
+            if (! empty($actuaciones)) {
+                return $actuaciones;
             }
-            Log::error('Tyba: URL directa no tiene actuaciones, intentando busqueda con captcha');
         }
 
-        // Fallback: busqueda con captcha
-        $captchaToken = $this->resolveCaptcha();
-
-        if (! $captchaToken) {
-            Log::error('Tyba: no se pudo resolver captcha');
-
-            return null;
+        // Paso 2: POST para cargar actuaciones via UpdatePanel
+        $cookieJar = $response->cookies();
+        $cookies = [];
+        foreach ($cookieJar as $cookie) {
+            $cookies[$cookie->getName()] = $cookie->getValue();
         }
 
-        $session = $this->initSession();
-
-        if (! $session) {
-            Log::error('Tyba: no se pudo iniciar sesion');
-
-            return null;
+        // Extraer todos los campos del form
+        $formFields = [];
+        preg_match_all('/<input[^>]*name="([^"]*)"[^>]*>/si', $pageHtml, $inputs, PREG_SET_ORDER);
+        foreach ($inputs as $input) {
+            if (preg_match('/\bdisabled\b/i', $input[0]) || preg_match('/type=["\']submit["\']/i', $input[0]) || preg_match('/type=["\']image["\']/i', $input[0])) {
+                continue;
+            }
+            $value = '';
+            if (preg_match('/value="([^"]*)"/', $input[0], $vm)) {
+                $value = $vm[1];
+            }
+            $formFields[$input[1]] = $value;
         }
 
-        $result = $this->submitQuery($radicado, $captchaToken, $session);
-        $html = $result['html'] ?? null;
-
-        if (! $html) {
-            Log::error('Tyba: no se obtuvo respuesta', ['radicado' => $radicado]);
-
-            return null;
+        // Selects no-disabled
+        preg_match_all('/<select[^>]*name="([^"]*)"[^>]*>(.*?)<\/select>/si', $pageHtml, $selects, PREG_SET_ORDER);
+        foreach ($selects as $select) {
+            if (preg_match('/\bdisabled\b/i', $select[0])) {
+                continue;
+            }
+            $value = '';
+            if (preg_match('/selected="selected"[^>]*value="([^"]*)"/', $select[2], $sm)) {
+                $value = $sm[1];
+            } elseif (preg_match('/value="([^"]*)"[^>]*selected="selected"/', $select[2], $sm)) {
+                $value = $sm[1];
+            }
+            $formFields[$select[1]] = $value;
         }
 
-        return $this->parseActuaciones($html, $radicado);
+        // Simular click en "Consultar" del tab Actuaciones
+        $formFields['__EVENTTARGET'] = 'ctl00$MainContent$btnConsultar';
+        $formFields['__EVENTARGUMENT'] = '';
+        $formFields['ctl00$MainContent$ddlCicloBusqueda'] = '0';
+
+        $domain = parse_url($processUrl, PHP_URL_HOST);
+        $postUrl = $baseUrl.'/frmConsultaProceso.aspx';
+
+        $postResp = Http::timeout(30)
+            ->withHeaders(['User-Agent' => $ua, 'Referer' => $processUrl])
+            ->withCookies($cookies, $domain)
+            ->asForm()
+            ->post($postUrl, $formFields);
+
+        if ($postResp->successful()) {
+            $postHtml = $postResp->body();
+            Log::error('Tyba: POST actuaciones', [
+                'size' => strlen($postHtml),
+                'has_grid' => str_contains($postHtml, 'MainContent_grdActuaciones'),
+            ]);
+
+            if (str_contains($postHtml, 'MainContent_grdActuaciones')) {
+                return $this->parseActuaciones($postHtml, $radicado);
+            }
+        }
+
+        Log::error('Tyba: no se pudieron cargar actuaciones', ['radicado' => $radicado]);
+
+        return null;
     }
 
     private function resolveCaptcha(): ?string
