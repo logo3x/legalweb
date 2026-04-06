@@ -342,8 +342,44 @@ try {
                         ($hasActuaciones || $hasProceso) ? 'success' : 'muted');
 
                     if ($hasActuaciones || $hasProceso) {
-                        $snippet = trim(preg_replace('/\s+/', ' ', strip_tags($dBody)));
-                        setup_log('  Snippet: '.substr($snippet, 0, 300), 'success');
+                        // Analizar la pagina del proceso
+                        setup_log('  Pagina del proceso encontrada!', 'success');
+
+                        // Buscar tabs
+                        preg_match_all('/<a[^>]*href="#([^"]*)"[^>]*>([^<]*)</a>/si', $dBody, $tabs);
+                        if (! empty($tabs[2])) {
+                            setup_log('  Tabs: '.implode(', ', array_map('trim', $tabs[2])), 'info');
+                        }
+
+                        // Buscar tablas
+                        preg_match_all('/<table[^>]*id="([^"]*)"[^>]*>/si', $dBody, $tables);
+                        if (! empty($tables[1])) {
+                            setup_log('  Tablas: '.implode(', ', $tables[1]), 'info');
+                        }
+
+                        // Buscar __doPostBack que podrian cargar actuaciones
+                        preg_match_all("/__doPostBack\('([^']*(?:Actuacion|Tab|Panel)[^']*)'/i", $dBody, $actPb);
+                        if (! empty($actPb[1])) {
+                            setup_log('  PostBacks actuaciones: '.implode(', ', $actPb[1]), 'info');
+                        }
+
+                        // Buscar links o tabs con "Actuacion"
+                        preg_match_all('/[^<]*Actuacion[^<]*/si', $dBody, $actLinks);
+                        if (! empty($actLinks[0])) {
+                            foreach (array_slice($actLinks[0], 0, 3) as $al) {
+                                setup_log('  '.trim(preg_replace('/\s+/', ' ', $al)), 'muted');
+                            }
+                        }
+
+                        // Buscar UpdatePanels
+                        if (preg_match('/PageRequestManager\._initialize\([^)]+\)/si', $dBody, $prm)) {
+                            setup_log('  PageRequestManager: '.substr($prm[0], 0, 300), 'muted');
+                        }
+
+                        // Mostrar snippet de la parte final (donde suelen estar los tabs)
+                        $textContent = trim(preg_replace('/\s+/', ' ', strip_tags($dBody)));
+                        $lastPart = substr($textContent, -500);
+                        setup_log('  Final: '.$lastPart, 'muted');
 
                         break;
                     }
