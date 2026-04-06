@@ -320,10 +320,22 @@ try {
                 $tybaUrl = config('services.tyba.url');
                 $tybaHtml = $tybaResp->body();
 
-                // Extraer campos ocultos
-                preg_match('/id="__VIEWSTATE"\s+value="([^"]*)"/', $tybaHtml, $vs);
-                preg_match('/id="__VIEWSTATEGENERATOR"\s+value="([^"]*)"/', $tybaHtml, $vsg);
-                preg_match('/id="__EVENTVALIDATION"\s+value="([^"]*)"/', $tybaHtml, $ev);
+                // Extraer campos ocultos (atributos en cualquier orden)
+                preg_match('/id="__VIEWSTATE"[^>]*value="([^"]*)"/si', $tybaHtml, $vs);
+                if (empty($vs[1])) {
+                    preg_match('/name="__VIEWSTATE"[^>]*value="([^"]*)"/si', $tybaHtml, $vs);
+                }
+                preg_match('/id="__VIEWSTATEGENERATOR"[^>]*value="([^"]*)"/si', $tybaHtml, $vsg);
+                if (empty($vsg[1])) {
+                    preg_match('/name="__VIEWSTATEGENERATOR"[^>]*value="([^"]*)"/si', $tybaHtml, $vsg);
+                }
+                preg_match('/id="__EVENTVALIDATION"[^>]*value="([^"]*)"/si', $tybaHtml, $ev);
+                if (empty($ev[1])) {
+                    preg_match('/name="__EVENTVALIDATION"[^>]*value="([^"]*)"/si', $tybaHtml, $ev);
+                    if (empty($ev[1])) {
+                        preg_match('/value="([^"]*)"[^>]*id="__EVENTVALIDATION"/si', $tybaHtml, $ev);
+                    }
+                }
 
                 $viewstate = $vs[1] ?? '';
                 $viewstateGen = $vsg[1] ?? '';

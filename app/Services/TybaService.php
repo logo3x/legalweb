@@ -167,8 +167,21 @@ class TybaService
 
     private function extractHiddenField(string $html, string $fieldName): ?string
     {
-        $pattern = '/id="'.preg_quote($fieldName, '/').'"\s+value="([^"]*)"/';
-        if (preg_match($pattern, $html, $matches)) {
+        // Buscar por id="fieldName" ... value="..." (atributos en cualquier orden)
+        $escaped = preg_quote($fieldName, '/');
+
+        // Patron 1: id antes de value
+        if (preg_match('/id="'.$escaped.'"[^>]*value="([^"]*)"/si', $html, $matches)) {
+            return $matches[1];
+        }
+
+        // Patron 2: value antes de id
+        if (preg_match('/value="([^"]*)"[^>]*id="'.$escaped.'"/si', $html, $matches)) {
+            return $matches[1];
+        }
+
+        // Patron 3: buscar por name en vez de id
+        if (preg_match('/name="'.$escaped.'"[^>]*value="([^"]*)"/si', $html, $matches)) {
             return $matches[1];
         }
 
