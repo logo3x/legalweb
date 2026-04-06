@@ -142,7 +142,13 @@ class TybaService
         }
 
         $html = $response->body();
-        $cookies = $response->cookies();
+
+        // Extraer cookies como array simple name => value
+        $cookieJar = $response->cookies();
+        $cookies = [];
+        foreach ($cookieJar as $cookie) {
+            $cookies[$cookie->getName()] = $cookie->getValue();
+        }
 
         // Extraer __VIEWSTATE y __EVENTVALIDATION
         $viewstate = $this->extractHiddenField($html, '__VIEWSTATE');
@@ -196,7 +202,7 @@ class TybaService
                 'Referer' => $this->tybaUrl,
                 'Content-Type' => 'application/x-www-form-urlencoded',
             ])
-            ->withCookies($session['cookies']->toArray(), parse_url($this->tybaUrl, PHP_URL_HOST))
+            ->withCookies($session['cookies'], parse_url($this->tybaUrl, PHP_URL_HOST))
             ->asForm()
             ->post($this->tybaUrl, $formData);
 
