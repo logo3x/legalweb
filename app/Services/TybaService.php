@@ -140,28 +140,67 @@ class TybaService
             $cookies[$cookie->getName()] = $cookie->getValue();
         }
 
-        // Extraer todos los campos hidden de ASP.NET
-        $hiddenFields = [];
-        preg_match_all('/<input[^>]*type=["\']hidden["\'][^>]*>/si', $html, $inputs);
-        foreach ($inputs[0] ?? [] as $input) {
-            $name = $value = null;
-            if (preg_match('/name="([^"]*)"/', $input, $nm)) {
-                $name = $nm[1];
+        // Extraer TODOS los campos del form (ASP.NET valida contra ViewState)
+        $formFields = [];
+
+        // Inputs (hidden, text, etc.) - solo los que no estan disabled
+        preg_match_all('/<input[^>]*name="([^"]*)"[^>]*>/si', $html, $inputs, PREG_SET_ORDER);
+        foreach ($inputs as $input) {
+            $tag = $input[0];
+            $name = $input[1];
+
+            // Skip disabled
+            if (preg_match('/\bdisabled\b/i', $tag)) {
+                continue;
             }
-            if (preg_match('/value="([^"]*)"/', $input, $vm)) {
+
+            // Skip submit buttons (los manejaremos via __doPostBack)
+            if (preg_match('/type=["\']submit["\']/i', $tag)) {
+                continue;
+            }
+
+            $value = '';
+            if (preg_match('/value="([^"]*)"/', $tag, $vm)) {
                 $value = $vm[1];
             }
-            if ($name !== null) {
-                $hiddenFields[$name] = $value ?? '';
+            $formFields[$name] = $value;
+        }
+
+        // Selects (dropdowns) - solo los que no estan disabled
+        preg_match_all('/<select[^>]*name="([^"]*)"[^>]*>(.*?)<\/select>/si', $html, $selects, PREG_SET_ORDER);
+        foreach ($selects as $select) {
+            $tag = $select[0];
+            $name = $select[1];
+            $options = $select[2];
+
+            if (preg_match('/\bdisabled\b/i', $tag)) {
+                continue;
+            }
+
+            // Obtener valor del option selected
+            $value = '';
+            if (preg_match('/selected="selected"[^>]*value="([^"]*)"/', $options, $sm)) {
+                $value = $sm[1];
+            } elseif (preg_match('/value="([^"]*)"[^>]*selected="selected"/', $options, $sm)) {
+                $value = $sm[1];
+            }
+            $formFields[$name] = $value;
+        }
+
+        // Textareas
+        preg_match_all('/<textarea[^>]*name="([^"]*)"[^>]*>(.*?)<\/textarea>/si', $html, $textareas, PREG_SET_ORDER);
+        foreach ($textareas as $ta) {
+            if (! preg_match('/\bdisabled\b/i', $ta[0])) {
+                $formFields[$ta[1]] = $ta[2] ?? '';
             }
         }
 
-        if (empty($hiddenFields['__VIEWSTATE'])) {
+        if (empty($formFields['__VIEWSTATE'])) {
             return null;
         }
 
         return [
-            'hidden_fields' => $hiddenFields,
+            'form_fields' => $formFields,
             'cookies' => $cookies,
         ];
     }
@@ -194,8 +233,8 @@ class TybaService
      */
     private function submitQuery(string $radicado, ?string $captchaToken, array $session): array
     {
-        // Incluir todos los campos hidden de ASP.NET
-        $formData = $session['hidden_fields'];
+        // Incluir TODOS los campos del formulario
+        $formData = $session['form_fields'];
 
         // ASP.NET __doPostBack: el boton no se envia como valor,
         // sino via __EVENTTARGET (como lo hace el JavaScript del form)

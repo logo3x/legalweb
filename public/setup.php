@@ -320,20 +320,44 @@ try {
                 $tybaUrl = config('services.tyba.url');
                 $tybaHtml = $tybaResp->body();
 
-                // Extraer TODOS los hidden fields automaticamente
-                $hiddenFields = [];
-                preg_match_all('/<input[^>]*type=["\']hidden["\'][^>]*>/si', $tybaHtml, $hiddenInputs);
-                foreach ($hiddenInputs[0] ?? [] as $h) {
-                    preg_match('/name="([^"]*)"/', $h, $nm);
-                    preg_match('/value="([^"]*)"/', $h, $vm);
-                    if (! empty($nm[1])) {
-                        $hiddenFields[$nm[1]] = $vm[1] ?? '';
+                // Extraer TODOS los campos del form (como un navegador)
+                $formFields = [];
+
+                // Inputs no-disabled, no-submit
+                preg_match_all('/<input[^>]*name="([^"]*)"[^>]*>/si', $tybaHtml, $inputs, PREG_SET_ORDER);
+                foreach ($inputs as $inp) {
+                    if (preg_match('/\bdisabled\b/i', $inp[0])) {
+                        continue;
                     }
+                    if (preg_match('/type=["\']submit["\']/i', $inp[0])) {
+                        continue;
+                    }
+                    $val = '';
+                    if (preg_match('/value="([^"]*)"/', $inp[0], $vm)) {
+                        $val = $vm[1];
+                    }
+                    $formFields[$inp[1]] = $val;
                 }
 
-                setup_log('Hidden fields: '.count($hiddenFields), 'info');
-                foreach ($hiddenFields as $name => $val) {
-                    setup_log("  {$name}: ".(strlen($val) > 0 ? strlen($val).' chars' : 'vacio'), 'muted');
+                // Selects no-disabled con su valor selected
+                preg_match_all('/<select[^>]*name="([^"]*)"[^>]*>(.*?)<\/select>/si', $tybaHtml, $selects, PREG_SET_ORDER);
+                foreach ($selects as $sel) {
+                    if (preg_match('/\bdisabled\b/i', $sel[0])) {
+                        continue;
+                    }
+                    $val = '';
+                    if (preg_match('/selected="selected"[^>]*value="([^"]*)"/', $sel[2], $sm)) {
+                        $val = $sm[1];
+                    } elseif (preg_match('/value="([^"]*)"[^>]*selected="selected"/', $sel[2], $sm)) {
+                        $val = $sm[1];
+                    }
+                    $formFields[$sel[1]] = $val;
+                }
+
+                setup_log('Form fields: '.count($formFields), 'info');
+                foreach ($formFields as $name => $val) {
+                    $display = strlen($val) > 50 ? strlen($val).' chars' : (strlen($val) > 0 ? $val : 'vacio');
+                    setup_log("  {$name}: {$display}", 'muted');
                 }
 
                 // Cookies
@@ -407,7 +431,7 @@ try {
                 }
 
                 // Construir form data usando __doPostBack (como lo hace Tyba JS)
-                $formData = $hiddenFields;
+                $formData = $formFields;
                 $formData['__EVENTTARGET'] = 'ctl00$MainContent$btnConsultar';
                 $formData['__EVENTARGUMENT'] = '';
                 $formData['ctl00$MainContent$txtCodigoProceso'] = $radicadoNum;
