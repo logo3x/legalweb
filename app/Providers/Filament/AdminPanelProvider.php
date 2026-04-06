@@ -46,6 +46,10 @@ class AdminPanelProvider extends PanelProvider
                 'panels::auth.login.form.after',
                 fn () => view('filament.login-google-button'),
             )
+            ->renderHook(
+                'panels::sidebar.footer',
+                fn () => view('filament.sidebar-legal-links'),
+            )
             ->plugins([
                 FilamentApexChartsPlugin::make(),
             ])

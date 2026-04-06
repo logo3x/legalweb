@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\LegalAcceptance;
 use App\Models\LegalCase;
+use App\Models\PortalAccessLog;
+use App\Notifications\PortalAccessNotification;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -31,6 +33,15 @@ class PortalController extends Controller
         $firm = $case->user->firm;
         $firmLogo = $firm?->logo_path ? asset('storage/'.$firm->logo_path) : null;
 
+        // Registrar acceso
+        PortalAccessLog::create([
+            'legal_case_id' => $case->id,
+            'firm_id' => $case->user->firm_id,
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+            'action' => $hasAccepted ? 'view' : 'landing',
+        ]);
+
         return view('portal.show', compact('case', 'hasAccepted', 'portalToken', 'firmLogo'));
     }
 
@@ -50,6 +61,17 @@ class PortalController extends Controller
             'user_agent' => $request->userAgent(),
             'legal_case_id' => $case->id,
         ]);
+
+        PortalAccessLog::create([
+            'legal_case_id' => $case->id,
+            'firm_id' => $case->user->firm_id,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'action' => 'accept_terms',
+        ]);
+
+        // Notificar al abogado que el cliente accedio al portal
+        $case->user->notify(new PortalAccessNotification($case, $request->ip()));
 
         session()->put("portal_accepted_{$case->id}", true);
 

@@ -94,4 +94,9 @@ class LegalCase extends Model
     {
         return $this->hasMany(CaseFlowProgress::class);
     }
+
+    public function portalAccessLogs(): HasMany
+    {
+        return $this->hasMany(PortalAccessLog::class);
+    }
 }
