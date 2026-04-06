@@ -313,7 +313,42 @@ try {
                     setup_log('Tipo: no determinado (posible v2/v3)', 'warning');
                 }
 
-                // Prueba directa: POST con todos los hidden fields
+                // Prueba 0: Acceso directo a frmConsultaProceso
+                setup_log('---directa---');
+                $baseUrl = dirname($tybaUrl);
+                $radicadoNum = preg_replace('/[^0-9]/', '', $case->external_case_number);
+
+                // Probar varias URLs directas
+                $directUrls = [
+                    $baseUrl.'/frmConsultaProceso.aspx?IdProceso='.$radicadoNum,
+                    $baseUrl.'/frmConsultaProceso.aspx?CodProceso='.$radicadoNum,
+                    $baseUrl.'/frmConsultaProceso?IdProceso='.$radicadoNum,
+                ];
+
+                foreach ($directUrls as $directUrl) {
+                    setup_log('GET: '.$directUrl, 'info');
+                    $directResp = Http::timeout(15)
+                        ->withHeaders(['User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'])
+                        ->get($directUrl);
+
+                    $dStatus = $directResp->status();
+                    $dBody = $directResp->body();
+                    $dLen = strlen($dBody);
+                    $hasActuaciones = str_contains($dBody, 'grdActuaciones');
+                    $hasProceso = str_contains($dBody, 'del Proceso');
+
+                    setup_log("  Status: {$dStatus} | {$dLen} bytes | Actuaciones: ".($hasActuaciones ? 'SI' : 'NO').' | Proceso: '.($hasProceso ? 'SI' : 'NO'),
+                        ($hasActuaciones || $hasProceso) ? 'success' : 'muted');
+
+                    if ($hasActuaciones || $hasProceso) {
+                        $snippet = trim(preg_replace('/\s+/', ' ', strip_tags($dBody)));
+                        setup_log('  Snippet: '.substr($snippet, 0, 300), 'success');
+
+                        break;
+                    }
+                }
+
+                // Prueba 1: POST con todos los hidden fields
                 setup_log('---debug---');
                 setup_log('Probando POST directo...', 'info');
 
@@ -937,7 +972,8 @@ $baseUrl = "?key={$secret}";
                                     'storage' => 'Almacenamiento',
                                     'cron' => 'Cron Job',
                                     'usuarios' => 'Usuarios',
-                                    'debug' => 'Prueba directa',
+                                    'directa' => 'Acceso directo (sin captcha)',
+                                    'debug' => 'Prueba POST',
                                     'snippet' => 'Respuesta de Tyba (texto)',
                                     'sync' => 'Sincronizacion',
                                     'captchasolve' => 'Resolucion Captcha',

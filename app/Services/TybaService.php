@@ -32,14 +32,37 @@ class TybaService
             return null;
         }
 
-        // Paso 1: Resolver captcha via 2Captcha (Tyba lo valida server-side)
+        // Acceder directamente a frmConsultaProceso con el codigo del proceso
+        $baseUrl = dirname($this->tybaUrl);
+        $processUrl = $baseUrl.'/frmConsultaProceso.aspx?IdProceso='.$radicado;
+
+        Log::error('Tyba: consultando proceso directo', ['url' => $processUrl]);
+
+        $response = Http::timeout(30)
+            ->withHeaders([
+                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            ])
+            ->get($processUrl);
+
+        if ($response->successful()) {
+            $html = $response->body();
+            if (str_contains($html, 'grdActuaciones') || str_contains($html, 'del Proceso')) {
+                Log::error('Tyba: proceso obtenido via URL directa');
+
+                return $this->parseActuaciones($html, $radicado);
+            }
+            Log::error('Tyba: URL directa no tiene actuaciones, intentando busqueda con captcha');
+        }
+
+        // Fallback: busqueda con captcha
         $captchaToken = $this->resolveCaptcha();
 
         if (! $captchaToken) {
-            Log::error('Tyba: no se pudo resolver captcha, intentando sin token');
+            Log::error('Tyba: no se pudo resolver captcha');
+
+            return null;
         }
 
-        // Paso 2: Obtener sesion (VIEWSTATE + cookies)
         $session = $this->initSession();
 
         if (! $session) {
@@ -48,7 +71,6 @@ class TybaService
             return null;
         }
 
-        // Paso 3: Enviar consulta con captcha token
         $result = $this->submitQuery($radicado, $captchaToken, $session);
         $html = $result['html'] ?? null;
 
@@ -58,7 +80,6 @@ class TybaService
             return null;
         }
 
-        // Paso 4: Extraer actuaciones del HTML
         return $this->parseActuaciones($html, $radicado);
     }
 
