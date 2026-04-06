@@ -91,11 +91,10 @@ class TybaService
             $formFields[$select[1]] = $value;
         }
 
-        // Simular click en "Consultar" del tab Actuaciones via ScriptManager
-        $formFields['__EVENTTARGET'] = 'ctl00$MainContent$btnConsultar';
-        $formFields['__EVENTARGUMENT'] = '';
+        // Simular click en "Consultar" del tab Actuaciones (submit normal, no __doPostBack)
+        $formFields['ctl00$MainContent$btnConsultar'] = 'Consultar';
         $formFields['ctl00$MainContent$ddlCicloBusqueda'] = '0';
-        // ScriptManager: indica que UpdatePanel de Actuaciones debe actualizarse
+        // ScriptManager para UpdatePanel async
         $formFields['ctl00$ctl09'] = 'ctl00$MainContent$UpdatePanel_Actuaciones|ctl00$MainContent$btnConsultar';
 
         $domain = parse_url($processUrl, PHP_URL_HOST);
@@ -124,8 +123,10 @@ class TybaService
                 return $this->parseActuaciones($postHtml, $radicado);
             }
 
-            // Si no funciono con async, intentar POST normal (sin ScriptManager)
+            // Si no funciono con async, intentar POST normal (sin ScriptManager/AJAX)
             unset($formFields['ctl00$ctl09']);
+            $formFields['__EVENTTARGET'] = '';
+            $formFields['__EVENTARGUMENT'] = '';
             $postResp2 = Http::timeout(30)
                 ->withHeaders(['User-Agent' => $ua, 'Referer' => $processUrl])
                 ->withCookies($cookies, $domain)
