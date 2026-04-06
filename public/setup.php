@@ -303,18 +303,23 @@ try {
     if ($step === 'logs') {
         $logFile = storage_path('logs/laravel.log');
         if (file_exists($logFile)) {
-            $lines = array_slice(file($logFile), -30);
+            $lines = file($logFile);
+            // Buscar solo lineas que empiezan con fecha (mensajes, no stack traces)
+            $messages = [];
             foreach ($lines as $l) {
-                $l = trim($l);
-                if (! $l) {
-                    continue;
+                if (preg_match('/^\[20\d{2}-/', $l)) {
+                    $messages[] = trim($l);
                 }
+            }
+            // Ultimos 20 mensajes
+            $messages = array_slice($messages, -20);
+            foreach ($messages as $l) {
                 if (str_contains($l, 'ERROR')) {
-                    setup_log(substr($l, 0, 400), 'error');
+                    setup_log(substr($l, 0, 500), 'error');
                 } elseif (str_contains($l, 'WARNING')) {
-                    setup_log(substr($l, 0, 400), 'warning');
+                    setup_log(substr($l, 0, 500), 'warning');
                 } else {
-                    setup_log(substr($l, 0, 400), 'muted');
+                    setup_log(substr($l, 0, 500), 'muted');
                 }
             }
         } else {
