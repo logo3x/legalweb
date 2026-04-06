@@ -28,13 +28,13 @@ class TybaService
             return null;
         }
 
-        $url = $this->processPageUrl.'?IdProceso='.$radicado;
-
+        // Usar Browserless para automatizar el flujo completo:
+        // frmConsulta → buscar → click resultado → frmConsultaProceso
         $browserless = app(BrowserlessService::class);
-        $html = $browserless->getRenderedHtml($url);
+        $html = $browserless->fetchTybaProcess($radicado);
 
         if (! $html || ! str_contains($html, 'del Proceso')) {
-            Log::error('Tyba: no se pudo obtener pagina via Browserless', [
+            Log::error('Tyba: no se pudo obtener proceso via Browserless', [
                 'radicado' => $radicado,
                 'html_size' => $html ? strlen($html) : 0,
             ]);
