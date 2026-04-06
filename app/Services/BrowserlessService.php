@@ -32,7 +32,7 @@ class BrowserlessService
         $script = <<<'JS'
 export default async function ({ page }) {
     const radicado = BPL_RADICADO;
-    const delay = ms => new Promise(r => setTimeout(r, ms));
+    function delay(ms) { return new Promise(function(r) { setTimeout(r, ms); }); }
 
     // Paso 1: Ir a la pagina de busqueda
     await page.goto('https://procesojudicial.ramajudicial.gov.co/Justicia21/Administracion/Ciudadanos/frmConsulta', {
