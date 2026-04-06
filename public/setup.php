@@ -491,14 +491,53 @@ try {
                     setup_log('ViewState cambio: '.($sameVs ? 'NO (identico)' : 'SI (diferente)'), $sameVs ? 'warning' : 'success');
                 }
 
-                // Mostrar snippet con mas contexto
-                $snippet = strip_tags($postBody);
-                $snippet = preg_replace('/\s+/', ' ', $snippet);
-                setup_log('---snippet---');
-                // Mostrar parte del medio (no solo el inicio con Analytics)
-                $mid = substr($snippet, (int) (strlen($snippet) / 3), 500);
-                setup_log('Inicio: '.substr(trim($snippet), 0, 300), 'muted');
-                setup_log('Medio: '.trim($mid), 'muted');
+                // Extraer contenido de grdProceso
+                setup_log('---resultados---');
+                if (preg_match('/<table[^>]*id="[^"]*grdProceso[^"]*"[^>]*>(.*?)<\/table>/si', $postBody, $grdMatch)) {
+                    $grdHtml = $grdMatch[1];
+                    preg_match_all('/<tr[^>]*>(.*?)<\/tr>/si', $grdHtml, $rows);
+                    $rowCount = count($rows[1] ?? []);
+                    setup_log("grdProceso: {$rowCount} filas (incluyendo header)", 'success');
+                    foreach (array_slice($rows[1] ?? [], 0, 3) as $i => $row) {
+                        $text = trim(preg_replace('/\s+/', ' ', strip_tags($row)));
+                        setup_log("  Fila {$i}: ".substr($text, 0, 300), 'muted');
+                    }
+
+                    // Buscar links a procesos (frmConsultaProceso)
+                    preg_match_all('/href="([^"]*frmConsultaProceso[^"]*)"/i', $grdHtml, $procLinks);
+                    if (! empty($procLinks[1])) {
+                        setup_log('Links a procesos: '.count($procLinks[1]), 'success');
+                        foreach (array_slice($procLinks[1], 0, 3) as $link) {
+                            setup_log('  '.$link, 'muted');
+                        }
+                    }
+
+                    // Buscar __doPostBack links
+                    preg_match_all("/__doPostBack\('([^']+)'/", $grdHtml, $postbackLinks);
+                    if (! empty($postbackLinks[1])) {
+                        setup_log('PostBack links: '.count($postbackLinks[1]), 'info');
+                        foreach (array_slice($postbackLinks[1], 0, 3) as $pb) {
+                            setup_log('  '.$pb, 'muted');
+                        }
+                    }
+                } else {
+                    setup_log('grdProceso: tabla no encontrada o vacia', 'warning');
+                }
+
+                // MensajeInformativo
+                if (preg_match('/MensajeInformativo[^>]*>(.*?)<\/div>/si', $postBody, $msgMatch)) {
+                    $msgText = trim(strip_tags($msgMatch[1]));
+                    if ($msgText) {
+                        setup_log("MensajeInformativo: {$msgText}", 'warning');
+                    } else {
+                        setup_log('MensajeInformativo: vacio', 'muted');
+                    }
+                }
+
+                // Panel resultado visible?
+                if (preg_match('/pnlResultadoConsulta[^>]*style="([^"]*)"/i', $postBody, $pnlStyle)) {
+                    setup_log('pnlResultado style: '.$pnlStyle[1], str_contains($pnlStyle[1], 'none') ? 'warning' : 'success');
+                }
 
                 // Debug: analizar reCAPTCHA en HTML
                 setup_log('---captchajs---');
