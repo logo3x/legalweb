@@ -116,6 +116,12 @@ class LegalCaseResource extends Resource
                             ->icon('heroicon-m-calendar')
                             ->date('d/m/Y')
                             ->placeholder('Caso abierto'),
+                        TextEntry::make('last_tyba_sync')
+                            ->label('Ultima sincronizacion Rama Judicial')
+                            ->icon('heroicon-m-arrow-path')
+                            ->since()
+                            ->placeholder('Nunca sincronizado')
+                            ->visible(fn ($record) => (bool) $record->external_case_number),
                     ]),
                 Section::make('Partes')
                     ->icon(Heroicon::OutlinedUserGroup)
