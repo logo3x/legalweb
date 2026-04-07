@@ -32,7 +32,24 @@
       "WebFetch(domain:github.com)",
       "WebFetch(domain:raw.githubusercontent.com)",
       "WebFetch(domain:api.github.com)",
-      "WebFetch(domain:openrouter.ai)"
+      "WebFetch(domain:openrouter.ai)",
+      "Bash(php vendor/bin/pint --dirty --format agent)",
+      "Bash(php -r \"echo dirname\\('https://procesojudicial.ramajudicial.gov.co/Justicia21/Administracion/Ciudadanos/frmConsulta'\\);\")",
+      "WebFetch(domain:docs.browserless.io)",
+      "WebSearch",
+      "WebFetch(domain:consultaprocesos.ramajudicial.gov.co)",
+      "Bash(curl -s -L \"https://consultaprocesos.ramajudicial.gov.co/Procesos/NumeroRadicacion\")",
+      "Bash(curl -s \"https://consultaprocesos.ramajudicial.gov.co/js/app.09478a19.js\")",
+      "Bash(grep -oP 'https?://[^\"'\\\\''`,\\\\s]+')",
+      "Bash(grep -oE 'https?://[^\"'\"'\"'`,[:space:]]+')",
+      "Bash(grep -oE '/api/v2[^\"'\"'\"'`,[:space:]]*')",
+      "Bash(curl -s \"https://consultaprocesos.ramajudicial.gov.co:448/api/v2/Procesos/Consulta/NumeroRadicacion?numero=68081310300120240001800&pagina=1\" -H \"Accept: application/json\")",
+      "Bash(curl -s \"https://consultaprocesos.ramajudicial.gov.co:448/api/v2/Proceso/Detalle/169937821?idConexion=320\" -H \"Accept: application/json\")",
+      "Bash(python3 -m json.tool)",
+      "Bash(curl -s \"https://consultaprocesos.ramajudicial.gov.co:448/api/v2/Proceso/Actuaciones/169937821?idConexion=320&pagina=1\" -H \"Accept: application/json\")",
+      "Bash(curl -s \"https://consultaprocesos.ramajudicial.gov.co:448/api/v2/Proceso/Sujetos/169937821?idConexion=320&pagina=1\" -H \"Accept: application/json\")",
+      "Bash(git reset:*)",
+      "Bash(git rm:*)"
     ]
   }
 }
