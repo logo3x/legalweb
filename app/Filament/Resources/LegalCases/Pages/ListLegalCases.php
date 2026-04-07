@@ -23,6 +23,8 @@ class ListLegalCases extends ListRecords
 {
     protected static string $resource = LegalCaseResource::class;
 
+    public array $importResults = [];
+
     protected function getHeaderActions(): array
     {
         return [
@@ -118,42 +120,49 @@ class ListLegalCases extends ListRecords
                         return;
                     }
 
-                    $imported = 0;
-                    $total = $radicados->count();
+                    $results = [];
 
                     foreach ($radicados as $radicado) {
                         $result = $this->importSingleRadicado($radicado, $data['client_id'], $data['user_id']);
 
                         if ($result['error']) {
-                            $color = str_contains($result['error'], 'ya existe') ? 'warning' : 'danger';
-                            Notification::make()
-                                ->title($result['error'])
-                                ->body("Radicado: {$radicado}")
-                                ->color($color)
-                                ->send();
+                            $results[] = [
+                                'radicado' => $radicado,
+                                'status' => str_contains($result['error'], 'ya existe') ? 'duplicado' : 'error',
+                                'msg' => $result['error'],
+                                'case_number' => null,
+                            ];
                         } elseif (! $result['imported']) {
-                            Notification::make()
-                                ->title('No encontrado en Rama Judicial')
-                                ->body("Radicado: {$radicado} - No se creo caso porque no existe en el sistema judicial.")
-                                ->color('warning')
-                                ->send();
+                            $results[] = [
+                                'radicado' => $radicado,
+                                'status' => 'no_encontrado',
+                                'msg' => 'No se encontro en la Rama Judicial. No se creo caso.',
+                                'case_number' => null,
+                            ];
                         } else {
-                            Notification::make()
-                                ->title("Importado: {$result['case']->case_number}")
-                                ->body($result['message'])
-                                ->color('success')
-                                ->send();
-                            $imported++;
+                            $results[] = [
+                                'radicado' => $radicado,
+                                'status' => 'ok',
+                                'msg' => $result['message'],
+                                'case_number' => $result['case']->case_number,
+                                'case_id' => $result['case']->id,
+                            ];
                         }
                     }
 
-                    Notification::make()
-                        ->title("Importacion completada: {$imported} de {$total}")
-                        ->body($imported === $total ? 'Todos los radicados fueron importados exitosamente.' : 'Revise las notificaciones anteriores para ver el detalle de cada radicado.')
-                        ->color($imported > 0 ? 'success' : 'warning')
-                        ->persistent()
-                        ->send();
+                    $this->importResults = $results;
+                    $this->mountAction('import_results');
                 }),
+
+            Action::make('import_results')
+                ->modalWidth('2xl')
+                ->modalHeading('Resultado de Importacion Masiva')
+                ->modalSubmitAction(false)
+                ->modalCancelActionLabel('Cerrar')
+                ->modalContent(fn () => view('filament.modals.import-results', [
+                    'results' => $this->importResults ?? [],
+                ]))
+                ->hidden(),
 
             CreateAction::make(),
         ];
