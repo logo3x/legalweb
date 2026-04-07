@@ -118,54 +118,38 @@ class ListLegalCases extends ListRecords
                         return;
                     }
 
-                    $results = [];
                     $imported = 0;
-                    $skipped = 0;
-                    $notFound = 0;
-                    $errors = 0;
+                    $total = $radicados->count();
 
                     foreach ($radicados as $radicado) {
                         $result = $this->importSingleRadicado($radicado, $data['client_id'], $data['user_id']);
 
                         if ($result['error']) {
-                            if (str_contains($result['error'], 'ya existe')) {
-                                $results[] = ['radicado' => $radicado, 'status' => 'duplicado', 'msg' => 'Ya existe en su firma'];
-                                $skipped++;
-                            } else {
-                                $results[] = ['radicado' => $radicado, 'status' => 'error', 'msg' => $result['error']];
-                                $errors++;
-                            }
+                            $color = str_contains($result['error'], 'ya existe') ? 'warning' : 'danger';
+                            Notification::make()
+                                ->title($result['error'])
+                                ->body("Radicado: {$radicado}")
+                                ->color($color)
+                                ->send();
                         } elseif (! $result['imported']) {
-                            $results[] = ['radicado' => $radicado, 'status' => 'no_encontrado', 'msg' => 'Caso creado pero no se encontro en Rama Judicial'];
-                            $notFound++;
+                            Notification::make()
+                                ->title('No encontrado en Rama Judicial')
+                                ->body("Radicado: {$radicado} - No se creo caso porque no existe en el sistema judicial.")
+                                ->color('warning')
+                                ->send();
                         } else {
-                            $results[] = ['radicado' => $radicado, 'status' => 'ok', 'msg' => $result['message']];
+                            Notification::make()
+                                ->title("Importado: {$result['case']->case_number}")
+                                ->body($result['message'])
+                                ->color('success')
+                                ->send();
                             $imported++;
                         }
                     }
 
-                    // Construir reporte detallado
-                    $detail = '';
-                    foreach ($results as $r) {
-                        $icon = match ($r['status']) {
-                            'ok' => '✓',
-                            'duplicado' => '⊘',
-                            'no_encontrado' => '?',
-                            default => '✗',
-                        };
-                        $detail .= "{$icon} {$r['radicado']} - {$r['msg']}\n";
-                    }
-
-                    $summary = collect([
-                        $imported > 0 ? "{$imported} importado(s)" : null,
-                        $skipped > 0 ? "{$skipped} duplicado(s)" : null,
-                        $notFound > 0 ? "{$notFound} no encontrado(s)" : null,
-                        $errors > 0 ? "{$errors} con error" : null,
-                    ])->filter()->join(', ');
-
                     Notification::make()
-                        ->title("Importacion masiva: {$radicados->count()} radicados procesados")
-                        ->body("{$summary}\n\n{$detail}")
+                        ->title("Importacion completada: {$imported} de {$total}")
+                        ->body($imported === $total ? 'Todos los radicados fueron importados exitosamente.' : 'Revise las notificaciones anteriores para ver el detalle de cada radicado.')
                         ->color($imported > 0 ? 'success' : 'warning')
                         ->persistent()
                         ->send();
@@ -195,51 +179,47 @@ class ListLegalCases extends ListRecords
         try {
             $tyba = app(TybaService::class);
             $info = $tyba->extractProcessInfo($radicado);
-        } catch (\Exception $e) {
-            // Timeout u otro error de conexion - continuar sin datos de Tyba
+        } catch (\Exception) {
+            // Timeout u otro error de conexion
         }
 
-        // Construir datos
-        $title = 'Proceso Judicial - '.$radicado;
-        $court = null;
-        $judge = null;
-        $opposingParty = null;
-        $description = null;
+        // Si no se encontro en Rama Judicial, no crear caso
+        if (! $info || empty($info['despacho'])) {
+            return ['error' => null, 'detail' => null, 'imported' => false, 'message' => null, 'case' => null];
+        }
+
+        // Construir datos con info de Tyba
+        $title = ($info['clase_proceso'] ?: 'Proceso Judicial').' - '.$radicado;
+        $court = $info['despacho'];
+        $judge = ! empty($info['ponente']) ? mb_convert_case(mb_strtolower($info['ponente']), MB_CASE_TITLE, 'UTF-8') : null;
+        $caseTypeId = CaseType::firstOrCreate(['name' => $info['especialidad'] ?: 'General'])->id;
         $startedAt = null;
-        $caseTypeId = CaseType::first()?->id;
 
-        if ($info && ! empty($info['despacho'])) {
-            $title = ($info['clase_proceso'] ?: 'Proceso Judicial').' - '.$radicado;
-            $court = $info['despacho'];
-            $judge = ! empty($info['ponente']) ? mb_convert_case(mb_strtolower($info['ponente']), MB_CASE_TITLE, 'UTF-8') : null;
-            $caseTypeId = CaseType::firstOrCreate(['name' => $info['especialidad'] ?: 'General'])->id;
+        $demandados = collect($info['sujetos'])->filter(fn ($s) => str_contains(strtolower($s['rol']), 'demandado'))->pluck('nombre')->unique()->join(', ');
+        $demandantes = collect($info['sujetos'])->filter(fn ($s) => str_contains(strtolower($s['rol']), 'demandante'))->pluck('nombre')->unique()->join(', ');
+        $opposingParty = $demandados ?: $demandantes;
 
-            $demandados = collect($info['sujetos'])->filter(fn ($s) => str_contains(strtolower($s['rol']), 'demandado'))->pluck('nombre')->unique()->join(', ');
-            $demandantes = collect($info['sujetos'])->filter(fn ($s) => str_contains(strtolower($s['rol']), 'demandante'))->pluck('nombre')->unique()->join(', ');
-            $opposingParty = $demandados ?: $demandantes;
+        if ($demandantes && $demandados) {
+            $title = ($info['clase_proceso'] ?: 'Proceso').' - '.mb_substr($demandantes, 0, 40).' vs '.mb_substr($demandados, 0, 40);
+        }
 
-            if ($demandantes && $demandados) {
-                $title = ($info['clase_proceso'] ?: 'Proceso').' - '.mb_substr($demandantes, 0, 40).' vs '.mb_substr($demandados, 0, 40);
+        $description = "Importado desde Rama Judicial\nTipo: {$info['tipo_proceso']}\nClase: {$info['clase_proceso']}\nDepartamento: {$info['departamento']}\nDespacho: {$info['despacho']}\n";
+        if (! empty($info['ponente'])) {
+            $description .= "Ponente: {$info['ponente']}\n";
+        }
+        if (! empty($info['sujetos'])) {
+            $description .= "\nSujetos procesales:\n";
+            foreach ($info['sujetos'] as $s) {
+                $description .= "- {$s['rol']}: {$s['nombre']}\n";
             }
+        }
 
-            $description = "Importado desde Rama Judicial\nTipo: {$info['tipo_proceso']}\nClase: {$info['clase_proceso']}\nDepartamento: {$info['departamento']}\nDespacho: {$info['despacho']}\n";
-            if (! empty($info['ponente'])) {
-                $description .= "Ponente: {$info['ponente']}\n";
-            }
-            if (! empty($info['sujetos'])) {
-                $description .= "\nSujetos procesales:\n";
-                foreach ($info['sujetos'] as $s) {
-                    $description .= "- {$s['rol']}: {$s['nombre']}\n";
-                }
-            }
-
-            if ($info['fecha_publicacion']) {
-                foreach (['d/m/Y', 'j/m/Y', 'Y-m-d'] as $fmt) {
-                    try {
-                        $startedAt = Carbon::createFromFormat($fmt, trim($info['fecha_publicacion']));
-                        break;
-                    } catch (\Exception) {
-                    }
+        if ($info['fecha_publicacion']) {
+            foreach (['d/m/Y', 'j/m/Y', 'Y-m-d'] as $fmt) {
+                try {
+                    $startedAt = Carbon::createFromFormat($fmt, trim($info['fecha_publicacion']));
+                    break;
+                } catch (\Exception) {
                 }
             }
         }
@@ -307,11 +287,8 @@ class ListLegalCases extends ListRecords
             }
         }
 
-        $imported = $info && ! empty($info['despacho']);
-        $msg = $imported
-            ? "Caso {$caseNumber} importado con ".count($info['sujetos'])." sujetos y {$actuacionesCount} actuaciones."
-            : "Caso {$caseNumber} creado. No se encontraron datos en Rama Judicial.";
+        $msg = "Caso {$caseNumber} importado con ".count($info['sujetos'])." sujetos y {$actuacionesCount} actuaciones.";
 
-        return ['error' => null, 'detail' => null, 'imported' => $imported, 'message' => $msg, 'case' => $case];
+        return ['error' => null, 'detail' => null, 'imported' => true, 'message' => $msg, 'case' => $case];
     }
 }
