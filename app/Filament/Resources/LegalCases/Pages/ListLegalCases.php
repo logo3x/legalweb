@@ -25,17 +25,6 @@ class ListLegalCases extends ListRecords
 
     public array $importResults = [];
 
-    public function mount(): void
-    {
-        parent::mount();
-
-        // Auto-abrir modal de resultados si hay datos en sesion
-        if (session()->has('import_masivo_results')) {
-            $this->importResults = session()->pull('import_masivo_results');
-            $this->mountAction('import_results');
-        }
-    }
-
     protected function getHeaderActions(): array
     {
         return [
@@ -170,19 +159,37 @@ class ListLegalCases extends ListRecords
                         }
                     }
 
-                    session()->put('import_masivo_results', $results);
-                    $this->redirect(LegalCaseResource::getUrl('index'));
+                    $this->importResults = $results;
+
+                    $imported = collect($results)->where('status', 'ok')->count();
+                    $total = count($results);
+
+                    Notification::make()
+                        ->title("Importacion completada: {$imported} de {$total}")
+                        ->body('Vea el detalle en el boton "Ver Resultados".')
+                        ->color($imported > 0 ? 'success' : 'warning')
+                        ->persistent()
+                        ->actions([
+                            \Filament\Notifications\Actions\Action::make('ver_resultados')
+                                ->label('Ver Resultados')
+                                ->button()
+                                ->action(fn () => $this->mountAction('import_results')),
+                        ])
+                        ->send();
                 }),
 
             Action::make('import_results')
+                ->label('Ver Resultados')
+                ->icon('heroicon-o-clipboard-document-list')
+                ->color('success')
                 ->modalWidth('2xl')
                 ->modalHeading('Resultado de Importacion Masiva')
                 ->modalSubmitAction(false)
                 ->modalCancelActionLabel('Cerrar')
                 ->modalContent(fn () => view('filament.modals.import-results', [
-                    'results' => $this->importResults ?? [],
+                    'results' => $this->importResults,
                 ]))
-                ->hidden(),
+                ->visible(fn () => ! empty($this->importResults)),
 
             CreateAction::make(),
         ];
