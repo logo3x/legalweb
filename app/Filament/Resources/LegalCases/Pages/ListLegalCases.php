@@ -118,8 +118,10 @@ class ListLegalCases extends ListRecords
                         return;
                     }
 
+                    $results = [];
                     $imported = 0;
                     $skipped = 0;
+                    $notFound = 0;
                     $errors = 0;
 
                     foreach ($radicados as $radicado) {
@@ -127,26 +129,43 @@ class ListLegalCases extends ListRecords
 
                         if ($result['error']) {
                             if (str_contains($result['error'], 'ya existe')) {
+                                $results[] = ['radicado' => $radicado, 'status' => 'duplicado', 'msg' => 'Ya existe en su firma'];
                                 $skipped++;
                             } else {
+                                $results[] = ['radicado' => $radicado, 'status' => 'error', 'msg' => $result['error']];
                                 $errors++;
                             }
+                        } elseif (! $result['imported']) {
+                            $results[] = ['radicado' => $radicado, 'status' => 'no_encontrado', 'msg' => 'Caso creado pero no se encontro en Rama Judicial'];
+                            $notFound++;
                         } else {
+                            $results[] = ['radicado' => $radicado, 'status' => 'ok', 'msg' => $result['message']];
                             $imported++;
                         }
                     }
 
-                    $body = "{$imported} importado(s)";
-                    if ($skipped > 0) {
-                        $body .= ", {$skipped} ya existia(n)";
+                    // Construir reporte detallado
+                    $detail = '';
+                    foreach ($results as $r) {
+                        $icon = match ($r['status']) {
+                            'ok' => '✓',
+                            'duplicado' => '⊘',
+                            'no_encontrado' => '?',
+                            default => '✗',
+                        };
+                        $detail .= "{$icon} {$r['radicado']} - {$r['msg']}\n";
                     }
-                    if ($errors > 0) {
-                        $body .= ", {$errors} con error";
-                    }
+
+                    $summary = collect([
+                        $imported > 0 ? "{$imported} importado(s)" : null,
+                        $skipped > 0 ? "{$skipped} duplicado(s)" : null,
+                        $notFound > 0 ? "{$notFound} no encontrado(s)" : null,
+                        $errors > 0 ? "{$errors} con error" : null,
+                    ])->filter()->join(', ');
 
                     Notification::make()
                         ->title("Importacion masiva: {$radicados->count()} radicados procesados")
-                        ->body($body)
+                        ->body("{$summary}\n\n{$detail}")
                         ->color($imported > 0 ? 'success' : 'warning')
                         ->persistent()
                         ->send();
