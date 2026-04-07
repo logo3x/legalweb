@@ -110,4 +110,9 @@ class LegalCase extends Model
     {
         return $this->hasMany(TybaSyncLog::class);
     }
+
+    public function billingEntries(): HasMany
+    {
+        return $this->hasMany(BillingEntry::class);
+    }
 }
