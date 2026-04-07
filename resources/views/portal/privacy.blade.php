@@ -12,9 +12,9 @@
         <h2>1. Responsable del Tratamiento</h2>
         <table class="text-sm">
             <tr><td class="font-semibold pr-4">Razon Social</td><td>LegalWeb S.A.S.</td></tr>
-            <tr><td class="font-semibold pr-4">Domicilio</td><td>Bogota D.C., Colombia</td></tr>
-            <tr><td class="font-semibold pr-4">Correo electronico</td><td>datos@legalweb.co</td></tr>
-            <tr><td class="font-semibold pr-4">Telefono</td><td>(601) 000-0000</td></tr>
+            <tr><td class="font-semibold pr-4">Domicilio</td><td>Barrancabermeja, Santander, Colombia</td></tr>
+            <tr><td class="font-semibold pr-4">Correo electronico</td><td>legalwebco@gmail.com</td></tr>
+            <tr><td class="font-semibold pr-4">Telefono</td><td>-</td></tr>
         </table>
 
         <h2>2. Datos Personales Recopilados</h2>
@@ -87,7 +87,7 @@
         </ul>
 
         <h2>6. Procedimiento para Ejercer sus Derechos</h2>
-        <p>Los titulares pueden ejercer sus derechos mediante comunicacion escrita dirigida a <strong>datos@legalweb.co</strong> indicando:</p>
+        <p>Los titulares pueden ejercer sus derechos mediante comunicacion escrita dirigida a <strong>legalwebco@gmail.com</strong> indicando:</p>
         <ul>
             <li>Nombre completo y documento de identidad del titular</li>
             <li>Descripcion de los hechos y solicitud concreta</li>
@@ -145,8 +145,8 @@
         <h2>13. Autoridad de Control</h2>
         <p>La <strong>Superintendencia de Industria y Comercio (SIC)</strong> es la autoridad encargada de vigilar el cumplimiento de la normatividad de proteccion de datos personales en Colombia.</p>
         <table class="text-sm">
-            <tr><td class="font-semibold pr-4">Direccion</td><td>Carrera 13 No. 27-00, Bogota D.C.</td></tr>
-            <tr><td class="font-semibold pr-4">Telefono</td><td>(601) 587-0000</td></tr>
+            <tr><td class="font-semibold pr-4">Direccion</td><td>Barrancabermeja, Santander</td></tr>
+            <tr><td class="font-semibold pr-4">Correo</td><td>legalwebco@gmail.com</td></tr>
             <tr><td class="font-semibold pr-4">Sitio web</td><td>www.sic.gov.co</td></tr>
         </table>
     </div>

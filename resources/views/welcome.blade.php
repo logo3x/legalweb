@@ -395,8 +395,8 @@
                 <div>
                     <h4 class="font-semibold text-brand text-sm mb-3">Contacto</h4>
                     <ul class="space-y-2 text-sm text-gray-500">
-                        <li>contacto@legalweb.co</li>
-                        <li>Bogota, Colombia</li>
+                        <li>legalwebco@gmail.com</li>
+                        <li>Barrancabermeja, Colombia</li>
                     </ul>
                 </div>
             </div>

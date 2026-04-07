@@ -166,8 +166,8 @@
         <p>Estos terminos se rigen por las leyes de la Republica de Colombia. Las partes acuerdan:</p>
         <ul>
             <li>Intentar resolver cualquier controversia de manera directa y amigable.</li>
-            <li>En caso de no lograrlo, acudir a un Centro de Conciliacion y Arbitraje autorizado en Bogota D.C.</li>
-            <li>Subsidiariamente, someterse a la jurisdiccion de los jueces y tribunales de Bogota D.C., Colombia.</li>
+            <li>En caso de no lograrlo, acudir a un Centro de Conciliacion y Arbitraje autorizado en Barrancabermeja, Santander</li>
+            <li>Subsidiariamente, someterse a la jurisdiccion de los jueces y tribunales de Barrancabermeja, Santander, Colombia.</li>
         </ul>
 
         <h2>18. Modificaciones</h2>
@@ -181,7 +181,7 @@
         </ul>
 
         <h2>20. Contacto</h2>
-        <p>Para consultas sobre estos terminos: <strong>contacto@legalweb.com.co</strong></p>
-        <p>Para solicitudes de datos personales: <strong>datos@legalweb.com.co</strong></p>
+        <p>Para consultas sobre estos terminos: <strong>legalwebco@gmail.com</strong></p>
+        <p>Para solicitudes de datos personales: <strong>legalwebco@gmail.com</strong></p>
     </div>
 @endsection
