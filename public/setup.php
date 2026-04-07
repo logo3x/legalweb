@@ -78,6 +78,18 @@ try {
         setup_log("Diario 8am: 0 8 * * * curl -s {$appUrl}/cron/{$cronToken}/check-deadlines > /dev/null", 'muted');
     }
 
+    if ($step === 'composer') {
+        $basePath = base_path();
+        $output = shell_exec("cd {$basePath} && php composer.phar install --no-dev --optimize-autoloader 2>&1")
+            ?? shell_exec("cd {$basePath} && composer install --no-dev --optimize-autoloader 2>&1")
+            ?? 'No se pudo ejecutar composer';
+        foreach (explode("\n", $output) as $line) {
+            if (trim($line)) {
+                setup_log(trim($line), str_contains($line, 'error') ? 'error' : 'muted');
+            }
+        }
+    }
+
     if ($step === 'key') {
         Artisan::call('key:generate', ['--force' => true]);
         setup_log('App key generada correctamente', 'success');
@@ -413,6 +425,7 @@ ob_end_clean();
 // Step titles
 $stepTitles = [
     'info' => 'Estado del sistema',
+    'composer' => 'Composer Install',
     'key' => 'Generar App Key',
     'migrate' => 'Migraciones',
     'seed' => 'Seeders',
@@ -603,6 +616,7 @@ $baseUrl = "?key={$secret}";
         <nav class="sidebar">
             <div class="group-title">Sistema</div>
             <a href="<?= $baseUrl ?>&step=info" class="<?= $step === 'info' ? 'active' : '' ?>">Estado</a>
+            <a href="<?= $baseUrl ?>&step=composer" class="<?= $step === 'composer' ? 'active' : '' ?>">Composer Install</a>
             <a href="<?= $baseUrl ?>&step=key" class="<?= $step === 'key' ? 'active' : '' ?>">App Key</a>
             <a href="<?= $baseUrl ?>&step=migrate" class="<?= $step === 'migrate' ? 'active' : '' ?>">Migrar</a>
             <a href="<?= $baseUrl ?>&step=seed" class="<?= $step === 'seed' ? 'active' : '' ?>">Seed</a>
