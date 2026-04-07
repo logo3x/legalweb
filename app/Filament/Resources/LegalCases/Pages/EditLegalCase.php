@@ -30,7 +30,10 @@ class EditLegalCase extends EditRecord
                 })
                 ->disabled(fn () => $this->record->is_demo),
             RestoreAction::make()
-                ->visible($isAdmin),
+                ->visible($isAdmin)
+                ->modalHeading('Restaurar caso eliminado')
+                ->modalDescription('Este caso fue enviado a la papelera previamente. Al restaurarlo, volvera a aparecer en su lista de casos activos con todos sus documentos, actuaciones y registros intactos.')
+                ->modalSubmitActionLabel('Si, restaurar caso'),
             DeleteAction::make()
                 ->visible($isAdmin)
                 ->modalHeading('Eliminar caso')
