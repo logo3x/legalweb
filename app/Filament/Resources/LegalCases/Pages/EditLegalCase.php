@@ -21,6 +21,16 @@ class EditLegalCase extends EditRecord
         $isAdmin = auth()->user()->isAdmin();
 
         return [
+            Action::make('save_top')
+                ->label('Guardar cambios')
+                ->icon('heroicon-o-check')
+                ->color('primary')
+                ->action(function () {
+                    $this->save();
+                })
+                ->disabled(fn () => $this->record->is_demo),
+            RestoreAction::make()
+                ->visible($isAdmin),
             DeleteAction::make()
                 ->visible($isAdmin)
                 ->modalHeading('Eliminar caso')
@@ -31,8 +41,6 @@ class EditLegalCase extends EditRecord
                 ->modalHeading('Eliminar caso permanentemente')
                 ->modalDescription('ADVERTENCIA: Esta accion es IRREVERSIBLE. Se eliminaran permanentemente el caso, todos sus documentos, actuaciones, flujos de proceso y registros asociados. Esta informacion NO podra recuperarse.')
                 ->modalSubmitActionLabel('Entiendo, eliminar permanentemente'),
-            RestoreAction::make()
-                ->visible($isAdmin),
         ];
     }
 
