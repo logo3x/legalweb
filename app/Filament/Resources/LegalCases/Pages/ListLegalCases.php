@@ -6,6 +6,7 @@ use App\Filament\Resources\LegalCases\LegalCaseResource;
 use App\Models\CaseEvent;
 use App\Models\CaseType;
 use App\Models\Client;
+use App\Models\ImportLog;
 use App\Models\LegalCase;
 use App\Models\User;
 use App\Services\TybaService;
@@ -159,31 +160,62 @@ class ListLegalCases extends ListRecords
                         }
                     }
 
+                    // Guardar log persistente
+                    $imported = collect($results)->where('status', 'ok')->count();
+                    $duplicados = collect($results)->where('status', 'duplicado')->count();
+                    $noEncontrados = collect($results)->where('status', 'no_encontrado')->count();
+                    $errores = collect($results)->where('status', 'error')->count();
+
+                    ImportLog::create([
+                        'firm_id' => auth()->user()->firm_id,
+                        'user_id' => auth()->id(),
+                        'total_radicados' => count($results),
+                        'importados' => $imported,
+                        'duplicados' => $duplicados,
+                        'no_encontrados' => $noEncontrados,
+                        'errores' => $errores,
+                        'detalle' => $results,
+                    ]);
+
                     $this->importResults = $results;
 
-                    $imported = collect($results)->where('status', 'ok')->count();
-                    $total = count($results);
-
                     Notification::make()
-                        ->title("Importacion completada: {$imported} de {$total}")
-                        ->body('Haga click en el boton verde "Ver Resultados" para ver el detalle de cada radicado.')
+                        ->title("Importacion completada: {$imported} de ".count($results))
+                        ->body('Vea el detalle en "Historial de Importaciones".')
                         ->color($imported > 0 ? 'success' : 'warning')
                         ->persistent()
                         ->send();
                 }),
 
             Action::make('import_results')
-                ->label('Ver Resultados')
+                ->label('Ver Ultima Importacion')
                 ->icon('heroicon-o-clipboard-document-list')
                 ->color('success')
                 ->modalWidth('2xl')
-                ->modalHeading('Resultado de Importacion Masiva')
+                ->modalHeading('Resultado de Ultima Importacion')
                 ->modalSubmitAction(false)
                 ->modalCancelActionLabel('Cerrar')
                 ->modalContent(fn () => view('filament.modals.import-results', [
                     'results' => $this->importResults,
                 ]))
                 ->visible(fn () => ! empty($this->importResults)),
+
+            Action::make('import_history')
+                ->label('Historial de Importaciones')
+                ->icon('heroicon-o-clock')
+                ->color('gray')
+                ->modalWidth('2xl')
+                ->modalHeading('Historial de Importaciones Masivas')
+                ->modalSubmitAction(false)
+                ->modalCancelActionLabel('Cerrar')
+                ->modalContent(function () {
+                    $logs = ImportLog::where('firm_id', auth()->user()->firm_id)
+                        ->orderByDesc('created_at')
+                        ->limit(10)
+                        ->get();
+
+                    return view('filament.modals.import-history', ['logs' => $logs]);
+                }),
 
             CreateAction::make(),
         ];
