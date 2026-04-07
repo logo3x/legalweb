@@ -119,6 +119,12 @@ try {
     }
 
     if ($step === 'cleanup_users') {
+        if (($_GET['confirm'] ?? '') !== 'yes') {
+            setup_log('Esta accion cambiara los roles de todos los usuarios excepto el superadmin.', 'warning');
+            setup_log('Los usuarios con rol admin/superadmin seran cambiados a abogado (excepto el propietario de su firma).', 'warning');
+            $cleanupUrl = $baseUrl.'&step=cleanup_users&super='.urlencode($_GET['super'] ?? 'legalwebco@gmail.com').'&confirm=yes';
+            setup_log("<a href='{$cleanupUrl}' style='color:#ea580c;font-weight:bold;text-decoration:underline;'>CONFIRMAR: Si, limpiar roles</a>", 'raw');
+        } else {
         $superEmail = $_GET['super'] ?? 'legalwebco@gmail.com';
 
         $super = User::where('email', $superEmail)->first();
@@ -144,6 +150,7 @@ try {
 
         setup_log('---usuarios---');
         User::all()->each(fn ($u) => setup_log("{$u->email} | {$u->role} | Firma: ".($u->firm?->name ?? 'N/A'), 'muted'));
+        }
     }
 
     if ($step === 'storage') {
@@ -405,12 +412,20 @@ try {
     }
 
     if ($step === 'fresh') {
-        Artisan::call('migrate:fresh', ['--seed' => true, '--force' => true]);
-        setup_log('Fresh migrate + seed completado', 'success');
-        $freshOutput = trim(Artisan::output());
-        foreach (explode("\n", $freshOutput) as $line) {
-            if (trim($line)) {
-                setup_log(trim($line), 'muted');
+        if (($_GET['confirm'] ?? '') !== 'yes') {
+            setup_log('ADVERTENCIA: Esta accion eliminara TODOS los datos de la base de datos y los recreara con datos de ejemplo.', 'error');
+            setup_log('Se perderan: todos los casos, clientes, actuaciones, documentos, facturacion y configuracion.', 'error');
+            setup_log('Esta accion es IRREVERSIBLE.', 'error');
+            $freshUrl = $baseUrl.'&step=fresh&confirm=yes';
+            setup_log("<a href='{$freshUrl}' style='color:#dc2626;font-weight:bold;text-decoration:underline;'>CONFIRMAR: Si, borrar todo y recrear</a>", 'raw');
+        } else {
+            Artisan::call('migrate:fresh', ['--seed' => true, '--force' => true]);
+            setup_log('Fresh migrate + seed completado', 'success');
+            $freshOutput = trim(Artisan::output());
+            foreach (explode("\n", $freshOutput) as $line) {
+                if (trim($line)) {
+                    setup_log(trim($line), 'muted');
+                }
             }
         }
     }
@@ -669,7 +684,7 @@ $baseUrl = "?key={$secret}";
                             <?php } else { ?>
                                 <div class="log-line <?= $entry['type'] ?>">
                                     <span class="dot"></span>
-                                    <span><?= htmlspecialchars($entry['msg']) ?></span>
+                                    <span><?= $entry['type'] === 'raw' ? $entry['msg'] : htmlspecialchars($entry['msg']) ?></span>
                                 </div>
                             <?php } ?>
                         <?php } ?>
