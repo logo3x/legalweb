@@ -47,6 +47,10 @@ class AdminPanelProvider extends PanelProvider
                 fn () => view('filament.login-google-button'),
             )
             ->renderHook(
+                'panels::auth.register.form.before',
+                fn () => view('filament.register-beta-notice'),
+            )
+            ->renderHook(
                 'panels::sidebar.footer',
                 fn () => view('filament.sidebar-legal-links'),
             )
