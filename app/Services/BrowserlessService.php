@@ -18,7 +18,8 @@ class BrowserlessService
     }
 
     /**
-     * Ejecutar flujo completo en Tyba via Browserless /function endpoint.
+     * Ejecutar flujo completo en Tyba via Browserless BrowserQL.
+     * Todo en una sola llamada: navegar, escribir, captcha, consultar, lupa, extraer HTML.
      */
     public function fetchTybaProcess(string $radicado): ?string
     {
@@ -28,85 +29,96 @@ class BrowserlessService
             return null;
         }
 
-        $script = <<<'JS'
-export default async ({ page }) => {
-    const radicado = "RADICADO_PLACEHOLDER";
-
-    await page.goto("https://procesojudicial.ramajudicial.gov.co/Justicia21/Administracion/Ciudadanos/frmConsulta", {
-        waitUntil: "networkidle2",
+        $query = <<<'GRAPHQL'
+mutation TybaFullFlow {
+    goto(
+        url: "https://procesojudicial.ramajudicial.gov.co/Justicia21/Administracion/Ciudadanos/frmConsulta"
+        waitUntil: networkIdle
         timeout: 30000
-    });
-
-    await page.waitForSelector("#MainContent_txtCodigoProceso", { timeout: 10000 });
-    await page.type("#MainContent_txtCodigoProceso", radicado, { delay: 50 });
-
-    // Esperar reCAPTCHA y generar token
-    try {
-        await page.waitForFunction("typeof grecaptcha !== 'undefined'", { timeout: 10000 });
-        await page.evaluate(function() {
-            return new Promise(function(resolve) {
-                grecaptcha.ready(function() {
-                    grecaptcha.execute("6Ldf8zAiAAAAAAq1LUwvTCwki5C6uuIg0zVw4of0", { action: "submit" }).then(function(token) {
-                        document.getElementById("recaptchaResponse").value = token;
-                        resolve();
-                    }).catch(function() { resolve(); });
-                });
-            });
-        });
-    } catch (e) {}
-
-    // Click Consultar
-    await page.evaluate(function() {
-        __doPostBack("ctl00$MainContent$btnConsultar", "");
-    });
-
-    // Esperar resultados
-    try {
-        await page.waitForSelector("[id*='grdProceso']", { timeout: 15000 });
-    } catch (e) {
-        const html = await page.content();
-        if (html.includes("Capcha no coincide")) {
-            return { data: { error: "captcha_failed" }, type: "application/json" };
-        }
-        return { data: { error: "no_results" }, type: "application/json" };
+    ) {
+        status
+        time
     }
 
-    // Click en la lupa
-    try {
-        await page.waitForSelector("input[title='Consultar registro']", { timeout: 10000 });
-        await page.click("input[title='Consultar registro']");
-    } catch (e) {
-        return { data: { error: "no_lupa" }, type: "application/json" };
+    waitForInput: waitForSelector(
+        selector: "#MainContent_txtCodigoProceso"
+        timeout: 10000
+    ) {
+        time
     }
 
-    // Esperar pagina del proceso con datos
-    try {
-        await page.waitForNavigation({ waitUntil: "networkidle2", timeout: 15000 });
-    } catch (e) {}
+    typeRadicado: type(
+        selector: "#MainContent_txtCodigoProceso"
+        text: "RADICADO_PLACEHOLDER"
+        delay: 100
+    ) {
+        time
+    }
 
-    try {
-        await page.waitForFunction(
-            "document.querySelector('#MainContent_txtCodigoProceso') && document.querySelector('#MainContent_txtCodigoProceso').value && document.querySelector('#MainContent_txtCodigoProceso').value.length > 5",
-            { timeout: 10000 }
-        );
-    } catch (e) {}
+    pauseBeforeSolve: waitForTimeout(time: 2000) {
+        time
+    }
 
-    const html = await page.content();
-    return { data: { html: html, url: page.url() }, type: "application/json" };
-};
-JS;
+    solveCaptcha: solve(
+        type: recaptchaV3
+        timeout: 30000
+    ) {
+        found
+        solved
+        time
+    }
 
-        $script = str_replace('RADICADO_PLACEHOLDER', $radicado, $script);
+    pauseAfterSolve: waitForTimeout(time: 1000) {
+        time
+    }
 
-        Log::info('Browserless: iniciando flujo Tyba', ['radicado' => $radicado]);
+    clickConsultar: click(
+        selector: "#MainContent_btnConsultar"
+        timeout: 5000
+    ) {
+        time
+    }
 
-        $response = Http::timeout(90)
-            ->withHeaders(['Content-Type' => 'application/javascript'])
-            ->withBody($script, 'application/javascript')
-            ->post("{$this->baseUrl}/function?token={$this->apiKey}&proxy=residential");
+    waitForLupa: waitForSelector(
+        selector: "input[title='Consultar registro']"
+        timeout: 25000
+    ) {
+        time
+    }
+
+    pauseBeforeLupa: waitForTimeout(time: 500) {
+        time
+    }
+
+    clickLupa: click(
+        selector: "input[title='Consultar registro']"
+    ) {
+        time
+    }
+
+    waitForProcessPage: waitForTimeout(time: 10000) {
+        time
+    }
+
+    processHtml: html {
+        html
+    }
+}
+GRAPHQL;
+
+        $query = str_replace('RADICADO_PLACEHOLDER', $radicado, $query);
+
+        Log::info('Browserless BQL: flujo completo', ['radicado' => $radicado]);
+
+        $response = Http::timeout(180)
+            ->post("{$this->baseUrl}/chrome/bql?token={$this->apiKey}&proxy=residential&humanlike=true&blockAds=true", [
+                'query' => $query,
+                'variables' => new \stdClass,
+                'operationName' => 'TybaFullFlow',
+            ]);
 
         if (! $response->successful()) {
-            Log::error('Browserless: error HTTP', [
+            Log::error('Browserless BQL: error HTTP', [
                 'status' => $response->status(),
                 'body' => substr($response->body(), 0, 500),
             ]);
@@ -115,26 +127,45 @@ JS;
         }
 
         $result = $response->json();
-        $data = $result['data'] ?? $result;
 
-        if (isset($data['error'])) {
-            Log::error('Browserless: error en flujo', [
-                'error' => $data['error'],
-                'html_snippet' => substr($data['html'] ?? '', 0, 300),
-            ]);
+        // Extraer data incluso si hay errores parciales
+        $data = $result['data'] ?? [];
+
+        if (! empty($result['errors'])) {
+            $errors = array_map(fn ($e) => $e['message'] ?? 'unknown', $result['errors']);
+            Log::warning('Browserless BQL: errores parciales', ['errors' => $errors]);
+        }
+
+        // Log del captcha
+        $captcha = $data['solveCaptcha'] ?? [];
+        Log::info('Browserless BQL: captcha', [
+            'found' => $captcha['found'] ?? false,
+            'solved' => $captcha['solved'] ?? false,
+            'time' => $captcha['time'] ?? 0,
+        ]);
+
+        $html = $data['processHtml']['html'] ?? null;
+
+        if (! $html) {
+            Log::error('Browserless BQL: sin HTML');
 
             return null;
         }
 
-        if (isset($data['html'])) {
-            $htmlSize = strlen($data['html']);
-            Log::info('Browserless: HTML obtenido', ['size' => $htmlSize, 'url' => $data['url'] ?? '']);
+        // Verificar captcha rechazado
+        if (str_contains($html, 'Capcha no coincide')) {
+            Log::error('Browserless BQL: captcha rechazado por servidor');
 
-            return $data['html'];
+            return null;
         }
 
-        Log::error('Browserless: respuesta sin HTML', ['keys' => array_keys($result), 'data_keys' => array_keys($data)]);
+        Log::info('Browserless BQL: HTML obtenido', [
+            'size' => strlen($html),
+            'has_detalles' => str_contains($html, 'del Proceso'),
+            'has_despacho' => str_contains($html, 'MainContent_txtNomDespacho'),
+            'has_grid' => str_contains($html, 'grdProceso'),
+        ]);
 
-        return null;
+        return $html;
     }
 }

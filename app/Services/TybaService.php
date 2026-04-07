@@ -2,21 +2,16 @@
 
 namespace App\Services;
 
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class TybaService
 {
-    private string $processPageUrl;
-
-    public function __construct()
-    {
-        $baseUrl = dirname(config('services.tyba.url'));
-        $this->processPageUrl = $baseUrl.'/frmConsultaProceso.aspx';
-    }
+    private string $apiBase = 'https://consultaprocesos.ramajudicial.gov.co:448/api/v2';
 
     /**
-     * Extraer información completa de un proceso desde Tyba via Browserless.
-     * Usa un navegador real en la nube para obtener la pagina renderizada.
+     * Extraer informacion completa de un proceso desde la API publica de la Rama Judicial.
      *
      * @return array<string, mixed>|null
      */
@@ -28,40 +23,51 @@ class TybaService
             return null;
         }
 
-        // Usar Browserless con reintentos (captcha es intermitente)
-        $browserless = app(BrowserlessService::class);
-        $html = null;
+        // Paso 1: Buscar proceso por numero de radicacion
+        $search = $this->searchByRadicado($radicado);
 
-        for ($attempt = 1; $attempt <= 3; $attempt++) {
-            Log::info('Browserless: intento '.$attempt.' de 3', ['radicado' => $radicado]);
-            $html = $browserless->fetchTybaProcess($radicado);
-
-            if ($html && str_contains($html, 'del Proceso')) {
-                break;
-            }
-
-            $html = null;
-            if ($attempt < 3) {
-                sleep(2);
-            }
+        if (! $search) {
+            return null;
         }
 
-        if (! $html) {
-            Log::error('Tyba: no se pudo obtener proceso despues de 3 intentos', ['radicado' => $radicado]);
+        $idProceso = $search['idProceso'];
+        $idConexion = $search['idConexion'];
+
+        // Paso 2: Obtener detalles, sujetos y actuaciones en paralelo
+        $detail = $this->getDetail($idProceso, $idConexion);
+        $sujetos = $this->getSujetos($idProceso, $idConexion);
+        $actuaciones = $this->getActuaciones($idProceso, $idConexion);
+
+        if (! $detail) {
+            Log::error('Tyba API: no se pudo obtener detalle', ['radicado' => $radicado]);
 
             return null;
         }
 
-        $info = $this->parseProcessInfo($html);
+        $info = [
+            'codigo_proceso' => $detail['llaveProceso'] ?? $radicado,
+            'tipo_proceso' => $detail['tipoProceso'] ?? '',
+            'clase_proceso' => $detail['claseProceso'] ?? '',
+            'subclase' => $detail['subclaseProceso'] ?? '',
+            'departamento' => $search['departamento'] ?? '',
+            'ciudad' => '',
+            'corporacion' => '',
+            'especialidad' => $this->extractEspecialidad($detail['despacho'] ?? ''),
+            'distrito_circuito' => '',
+            'numero_despacho' => '',
+            'despacho' => trim($detail['despacho'] ?? $search['despacho'] ?? ''),
+            'ponente' => trim($detail['ponente'] ?? ''),
+            'direccion' => '',
+            'telefono' => '',
+            'celular' => '',
+            'email' => '',
+            'fecha_publicacion' => $this->formatDate($detail['fechaProceso'] ?? $search['fechaProceso'] ?? ''),
+            'ubicacion' => $detail['ubicacion'] ?? '',
+            'sujetos' => $this->formatSujetos($sujetos),
+            'actuaciones' => $this->formatActuaciones($actuaciones),
+        ];
 
-        // Validar que tenga datos reales
-        if (empty($info['codigo_proceso']) && empty($info['despacho']) && empty($info['clase_proceso'])) {
-            Log::error('Tyba: proceso sin datos', ['radicado' => $radicado]);
-
-            return null;
-        }
-
-        Log::info('Tyba: proceso importado', [
+        Log::info('Tyba API: proceso importado', [
             'radicado' => $radicado,
             'despacho' => $info['despacho'],
             'sujetos' => count($info['sujetos']),
@@ -72,94 +78,125 @@ class TybaService
     }
 
     /**
-     * @return array<string, mixed>
+     * Buscar proceso por numero de radicacion.
+     *
+     * @return array{idProceso: int, idConexion: int, departamento: string, despacho: string, fechaProceso: string}|null
      */
-    private function parseProcessInfo(string $html): array
+    private function searchByRadicado(string $radicado): ?array
     {
-        $fieldMap = [
-            'codigo_proceso' => 'MainContent_txtCodigoProceso',
-            'tipo_proceso' => 'MainContent_txtTipoProceso',
-            'clase_proceso' => 'MainContent_txtClaseProceso',
-            'subclase' => 'MainContent_txtSubClaseProceso',
-            'departamento' => 'MainContent_txtDepartamento',
-            'ciudad' => 'MainContent_txtCiudad',
-            'corporacion' => 'MainContent_txtCorporacion',
-            'especialidad' => 'MainContent_txtEspecialidad',
-            'distrito_circuito' => 'MainContent_txtDistritoCircuito',
-            'numero_despacho' => 'MainContent_txtNumDespacho',
-            'despacho' => 'MainContent_txtNomDespacho',
-            'direccion' => 'MainContent_txtDireccion',
-            'telefono' => 'MainContent_txtTelefono',
-            'celular' => 'MainContent_txtCelular',
-            'email' => 'MainContent_txtCorreoExterno',
-            'fecha_publicacion' => 'MainContent_txtFechaPublicacion',
+        $response = Http::timeout(15)
+            ->get("{$this->apiBase}/Procesos/Consulta/NumeroRadicacion", [
+                'numero' => $radicado,
+                'pagina' => 1,
+            ]);
+
+        if (! $response->successful()) {
+            Log::error('Tyba API: error en busqueda', ['status' => $response->status()]);
+
+            return null;
+        }
+
+        $data = $response->json();
+        $procesos = $data['procesos'] ?? [];
+
+        if (empty($procesos)) {
+            Log::error('Tyba API: proceso no encontrado', ['radicado' => $radicado]);
+
+            return null;
+        }
+
+        $proceso = $procesos[0];
+
+        return [
+            'idProceso' => $proceso['idProceso'],
+            'idConexion' => $proceso['idConexion'],
+            'departamento' => $proceso['departamento'] ?? '',
+            'despacho' => trim($proceso['despacho'] ?? ''),
+            'fechaProceso' => $proceso['fechaProceso'] ?? '',
         ];
-
-        $info = [];
-        foreach ($fieldMap as $key => $id) {
-            $info[$key] = $this->extractInputValue($html, $id);
-        }
-
-        $info['sujetos'] = $this->parseSujetos($html);
-        $info['actuaciones'] = $this->parseActuaciones($html);
-
-        return $info;
-    }
-
-    private function extractInputValue(string $html, string $id): string
-    {
-        $escaped = preg_quote($id, '/');
-
-        // Buscar el tag completo que contiene este id
-        if (preg_match('/<input[^>]*id="'.$escaped.'"[^>]*>/si', $html, $tagMatch)) {
-            if (preg_match('/value="([^"]*)"/', $tagMatch[0], $valMatch)) {
-                return html_entity_decode(trim($valMatch[1]), ENT_QUOTES, 'UTF-8');
-            }
-        }
-
-        // Fallback: buscar por name
-        $name = str_replace('_', '$', str_replace('MainContent_', 'ctl00$MainContent$', $id));
-        if (preg_match('/<input[^>]*name="'.preg_quote($name, '/').'"[^>]*>/si', $html, $tagMatch)) {
-            if (preg_match('/value="([^"]*)"/', $tagMatch[0], $valMatch)) {
-                return html_entity_decode(trim($valMatch[1]), ENT_QUOTES, 'UTF-8');
-            }
-        }
-
-        return '';
     }
 
     /**
-     * @return array<int, array{rol: string, nombre: string, documento: string}>
+     * @return array<string, mixed>|null
      */
-    private function parseSujetos(string $html): array
+    private function getDetail(int $idProceso, int $idConexion): ?array
     {
-        $sujetos = [];
+        $response = Http::timeout(15)
+            ->get("{$this->apiBase}/Proceso/Detalle/{$idProceso}", [
+                'idConexion' => $idConexion,
+            ]);
 
-        if (! preg_match('/<table[^>]*id="MainContent_grdCiudadanos"[^>]*>(.*?)<\/table>/si', $html, $tableMatch)) {
+        return $response->successful() ? $response->json() : null;
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function getSujetos(int $idProceso, int $idConexion): array
+    {
+        $response = Http::timeout(15)
+            ->get("{$this->apiBase}/Proceso/Sujetos/{$idProceso}", [
+                'idConexion' => $idConexion,
+                'pagina' => 1,
+            ]);
+
+        if (! $response->successful()) {
             return [];
         }
 
-        preg_match_all('/<tr[^>]*>(.*?)<\/tr>/si', $tableMatch[1], $rows);
+        return $response->json()['sujetos'] ?? [];
+    }
 
-        foreach (array_slice($rows[1] ?? [], 1) as $row) {
-            preg_match_all('/<td[^>]*>(.*?)<\/td>/si', $row, $cells);
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function getActuaciones(int $idProceso, int $idConexion): array
+    {
+        $all = [];
+        $page = 1;
+        $maxPages = 5;
 
-            if (empty($cells[1]) || count($cells[1]) < 6) {
-                continue;
+        do {
+            $response = Http::timeout(15)
+                ->get("{$this->apiBase}/Proceso/Actuaciones/{$idProceso}", [
+                    'idConexion' => $idConexion,
+                    'pagina' => $page,
+                ]);
+
+            if (! $response->successful()) {
+                break;
             }
 
-            $rol = strip_tags(trim($cells[1][0] ?? ''));
-            $nombre = strip_tags(trim($cells[1][6] ?? ''));
-            $documento = strip_tags(trim($cells[1][5] ?? ''));
+            $data = $response->json();
+            $all = array_merge($all, $data['actuaciones'] ?? []);
+            $totalPages = $data['paginacion']['cantidadPaginas'] ?? 1;
+            $page++;
+        } while ($page <= $totalPages && $page <= $maxPages);
 
-            if (! $rol || ! $nombre) {
+        return $all;
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $rawSujetos
+     * @return array<int, array{rol: string, nombre: string, documento: string}>
+     */
+    private function formatSujetos(array $rawSujetos): array
+    {
+        $sujetos = [];
+
+        foreach ($rawSujetos as $s) {
+            $nombre = trim(str_replace(["\r\n", "\t"], ' ', $s['nombreRazonSocial'] ?? ''));
+            $nombre = preg_replace('/\s+/', ' ', $nombre);
+            $rol = trim($s['tipoSujeto'] ?? '');
+
+            if (! $nombre || ! $rol) {
                 continue;
             }
 
             $sujetos[] = [
-                'rol' => html_entity_decode($rol, ENT_QUOTES, 'UTF-8'),
-                'nombre' => html_entity_decode($nombre, ENT_QUOTES, 'UTF-8'),
-                'documento' => html_entity_decode($documento, ENT_QUOTES, 'UTF-8'),
+                'rol' => $rol,
+                'nombre' => $nombre,
+                'documento' => '',
             ];
         }
 
@@ -167,43 +204,73 @@ class TybaService
     }
 
     /**
-     * @return array<int, array{ciclo: string, tipo: string, fecha: string, fecha_registro: string}>
+     * @param  array<int, array<string, mixed>>  $rawActuaciones
+     * @return array<int, array{ciclo: string, tipo: string, fecha: string, fecha_registro: string, anotacion: string}>
      */
-    private function parseActuaciones(string $html): array
+    private function formatActuaciones(array $rawActuaciones): array
     {
         $actuaciones = [];
 
-        if (! preg_match('/<table[^>]*id="MainContent_grdActuaciones"[^>]*>(.*?)<\/table>/si', $html, $tableMatch)) {
-            return [];
-        }
+        foreach ($rawActuaciones as $a) {
+            $tipo = trim($a['actuacion'] ?? '');
+            $fecha = $this->formatDate($a['fechaActuacion'] ?? '');
+            $fechaRegistro = $this->formatDate($a['fechaRegistro'] ?? '');
 
-        preg_match_all('/<tr[^>]*>(.*?)<\/tr>/si', $tableMatch[1], $rows);
-
-        // Columnas: (icono), Ciclo, Tipo Actuación, Fecha Actuación, Fecha Registro
-        foreach (array_slice($rows[1] ?? [], 1) as $row) {
-            preg_match_all('/<td[^>]*>(.*?)<\/td>/si', $row, $cells);
-
-            if (empty($cells[1]) || count($cells[1]) < 4) {
-                continue;
-            }
-
-            $ciclo = strip_tags(trim($cells[1][1] ?? ''));
-            $tipo = strip_tags(trim($cells[1][2] ?? ''));
-            $fecha = strip_tags(trim($cells[1][3] ?? ''));
-            $fechaRegistro = strip_tags(trim($cells[1][4] ?? ''));
-
-            if (! $fecha || ! $tipo) {
+            if (! $tipo || ! $fecha) {
                 continue;
             }
 
             $actuaciones[] = [
-                'ciclo' => html_entity_decode($ciclo, ENT_QUOTES, 'UTF-8'),
-                'tipo' => html_entity_decode($tipo, ENT_QUOTES, 'UTF-8'),
+                'ciclo' => '',
+                'tipo' => $tipo,
                 'fecha' => $fecha,
                 'fecha_registro' => $fechaRegistro,
+                'anotacion' => trim($a['anotacion'] ?? ''),
             ];
         }
 
         return $actuaciones;
+    }
+
+    /**
+     * Convertir fecha ISO a d/m/Y.
+     */
+    private function formatDate(string $date): string
+    {
+        if (! $date) {
+            return '';
+        }
+
+        try {
+            return Carbon::parse($date)->format('d/m/Y');
+        } catch (\Exception) {
+            return '';
+        }
+    }
+
+    /**
+     * Extraer especialidad del nombre del despacho.
+     */
+    private function extractEspecialidad(string $despacho): string
+    {
+        $despacho = strtolower($despacho);
+
+        if (str_contains($despacho, 'civil')) {
+            return 'Civil';
+        }
+        if (str_contains($despacho, 'penal')) {
+            return 'Penal';
+        }
+        if (str_contains($despacho, 'laboral')) {
+            return 'Laboral';
+        }
+        if (str_contains($despacho, 'familia')) {
+            return 'Familia';
+        }
+        if (str_contains($despacho, 'administrativo')) {
+            return 'Administrativo';
+        }
+
+        return 'General';
     }
 }
