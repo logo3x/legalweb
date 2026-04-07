@@ -23,9 +23,7 @@ class CaseEventResource extends Resource
     {
         $query = parent::getEloquentQuery();
 
-        if (auth()->user()?->role !== 'superadmin') {
-            $query->whereHas('legalCase', fn (Builder $q) => $q->where('firm_id', auth()->user()->firm_id));
-        }
+        $query->whereHas('legalCase', fn (Builder $q) => $q->where('firm_id', auth()->user()->firm_id));
 
         return $query;
     }

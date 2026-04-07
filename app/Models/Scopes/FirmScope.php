@@ -17,9 +17,8 @@ class FirmScope implements Scope
             return;
         }
 
-        if ($user->role === 'superadmin') {
-            return;
-        }
+        // Superadmin tambien se filtra por su firma
+        // Solo puede ver datos de su propia firma, no de otras
 
         $table = $model->getTable();
 
