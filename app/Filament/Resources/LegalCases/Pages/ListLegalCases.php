@@ -25,6 +25,17 @@ class ListLegalCases extends ListRecords
 
     public array $importResults = [];
 
+    public function mount(): void
+    {
+        parent::mount();
+
+        // Auto-abrir modal de resultados si hay datos en sesion
+        if (session()->has('import_masivo_results')) {
+            $this->importResults = session()->pull('import_masivo_results');
+            $this->mountAction('import_results');
+        }
+    }
+
     protected function getHeaderActions(): array
     {
         return [
@@ -85,13 +96,14 @@ class ListLegalCases extends ListRecords
                 ->modalHeading('Importacion Masiva de Procesos')
                 ->modalDescription('Pegue una lista de radicados (uno por linea). Se importaran todos los procesos encontrados en la Rama Judicial.')
                 ->modalSubmitActionLabel('Importar Todos')
+                ->extraModalFooterActions([])
                 ->form([
                     Textarea::make('radicados')
                         ->label('Radicados (uno por linea)')
                         ->required()
                         ->rows(8)
                         ->placeholder("68081310300120240001800\n05001310500120230012300\n11001310304120220045600")
-                        ->helperText('Puede pegar hasta 20 radicados a la vez. Cada uno en una linea separada.'),
+                        ->helperText('Puede pegar hasta 20 radicados a la vez. Cada uno en una linea separada. El proceso puede tomar entre 5 y 30 segundos por radicado.'),
                     Select::make('client_id')
                         ->label('Cliente (para todos los casos)')
                         ->options(fn () => Client::where('firm_id', auth()->user()->firm_id)
@@ -150,8 +162,8 @@ class ListLegalCases extends ListRecords
                         }
                     }
 
-                    $this->importResults = $results;
-                    $this->mountAction('import_results');
+                    session()->put('import_masivo_results', $results);
+                    $this->redirect(LegalCaseResource::getUrl('index'));
                 }),
 
             Action::make('import_results')
