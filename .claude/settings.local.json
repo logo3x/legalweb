@@ -65,7 +65,8 @@
       "Bash(php -l app/Notifications/MonthlyReportNotification.php)",
       "Bash(php -l app/Services/DemoDataService.php)",
       "Bash(php -l public/setup.php)",
-      "Bash(php -l app/Models/User.php)"
+      "Bash(php -l app/Models/User.php)",
+      "Bash(php -l app/Filament/Pages/FirmSettings.php)"
     ]
   }
 }

@@ -16,6 +16,7 @@ use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\HtmlString;
 use UnitEnum;
 
 class FirmSettings extends Page
@@ -134,9 +135,13 @@ class FirmSettings extends Page
                 Section::make('Terminos y Condiciones')
                     ->schema([
                         Placeholder::make('terms_info')
-                            ->content('Al utilizar LegalWeb usted acepta nuestros Terminos y Condiciones y la Politica de Privacidad. Puede consultarlos en cualquier momento.'),
+                            ->content(new HtmlString(
+                                'Al utilizar LegalWeb usted acepta nuestros <a href="/terminos" target="_blank" style="color: #3A86FF; text-decoration: underline; font-weight: 600;">Terminos y Condiciones</a> y la <a href="/privacidad" target="_blank" style="color: #3A86FF; text-decoration: underline; font-weight: 600;">Politica de Privacidad</a>. Puede consultarlos en cualquier momento.'
+                            )),
                         Checkbox::make('accept_terms')
-                            ->label('He leido y acepto los Terminos y Condiciones y la Politica de Privacidad y Tratamiento de Datos Personales')
+                            ->label(new HtmlString(
+                                'He leido y acepto los <a href="/terminos" target="_blank" style="color: #3A86FF; text-decoration: underline;">Terminos y Condiciones</a> y la <a href="/privacidad" target="_blank" style="color: #3A86FF; text-decoration: underline;">Politica de Privacidad y Tratamiento de Datos Personales</a>'
+                            ))
                             ->required(fn () => ! (auth()->user()->firm?->onboarding_completed ?? false))
                             ->dehydrated(false)
                             ->visible(fn () => ! (auth()->user()->firm?->onboarding_completed ?? false)),
