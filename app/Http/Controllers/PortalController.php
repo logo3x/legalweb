@@ -42,7 +42,9 @@ class PortalController extends Controller
             'action' => $hasAccepted ? 'view' : 'landing',
         ]);
 
-        return view('portal.show', compact('case', 'hasAccepted', 'portalToken', 'firmLogo'));
+        $firmName = $firm?->name;
+
+        return view('portal.show', compact('case', 'hasAccepted', 'portalToken', 'firmLogo', 'firmName'));
     }
 
     public function accept(Request $request, string $token)

@@ -5,38 +5,34 @@
 @section('content')
     {{-- Modal de aceptacion de terminos --}}
     @unless($hasAccepted)
-        <div style="position:fixed;inset:0;background:rgba(255,255,255,0.97);backdrop-filter:blur(20px);z-index:50;display:flex;align-items:center;justify-content:center;padding:16px;">
-            <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6">
-                <div class="text-center mb-4">
-                    <svg class="w-12 h-12 text-blue-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-                    </svg>
-                    <h2 class="text-xl font-bold text-gray-800">Autorizacion de Acceso</h2>
+        <div style="position:fixed;inset:0;background:rgba(30,58,95,0.95);backdrop-filter:blur(20px);z-index:50;display:flex;align-items:center;justify-content:center;padding:16px;">
+            <div style="background: #fff; border-radius: 16px; max-width: 480px; width: 100%; padding: 32px; box-shadow: 0 25px 50px rgba(0,0,0,0.25);">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="width: 56px; height: 56px; background: linear-gradient(135deg, #3A86FF, #1E3A5F); border-radius: 14px; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+                        <svg style="width: 28px; height: 28px; color: #fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                    </div>
+                    <h2 style="font-size: 20px; font-weight: 700; color: #1E3A5F; margin: 0;">Autorizacion de Acceso</h2>
+                    <p style="font-size: 13px; color: #6b7280; margin: 4px 0 0;">{{ $case->client->full_name }}</p>
                 </div>
 
-                <div class="text-sm text-gray-600 space-y-3 max-h-64 overflow-y-auto mb-4">
-                    <p>Estimado(a) <strong>{{ $case->client->full_name }}</strong>,</p>
-
-                    <p>Al acceder a este portal, usted acepta los siguientes terminos:</p>
-
-                    <ul class="list-disc pl-5 space-y-1">
-                        <li>La informacion aqui presentada es <strong>confidencial</strong> y esta protegida por el secreto profesional abogado-cliente.</li>
-                        <li>Usted autoriza el tratamiento de sus datos personales conforme a la <strong>Ley 1581 de 2012</strong> y sus decretos reglamentarios.</li>
-                        <li>Esta plataforma es una <strong>herramienta tecnologica de gestion</strong> que no sustituye el criterio profesional del abogado.</li>
-                        <li>Los estados y avances mostrados son <strong>informativos</strong> y pueden estar sujetos a actualizacion.</li>
-                        <li>Usted se compromete a <strong>no compartir</strong> el enlace de acceso con terceros no autorizados.</li>
-                        <li>El acceso queda registrado con su direccion IP y fecha para fines de <strong>trazabilidad</strong>.</li>
+                <div style="font-size: 13px; color: #4b5563; max-height: 240px; overflow-y: auto; margin-bottom: 20px; line-height: 1.6;">
+                    <p>Al acceder a este portal, usted acepta:</p>
+                    <ul style="padding-left: 20px; margin: 8px 0;">
+                        <li style="margin-bottom: 6px;">La informacion es <strong>confidencial</strong> y esta protegida por el secreto profesional abogado-cliente.</li>
+                        <li style="margin-bottom: 6px;">Autoriza el tratamiento de sus datos personales conforme a la <strong>Ley 1581 de 2012</strong>.</li>
+                        <li style="margin-bottom: 6px;">Los estados y avances son <strong>informativos</strong> y pueden estar sujetos a actualizacion.</li>
+                        <li style="margin-bottom: 6px;">Se compromete a <strong>no compartir</strong> el enlace de acceso con terceros.</li>
+                        <li>El acceso queda registrado con su IP y fecha para <strong>trazabilidad</strong>.</li>
                     </ul>
-
-                    <p>Para mas informacion, consulte nuestros
-                        <a href="{{ route('portal.terms') }}" class="text-blue-600 underline" target="_blank">Terminos y Condiciones</a> y
-                        <a href="{{ route('portal.privacy') }}" class="text-blue-600 underline" target="_blank">Politica de Privacidad y Tratamiento de Datos</a>.
+                    <p style="margin-top: 12px;">
+                        <a href="{{ route('portal.terms') }}" target="_blank" style="color: #3A86FF; text-decoration: underline;">Terminos y Condiciones</a> |
+                        <a href="{{ route('portal.privacy') }}" target="_blank" style="color: #3A86FF; text-decoration: underline;">Politica de Privacidad</a>
                     </p>
                 </div>
 
                 <form action="{{ route('portal.accept', $case->portal_token) }}" method="POST">
                     @csrf
-                    <button type="submit" class="w-full bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-blue-700 transition">
+                    <button type="submit" style="width: 100%; background: linear-gradient(135deg, #3A86FF, #1E3A5F); color: #fff; font-weight: 600; padding: 14px; border-radius: 10px; border: none; font-size: 14px; cursor: pointer;">
                         Acepto los terminos y condiciones
                     </button>
                 </form>
@@ -46,200 +42,207 @@
 
     @if($hasAccepted)
     {{-- Encabezado del caso --}}
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-                <div class="flex items-center gap-3 mb-2">
-                    <h1 class="text-2xl font-bold text-gray-800">{{ $case->title }}</h1>
+    <div style="background: #fff; border-radius: 16px; border: 1px solid #e5e7eb; padding: 24px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 16px;">
+            <div style="flex: 1; min-width: 280px;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap;">
+                    <h1 style="font-size: 22px; font-weight: 700; color: #1E3A5F; margin: 0;">{{ $case->title }}</h1>
                     @php
-                        $statusColors = ['abierto' => 'blue', 'en_progreso' => 'yellow', 'en_espera' => 'gray', 'cerrado' => 'green', 'archivado' => 'red'];
-                        $statusLabels = ['abierto' => 'Abierto', 'en_progreso' => 'En Progreso', 'en_espera' => 'En Espera', 'cerrado' => 'Cerrado', 'archivado' => 'Archivado'];
-                        $color = $statusColors[$case->status] ?? 'gray';
+                        $statusConfig = [
+                            'abierto' => ['bg' => '#dbeafe', 'color' => '#1e40af', 'label' => 'Abierto'],
+                            'en_progreso' => ['bg' => '#fef3c7', 'color' => '#92400e', 'label' => 'En Progreso'],
+                            'en_espera' => ['bg' => '#f3f4f6', 'color' => '#374151', 'label' => 'En Espera'],
+                            'cerrado' => ['bg' => '#dcfce7', 'color' => '#166534', 'label' => 'Cerrado'],
+                            'archivado' => ['bg' => '#fee2e2', 'color' => '#991b1b', 'label' => 'Archivado'],
+                        ];
+                        $sc = $statusConfig[$case->status] ?? ['bg' => '#f3f4f6', 'color' => '#374151', 'label' => $case->status];
                     @endphp
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-{{ $color }}-100 text-{{ $color }}-800">
-                        {{ $statusLabels[$case->status] ?? $case->status }}
-                    </span>
+                    <span style="display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; background: {{ $sc['bg'] }}; color: {{ $sc['color'] }};">{{ $sc['label'] }}</span>
                 </div>
-                <p class="text-gray-500">
+                <div style="font-size: 13px; color: #6b7280;">
                     Caso <strong>{{ $case->case_number }}</strong>
                     @if($case->external_case_number)
-                        &middot; Radicado {{ $case->external_case_number }}
+                        &middot; Radicado <strong>{{ $case->external_case_number }}</strong>
                     @endif
                     &middot; {{ $case->caseType->name }}
-                </p>
+                </div>
             </div>
-            <div class="text-right text-sm text-gray-500 flex flex-col items-end gap-2">
+            <div style="text-align: right; font-size: 13px; color: #6b7280;">
                 @if($firmLogo)
-                    <img src="{{ $firmLogo }}" alt="Logo Firma" class="h-12 w-12 rounded-lg object-cover">
+                    <img src="{{ $firmLogo }}" alt="Logo" style="height: 40px; width: 40px; border-radius: 8px; object-fit: cover; margin-left: auto; margin-bottom: 4px;">
                 @endif
                 @if($case->user->firm)
-                    <p class="font-semibold text-gray-700">{{ $case->user->firm->name }}</p>
+                    <div style="font-weight: 600; color: #1E3A5F;">{{ $case->user->firm->name }}</div>
                 @endif
-                <p>Abogado: <strong>{{ $case->user->name }}</strong></p>
+                <div>Abogado: {{ $case->user->name }}</div>
                 @if($case->started_at)
-                    <p>Inicio: {{ $case->started_at->format('d/m/Y') }}</p>
+                    <div>Inicio: {{ $case->started_at->format('d/m/Y') }}</div>
                 @endif
             </div>
         </div>
     </div>
 
-    {{-- Resumen en tarjetas --}}
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-            <div class="flex items-center gap-3 mb-3">
-                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                    </svg>
+    {{-- Tarjetas resumen --}}
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px;">
+        {{-- Datos del cliente --}}
+        <div style="background: #fff; border-radius: 12px; border: 1px solid #e5e7eb; padding: 20px;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                <div style="width: 36px; height: 36px; background: #eff6ff; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                    <svg style="width: 18px; height: 18px; color: #3A86FF;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                 </div>
-                <h3 class="font-semibold text-gray-700">Sus Datos</h3>
+                <span style="font-size: 13px; font-weight: 600; color: #1E3A5F;">Sus Datos</span>
             </div>
-            <dl class="text-sm space-y-1">
-                <div class="flex justify-between"><dt class="text-gray-500">Nombre</dt><dd class="font-medium">{{ $case->client->full_name }}</dd></div>
-                <div class="flex justify-between"><dt class="text-gray-500">Documento</dt><dd class="font-medium">{{ $case->client->document_type }} {{ $case->client->document_number }}</dd></div>
+            <div style="font-size: 12px; color: #4b5563;">
+                <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #f3f4f6;"><span style="color: #9ca3af;">Nombre</span><span style="font-weight: 500;">{{ $case->client->full_name }}</span></div>
+                <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #f3f4f6;"><span style="color: #9ca3af;">Documento</span><span style="font-weight: 500;">{{ $case->client->document_type }} {{ $case->client->document_number }}</span></div>
                 @if($case->client->phone)
-                    <div class="flex justify-between"><dt class="text-gray-500">Telefono</dt><dd class="font-medium">{{ $case->client->phone }}</dd></div>
+                <div style="display: flex; justify-content: space-between; padding: 4px 0;"><span style="color: #9ca3af;">Telefono</span><span style="font-weight: 500;">{{ $case->client->phone }}</span></div>
                 @endif
-            </dl>
-        </div>
-
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-            <div class="flex items-center gap-3 mb-3">
-                <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                    </svg>
-                </div>
-                <h3 class="font-semibold text-gray-700">Juzgado</h3>
             </div>
-            <dl class="text-sm space-y-1">
-                <div><dt class="text-gray-500">Despacho</dt><dd class="font-medium">{{ $case->court ?? 'Sin asignar' }}</dd></div>
-                <div><dt class="text-gray-500">Juez</dt><dd class="font-medium">{{ $case->judge ?? 'Sin asignar' }}</dd></div>
-            </dl>
         </div>
 
+        {{-- Juzgado --}}
+        <div style="background: #fff; border-radius: 12px; border: 1px solid #e5e7eb; padding: 20px;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                <div style="width: 36px; height: 36px; background: #f5f3ff; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                    <svg style="width: 18px; height: 18px; color: #7c3aed;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                </div>
+                <span style="font-size: 13px; font-weight: 600; color: #1E3A5F;">Juzgado</span>
+            </div>
+            <div style="font-size: 12px; color: #4b5563;">
+                <div style="padding: 4px 0; border-bottom: 1px solid #f3f4f6;"><span style="color: #9ca3af;">Despacho</span><div style="font-weight: 500; margin-top: 2px;">{{ $case->court ?? 'Sin asignar' }}</div></div>
+                <div style="padding: 4px 0;"><span style="color: #9ca3af;">Juez</span><div style="font-weight: 500; margin-top: 2px;">{{ $case->judge ?? 'Sin asignar' }}</div></div>
+            </div>
+        </div>
+
+        {{-- Progreso --}}
         @if($case->caseFlow)
             @php
                 $totalSteps = $case->flowProgress->count();
                 $completedSteps = $case->flowProgress->where('status', 'completado')->count();
                 $percentage = $totalSteps > 0 ? round(($completedSteps / $totalSteps) * 100) : 0;
             @endphp
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-                <div class="flex items-center gap-3 mb-3">
-                    <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
+            <div style="background: #fff; border-radius: 12px; border: 1px solid #e5e7eb; padding: 20px;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                    <div style="width: 36px; height: 36px; background: #f0fdf4; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                        <svg style="width: 18px; height: 18px; color: #16a34a;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     </div>
-                    <h3 class="font-semibold text-gray-700">Progreso</h3>
+                    <span style="font-size: 13px; font-weight: 600; color: #1E3A5F;">Progreso</span>
                 </div>
-                <div class="mb-2">
-                    <div class="flex justify-between text-sm mb-1">
-                        <span class="text-gray-500">{{ $completedSteps }} de {{ $totalSteps }} pasos</span>
-                        <span class="font-bold text-green-600">{{ $percentage }}%</span>
-                    </div>
-                    <div class="w-full bg-gray-200 rounded-full h-3">
-                        <div class="bg-green-500 h-3 rounded-full transition-all" style="width: {{ $percentage }}%"></div>
-                    </div>
+                <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px;">
+                    <span style="color: #6b7280;">{{ $completedSteps }} de {{ $totalSteps }} etapas</span>
+                    <span style="font-weight: 700; color: #16a34a;">{{ $percentage }}%</span>
                 </div>
-                <p class="text-xs text-gray-500">{{ $case->caseFlow->name }}</p>
+                <div style="width: 100%; height: 10px; background: #f3f4f6; border-radius: 999px; overflow: hidden;">
+                    <div style="width: {{ $percentage }}%; height: 100%; background: linear-gradient(90deg, #16a34a, #22c55e); border-radius: 999px; transition: width 0.5s;"></div>
+                </div>
+                <div style="font-size: 11px; color: #9ca3af; margin-top: 6px;">{{ $case->caseFlow->name }}</div>
             </div>
         @endif
     </div>
 
     {{-- Flujo de Proceso --}}
     @if($case->caseFlow && $case->flowProgress->isNotEmpty())
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-            <h2 class="text-lg font-bold text-gray-800 mb-4">Flujo del Proceso</h2>
-            <div class="space-y-3">
-                @foreach($case->flowProgress->sortBy('flowStep.order') as $progress)
-                    @php
-                        $step = $progress->flowStep;
-                        $isCompleted = $progress->status === 'completado';
-                        $isInProgress = $progress->status === 'en_progreso';
-                        $isOmitted = $progress->status === 'omitido';
-                    @endphp
-                    <div class="flex items-start gap-4 {{ $isCompleted ? '' : ($isInProgress ? '' : 'opacity-50') }}">
-                        <div class="flex-shrink-0 mt-1">
-                            @if($isCompleted)
-                                <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
-                                    </svg>
-                                </div>
-                            @elseif($isInProgress)
-                                <div class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center animate-pulse">
-                                    <div class="w-3 h-3 bg-white rounded-full"></div>
-                                </div>
-                            @elseif($isOmitted)
-                                <div class="w-8 h-8 bg-red-400 rounded-full flex items-center justify-center">
-                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/>
-                                    </svg>
-                                </div>
-                            @else
-                                <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                                    <span class="text-xs font-bold text-gray-500">{{ $step->order }}</span>
-                                </div>
-                            @endif
-                        </div>
-                        <div class="flex-1 pb-3 {{ !$loop->last ? 'border-b border-gray-100' : '' }}">
-                            <div class="flex items-center justify-between">
-                                <h4 class="font-semibold text-gray-800 {{ $isCompleted ? 'line-through text-gray-500' : '' }}">
-                                    {{ $step->name }}
-                                </h4>
-                                @if($isCompleted && $progress->completed_at)
-                                    <span class="text-xs text-gray-400">{{ $progress->completed_at->format('d/m/Y') }}</span>
-                                @elseif($isInProgress)
-                                    <span class="text-xs font-semibold text-yellow-600 bg-yellow-50 px-2 py-1 rounded">En curso</span>
-                                @elseif($step->days_limit)
-                                    <span class="text-xs text-gray-400">Plazo: {{ $step->days_limit }} dias</span>
-                                @endif
+        <div style="background: #fff; border-radius: 16px; border: 1px solid #e5e7eb; padding: 24px; margin-bottom: 20px;">
+            <h2 style="font-size: 16px; font-weight: 700; color: #1E3A5F; margin: 0 0 16px 0;">Flujo del Proceso</h2>
+            @foreach($case->flowProgress->sortBy('flowStep.order') as $progress)
+                @php
+                    $step = $progress->flowStep;
+                    $isCompleted = $progress->status === 'completado';
+                    $isInProgress = $progress->status === 'en_progreso';
+                    $isOmitted = $progress->status === 'omitido';
+                @endphp
+                <div style="display: flex; align-items: flex-start; gap: 14px; {{ $isCompleted || $isInProgress ? '' : 'opacity: 0.4;' }} {{ !$loop->last ? 'margin-bottom: 4px;' : '' }}">
+                    {{-- Linea vertical + circulo --}}
+                    <div style="display: flex; flex-direction: column; align-items: center; flex-shrink: 0;">
+                        @if($isCompleted)
+                            <div style="width: 28px; height: 28px; background: #16a34a; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                <svg style="width: 14px; height: 14px; color: #fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
                             </div>
-                            @if($step->description)
-                                <p class="text-sm text-gray-500 mt-1">{{ $step->description }}</p>
+                        @elseif($isInProgress)
+                            <div style="width: 28px; height: 28px; background: #f59e0b; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 4px rgba(245,158,11,0.2);">
+                                <div style="width: 10px; height: 10px; background: #fff; border-radius: 50%;"></div>
+                            </div>
+                        @elseif($isOmitted)
+                            <div style="width: 28px; height: 28px; background: #ef4444; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                <svg style="width: 14px; height: 14px; color: #fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/></svg>
+                            </div>
+                        @else
+                            <div style="width: 28px; height: 28px; background: #e5e7eb; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                <span style="font-size: 11px; font-weight: 700; color: #9ca3af;">{{ $step->order }}</span>
+                            </div>
+                        @endif
+                        @if(!$loop->last)
+                            <div style="width: 2px; height: 24px; background: {{ $isCompleted ? '#16a34a' : '#e5e7eb' }};"></div>
+                        @endif
+                    </div>
+
+                    {{-- Contenido --}}
+                    <div style="flex: 1; padding-bottom: 4px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <span style="font-size: 13px; font-weight: 600; color: {{ $isCompleted ? '#6b7280' : '#1E3A5F' }}; {{ $isCompleted ? 'text-decoration: line-through;' : '' }}">{{ $step->name }}</span>
+                            @if($isCompleted && $progress->completed_at)
+                                <span style="font-size: 11px; color: #9ca3af;">{{ $progress->completed_at->format('d/m/Y') }}</span>
+                            @elseif($isInProgress)
+                                <span style="font-size: 10px; font-weight: 600; color: #92400e; background: #fef3c7; padding: 2px 8px; border-radius: 4px;">En curso</span>
+                            @elseif($step->days_limit)
+                                <span style="font-size: 11px; color: #9ca3af;">Plazo: {{ $step->days_limit }}d</span>
                             @endif
                         </div>
                     </div>
-                @endforeach
-            </div>
+                </div>
+            @endforeach
         </div>
     @endif
 
     {{-- Ultimas Actuaciones --}}
     @if($case->events->isNotEmpty())
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-            <h2 class="text-lg font-bold text-gray-800 mb-4">Ultimas Actuaciones</h2>
-            <div class="space-y-4">
-                @foreach($case->events->take(10) as $event)
-                    @php
-                        $typeColors = ['audiencia' => 'yellow', 'sentencia' => 'green', 'notificacion' => 'blue', 'actuacion' => 'gray', 'memorial' => 'indigo', 'auto' => 'purple'];
-                        $typeLabels = ['audiencia' => 'Audiencia', 'sentencia' => 'Sentencia', 'notificacion' => 'Notificacion', 'actuacion' => 'Actuacion', 'memorial' => 'Memorial', 'auto' => 'Auto'];
-                        $eColor = $typeColors[$event->event_type] ?? 'gray';
-                    @endphp
-                    <div class="flex items-start gap-4">
-                        <div class="flex-shrink-0 text-center">
-                            <div class="text-sm font-bold text-gray-800">{{ $event->event_date->format('d') }}</div>
-                            <div class="text-xs text-gray-500 uppercase">{{ $event->event_date->translatedFormat('M Y') }}</div>
-                        </div>
-                        <div class="flex-1 pb-3 {{ !$loop->last ? 'border-b border-gray-100' : '' }}">
-                            <div class="flex items-center gap-2 mb-1">
-                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-{{ $eColor }}-100 text-{{ $eColor }}-800">
-                                    {{ $typeLabels[$event->event_type] ?? $event->event_type }}
-                                </span>
-                                @if($event->is_milestone)
-                                    <span class="text-xs text-orange-500 font-semibold">Hito</span>
-                                @endif
-                            </div>
-                            <h4 class="font-medium text-gray-800">{{ $event->title }}</h4>
-                            @if($event->description)
-                                <p class="text-sm text-gray-500 mt-1">{{ $event->description }}</p>
+        <div style="background: #fff; border-radius: 16px; border: 1px solid #e5e7eb; padding: 24px; margin-bottom: 20px;">
+            <h2 style="font-size: 16px; font-weight: 700; color: #1E3A5F; margin: 0 0 16px 0;">Ultimas Actuaciones</h2>
+            @foreach($case->events->take(15) as $event)
+                @php
+                    $typeConfig = [
+                        'audiencia' => ['bg' => '#fef3c7', 'color' => '#92400e', 'label' => 'Audiencia'],
+                        'sentencia' => ['bg' => '#dcfce7', 'color' => '#166534', 'label' => 'Sentencia'],
+                        'notificacion' => ['bg' => '#dbeafe', 'color' => '#1e40af', 'label' => 'Notificacion'],
+                        'actuacion' => ['bg' => '#f3f4f6', 'color' => '#374151', 'label' => 'Actuacion'],
+                        'memorial' => ['bg' => '#e0e7ff', 'color' => '#3730a3', 'label' => 'Memorial'],
+                        'auto' => ['bg' => '#f5f3ff', 'color' => '#6d28d9', 'label' => 'Auto'],
+                    ];
+                    $tc = $typeConfig[$event->event_type] ?? ['bg' => '#f3f4f6', 'color' => '#374151', 'label' => $event->event_type];
+                @endphp
+                <div style="display: flex; align-items: flex-start; gap: 14px; {{ !$loop->last ? 'padding-bottom: 12px; margin-bottom: 12px; border-bottom: 1px solid #f3f4f6;' : '' }}">
+                    <div style="flex-shrink: 0; text-align: center; min-width: 44px;">
+                        <div style="font-size: 18px; font-weight: 700; color: #1E3A5F; line-height: 1;">{{ $event->event_date->format('d') }}</div>
+                        <div style="font-size: 10px; color: #9ca3af; text-transform: uppercase;">{{ $event->event_date->format('M') }}</div>
+                        <div style="font-size: 10px; color: #9ca3af;">{{ $event->event_date->format('Y') }}</div>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap;">
+                            <span style="display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; background: {{ $tc['bg'] }}; color: {{ $tc['color'] }};">{{ $tc['label'] }}</span>
+                            @if($event->is_milestone)
+                                <span style="font-size: 10px; color: #f59e0b; font-weight: 600;">★ Hito</span>
                             @endif
                         </div>
+                        <div style="font-size: 13px; font-weight: 500; color: #1f2937;">{{ $event->title }}</div>
+                        @if($event->description && !str_contains($event->description, 'Sincronizado'))
+                            <div style="font-size: 12px; color: #6b7280; margin-top: 2px;">{{ Str::limit($event->description, 100) }}</div>
+                        @endif
                     </div>
-                @endforeach
-            </div>
+                </div>
+            @endforeach
         </div>
     @endif
+
+    {{-- Contacto del abogado --}}
+    <div style="background: linear-gradient(135deg, #eff6ff, #f5f3ff); border-radius: 12px; border: 1px solid #c7d2fe; padding: 20px; text-align: center;">
+        <div style="font-size: 13px; color: #4338ca; font-weight: 600; margin-bottom: 4px;">¿Tiene preguntas sobre su caso?</div>
+        <div style="font-size: 12px; color: #6b7280;">
+            Contacte a su abogado <strong>{{ $case->user->name }}</strong>
+            @if($case->user->email)
+                &middot; <a href="mailto:{{ $case->user->email }}" style="color: #3A86FF; text-decoration: none;">{{ $case->user->email }}</a>
+            @endif
+        </div>
+    </div>
     @endif {{-- end hasAccepted --}}
 @endsection
