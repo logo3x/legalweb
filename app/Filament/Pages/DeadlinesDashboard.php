@@ -21,6 +21,8 @@ class DeadlinesDashboard extends Page
 
     protected static ?int $navigationSort = 3;
 
+    protected static bool $shouldRegisterNavigation = false;
+
     public function getDeadlinesData(): array
     {
         $userId = auth()->id();
