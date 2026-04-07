@@ -129,275 +129,283 @@ class ViewLegalCase extends ViewRecord
                 ->icon('heroicon-o-sparkles')
                 ->color('warning')
                 ->button(),
-            Action::make('download_report')
-                ->label('Reporte PDF')
-                ->icon('heroicon-o-document-arrow-down')
-                ->color('gray')
-                ->action(function () {
-                    $case = $this->record->load(['client', 'user', 'user.firm', 'caseType', 'flowProgress.flowStep']);
-                    $firm = $case->user?->firm;
+            ActionGroup::make([
+                Action::make('download_report')
+                    ->label('Descargar Reporte PDF')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->action(function () {
+                        $case = $this->record->load(['client', 'user', 'user.firm', 'caseType', 'flowProgress.flowStep']);
+                        $firm = $case->user?->firm;
 
-                    $actuaciones = CaseEvent::where('legal_case_id', $case->id)
-                        ->where('event_date', '>=', now()->subDays(30))
-                        ->orderBy('event_date')
-                        ->get();
+                        $actuaciones = CaseEvent::where('legal_case_id', $case->id)
+                            ->where('event_date', '>=', now()->subDays(30))
+                            ->orderBy('event_date')
+                            ->get();
 
-                    $vencimientos = Reminder::where('legal_case_id', $case->id)
-                        ->where('is_completed', false)
-                        ->where('due_date', '>=', now())
-                        ->orderBy('due_date')
-                        ->limit(10)
-                        ->get();
+                        $vencimientos = Reminder::where('legal_case_id', $case->id)
+                            ->where('is_completed', false)
+                            ->where('due_date', '>=', now())
+                            ->orderBy('due_date')
+                            ->limit(10)
+                            ->get();
 
-                    $syncCount = TybaSyncLog::where('legal_case_id', $case->id)
-                        ->where('created_at', '>=', now()->subDays(30))
-                        ->count();
+                        $syncCount = TybaSyncLog::where('legal_case_id', $case->id)
+                            ->where('created_at', '>=', now()->subDays(30))
+                            ->count();
 
-                    $pdf = Pdf::loadView('reports.monthly-case-report', [
-                        'case' => $case,
-                        'client' => $case->client,
-                        'firm' => $firm,
-                        'periodo' => now()->translatedFormat('F Y'),
-                        'generated_at' => now(),
-                        'actuaciones' => $actuaciones,
-                        'vencimientos' => $vencimientos,
-                        'flowProgress' => $case->flowProgress->sortBy('flowStep.order'),
-                        'resumen' => [
-                            'nuevas_actuaciones' => $actuaciones->count(),
-                            'recordatorios_pendientes' => $vencimientos->count(),
-                            'sincronizaciones' => $syncCount,
-                        ],
-                    ])->setPaper('letter');
+                        $pdf = Pdf::loadView('reports.monthly-case-report', [
+                            'case' => $case,
+                            'client' => $case->client,
+                            'firm' => $firm,
+                            'periodo' => now()->translatedFormat('F Y'),
+                            'generated_at' => now(),
+                            'actuaciones' => $actuaciones,
+                            'vencimientos' => $vencimientos,
+                            'flowProgress' => $case->flowProgress->sortBy('flowStep.order'),
+                            'resumen' => [
+                                'nuevas_actuaciones' => $actuaciones->count(),
+                                'recordatorios_pendientes' => $vencimientos->count(),
+                                'sincronizaciones' => $syncCount,
+                            ],
+                        ])->setPaper('letter');
 
-                    $fileName = "reporte_{$case->case_number}_".now()->format('Y_m_d').'.pdf';
-                    $path = storage_path("app/public/generated/{$fileName}");
+                        $fileName = "reporte_{$case->case_number}_".now()->format('Y_m_d').'.pdf';
+                        $path = storage_path("app/public/generated/{$fileName}");
 
-                    if (! is_dir(dirname($path))) {
-                        mkdir(dirname($path), 0755, true);
-                    }
-
-                    $pdf->save($path);
-                    $this->js("window.location.href = '".route('download.file', $fileName)."'");
-                }),
-            Action::make('sync_tyba')
-                ->label('Sincronizar Tyba')
-                ->icon('heroicon-o-arrow-path')
-                ->color('gray')
-                ->visible(fn () => (bool) $this->record->external_case_number)
-                ->requiresConfirmation()
-                ->modalHeading('Sincronizar con Rama Judicial')
-                ->modalDescription(fn () => "Se consultara el radicado {$this->record->external_case_number} en la API de la Rama Judicial para actualizar datos del proceso y registrar nuevas actuaciones.")
-                ->modalSubmitActionLabel('Sincronizar')
-                ->action(function () {
-                    $tyba = app(TybaService::class);
-                    $info = $tyba->extractProcessInfo($this->record->external_case_number);
-
-                    if (! $info) {
-                        TybaSyncLog::create([
-                            'legal_case_id' => $this->record->id,
-                            'status' => 'error',
-                            'mensaje' => 'No se pudo consultar el radicado',
-                            'origen' => 'manual',
-                        ]);
-
-                        Notification::make()
-                            ->title('No se pudo consultar')
-                            ->body('Verifique que el radicado sea correcto.')
-                            ->danger()
-                            ->send();
-
-                        return;
-                    }
-
-                    // Actualizar datos del caso
-                    $updates = [
-                        'last_tyba_sync' => now(),
-                        'tyba_data' => collect($info)->except(['sujetos', 'actuaciones'])->toArray(),
-                    ];
-
-                    if (! empty($info['despacho'])) {
-                        $updates['court'] = $info['despacho'];
-                    }
-                    if (! empty($info['ponente'])) {
-                        $updates['judge'] = mb_convert_case(mb_strtolower($info['ponente']), MB_CASE_TITLE, 'UTF-8');
-                    }
-
-                    // Actualizar contraparte si no tiene
-                    if (empty($this->record->opposing_party) && ! empty($info['sujetos'])) {
-                        $demandados = collect($info['sujetos'])
-                            ->filter(fn ($s) => str_contains(strtolower($s['rol']), 'demandado'))
-                            ->pluck('nombre')->unique()->join(', ');
-                        if ($demandados) {
-                            $updates['opposing_party'] = $demandados;
+                        if (! is_dir(dirname($path))) {
+                            mkdir(dirname($path), 0755, true);
                         }
-                    }
 
-                    // Actualizar descripcion con sujetos actualizados
-                    $description = "Importado desde Rama Judicial\n";
-                    $description .= "Tipo: {$info['tipo_proceso']}\nClase: {$info['clase_proceso']}\n";
-                    $description .= "Departamento: {$info['departamento']}\n";
-                    $description .= "Despacho: {$info['despacho']}\n";
-                    if (! empty($info['ponente'])) {
-                        $description .= "Ponente: {$info['ponente']}\n";
-                    }
-                    if (! empty($info['sujetos'])) {
-                        $description .= "\nSujetos procesales:\n";
-                        foreach ($info['sujetos'] as $s) {
-                            $description .= "- {$s['rol']}: {$s['nombre']}\n";
+                        $pdf->save($path);
+                        $this->js("window.location.href = '".route('download.file', $fileName)."'");
+                    }),
+                Action::make('sync_tyba')
+                    ->label('Sincronizar Rama Judicial')
+                    ->icon('heroicon-o-arrow-path')
+                    ->visible(fn () => (bool) $this->record->external_case_number)
+                    ->requiresConfirmation()
+                    ->modalHeading('Sincronizar con Rama Judicial')
+                    ->modalDescription(fn () => "Se consultara el radicado {$this->record->external_case_number} en la API de la Rama Judicial para actualizar datos del proceso y registrar nuevas actuaciones.")
+                    ->modalSubmitActionLabel('Sincronizar')
+                    ->action(function () {
+                        $tyba = app(TybaService::class);
+                        $info = $tyba->extractProcessInfo($this->record->external_case_number);
+
+                        if (! $info) {
+                            TybaSyncLog::create([
+                                'legal_case_id' => $this->record->id,
+                                'status' => 'error',
+                                'mensaje' => 'No se pudo consultar el radicado',
+                                'origen' => 'manual',
+                            ]);
+
+                            Notification::make()
+                                ->title('No se pudo consultar')
+                                ->body('Verifique que el radicado sea correcto.')
+                                ->danger()
+                                ->send();
+
+                            return;
                         }
-                    }
-                    $updates['description'] = $description;
 
-                    $this->record->update($updates);
+                        // Actualizar datos del caso
+                        $updates = [
+                            'last_tyba_sync' => now(),
+                            'tyba_data' => collect($info)->except(['sujetos', 'actuaciones'])->toArray(),
+                        ];
 
-                    // Registrar actuaciones nuevas
-                    $newCount = 0;
-                    foreach ($info['actuaciones'] as $a) {
-                        $date = null;
-                        foreach (['d/m/Y', 'Y-m-d'] as $fmt) {
-                            try {
-                                $date = Carbon::createFromFormat($fmt, trim($a['fecha']));
+                        if (! empty($info['despacho'])) {
+                            $updates['court'] = $info['despacho'];
+                        }
+                        if (! empty($info['ponente'])) {
+                            $updates['judge'] = mb_convert_case(mb_strtolower($info['ponente']), MB_CASE_TITLE, 'UTF-8');
+                        }
 
-                                break;
-                            } catch (\Exception) {
+                        // Actualizar contraparte si no tiene
+                        if (empty($this->record->opposing_party) && ! empty($info['sujetos'])) {
+                            $demandados = collect($info['sujetos'])
+                                ->filter(fn ($s) => str_contains(strtolower($s['rol']), 'demandado'))
+                                ->pluck('nombre')->unique()->join(', ');
+                            if ($demandados) {
+                                $updates['opposing_party'] = $demandados;
                             }
                         }
 
-                        if (! $date) {
-                            continue;
+                        // Actualizar descripcion con sujetos actualizados
+                        $description = "Importado desde Rama Judicial\n";
+                        $description .= "Tipo: {$info['tipo_proceso']}\nClase: {$info['clase_proceso']}\n";
+                        $description .= "Departamento: {$info['departamento']}\n";
+                        $description .= "Despacho: {$info['despacho']}\n";
+                        if (! empty($info['ponente'])) {
+                            $description .= "Ponente: {$info['ponente']}\n";
+                        }
+                        if (! empty($info['sujetos'])) {
+                            $description .= "\nSujetos procesales:\n";
+                            foreach ($info['sujetos'] as $s) {
+                                $description .= "- {$s['rol']}: {$s['nombre']}\n";
+                            }
+                        }
+                        $updates['description'] = $description;
+
+                        $this->record->update($updates);
+
+                        // Registrar actuaciones nuevas
+                        $newCount = 0;
+                        foreach ($info['actuaciones'] as $a) {
+                            $date = null;
+                            foreach (['d/m/Y', 'Y-m-d'] as $fmt) {
+                                try {
+                                    $date = Carbon::createFromFormat($fmt, trim($a['fecha']));
+
+                                    break;
+                                } catch (\Exception) {
+                                }
+                            }
+
+                            if (! $date) {
+                                continue;
+                            }
+
+                            $title = $a['tipo'].($a['ciclo'] ? " ({$a['ciclo']})" : '');
+
+                            $exists = CaseEvent::where('legal_case_id', $this->record->id)
+                                ->where('event_date', $date)
+                                ->where('title', $title)
+                                ->exists();
+
+                            if (! $exists) {
+                                CaseEvent::create([
+                                    'legal_case_id' => $this->record->id,
+                                    'title' => $title,
+                                    'event_date' => $date,
+                                    'event_type' => 'actuacion',
+                                    'description' => ($a['anotacion'] ?: 'Sincronizado desde Rama Judicial.').' Radicado: '.$this->record->external_case_number,
+                                    'user_id' => auth()->id(),
+                                ]);
+                                $newCount++;
+                            }
                         }
 
-                        $title = $a['tipo'].($a['ciclo'] ? " ({$a['ciclo']})" : '');
+                        $totalActuaciones = count($info['actuaciones']);
 
-                        $exists = CaseEvent::where('legal_case_id', $this->record->id)
-                            ->where('event_date', $date)
-                            ->where('title', $title)
-                            ->exists();
+                        TybaSyncLog::create([
+                            'legal_case_id' => $this->record->id,
+                            'status' => $newCount > 0 ? 'ok' : 'sin_cambios',
+                            'nuevas_actuaciones' => $newCount,
+                            'mensaje' => $newCount > 0
+                                ? "{$newCount} nueva(s) actuacion(es) de {$totalActuaciones} totales"
+                                : "Sin novedades. {$totalActuaciones} actuaciones verificadas",
+                            'origen' => 'manual',
+                        ]);
 
-                        if (! $exists) {
-                            CaseEvent::create([
-                                'legal_case_id' => $this->record->id,
-                                'title' => $title,
-                                'event_date' => $date,
-                                'event_type' => 'actuacion',
-                                'description' => ($a['anotacion'] ?: 'Sincronizado desde Rama Judicial.').' Radicado: '.$this->record->external_case_number,
-                                'user_id' => auth()->id(),
-                            ]);
-                            $newCount++;
+                        if ($newCount > 0) {
+                            Notification::make()
+                                ->title('Sincronizacion exitosa')
+                                ->body("Datos del caso actualizados. Se encontraron {$totalActuaciones} actuaciones, {$newCount} nueva(s) registradas.")
+                                ->success()
+                                ->persistent()
+                                ->send();
+                        } else {
+                            Notification::make()
+                                ->title('Caso actualizado')
+                                ->body("Datos del proceso actualizados. Las {$totalActuaciones} actuaciones ya estaban registradas.")
+                                ->info()
+                                ->send();
                         }
-                    }
+                    }),
+            ])
+                ->label('Acciones')
+                ->icon('heroicon-o-bolt')
+                ->color('primary')
+                ->button(),
+            ActionGroup::make([
+                    Action::make('compartir')
+                        ->label('Compartir con Cliente')
+                        ->icon('heroicon-o-share')
+                        ->modalWidth('lg')
+                        ->modalHeading('Compartir Portal con Cliente')
+                        ->modalSubmitActionLabel('Copiar enlace')
+                        ->modalCancelActionLabel('Cerrar')
+                        ->form(function () {
+                            $record = $this->record;
 
-                    $totalActuaciones = count($info['actuaciones']);
+                            if (! $record->portal_token) {
+                                $record->generatePortalToken();
+                                $record->refresh();
+                            }
 
-                    TybaSyncLog::create([
-                        'legal_case_id' => $this->record->id,
-                        'status' => $newCount > 0 ? 'ok' : 'sin_cambios',
-                        'nuevas_actuaciones' => $newCount,
-                        'mensaje' => $newCount > 0
-                            ? "{$newCount} nueva(s) actuacion(es) de {$totalActuaciones} totales"
-                            : "Sin novedades. {$totalActuaciones} actuaciones verificadas",
-                        'origen' => 'manual',
-                    ]);
+                            $url = route('portal.show', $record->portal_token);
 
-                    if ($newCount > 0) {
-                        Notification::make()
-                            ->title('Sincronizacion exitosa')
-                            ->body("Datos del caso actualizados. Se encontraron {$totalActuaciones} actuaciones, {$newCount} nueva(s) registradas.")
-                            ->success()
-                            ->persistent()
-                            ->send();
-                    } else {
-                        Notification::make()
-                            ->title('Caso actualizado')
-                            ->body("Datos del proceso actualizados. Las {$totalActuaciones} actuaciones ya estaban registradas.")
-                            ->info()
-                            ->send();
-                    }
-                }),
-            Action::make('compartir')
-                ->label('Compartir con Cliente')
-                ->icon('heroicon-o-share')
+                            return [
+                                Placeholder::make('security_info')
+                                    ->label('')
+                                    ->content(
+                                        "Este enlace permite al cliente ver el estado de su caso. Al compartirlo tenga en cuenta:\n\n"
+                                        ."- El enlace es unico y exclusivo para este caso\n"
+                                        ."- El cliente debera aceptar los terminos de uso antes de ver la informacion\n"
+                                        ."- Se registra la IP y fecha de cada acceso para trazabilidad\n"
+                                        ."- La informacion esta protegida por el secreto profesional (Art. 74 CP)\n"
+                                        .'- Puede desactivar el portal en cualquier momento'
+                                    ),
+                                TextInput::make('portal_url')
+                                    ->label('Enlace del portal')
+                                    ->default($url)
+                                    ->readOnly(),
+                            ];
+                        })
+                        ->action(function () {
+                            $url = route('portal.show', $this->record->portal_token);
+                            $this->js("navigator.clipboard.writeText('".$url."')");
+                            Notification::make()->title('Enlace copiado al portapapeles')->success()->send();
+                        }),
+                    Action::make('toggle_portal')
+                        ->label(fn () => $this->record->portal_enabled ? 'Desactivar Portal' : 'Activar Portal')
+                        ->icon(fn () => $this->record->portal_enabled ? 'heroicon-o-eye-slash' : 'heroicon-o-eye')
+                        ->color(fn () => $this->record->portal_enabled ? 'danger' : 'success')
+                        ->requiresConfirmation()
+                        ->modalHeading(fn () => $this->record->portal_enabled ? 'Desactivar portal del cliente' : 'Activar portal del cliente')
+                        ->modalDescription(fn () => $this->record->portal_enabled
+                            ? 'El cliente ya no podra ver el estado de su caso.'
+                            : 'El cliente podra ver el estado de su caso a traves del enlace.')
+                        ->action(function () {
+                            $record = $this->record;
+
+                            if (! $record->portal_token) {
+                                $record->generatePortalToken();
+                            } else {
+                                $record->update(['portal_enabled' => ! $record->portal_enabled]);
+                            }
+
+                            $status = $record->fresh()->portal_enabled ? 'activado' : 'desactivado';
+                            Notification::make()->title("Portal {$status}")->success()->send();
+                        }),
+                    Action::make('toggle_auto_report')
+                        ->label(fn () => $this->record->auto_report_enabled ? 'Desactivar Reporte Mensual' : 'Activar Reporte Mensual')
+                        ->icon(fn () => $this->record->auto_report_enabled ? 'heroicon-o-envelope-open' : 'heroicon-o-envelope')
+                        ->color(fn () => $this->record->auto_report_enabled ? 'danger' : 'success')
+                        ->requiresConfirmation()
+                        ->modalHeading(fn () => $this->record->auto_report_enabled ? 'Desactivar reporte mensual' : 'Activar reporte mensual')
+                        ->modalDescription(fn () => $this->record->auto_report_enabled
+                            ? 'El cliente dejara de recibir el reporte mensual por correo electronico.'
+                            : "El dia 1 de cada mes se enviara automaticamente un PDF con el resumen del caso al correo del cliente ({$this->record->client->email}). Incluye actuaciones, flujo procesal y vencimientos.")
+                        ->action(function () {
+                            $this->record->update(['auto_report_enabled' => ! $this->record->auto_report_enabled]);
+                            $status = $this->record->fresh()->auto_report_enabled ? 'activado' : 'desactivado';
+
+                            Notification::make()->title("Reporte mensual {$status}")
+                                ->body($this->record->auto_report_enabled
+                                    ? "El dia 1 de cada mes se enviara un PDF al correo del cliente ({$this->record->client->email})."
+                                    : 'No se enviaran reportes automaticos para este caso.')
+                                ->success()
+                                ->send();
+                        }),
+            ])
+                ->label('Cliente')
+                ->icon('heroicon-o-user-circle')
                 ->color('info')
-                ->modalWidth('lg')
-                ->modalHeading('Compartir Portal con Cliente')
-                ->modalSubmitActionLabel('Copiar enlace')
-                ->modalCancelActionLabel('Cerrar')
-                ->form(function () {
-                    $record = $this->record;
-
-                    if (! $record->portal_token) {
-                        $record->generatePortalToken();
-                        $record->refresh();
-                    }
-
-                    $url = route('portal.show', $record->portal_token);
-
-                    return [
-                        Placeholder::make('security_info')
-                            ->label('')
-                            ->content(
-                                "Este enlace permite al cliente ver el estado de su caso. Al compartirlo tenga en cuenta:\n\n"
-                                ."- El enlace es unico y exclusivo para este caso\n"
-                                ."- El cliente debera aceptar los terminos de uso antes de ver la informacion\n"
-                                ."- Se registra la IP y fecha de cada acceso para trazabilidad\n"
-                                ."- La informacion esta protegida por el secreto profesional (Art. 74 CP)\n"
-                                .'- Puede desactivar el portal en cualquier momento'
-                            ),
-                        TextInput::make('portal_url')
-                            ->label('Enlace del portal')
-                            ->default($url)
-                            ->readOnly(),
-                    ];
-                })
-                ->action(function () {
-                    $url = route('portal.show', $this->record->portal_token);
-                    $this->js("navigator.clipboard.writeText('".$url."')");
-                    Notification::make()->title('Enlace copiado al portapapeles')->success()->send();
-                }),
-            Action::make('toggle_portal')
-                ->label(fn () => $this->record->portal_enabled ? 'Desactivar Portal' : 'Activar Portal')
-                ->icon(fn () => $this->record->portal_enabled ? 'heroicon-o-eye-slash' : 'heroicon-o-eye')
-                ->color(fn () => $this->record->portal_enabled ? 'danger' : 'success')
-                ->action(function () {
-                    $record = $this->record;
-
-                    if (! $record->portal_token) {
-                        $record->generatePortalToken();
-                    } else {
-                        $record->update(['portal_enabled' => ! $record->portal_enabled]);
-                    }
-
-                    $status = $record->fresh()->portal_enabled ? 'activado' : 'desactivado';
-
-                    Notification::make()->title("Portal {$status}")->success()->send();
-                })
-                ->requiresConfirmation()
-                ->modalHeading(fn () => $this->record->portal_enabled ? 'Desactivar portal del cliente' : 'Activar portal del cliente')
-                ->modalDescription(fn () => $this->record->portal_enabled
-                    ? 'El cliente ya no podra ver el estado de su caso.'
-                    : 'El cliente podra ver el estado de su caso a traves del enlace.'),
-            Action::make('toggle_auto_report')
-                ->label(fn () => $this->record->auto_report_enabled ? 'Desactivar Reporte Mensual' : 'Activar Reporte Mensual')
-                ->icon(fn () => $this->record->auto_report_enabled ? 'heroicon-o-envelope-open' : 'heroicon-o-envelope')
-                ->color(fn () => $this->record->auto_report_enabled ? 'danger' : 'success')
-                ->action(function () {
-                    $this->record->update(['auto_report_enabled' => ! $this->record->auto_report_enabled]);
-                    $status = $this->record->fresh()->auto_report_enabled ? 'activado' : 'desactivado';
-
-                    Notification::make()->title("Reporte mensual {$status}")
-                        ->body($this->record->auto_report_enabled
-                            ? "El dia 1 de cada mes se enviara un PDF con el resumen del caso al correo del cliente ({$this->record->client->email})."
-                            : 'No se enviaran reportes automaticos para este caso.')
-                        ->success()
-                        ->send();
-                })
-                ->requiresConfirmation()
-                ->modalHeading(fn () => $this->record->auto_report_enabled ? 'Desactivar reporte mensual' : 'Activar reporte mensual')
-                ->modalDescription(fn () => $this->record->auto_report_enabled
-                    ? 'El cliente dejara de recibir el reporte mensual por correo electronico.'
-                    : "El dia 1 de cada mes se enviara automaticamente un PDF con el resumen del caso al correo del cliente ({$this->record->client->email}). Incluye actuaciones, flujo procesal y vencimientos."),
+                ->button(),
             EditAction::make()
-                ->label('Editar Caso'),
+                ->label('Editar'),
         ];
     }
 
