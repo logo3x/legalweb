@@ -5,7 +5,7 @@
 @section('content')
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 prose prose-gray max-w-none">
         <h1>Terminos y Condiciones de Uso</h1>
-        <p class="text-sm text-gray-500">Ultima actualizacion: 05 de abril de 2026 | Version 2.0</p>
+        <p class="text-sm text-gray-500">Ultima actualizacion: 07 de abril de 2026 | Version 3.0</p>
 
         <h2>1. Objeto y Naturaleza del Servicio</h2>
         <p>LegalWeb (en adelante "la Plataforma") es una herramienta tecnologica de gestion juridica de tipo Software como Servicio (SaaS) que permite a abogados y firmas de abogados administrar casos, documentos, actuaciones, flujos procesales y comunicaciones con sus clientes.</p>
@@ -91,7 +91,29 @@
         <h2>9. Propiedad Intelectual</h2>
         <p>Todos los elementos de la Plataforma (diseno, codigo fuente, logotipos, textos, interfaces, algoritmos) son propiedad exclusiva de LegalWeb y estan protegidos por la legislacion colombiana e internacional de propiedad intelectual (Ley 23 de 1982, Ley 1915 de 2018, Decision Andina 351 de 1993). Se prohibe su reproduccion, modificacion, distribucion o uso no autorizado.</p>
 
-        <h2>10. Limitacion de Responsabilidad</h2>
+        <h2>10. Datos de la Rama Judicial y Fuentes Externas</h2>
+        <p>La Plataforma permite consultar informacion publica de procesos judiciales a traves de la API de la Rama Judicial de Colombia (consultaprocesos.ramajudicial.gov.co). El Usuario reconoce y acepta que:</p>
+        <ul>
+            <li>LegalWeb actua como <strong>intermediario tecnologico</strong> que facilita el acceso a informacion publica. No es fuente primaria de la informacion judicial.</li>
+            <li>La informacion proviene directamente de los sistemas de la Rama Judicial y puede contener <strong>errores, omisiones o retrasos</strong> en la actualizacion.</li>
+            <li>LegalWeb <strong>no garantiza</strong> la exactitud, completitud, oportunidad ni vigencia de los datos consultados de la Rama Judicial.</li>
+            <li>Los plazos y vencimientos calculados son <strong>estimaciones</strong> basadas en el calendario judicial y las normas procesales vigentes. NO sustituyen la obligacion del abogado de verificar los plazos directamente en el expediente.</li>
+            <li>La sincronizacion automatica de actuaciones es una <strong>herramienta complementaria</strong>. La falta de sincronizacion, retrasos o errores en la misma NO eximen al abogado de su deber de seguimiento procesal.</li>
+            <li>LegalWeb <strong>no es responsable</strong> por la indisponibilidad del servicio de la Rama Judicial ni por cambios en su API o estructura de datos.</li>
+            <li>El uso de la informacion judicial consultada se rige por las condiciones de uso de la Rama Judicial de Colombia.</li>
+        </ul>
+
+        <h2>11. Provision del Servicio "Tal Cual" (As-Is)</h2>
+        <p>La Plataforma se proporciona <strong>"TAL CUAL" y "SEGUN DISPONIBILIDAD"</strong>, sin garantias de ningun tipo, ya sean expresas o implicitas, incluyendo pero no limitandose a:</p>
+        <ul>
+            <li>Garantias de comerciabilidad, idoneidad para un proposito particular o no infraccion.</li>
+            <li>Garantias de que el servicio sera ininterrumpido, oportuno, seguro o libre de errores.</li>
+            <li>Garantias de que los resultados obtenidos seran precisos o confiables.</li>
+            <li>Garantias de que la calidad de cualquier servicio, informacion u otro material obtenido cumplira con las expectativas del usuario.</li>
+        </ul>
+        <p>El Usuario asume <strong>todo el riesgo</strong> en cuanto a la calidad y el rendimiento de la Plataforma. En ningun caso LegalWeb, sus directores, desarrolladores, empleados o proveedores seran responsables por danos directos, indirectos, incidentales, especiales, consecuentes o punitivos derivados del uso o la imposibilidad de uso de la Plataforma.</p>
+
+        <h2>12. Exencion y Limitacion de Responsabilidad</h2>
         <p>LegalWeb:</p>
         <ul>
             <li><strong>No es responsable</strong> por el resultado de los procesos legales gestionados a traves de la Plataforma.</li>
@@ -103,7 +125,7 @@
             <li>La responsabilidad maxima de LegalWeb por cualquier reclamacion no excedera el valor pagado por el Usuario en los ultimos <strong>doce (12) meses</strong> de servicio.</li>
         </ul>
 
-        <h2>11. Indemnizacion</h2>
+        <h2>13. Indemnizacion</h2>
         <p>El Usuario se compromete a indemnizar y mantener indemne a LegalWeb, sus directores, empleados y representantes, de cualquier reclamacion, demanda, perdida, dano o gasto (incluyendo honorarios de abogados) que surja de:</p>
         <ul>
             <li>El incumplimiento de estos Terminos.</li>
@@ -113,7 +135,7 @@
             <li>El uso de contenidos generados por IA sin la debida revision profesional.</li>
         </ul>
 
-        <h2>12. Planes y Pagos</h2>
+        <h2>14. Planes y Pagos</h2>
         <ul>
             <li>La Plataforma ofrece planes con diferentes niveles de funcionalidad y capacidad.</li>
             <li>Los pagos se realizan a traves de la pasarela Wompi y se rigen por sus terminos de servicio.</li>
@@ -122,7 +144,7 @@
             <li>LegalWeb se reserva el derecho de modificar los precios con <strong>treinta (30) dias</strong> de preaviso.</li>
         </ul>
 
-        <h2>13. Suspension y Terminacion</h2>
+        <h2>15. Suspension y Terminacion</h2>
         <p>LegalWeb se reserva el derecho de suspender o terminar el acceso cuando:</p>
         <ul>
             <li>Se detecte uso indebido, fraudulento o contrario a estos terminos.</li>
@@ -133,14 +155,14 @@
         </ul>
         <p>El Usuario puede cancelar su cuenta en cualquier momento. Aplica la clausula de retencion de datos del numeral 8.</p>
 
-        <h2>14. Disponibilidad y Mantenimiento</h2>
+        <h2>16. Disponibilidad y Mantenimiento</h2>
         <ul>
             <li>LegalWeb realizara mantenimientos programados preferiblemente en horarios de baja demanda.</li>
             <li>Se notificaran mantenimientos mayores con al menos <strong>24 horas</strong> de anticipacion.</li>
             <li>LegalWeb no sera responsable por interrupciones causadas por terceros (proveedores de hosting, internet, ataques informaticos).</li>
         </ul>
 
-        <h2>15. Ley Aplicable y Resolucion de Controversias</h2>
+        <h2>17. Ley Aplicable y Resolucion de Controversias</h2>
         <p>Estos terminos se rigen por las leyes de la Republica de Colombia. Las partes acuerdan:</p>
         <ul>
             <li>Intentar resolver cualquier controversia de manera directa y amigable.</li>
@@ -148,17 +170,17 @@
             <li>Subsidiariamente, someterse a la jurisdiccion de los jueces y tribunales de Bogota D.C., Colombia.</li>
         </ul>
 
-        <h2>16. Modificaciones</h2>
+        <h2>18. Modificaciones</h2>
         <p>LegalWeb se reserva el derecho de modificar estos terminos. Los cambios seran notificados con al menos <strong>quince (15) dias</strong> de antelacion. El uso continuado despues de la fecha de vigencia constituye aceptacion de los nuevos terminos. Para cambios sustanciales se requerira aceptacion expresa.</p>
 
-        <h2>17. Disposiciones Finales</h2>
+        <h2>19. Disposiciones Finales</h2>
         <ul>
             <li>Si alguna clausula es declarada nula o inaplicable, las demas mantendran plena vigencia.</li>
             <li>La falta de ejercicio de un derecho no constituye renuncia al mismo.</li>
             <li>Estos terminos constituyen el acuerdo completo entre las partes respecto al uso de la Plataforma.</li>
         </ul>
 
-        <h2>18. Contacto</h2>
+        <h2>20. Contacto</h2>
         <p>Para consultas sobre estos terminos: <strong>contacto@legalweb.com.co</strong></p>
         <p>Para solicitudes de datos personales: <strong>datos@legalweb.com.co</strong></p>
     </div>
