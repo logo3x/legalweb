@@ -1,14 +1,13 @@
-{{-- Descripcion --}}
-<div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
-    <div style="display: flex; align-items: flex-start; gap: 12px;">
-        <div style="flex-shrink: 0; margin-top: 2px;">
-            <svg style="width: 20px; height: 20px; color: #3b82f6;" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/></svg>
-        </div>
-        <div style="font-size: 13px; color: #1e40af; line-height: 1.5;">
-            Este panel muestra los plazos y vencimientos de sus procesos judiciales. Las alertas se generan automaticamente cuando la Rama Judicial registra actuaciones como autos, traslados, audiencias o sentencias. Los plazos se calculan en dias habiles segun el calendario judicial colombiano (excluyendo fines de semana, festivos y vacancia judicial).
-        </div>
+{{-- Descripcion colapsable --}}
+<details style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; margin-bottom: 24px;">
+    <summary style="padding: 12px 16px; cursor: pointer; font-size: 13px; font-weight: 500; color: #1e40af; list-style: none; display: flex; align-items: center; gap: 8px;">
+        <svg style="width: 16px; height: 16px;" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/></svg>
+        Como funcionan los vencimientos
+    </summary>
+    <div style="padding: 0 16px 12px 16px; font-size: 13px; color: #1e40af; line-height: 1.5;">
+        Este panel muestra los plazos y vencimientos de sus procesos judiciales. Las alertas se generan automaticamente cuando la Rama Judicial registra actuaciones como autos, traslados, audiencias o sentencias. Los plazos se calculan en dias habiles segun el calendario judicial colombiano (excluyendo fines de semana, festivos y vacancia judicial).
     </div>
-</div>
+</details>
 
 {{-- Resumen --}}
 <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 24px;">

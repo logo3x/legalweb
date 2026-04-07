@@ -34,12 +34,6 @@ class ListReminders extends ListRecords
             ->components([
                 Tabs::make('agenda')
                     ->tabs([
-                        Tab::make('Vencimientos')
-                            ->icon('heroicon-o-clock')
-                            ->schema([
-                                View::make('filament.partials.deadlines-content')
-                                    ->viewData(['data' => $this->getDeadlinesData()]),
-                            ]),
                         Tab::make('Recordatorios')
                             ->icon('heroicon-o-bell')
                             ->badge(fn () => Reminder::where('user_id', auth()->id())
@@ -48,14 +42,21 @@ class ListReminders extends ListRecords
                                 ->count() ?: null)
                             ->badgeColor('danger')
                             ->schema([
-                                Section::make()
+                                Section::make('Acerca de los recordatorios')
                                     ->schema([
-                                        Text::make('Organice su practica legal con recordatorios de audiencias, vencimientos de terminos, reuniones y tareas. Los recordatorios se crean automaticamente al sincronizar con la Rama Judicial, o puede crearlos manualmente.')
+                                        Text::make('Organice su practica legal con recordatorios de audiencias, vencimientos de terminos, reuniones y tareas. Los recordatorios se crean automaticamente al sincronizar con la Rama Judicial, o puede crearlos manualmente. Recibira alertas por email antes de cada evento.')
                                             ->color('neutral'),
                                     ])
                                     ->collapsible()
+                                    ->collapsed()
                                     ->compact(),
                                 EmbeddedTable::make(),
+                            ]),
+                        Tab::make('Vencimientos')
+                            ->icon('heroicon-o-clock')
+                            ->schema([
+                                View::make('filament.partials.deadlines-content')
+                                    ->viewData(['data' => $this->getDeadlinesData()]),
                             ]),
                     ])
                     ->persistTabInQueryString('tab'),
