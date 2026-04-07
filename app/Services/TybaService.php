@@ -143,14 +143,44 @@ class TybaService
      */
     private function searchByRadicado(string $radicado): ?array
     {
-        $response = Http::timeout(15)
-            ->get("{$this->apiBase}/Procesos/Consulta/NumeroRadicacion", [
-                'numero' => $radicado,
-                'pagina' => 1,
-            ]);
+        $response = null;
 
-        if (! $response->successful()) {
-            Log::error('Tyba API: error en busqueda', ['status' => $response->status()]);
+        // Reintentar hasta 3 veces si la API falla (503, timeout, etc)
+        for ($attempt = 1; $attempt <= 3; $attempt++) {
+            try {
+                $response = Http::timeout(20)
+                    ->get("{$this->apiBase}/Procesos/Consulta/NumeroRadicacion", [
+                        'numero' => $radicado,
+                        'pagina' => 1,
+                    ]);
+
+                if ($response->successful() && $response->json('procesos') !== null) {
+                    break;
+                }
+
+                Log::warning('Tyba API: reintento busqueda', [
+                    'attempt' => $attempt,
+                    'status' => $response?->status(),
+                    'radicado' => $radicado,
+                ]);
+            } catch (\Exception $e) {
+                Log::warning('Tyba API: error conexion', [
+                    'attempt' => $attempt,
+                    'error' => $e->getMessage(),
+                    'radicado' => $radicado,
+                ]);
+            }
+
+            if ($attempt < 3) {
+                sleep(2);
+            }
+        }
+
+        if (! $response || ! $response->successful()) {
+            Log::error('Tyba API: error en busqueda despues de 3 intentos', [
+                'status' => $response?->status(),
+                'radicado' => $radicado,
+            ]);
 
             return null;
         }
@@ -159,7 +189,7 @@ class TybaService
         $procesos = $data['procesos'] ?? [];
 
         if (empty($procesos)) {
-            Log::error('Tyba API: proceso no encontrado', ['radicado' => $radicado]);
+            Log::info('Tyba API: proceso no encontrado', ['radicado' => $radicado]);
 
             return null;
         }
@@ -182,12 +212,25 @@ class TybaService
      */
     private function getDetail(int $idProceso, int $idConexion): ?array
     {
-        $response = Http::timeout(15)
-            ->get("{$this->apiBase}/Proceso/Detalle/{$idProceso}", [
-                'idConexion' => $idConexion,
-            ]);
+        for ($attempt = 1; $attempt <= 3; $attempt++) {
+            try {
+                $response = Http::timeout(20)
+                    ->get("{$this->apiBase}/Proceso/Detalle/{$idProceso}", [
+                        'idConexion' => $idConexion,
+                    ]);
 
-        return $response->successful() ? $response->json() : null;
+                if ($response->successful() && $response->json('despacho') !== null) {
+                    return $response->json();
+                }
+            } catch (\Exception) {
+            }
+
+            if ($attempt < 3) {
+                sleep(1);
+            }
+        }
+
+        return null;
     }
 
     /**
