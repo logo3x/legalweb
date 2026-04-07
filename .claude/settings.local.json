@@ -59,7 +59,10 @@
       "Bash(curl -s \"https://consultaprocesos.ramajudicial.gov.co:448/api/v2/Procesos/Consulta/NumeroRadicacion?numero=76001333302120230026600&pagina=1\")",
       "Bash(curl -s \"https://consultaprocesos.ramajudicial.gov.co:448/api/v2/Procesos/Consulta/NumeroRadicacion?numero=76001400300620160084800&pagina=1\")",
       "Bash(curl -s \"https://consultaprocesos.ramajudicial.gov.co:448/api/v2/Procesos/Consulta/NumeroRadicacion?numero=76001400301620230011500&pagina=1\")",
-      "Bash(php -l routes/web.php)"
+      "Bash(php -l routes/web.php)",
+      "Bash(php -l app/Filament/Resources/LegalCases/Pages/ViewLegalCase.php)",
+      "Bash(php -l app/Console/Commands/SendMonthlyReports.php)",
+      "Bash(php -l app/Notifications/MonthlyReportNotification.php)"
     ]
   }
 }

@@ -4,10 +4,12 @@ namespace App\Filament\Resources\LegalCases\Pages;
 
 use App\Filament\Resources\LegalCases\LegalCaseResource;
 use App\Models\CaseEvent;
+use App\Models\Reminder;
 use App\Models\TybaSyncLog;
 use App\Services\AIService;
 use App\Services\DocumentGenerator;
 use App\Services\TybaService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
@@ -127,6 +129,56 @@ class ViewLegalCase extends ViewRecord
                 ->icon('heroicon-o-sparkles')
                 ->color('warning')
                 ->button(),
+            Action::make('download_report')
+                ->label('Reporte PDF')
+                ->icon('heroicon-o-document-arrow-down')
+                ->color('gray')
+                ->action(function () {
+                    $case = $this->record->load(['client', 'user', 'user.firm', 'caseType', 'flowProgress.flowStep']);
+                    $firm = $case->user?->firm;
+
+                    $actuaciones = CaseEvent::where('legal_case_id', $case->id)
+                        ->where('event_date', '>=', now()->subDays(30))
+                        ->orderBy('event_date')
+                        ->get();
+
+                    $vencimientos = Reminder::where('legal_case_id', $case->id)
+                        ->where('is_completed', false)
+                        ->where('due_date', '>=', now())
+                        ->orderBy('due_date')
+                        ->limit(10)
+                        ->get();
+
+                    $syncCount = TybaSyncLog::where('legal_case_id', $case->id)
+                        ->where('created_at', '>=', now()->subDays(30))
+                        ->count();
+
+                    $pdf = Pdf::loadView('reports.monthly-case-report', [
+                        'case' => $case,
+                        'client' => $case->client,
+                        'firm' => $firm,
+                        'periodo' => now()->translatedFormat('F Y'),
+                        'generated_at' => now(),
+                        'actuaciones' => $actuaciones,
+                        'vencimientos' => $vencimientos,
+                        'flowProgress' => $case->flowProgress->sortBy('flowStep.order'),
+                        'resumen' => [
+                            'nuevas_actuaciones' => $actuaciones->count(),
+                            'recordatorios_pendientes' => $vencimientos->count(),
+                            'sincronizaciones' => $syncCount,
+                        ],
+                    ])->setPaper('letter');
+
+                    $fileName = "reporte_{$case->case_number}_".now()->format('Y_m_d').'.pdf';
+                    $path = storage_path("app/public/generated/{$fileName}");
+
+                    if (! is_dir(dirname($path))) {
+                        mkdir(dirname($path), 0755, true);
+                    }
+
+                    $pdf->save($path);
+                    $this->js("window.location.href = '".route('download.file', $fileName)."'");
+                }),
             Action::make('sync_tyba')
                 ->label('Sincronizar Tyba')
                 ->icon('heroicon-o-arrow-path')

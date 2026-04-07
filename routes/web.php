@@ -1,6 +1,7 @@
 <?php
 
 use App\Console\Commands\CheckDeadlines;
+use App\Console\Commands\SendMonthlyReports;
 use App\Console\Commands\SyncTybaActuaciones;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\PortalController;
@@ -162,6 +163,15 @@ Route::get('/cron/{token}/{task?}', function (string $token, ?string $task = nul
             }
         }
         $results[] = "queue: {$processed} job(s) procesados";
+    }
+
+    // Tarea: monthly-reports (dia 1 de cada mes a las 7am)
+    if ($task === 'monthly-reports') {
+        $command = new SendMonthlyReports;
+        $command->setLaravel(app());
+        $command->setOutput(new BufferedOutput);
+        $command->handle();
+        $results[] = 'monthly-reports: OK';
     }
 
     return response()->json([
