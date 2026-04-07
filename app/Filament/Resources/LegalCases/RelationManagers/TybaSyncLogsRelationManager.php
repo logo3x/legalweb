@@ -49,7 +49,9 @@ class TybaSyncLogsRelationManager extends RelationManager
                     }),
                 TextColumn::make('nuevas_actuaciones')
                     ->label('Nuevas')
-                    ->alignCenter(),
+                    ->alignCenter()
+                    ->color(fn (int $state): ?string => $state > 0 ? 'success' : null)
+                    ->weight(fn (int $state): ?string => $state > 0 ? 'bold' : null),
                 TextColumn::make('mensaje')
                     ->label('Detalle')
                     ->limit(60),

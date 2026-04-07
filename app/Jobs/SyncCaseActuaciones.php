@@ -7,6 +7,7 @@ use App\Models\LegalCase;
 use App\Models\Reminder;
 use App\Models\TybaSyncLog;
 use App\Notifications\TybaSyncNotification;
+use App\Services\JudicialCalendarService;
 use App\Services\TybaService;
 use Carbon\Carbon;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -127,34 +128,25 @@ class SyncCaseActuaciones implements ShouldQueue
     }
 
     /**
-     * Crear recordatorio para actuaciones relevantes con fechas futuras.
+     * Crear recordatorios inteligentes para actuaciones relevantes.
+     * Calcula plazos legales usando el calendario judicial colombiano.
      *
      * @param  array<string, mixed>  $actuacion
      */
     private function createReminderIfNeeded(array $actuacion, Carbon $date): void
     {
-        // Solo crear recordatorios para fechas futuras o recientes (ultimos 3 dias)
-        if ($date->lt(now()->subDays(3))) {
-            return;
-        }
-
         $tipo = strtolower($actuacion['tipo']);
 
-        // Tipos de actuaciones que merecen recordatorio
-        $esImportante = str_contains($tipo, 'auto') ||
-            str_contains($tipo, 'audiencia') ||
-            str_contains($tipo, 'sentencia') ||
-            str_contains($tipo, 'fija fecha') ||
-            str_contains($tipo, 'traslado') ||
-            str_contains($tipo, 'notificacion');
+        // Mapa de actuaciones importantes con plazo legal en dias habiles
+        $alertRules = $this->getAlertRules($tipo);
 
-        if (! $esImportante) {
+        if (! $alertRules) {
             return;
         }
 
         // Verificar que no exista ya
         $exists = Reminder::where('legal_case_id', $this->case->id)
-            ->where('due_date', $date)
+            ->where('due_date', '>=', $date)
             ->where('title', 'like', '%'.$actuacion['tipo'].'%')
             ->exists();
 
@@ -162,21 +154,117 @@ class SyncCaseActuaciones implements ShouldQueue
             return;
         }
 
-        $reminderType = str_contains($tipo, 'audiencia') ? 'audiencia' : 'vencimiento';
-        $priority = str_contains($tipo, 'sentencia') || str_contains($tipo, 'audiencia') ? 'alta' : 'media';
+        $calendar = app(JudicialCalendarService::class);
+
+        // Calcular fecha de vencimiento del plazo
+        $dueDate = $date;
+        if ($alertRules['dias'] > 0) {
+            $deadline = $calendar->calculateDeadline($date, $alertRules['dias'], 'business');
+            $dueDate = $deadline['deadline'];
+        }
+
+        // Solo crear si la fecha de vencimiento es futura o reciente
+        if ($dueDate->lt(now()->subDays(3))) {
+            return;
+        }
+
+        $diasRestantes = (int) now()->diffInDays($dueDate, false);
+        $priority = match (true) {
+            $diasRestantes <= 1 => 'urgente',
+            $diasRestantes <= 3 => 'alta',
+            $diasRestantes <= 7 => 'media',
+            default => 'baja',
+        };
+
+        // Sobreescribir prioridad para actuaciones criticas
+        if ($alertRules['prioridad_minima'] === 'alta' && $priority === 'baja') {
+            $priority = 'media';
+        }
+        if ($alertRules['prioridad_minima'] === 'urgente') {
+            $priority = 'urgente';
+        }
+
+        $plazoTexto = $alertRules['dias'] > 0
+            ? " (plazo: {$alertRules['dias']} dias habiles, vence {$dueDate->format('d/m/Y')})"
+            : '';
 
         Reminder::create([
             'firm_id' => $this->case->firm_id,
             'user_id' => $this->case->user_id,
             'legal_case_id' => $this->case->id,
             'title' => $actuacion['tipo'].' - '.$this->case->case_number,
-            'description' => "Actuacion detectada automaticamente desde Rama Judicial.\nRadicado: {$this->case->external_case_number}",
-            'type' => $reminderType,
-            'due_date' => $date,
-            'remind_at' => $date->copy()->subDay(),
+            'description' => "{$alertRules['descripcion']}{$plazoTexto}\n"
+                ."Actuacion del {$date->format('d/m/Y')} detectada automaticamente.\n"
+                ."Radicado: {$this->case->external_case_number}",
+            'type' => $alertRules['tipo_recordatorio'],
+            'due_date' => $dueDate,
+            'remind_at' => $dueDate->copy()->subDay()->setHour(8),
             'is_completed' => false,
             'priority' => $priority,
         ]);
+    }
+
+    /**
+     * Reglas de alerta segun tipo de actuacion.
+     * Dias = plazo legal en dias habiles desde la actuacion.
+     *
+     * @return array{dias: int, tipo_recordatorio: string, prioridad_minima: string, descripcion: string}|null
+     */
+    private function getAlertRules(string $tipo): ?array
+    {
+        return match (true) {
+            // Autos que requieren respuesta
+            str_contains($tipo, 'auto admite') => [
+                'dias' => 20, 'tipo_recordatorio' => 'vencimiento', 'prioridad_minima' => 'alta',
+                'descripcion' => 'Auto admisorio de demanda. Plazo para notificar y/o contestar.',
+            ],
+            str_contains($tipo, 'auto requiere') => [
+                'dias' => 5, 'tipo_recordatorio' => 'vencimiento', 'prioridad_minima' => 'alta',
+                'descripcion' => 'Requerimiento del despacho. Debe atenderse dentro del plazo.',
+            ],
+            str_contains($tipo, 'auto decide') => [
+                'dias' => 3, 'tipo_recordatorio' => 'vencimiento', 'prioridad_minima' => 'media',
+                'descripcion' => 'Auto con decision. Revisar si procede recurso de reposicion (3 dias) o apelacion.',
+            ],
+            str_contains($tipo, 'auto ordena') => [
+                'dias' => 5, 'tipo_recordatorio' => 'vencimiento', 'prioridad_minima' => 'media',
+                'descripcion' => 'Auto que ordena una actuacion. Verificar cumplimiento.',
+            ],
+            str_contains($tipo, 'auto reconoce') => [
+                'dias' => 0, 'tipo_recordatorio' => 'vencimiento', 'prioridad_minima' => 'media',
+                'descripcion' => 'Auto que reconoce personeria o apoderado. Verificar contenido.',
+            ],
+            str_contains($tipo, 'fija fecha') || str_contains($tipo, 'auto fija') => [
+                'dias' => 0, 'tipo_recordatorio' => 'audiencia', 'prioridad_minima' => 'alta',
+                'descripcion' => 'Se fijo fecha para diligencia o audiencia. Verificar fecha y preparar.',
+            ],
+
+            // Audiencias y sentencias
+            str_contains($tipo, 'audiencia') => [
+                'dias' => 0, 'tipo_recordatorio' => 'audiencia', 'prioridad_minima' => 'urgente',
+                'descripcion' => 'Audiencia programada. Preparar alegatos y pruebas.',
+            ],
+            str_contains($tipo, 'sentencia') => [
+                'dias' => 10, 'tipo_recordatorio' => 'vencimiento', 'prioridad_minima' => 'urgente',
+                'descripcion' => 'Sentencia proferida. Plazo para recurrir (apelacion).',
+            ],
+
+            // Traslados y notificaciones
+            str_contains($tipo, 'traslado') => [
+                'dias' => 3, 'tipo_recordatorio' => 'vencimiento', 'prioridad_minima' => 'alta',
+                'descripcion' => 'Traslado corrido. Plazo para pronunciarse.',
+            ],
+            str_contains($tipo, 'fijacion estado') => [
+                'dias' => 3, 'tipo_recordatorio' => 'vencimiento', 'prioridad_minima' => 'media',
+                'descripcion' => 'Notificacion por estado. El termino empieza a correr al dia siguiente.',
+            ],
+            str_contains($tipo, 'notificacion') => [
+                'dias' => 0, 'tipo_recordatorio' => 'vencimiento', 'prioridad_minima' => 'media',
+                'descripcion' => 'Notificacion realizada. Verificar contenido y plazos.',
+            ],
+
+            default => null,
+        };
     }
 
     private function parseDate(string $date): ?Carbon

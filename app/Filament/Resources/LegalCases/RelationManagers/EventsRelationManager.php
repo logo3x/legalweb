@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\LegalCases\RelationManagers;
 
+use App\Notifications\CaseUpdatedNotification;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
@@ -12,6 +13,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
@@ -75,7 +77,11 @@ class EventsRelationManager extends RelationManager
                     ->sortable(),
                 TextColumn::make('title')
                     ->label('Título')
-                    ->searchable(),
+                    ->searchable()
+                    ->weight(fn ($record) => $record->created_at?->gt(now()->subHours(24)) ? 'bold' : null)
+                    ->icon(fn ($record) => $record->created_at?->gt(now()->subHours(24)) ? 'heroicon-s-sparkles' : null)
+                    ->iconColor('warning')
+                    ->tooltip(fn ($record) => $record->created_at?->gt(now()->subHours(24)) ? 'Nueva - detectada en ultima sincronizacion' : null),
                 TextColumn::make('event_type')
                     ->label('Tipo')
                     ->badge()
@@ -85,11 +91,17 @@ class EventsRelationManager extends RelationManager
                         'notificacion' => 'info',
                         default => 'gray',
                     }),
+                TextColumn::make('description')
+                    ->label('Detalle')
+                    ->limit(40)
+                    ->placeholder('-')
+                    ->toggleable(isToggledHiddenByDefault: true),
                 IconColumn::make('is_milestone')
                     ->label('Hito')
                     ->boolean(),
                 TextColumn::make('user.name')
-                    ->label('Registrado por'),
+                    ->label('Registrado por')
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('event_date', 'desc')
             ->headerActions([
@@ -104,9 +116,9 @@ class EventsRelationManager extends RelationManager
                         $client = $case->client;
 
                         if ($client?->email) {
-                            $client->notify(new \App\Notifications\CaseUpdatedNotification($case, $record));
+                            $client->notify(new CaseUpdatedNotification($case, $record));
 
-                            \Filament\Notifications\Notification::make()
+                            Notification::make()
                                 ->title('Cliente notificado')
                                 ->body("Se envio email a {$client->email}")
                                 ->success()
