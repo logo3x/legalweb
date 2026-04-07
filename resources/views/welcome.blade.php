@@ -9,6 +9,9 @@
     <meta property="og:description" content="Sincronizacion automatica con la Rama Judicial. Alertas inteligentes. Asistente IA. Portal del cliente.">
     <meta property="og:type" content="website">
     <link rel="icon" href="/images/favicon.ico" type="image/x-icon">
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2Q7KJTB5MT"></script>
+    <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-2Q7KJTB5MT');</script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
