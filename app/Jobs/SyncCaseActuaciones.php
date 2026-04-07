@@ -41,7 +41,10 @@ class SyncCaseActuaciones implements ShouldQueue
         }
 
         // Actualizar datos del caso
-        $updates = ['last_tyba_sync' => now()];
+        $updates = [
+            'last_tyba_sync' => now(),
+            'tyba_data' => collect($info)->except(['sujetos', 'actuaciones'])->toArray(),
+        ];
 
         if (! empty($info['despacho'])) {
             $updates['court'] = $info['despacho'];

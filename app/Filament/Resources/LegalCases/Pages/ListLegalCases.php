@@ -159,6 +159,8 @@ class ListLegalCases extends ListRecords
                             'judge' => $judge,
                             'opposing_party' => $opposingParty,
                             'started_at' => $startedAt,
+                            'last_tyba_sync' => $info ? now() : null,
+                            'tyba_data' => $info ? collect($info)->except(['sujetos', 'actuaciones'])->toArray() : null,
                         ]);
                     } catch (QueryException) {
                         Notification::make()

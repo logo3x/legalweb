@@ -33,6 +33,8 @@ use Illuminate\Support\Str;
     'portal_enabled',
     'firm_id',
     'is_demo',
+    'last_tyba_sync',
+    'tyba_data',
 ])]
 #[ScopedBy(FirmScope::class)]
 class LegalCase extends Model
@@ -47,6 +49,8 @@ class LegalCase extends Model
             'closed_at' => 'date',
             'portal_enabled' => 'boolean',
             'is_demo' => 'boolean',
+            'last_tyba_sync' => 'datetime',
+            'tyba_data' => 'array',
         ];
     }
 

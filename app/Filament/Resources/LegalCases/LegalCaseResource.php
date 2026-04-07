@@ -117,11 +117,57 @@ class LegalCaseResource extends Resource
                             ->date('d/m/Y')
                             ->placeholder('Caso abierto'),
                         TextEntry::make('last_tyba_sync')
-                            ->label('Ultima sincronizacion Rama Judicial')
+                            ->label('Ultima sincronizacion')
                             ->icon('heroicon-m-arrow-path')
                             ->since()
                             ->placeholder('Nunca sincronizado')
                             ->visible(fn ($record) => (bool) $record->external_case_number),
+                    ]),
+                Section::make('Datos Rama Judicial')
+                    ->icon(Heroicon::OutlinedBuildingLibrary)
+                    ->columns(4)
+                    ->visible(fn ($record) => ! empty($record->tyba_data))
+                    ->schema([
+                        TextEntry::make('tyba_data.codigo_proceso')
+                            ->label('Codigo Proceso'),
+                        TextEntry::make('tyba_data.tipo_proceso')
+                            ->label('Tipo Proceso'),
+                        TextEntry::make('tyba_data.clase_proceso')
+                            ->label('Clase Proceso'),
+                        TextEntry::make('tyba_data.subclase')
+                            ->label('Subclase')
+                            ->placeholder('-'),
+                        TextEntry::make('tyba_data.departamento')
+                            ->label('Departamento'),
+                        TextEntry::make('tyba_data.corporacion')
+                            ->label('Corporacion')
+                            ->placeholder('-'),
+                        TextEntry::make('tyba_data.especialidad')
+                            ->label('Especialidad'),
+                        TextEntry::make('tyba_data.numero_despacho')
+                            ->label('No. Despacho')
+                            ->placeholder('-'),
+                        TextEntry::make('tyba_data.despacho')
+                            ->label('Despacho')
+                            ->columnSpan(2),
+                        TextEntry::make('tyba_data.ponente')
+                            ->label('Ponente / Juez')
+                            ->placeholder('-'),
+                        TextEntry::make('tyba_data.fecha_publicacion')
+                            ->label('Fecha Publicacion')
+                            ->placeholder('-'),
+                        TextEntry::make('tyba_data.fecha_ultima_actuacion')
+                            ->label('Ultima Actuacion')
+                            ->placeholder('-'),
+                        TextEntry::make('tyba_data.ubicacion')
+                            ->label('Sistema')
+                            ->placeholder('-'),
+                        TextEntry::make('tyba_data.recurso')
+                            ->label('Recurso')
+                            ->placeholder('-'),
+                        TextEntry::make('tyba_data.cod_despacho')
+                            ->label('Cod. Despacho')
+                            ->placeholder('-'),
                     ]),
                 Section::make('Partes')
                     ->icon(Heroicon::OutlinedUserGroup)

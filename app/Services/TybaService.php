@@ -44,6 +44,8 @@ class TybaService
             return null;
         }
 
+        $despachoName = trim($detail['despacho'] ?? $search['despacho'] ?? '');
+
         $info = [
             'codigo_proceso' => $detail['llaveProceso'] ?? $radicado,
             'tipo_proceso' => $detail['tipoProceso'] ?? '',
@@ -51,18 +53,22 @@ class TybaService
             'subclase' => $detail['subclaseProceso'] ?? '',
             'departamento' => $search['departamento'] ?? '',
             'ciudad' => '',
-            'corporacion' => '',
-            'especialidad' => $this->extractEspecialidad($detail['despacho'] ?? ''),
+            'corporacion' => $this->extractCorporacion($despachoName),
+            'especialidad' => $this->extractEspecialidad($despachoName),
             'distrito_circuito' => '',
-            'numero_despacho' => '',
-            'despacho' => trim($detail['despacho'] ?? $search['despacho'] ?? ''),
+            'numero_despacho' => $this->extractNumeroDespacho($despachoName),
+            'despacho' => $despachoName,
+            'cod_despacho' => $detail['codDespachoCompleto'] ?? '',
             'ponente' => trim($detail['ponente'] ?? ''),
             'direccion' => '',
             'telefono' => '',
             'celular' => '',
             'email' => '',
             'fecha_publicacion' => $this->formatDate($detail['fechaProceso'] ?? $search['fechaProceso'] ?? ''),
+            'fecha_ultima_actuacion' => $this->formatDate($search['fechaUltimaActuacion'] ?? ''),
             'ubicacion' => $detail['ubicacion'] ?? '',
+            'recurso' => $detail['recurso'] ?? '',
+            'es_privado' => $search['esPrivado'] ?? false,
             'sujetos' => $this->formatSujetos($sujetos),
             'actuaciones' => $this->formatActuaciones($actuaciones),
         ];
@@ -113,6 +119,8 @@ class TybaService
             'departamento' => $proceso['departamento'] ?? '',
             'despacho' => trim($proceso['despacho'] ?? ''),
             'fechaProceso' => $proceso['fechaProceso'] ?? '',
+            'fechaUltimaActuacion' => $proceso['fechaUltimaActuacion'] ?? '',
+            'esPrivado' => $proceso['esPrivado'] ?? false,
         ];
     }
 
@@ -272,5 +280,40 @@ class TybaService
         }
 
         return 'General';
+    }
+
+    /**
+     * Extraer corporacion del nombre del despacho.
+     */
+    private function extractCorporacion(string $despacho): string
+    {
+        $d = strtolower($despacho);
+
+        if (str_contains($d, 'tribunal')) {
+            return 'Tribunal';
+        }
+        if (str_contains($d, 'corte suprema')) {
+            return 'Corte Suprema de Justicia';
+        }
+        if (str_contains($d, 'circuito')) {
+            return 'Juzgado de Circuito';
+        }
+        if (str_contains($d, 'municipal')) {
+            return 'Juzgado Municipal';
+        }
+
+        return '';
+    }
+
+    /**
+     * Extraer numero de despacho (ej: "001" de "JUZGADO 001 CIVIL").
+     */
+    private function extractNumeroDespacho(string $despacho): string
+    {
+        if (preg_match('/\b(\d{1,3})\b/', $despacho, $m)) {
+            return $m[1];
+        }
+
+        return '';
     }
 }
