@@ -166,15 +166,9 @@ class ListLegalCases extends ListRecords
 
                     Notification::make()
                         ->title("Importacion completada: {$imported} de {$total}")
-                        ->body('Vea el detalle en el boton "Ver Resultados".')
+                        ->body('Haga click en el boton verde "Ver Resultados" para ver el detalle de cada radicado.')
                         ->color($imported > 0 ? 'success' : 'warning')
                         ->persistent()
-                        ->actions([
-                            \Filament\Notifications\Actions\Action::make('ver_resultados')
-                                ->label('Ver Resultados')
-                                ->button()
-                                ->action(fn () => $this->mountAction('import_results')),
-                        ])
                         ->send();
                 }),
 
