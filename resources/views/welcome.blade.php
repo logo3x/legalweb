@@ -388,8 +388,8 @@
                 <div>
                     <h4 class="font-semibold text-brand text-sm mb-3">Legal</h4>
                     <ul class="space-y-2 text-sm text-gray-500">
-                        <li><a href="/terminos" class="hover:text-brand-light">Terminos y Condiciones</a></li>
-                        <li><a href="/privacidad" class="hover:text-brand-light">Politica de Privacidad</a></li>
+                        <li><a href="/portal/terminos" class="hover:text-brand-light">Terminos y Condiciones</a></li>
+                        <li><a href="/portal/privacidad" class="hover:text-brand-light">Politica de Privacidad</a></li>
                     </ul>
                 </div>
                 <div>

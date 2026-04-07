@@ -15,7 +15,7 @@
                 inicie su trabajo definitivo.
             </div>
             <div style="font-size: 11px; color: #6366f1; margin-top: 8px;">
-                Al registrarse acepta los <a href="/terminos" target="_blank" style="text-decoration: underline; font-weight: 600;">Terminos y Condiciones</a> y la <a href="/privacidad" target="_blank" style="text-decoration: underline; font-weight: 600;">Politica de Privacidad</a>.
+                Al registrarse acepta los <a href="/portal/terminos" target="_blank" style="text-decoration: underline; font-weight: 600;">Terminos y Condiciones</a> y la <a href="/portal/privacidad" target="_blank" style="text-decoration: underline; font-weight: 600;">Politica de Privacidad</a>.
             </div>
         </div>
     </div>

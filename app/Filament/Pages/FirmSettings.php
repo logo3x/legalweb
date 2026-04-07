@@ -136,15 +136,16 @@ class FirmSettings extends Page
                     ->schema([
                         Placeholder::make('terms_info')
                             ->content(new HtmlString(
-                                'Al utilizar LegalWeb usted acepta nuestros <a href="/terminos" target="_blank" style="color: #3A86FF; text-decoration: underline; font-weight: 600;">Terminos y Condiciones</a> y la <a href="/privacidad" target="_blank" style="color: #3A86FF; text-decoration: underline; font-weight: 600;">Politica de Privacidad</a>. Puede consultarlos en cualquier momento.'
+                                'Al utilizar LegalWeb usted acepta nuestros <a href="/portal/terminos" target="_blank" style="color: #3A86FF; text-decoration: underline; font-weight: 600;">Terminos y Condiciones</a> y la <a href="/portal/privacidad" target="_blank" style="color: #3A86FF; text-decoration: underline; font-weight: 600;">Politica de Privacidad</a>. Puede consultarlos en cualquier momento.'
                             )),
                         Checkbox::make('accept_terms')
                             ->label(new HtmlString(
-                                'He leido y acepto los <a href="/terminos" target="_blank" style="color: #3A86FF; text-decoration: underline;">Terminos y Condiciones</a> y la <a href="/privacidad" target="_blank" style="color: #3A86FF; text-decoration: underline;">Politica de Privacidad y Tratamiento de Datos Personales</a>'
+                                'He leido y acepto los <a href="/portal/terminos" target="_blank" style="color: #3A86FF; text-decoration: underline;">Terminos y Condiciones</a> y la <a href="/portal/privacidad" target="_blank" style="color: #3A86FF; text-decoration: underline;">Politica de Privacidad y Tratamiento de Datos Personales</a>'
                             ))
                             ->required(fn () => ! (auth()->user()->firm?->onboarding_completed ?? false))
                             ->dehydrated(false)
-                            ->visible(fn () => ! (auth()->user()->firm?->onboarding_completed ?? false)),
+                            ->visible(fn () => ! (auth()->user()->firm?->onboarding_completed ?? false))
+                            ->validationMessages(['accepted' => 'Debe aceptar los terminos y condiciones para continuar.']),
                     ])
                     ->visible(fn () => ! (auth()->user()->firm?->onboarding_completed ?? false)),
             ]);
