@@ -49,7 +49,8 @@
       "Bash(curl -s \"https://consultaprocesos.ramajudicial.gov.co:448/api/v2/Proceso/Actuaciones/169937821?idConexion=320&pagina=1\" -H \"Accept: application/json\")",
       "Bash(curl -s \"https://consultaprocesos.ramajudicial.gov.co:448/api/v2/Proceso/Sujetos/169937821?idConexion=320&pagina=1\" -H \"Accept: application/json\")",
       "Bash(git reset:*)",
-      "Bash(git rm:*)"
+      "Bash(git rm:*)",
+      "Bash(curl -s \"https://consultaprocesos.ramajudicial.gov.co:448/api/v2/Procesos/Consulta/NombreRazonSocial?nombre=OVIEDO+OCHOA&pagina=1\" -H \"Accept: application/json\")"
     ]
   }
 }

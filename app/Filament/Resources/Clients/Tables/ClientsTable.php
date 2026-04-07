@@ -2,6 +2,9 @@
 
 namespace App\Filament\Resources\Clients\Tables;
 
+use App\Models\LegalCase;
+use App\Services\TybaService;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -57,6 +60,33 @@ class ClientsTable
                 TrashedFilter::make(),
             ])
             ->recordActions([
+                Action::make('buscar_procesos')
+                    ->label('Buscar Procesos')
+                    ->icon('heroicon-o-magnifying-glass')
+                    ->color('info')
+                    ->modalWidth('3xl')
+                    ->modalHeading(fn ($record) => "Procesos de {$record->first_name} {$record->last_name}")
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Cerrar')
+                    ->modalContent(function ($record) {
+                        $name = trim("{$record->last_name} {$record->first_name}");
+                        $tyba = app(TybaService::class);
+                        $procesos = $tyba->searchByName($name);
+
+                        // Marcar cuales ya estan importados
+                        $existingRadicados = LegalCase::withoutGlobalScopes()
+                            ->where('firm_id', auth()->user()->firm_id)
+                            ->whereNotNull('external_case_number')
+                            ->pluck('external_case_number')
+                            ->toArray();
+
+                        return view('filament.modals.client-processes', [
+                            'procesos' => $procesos,
+                            'existingRadicados' => $existingRadicados,
+                            'clientName' => "{$record->first_name} {$record->last_name}",
+                            'totalFound' => count($procesos),
+                        ]);
+                    }),
                 EditAction::make(),
             ])
             ->toolbarActions([

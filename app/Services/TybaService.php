@@ -84,9 +84,62 @@ class TybaService
     }
 
     /**
+     * Buscar procesos por nombre o razon social en la Rama Judicial.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function searchByName(string $name): array
+    {
+        $allProcesos = [];
+        $page = 1;
+        $maxPages = 3;
+
+        do {
+            $response = Http::timeout(15)
+                ->get("{$this->apiBase}/Procesos/Consulta/NombreRazonSocial", [
+                    'nombre' => $name,
+                    'pagina' => $page,
+                ]);
+
+            if (! $response->successful()) {
+                break;
+            }
+
+            $data = $response->json();
+            $procesos = $data['procesos'] ?? [];
+
+            foreach ($procesos as $p) {
+                $radicado = $p['llaveProceso'] ?? '';
+                // Evitar duplicados (la API a veces repite)
+                if (isset($allProcesos[$radicado])) {
+                    continue;
+                }
+
+                $sujetos = trim(str_replace(["\r\n", "\t"], ' ', $p['sujetosProcesales'] ?? ''));
+                $sujetos = preg_replace('/\s+/', ' ', $sujetos);
+
+                $allProcesos[$radicado] = [
+                    'radicado' => $radicado,
+                    'despacho' => trim($p['despacho'] ?? ''),
+                    'departamento' => $p['departamento'] ?? '',
+                    'fecha' => $this->formatDate($p['fechaProceso'] ?? ''),
+                    'ultima_actuacion' => $this->formatDate($p['fechaUltimaActuacion'] ?? ''),
+                    'sujetos' => $sujetos,
+                    'es_privado' => $p['esPrivado'] ?? false,
+                ];
+            }
+
+            $totalPages = $data['paginacion']['cantidadPaginas'] ?? 1;
+            $page++;
+        } while ($page <= $totalPages && $page <= $maxPages);
+
+        return array_values($allProcesos);
+    }
+
+    /**
      * Buscar proceso por numero de radicacion.
      *
-     * @return array{idProceso: int, idConexion: int, departamento: string, despacho: string, fechaProceso: string}|null
+     * @return array{idProceso: int, idConexion: int, departamento: string, despacho: string, fechaProceso: string, fechaUltimaActuacion: string, esPrivado: bool}|null
      */
     private function searchByRadicado(string $radicado): ?array
     {
