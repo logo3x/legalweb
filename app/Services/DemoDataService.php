@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\BillingEntry;
 use App\Models\CaseEvent;
 use App\Models\CaseFlow;
 use App\Models\CaseFlowProgress;
@@ -11,6 +12,7 @@ use App\Models\Firm;
 use App\Models\FlowStep;
 use App\Models\LegalCase;
 use App\Models\Reminder;
+use App\Models\TybaSyncLog;
 use App\Models\User;
 
 class DemoDataService
@@ -21,6 +23,8 @@ class DemoDataService
         $this->createDemoClients($firm, $owner);
         $cases = $this->createDemoCases($firm, $owner);
         $this->createDemoReminders($firm, $owner, $cases);
+        $this->createDemoBilling($owner, $cases);
+        $this->createDemoSyncLogs($cases);
     }
 
     private function createCaseTypesAndFlows(): void
@@ -126,16 +130,35 @@ class DemoDataService
             'firm_id' => $firm->id,
             'is_demo' => true,
             'case_number' => 'LW-0001-2026',
-            'title' => 'Cobro de obligación contractual - Contrato de arrendamiento',
+            'external_case_number' => '11001310500520230045600',
+            'title' => 'PROCESOS VERBALES - Juan Perez vs Inmobiliaria Centro S.A.S.',
+            'description' => "Importado desde Rama Judicial\nTipo: Codigo General del Proceso\nClase: PROCESOS VERBALES\nDepartamento: BOGOTA\nDespacho: JUZGADO 005 CIVIL DEL CIRCUITO DE BOGOTA\nPonente: Roberto Gomez Martinez\n\nSujetos procesales:\n- Demandante/accionante: JUAN PEREZ GARCIA\n- Demandado/indiciado/causante: INMOBILIARIA CENTRO S.A.S.\n- Defensor Privado: CARLOS RAMIREZ LOPEZ",
             'case_type_id' => $civilType->id,
             'case_flow_id' => $civilFlow?->id,
             'client_id' => $clients[0]->id,
             'user_id' => $owner->id,
             'status' => 'en_progreso',
             'priority' => 'alta',
-            'court' => 'Juzgado 5 Civil del Circuito de Bogotá',
-            'judge' => 'Dr. Roberto Gómez',
+            'court' => 'JUZGADO 005 CIVIL DEL CIRCUITO DE BOGOTA',
+            'judge' => 'Roberto Gomez Martinez',
+            'opposing_party' => 'INMOBILIARIA CENTRO S.A.S.',
             'started_at' => now()->subMonths(3),
+            'last_tyba_sync' => now()->subHours(6),
+            'tyba_data' => [
+                'codigo_proceso' => '11001310500520230045600',
+                'tipo_proceso' => 'Codigo General del Proceso',
+                'clase_proceso' => 'PROCESOS VERBALES',
+                'subclase' => 'En general / Sin subclase',
+                'departamento' => 'BOGOTA',
+                'especialidad' => 'Civil',
+                'corporacion' => 'Juzgado de Circuito',
+                'numero_despacho' => '005',
+                'despacho' => 'JUZGADO 005 CIVIL DEL CIRCUITO DE BOGOTA',
+                'ponente' => 'Roberto Gomez Martinez',
+                'fecha_publicacion' => now()->subMonths(3)->format('d/m/Y'),
+                'fecha_ultima_actuacion' => now()->subDays(5)->format('d/m/Y'),
+                'ubicacion' => 'Software: Justicia XXI Web',
+            ],
         ]);
 
         $laboralType = CaseType::where('name', 'Laboral')->first();
@@ -145,14 +168,31 @@ class DemoDataService
             'firm_id' => $firm->id,
             'is_demo' => true,
             'case_number' => 'LW-0002-2026',
-            'title' => 'Demanda laboral por despido sin justa causa',
+            'external_case_number' => '05001310501320240012300',
+            'title' => 'Demanda laboral - Maria Lopez vs Textiles del Sur S.A.',
+            'description' => "Importado desde Rama Judicial\nTipo: Codigo Procesal del Trabajo\nClase: PROCESO ORDINARIO LABORAL\nDepartamento: ANTIOQUIA\nDespacho: JUZGADO 013 LABORAL DEL CIRCUITO DE MEDELLIN\n\nSujetos procesales:\n- Demandante/accionante: MARIA LOPEZ HERNANDEZ\n- Demandado/indiciado/causante: TEXTILES DEL SUR S.A.",
             'case_type_id' => $laboralType->id,
             'case_flow_id' => $laboralFlow?->id,
             'client_id' => $clients[1]->id,
             'user_id' => $owner->id,
             'status' => 'abierto',
             'priority' => 'media',
+            'court' => 'JUZGADO 013 LABORAL DEL CIRCUITO DE MEDELLIN',
+            'judge' => 'Ana Maria Restrepo Velez',
+            'opposing_party' => 'TEXTILES DEL SUR S.A.',
             'started_at' => now()->subWeeks(2),
+            'last_tyba_sync' => now()->subHours(6),
+            'tyba_data' => [
+                'codigo_proceso' => '05001310501320240012300',
+                'tipo_proceso' => 'Codigo Procesal del Trabajo',
+                'clase_proceso' => 'PROCESO ORDINARIO LABORAL',
+                'departamento' => 'ANTIOQUIA',
+                'especialidad' => 'Laboral',
+                'despacho' => 'JUZGADO 013 LABORAL DEL CIRCUITO DE MEDELLIN',
+                'ponente' => 'Ana Maria Restrepo Velez',
+                'fecha_publicacion' => now()->subWeeks(2)->format('d/m/Y'),
+                'fecha_ultima_actuacion' => now()->subDays(3)->format('d/m/Y'),
+            ],
         ]);
 
         $familiaType = CaseType::where('name', 'Familia')->first();
@@ -162,42 +202,98 @@ class DemoDataService
             'firm_id' => $firm->id,
             'is_demo' => true,
             'case_number' => 'LW-0003-2026',
-            'title' => 'Divorcio contencioso por causal de abandono',
+            'title' => 'Divorcio contencioso - Juan Perez vs Sandra Milena Torres',
+            'description' => "Tipo: Codigo General del Proceso\nClase: DIVORCIO CONTENCIOSO\nDespacho: JUZGADO 002 DE FAMILIA DE BOGOTA\n\nSujetos procesales:\n- Demandante/accionante: JUAN PEREZ GARCIA\n- Demandado/indiciado/causante: SANDRA MILENA TORRES RUIZ",
             'case_type_id' => $familiaType->id,
             'case_flow_id' => $familiaFlow?->id,
             'client_id' => $clients[0]->id,
             'user_id' => $owner->id,
             'status' => 'en_progreso',
             'priority' => 'media',
+            'court' => 'JUZGADO 002 DE FAMILIA DE BOGOTA',
+            'judge' => 'Patricia Calderon Rios',
+            'opposing_party' => 'SANDRA MILENA TORRES RUIZ',
             'started_at' => now()->subMonths(1),
         ]);
 
-        foreach ([$case1, $case2, $case3] as $case) {
+        // Actuaciones caso 1 (civil - mas avanzado)
+        $case1Events = [
+            ['title' => 'Radicacion de demanda', 'days' => 0, 'type' => 'actuacion'],
+            ['title' => 'Auto Admite demanda', 'days' => 8, 'type' => 'auto'],
+            ['title' => 'Fijacion Estado', 'days' => 9, 'type' => 'notificacion'],
+            ['title' => 'Notificacion personal al demandado', 'days' => 20, 'type' => 'notificacion'],
+            ['title' => 'Contestacion de demanda', 'days' => 40, 'type' => 'actuacion'],
+            ['title' => 'Agregar Memorial', 'days' => 42, 'type' => 'memorial'],
+            ['title' => 'Auto Fija Fecha audiencia inicial', 'days' => 50, 'type' => 'auto'],
+            ['title' => 'Fijacion Estado', 'days' => 51, 'type' => 'notificacion'],
+            ['title' => 'Audiencia inicial - Art. 372 CGP', 'days' => 70, 'type' => 'audiencia'],
+            ['title' => 'Auto Decide excepciones previas', 'days' => 70, 'type' => 'auto'],
+            ['title' => 'Auto Ordena practica de pruebas', 'days' => 75, 'type' => 'auto'],
+            ['title' => 'Agregar Memorial', 'days' => 80, 'type' => 'memorial'],
+        ];
+
+        foreach ($case1Events as $e) {
             CaseEvent::create([
-                'legal_case_id' => $case->id,
-                'title' => 'Radicación de demanda',
-                'event_date' => $case->started_at,
-                'event_type' => 'actuacion',
+                'legal_case_id' => $case1->id,
+                'title' => $e['title'],
+                'event_date' => $case1->started_at->copy()->addDays($e['days']),
+                'event_type' => $e['type'],
+                'description' => 'Sincronizado desde Rama Judicial. Radicado: '.$case1->external_case_number,
                 'user_id' => $owner->id,
             ]);
+        }
 
+        // Actuaciones caso 2 (laboral - reciente)
+        $case2Events = [
+            ['title' => 'Radicacion de demanda', 'days' => 0, 'type' => 'actuacion'],
+            ['title' => 'Auto Admite demanda', 'days' => 5, 'type' => 'auto'],
+            ['title' => 'Fijacion Estado', 'days' => 6, 'type' => 'notificacion'],
+            ['title' => 'Traslado al demandado', 'days' => 8, 'type' => 'actuacion'],
+        ];
+
+        foreach ($case2Events as $e) {
             CaseEvent::create([
-                'legal_case_id' => $case->id,
-                'title' => 'Auto admisorio de demanda',
-                'event_date' => $case->started_at->addDays(8),
-                'event_type' => 'auto',
+                'legal_case_id' => $case2->id,
+                'title' => $e['title'],
+                'event_date' => $case2->started_at->copy()->addDays($e['days']),
+                'event_type' => $e['type'],
+                'description' => 'Sincronizado desde Rama Judicial. Radicado: '.$case2->external_case_number,
                 'user_id' => $owner->id,
             ]);
+        }
 
+        // Actuaciones caso 3 (familia)
+        $case3Events = [
+            ['title' => 'Radicacion de demanda', 'days' => 0, 'type' => 'actuacion'],
+            ['title' => 'Auto Admite demanda', 'days' => 7, 'type' => 'auto'],
+            ['title' => 'Fijacion Estado', 'days' => 8, 'type' => 'notificacion'],
+            ['title' => 'Auto Ordena notificacion', 'days' => 10, 'type' => 'auto'],
+            ['title' => 'Notificacion personal', 'days' => 18, 'type' => 'notificacion'],
+            ['title' => 'Agregar Memorial', 'days' => 25, 'type' => 'memorial'],
+        ];
+
+        foreach ($case3Events as $e) {
+            CaseEvent::create([
+                'legal_case_id' => $case3->id,
+                'title' => $e['title'],
+                'event_date' => $case3->started_at->copy()->addDays($e['days']),
+                'event_type' => $e['type'],
+                'user_id' => $owner->id,
+            ]);
+        }
+
+        // Flujo procesal para cada caso
+        foreach ([$case1, $case2, $case3] as $idx => $case) {
             if ($case->case_flow_id) {
                 $steps = FlowStep::where('case_flow_id', $case->case_flow_id)->orderBy('order')->get();
+                $completedCount = $idx === 0 ? 4 : ($idx === 1 ? 2 : 3);
                 foreach ($steps as $i => $step) {
                     CaseFlowProgress::create([
                         'legal_case_id' => $case->id,
                         'flow_step_id' => $step->id,
-                        'status' => $i < 2 ? 'completado' : ($i === 2 ? 'en_progreso' : 'pendiente'),
-                        'completed_at' => $i < 2 ? now()->subDays((2 - $i) * 15) : null,
-                        'completed_by' => $i < 2 ? $owner->id : null,
+                        'status' => $i < $completedCount ? 'completado' : ($i === $completedCount ? 'en_progreso' : 'pendiente'),
+                        'completed_at' => $i < $completedCount ? now()->subDays(($completedCount - $i) * 12) : null,
+                        'completed_by' => $i < $completedCount ? $owner->id : null,
                     ]);
                 }
             }
@@ -230,6 +326,105 @@ class DemoDataService
             'priority' => 'urgente',
             'due_date' => now()->addDays(2)->setHour(17)->setMinute(0),
             'remind_at' => now()->addDay()->setHour(8)->setMinute(0),
+        ]);
+    }
+
+    private function createDemoBilling(User $owner, array $cases): void
+    {
+        // Caso 1: civil avanzado - varias entradas
+        $case1 = $cases[0];
+        $billingData = [
+            ['type' => 'hora', 'desc' => 'Estudio de expediente y preparacion de demanda', 'hours' => 4, 'rate' => 150000, 'days_ago' => 85],
+            ['type' => 'hora', 'desc' => 'Radicacion de demanda en juzgado', 'hours' => 1.5, 'rate' => 150000, 'days_ago' => 82],
+            ['type' => 'gasto', 'desc' => 'Copias autenticadas del contrato (4 folios)', 'hours' => null, 'rate' => null, 'amount' => 12000, 'days_ago' => 82],
+            ['type' => 'hora', 'desc' => 'Revision auto admisorio y preparacion de notificacion', 'hours' => 2, 'rate' => 150000, 'days_ago' => 74],
+            ['type' => 'gasto', 'desc' => 'Servicio de notificacion personal', 'hours' => null, 'rate' => null, 'amount' => 85000, 'days_ago' => 62],
+            ['type' => 'hora', 'desc' => 'Revision contestacion de demanda', 'hours' => 3, 'rate' => 150000, 'days_ago' => 42],
+            ['type' => 'hora', 'desc' => 'Preparacion para audiencia inicial', 'hours' => 5, 'rate' => 150000, 'days_ago' => 15],
+            ['type' => 'hora', 'desc' => 'Audiencia inicial - Art. 372 CGP', 'hours' => 3, 'rate' => 200000, 'days_ago' => 12],
+            ['type' => 'concepto', 'desc' => 'Honorarios fijos mensuales - Marzo 2026', 'hours' => null, 'rate' => null, 'amount' => 500000, 'days_ago' => 30],
+        ];
+
+        foreach ($billingData as $b) {
+            $amount = $b['amount'] ?? ($b['hours'] * $b['rate']);
+            BillingEntry::create([
+                'legal_case_id' => $case1->id,
+                'user_id' => $owner->id,
+                'type' => $b['type'],
+                'description' => $b['desc'],
+                'hours' => $b['hours'],
+                'rate_per_hour' => $b['rate'],
+                'amount' => $amount,
+                'entry_date' => now()->subDays($b['days_ago']),
+                'is_billable' => true,
+                'is_billed' => $b['days_ago'] > 40,
+            ]);
+        }
+
+        // Caso 2: laboral reciente - pocas entradas
+        BillingEntry::create([
+            'legal_case_id' => $cases[1]->id,
+            'user_id' => $owner->id,
+            'type' => 'hora',
+            'description' => 'Consulta inicial y estudio del caso',
+            'hours' => 2,
+            'rate_per_hour' => 120000,
+            'amount' => 240000,
+            'entry_date' => now()->subDays(14),
+            'is_billable' => true,
+        ]);
+
+        BillingEntry::create([
+            'legal_case_id' => $cases[1]->id,
+            'user_id' => $owner->id,
+            'type' => 'hora',
+            'description' => 'Redaccion de demanda laboral',
+            'hours' => 6,
+            'rate_per_hour' => 120000,
+            'amount' => 720000,
+            'entry_date' => now()->subDays(12),
+            'is_billable' => true,
+        ]);
+    }
+
+    private function createDemoSyncLogs(array $cases): void
+    {
+        // Logs de sincronizacion para caso 1
+        TybaSyncLog::create([
+            'legal_case_id' => $cases[0]->id,
+            'status' => 'ok',
+            'nuevas_actuaciones' => 12,
+            'mensaje' => '12 nueva(s) actuacion(es) de 12 totales',
+            'origen' => 'manual',
+            'created_at' => now()->subDays(7),
+        ]);
+
+        TybaSyncLog::create([
+            'legal_case_id' => $cases[0]->id,
+            'status' => 'sin_cambios',
+            'nuevas_actuaciones' => 0,
+            'mensaje' => 'Sin novedades. 12 actuaciones verificadas',
+            'origen' => 'automatico',
+            'created_at' => now()->subDays(1),
+        ]);
+
+        TybaSyncLog::create([
+            'legal_case_id' => $cases[0]->id,
+            'status' => 'ok',
+            'nuevas_actuaciones' => 1,
+            'mensaje' => '1 nueva(s) actuacion(es) de 12 totales',
+            'origen' => 'automatico',
+            'created_at' => now()->subHours(6),
+        ]);
+
+        // Logs para caso 2
+        TybaSyncLog::create([
+            'legal_case_id' => $cases[1]->id,
+            'status' => 'ok',
+            'nuevas_actuaciones' => 4,
+            'mensaje' => '4 nueva(s) actuacion(es) de 4 totales',
+            'origen' => 'manual',
+            'created_at' => now()->subDays(3),
         ]);
     }
 

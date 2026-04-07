@@ -62,7 +62,8 @@
       "Bash(php -l routes/web.php)",
       "Bash(php -l app/Filament/Resources/LegalCases/Pages/ViewLegalCase.php)",
       "Bash(php -l app/Console/Commands/SendMonthlyReports.php)",
-      "Bash(php -l app/Notifications/MonthlyReportNotification.php)"
+      "Bash(php -l app/Notifications/MonthlyReportNotification.php)",
+      "Bash(php -l app/Services/DemoDataService.php)"
     ]
   }
 }
