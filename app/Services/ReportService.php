@@ -78,6 +78,45 @@ class ReportService
             $avgDaysPerCase = round($avgDays ?? 0);
         }
 
+        // Analitica de despachos
+        $courtStats = LegalCase::withoutGlobalScopes()
+            ->where('firm_id', $firm->id)
+            ->whereNotNull('court')
+            ->where('court', '!=', '')
+            ->selectRaw('court, count(*) as total_cases,
+                SUM(CASE WHEN status = "cerrado" THEN 1 ELSE 0 END) as cerrados,
+                AVG(CASE WHEN status = "cerrado" AND started_at IS NOT NULL AND closed_at IS NOT NULL THEN DATEDIFF(closed_at, started_at) ELSE NULL END) as avg_dias')
+            ->groupBy('court')
+            ->orderByDesc('total_cases')
+            ->limit(10)
+            ->get()
+            ->map(fn ($c) => [
+                'despacho' => $c->court,
+                'total_cases' => $c->total_cases,
+                'cerrados' => $c->cerrados,
+                'activos' => $c->total_cases - $c->cerrados,
+                'avg_dias' => $c->avg_dias ? round($c->avg_dias) : null,
+            ])
+            ->toArray();
+
+        // Actuaciones por tipo (top 10)
+        $eventsByType = CaseEvent::whereIn('legal_case_id', $caseIds)
+            ->selectRaw('title, count(*) as total')
+            ->groupBy('title')
+            ->orderByDesc('total')
+            ->limit(10)
+            ->pluck('total', 'title')
+            ->toArray();
+
+        // Actividad por mes (ultimos 6 meses)
+        $monthlyActivity = CaseEvent::whereIn('legal_case_id', $caseIds)
+            ->where('event_date', '>=', now()->subMonths(6))
+            ->selectRaw('DATE_FORMAT(event_date, "%Y-%m") as mes, count(*) as total')
+            ->groupBy('mes')
+            ->orderBy('mes')
+            ->pluck('total', 'mes')
+            ->toArray();
+
         return [
             'firm' => $firm,
             'generated_at' => now(),
@@ -106,6 +145,9 @@ class ReportService
                 'alta' => 'Alta',
                 'urgente' => 'Urgente',
             ],
+            'court_stats' => $courtStats,
+            'events_by_type' => $eventsByType,
+            'monthly_activity' => $monthlyActivity,
         ];
     }
 }
