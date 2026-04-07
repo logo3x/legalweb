@@ -26,6 +26,7 @@ class TybaSyncLogsRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
+            ->description('Cada dia a las 3:00 AM el sistema consulta automaticamente la Rama Judicial para detectar nuevas actuaciones en sus procesos. Tambien puede sincronizar manualmente con el boton "Sincronizar Tyba". Si se detectan actuaciones importantes (autos, audiencias, sentencias), se crean recordatorios automaticos en su agenda.')
             ->columns([
                 TextColumn::make('created_at')
                     ->label('Fecha')
