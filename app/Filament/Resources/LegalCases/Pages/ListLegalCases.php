@@ -54,19 +54,25 @@ class ListLegalCases extends ListRecords
                         ->minLength(20)
                         ->maxLength(50)
                         ->placeholder('Ej: 68081310300120240001800')
-                        ->helperText('23 digitos del radicado asignado por la Rama Judicial.'),
+                        ->helperText('23 digitos del radicado asignado por la Rama Judicial.')
+                        ->validationMessages([
+                            'required' => 'Debe ingresar el numero de radicado.',
+                            'min_length' => 'El radicado debe tener al menos 20 digitos.',
+                        ]),
                     Select::make('client_id')
                         ->label('Cliente')
                         ->options(fn () => Client::where('firm_id', auth()->user()->firm_id)
                             ->get()
                             ->mapWithKeys(fn ($c) => [$c->id => "{$c->first_name} {$c->last_name}"]))
                         ->required()
+                        ->validationMessages(['required' => 'Debe seleccionar un cliente.'])
                         ->searchable(),
                     Select::make('user_id')
                         ->label('Abogado Responsable')
                         ->options(fn () => User::where('firm_id', auth()->user()->firm_id)->pluck('name', 'id'))
                         ->default(fn () => auth()->id())
-                        ->required(),
+                        ->required()
+                        ->validationMessages(['required' => 'Debe seleccionar un abogado responsable.']),
                 ])
                 ->action(function (array $data) {
                     $radicado = preg_replace('/[^0-9]/', '', $data['radicado']);
@@ -110,12 +116,14 @@ class ListLegalCases extends ListRecords
                             ->get()
                             ->mapWithKeys(fn ($c) => [$c->id => "{$c->first_name} {$c->last_name}"]))
                         ->required()
+                        ->validationMessages(['required' => 'Debe seleccionar un cliente para asociar los casos.'])
                         ->searchable(),
                     Select::make('user_id')
                         ->label('Abogado Responsable')
                         ->options(fn () => User::where('firm_id', auth()->user()->firm_id)->pluck('name', 'id'))
                         ->default(fn () => auth()->id())
-                        ->required(),
+                        ->required()
+                        ->validationMessages(['required' => 'Debe seleccionar un abogado responsable.']),
                 ])
                 ->action(function (array $data) {
                     $lines = preg_split('/[\r\n]+/', trim($data['radicados']));
