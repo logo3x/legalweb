@@ -2,8 +2,11 @@
 
 namespace App\Filament\Resources\LegalCases\RelationManagers;
 
+use App\Notifications\FlowStepCompletedNotification;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Toggle;
+use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
@@ -23,6 +26,7 @@ class FlowProgressRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
+            ->description('El flujo de proceso muestra las etapas legales de su caso. Cada paso tiene un plazo en dias habiles. Puede marcar los pasos como completados, en progreso u omitidos. Los plazos se calculan segun el calendario judicial colombiano.')
             ->recordTitleAttribute('flowStep.name')
             ->columns([
                 TextColumn::make('flowStep.order')
@@ -76,7 +80,7 @@ class FlowProgressRelationManager extends RelationManager
                     ->form([
                         Textarea::make('notes')
                             ->label('Notas (opcional)'),
-                        \Filament\Forms\Components\Toggle::make('notify_client')
+                        Toggle::make('notify_client')
                             ->label('Notificar al cliente por email')
                             ->helperText('Se informara al cliente que esta etapa fue completada')
                             ->default(false),
@@ -102,13 +106,13 @@ class FlowProgressRelationManager extends RelationManager
                             ->first();
 
                         if ($client?->email) {
-                            $client->notify(new \App\Notifications\FlowStepCompletedNotification(
+                            $client->notify(new FlowStepCompletedNotification(
                                 $case,
                                 $record,
                                 $nextStep?->flowStep?->name
                             ));
 
-                            \Filament\Notifications\Notification::make()
+                            Notification::make()
                                 ->title('Cliente notificado')
                                 ->body("Se envio email a {$client->email}")
                                 ->success()

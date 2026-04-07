@@ -190,8 +190,14 @@ class ListLegalCases extends ListRecords
         }
 
         // Consultar API
-        $tyba = app(TybaService::class);
-        $info = $tyba->extractProcessInfo($radicado);
+        $info = null;
+
+        try {
+            $tyba = app(TybaService::class);
+            $info = $tyba->extractProcessInfo($radicado);
+        } catch (\Exception $e) {
+            // Timeout u otro error de conexion - continuar sin datos de Tyba
+        }
 
         // Construir datos
         $title = 'Proceso Judicial - '.$radicado;

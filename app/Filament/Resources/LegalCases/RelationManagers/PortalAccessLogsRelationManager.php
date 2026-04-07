@@ -21,6 +21,7 @@ class PortalAccessLogsRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
+            ->description('Registro de cada vez que un cliente accede al portal de su caso. Se registra la fecha, la IP y la accion realizada (visitar portal, aceptar terminos, consultar caso). Util para trazabilidad y cumplimiento del secreto profesional (Art. 74 CP).')
             ->columns([
                 TextColumn::make('created_at')
                     ->label('Fecha')
