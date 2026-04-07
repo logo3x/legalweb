@@ -80,6 +80,7 @@ class ListLegalCases extends ListRecords
                     // Construir datos del caso
                     $title = 'Proceso Judicial - '.$radicado;
                     $court = null;
+                    $judge = null;
                     $opposingParty = null;
                     $description = null;
                     $startedAt = null;
@@ -88,6 +89,9 @@ class ListLegalCases extends ListRecords
                     if ($info && ! empty($info['despacho'])) {
                         $title = ($info['clase_proceso'] ?: 'Proceso Judicial').' - '.$radicado;
                         $court = $info['despacho'];
+                        $judge = ! empty($info['ponente'])
+                            ? mb_convert_case(mb_strtolower($info['ponente']), MB_CASE_TITLE, 'UTF-8')
+                            : null;
                         $caseTypeId = CaseType::firstOrCreate(['name' => $info['especialidad'] ?: 'General'])->id;
 
                         // Sujetos
@@ -100,17 +104,17 @@ class ListLegalCases extends ListRecords
                         }
 
                         // Descripcion
-                        $description = "Importado desde Tyba\n";
+                        $description = "Importado desde Rama Judicial\n";
                         $description .= "Tipo: {$info['tipo_proceso']}\nClase: {$info['clase_proceso']}\n";
-                        $description .= "Departamento: {$info['departamento']} - {$info['ciudad']}\n";
+                        $description .= "Departamento: {$info['departamento']}\n";
                         $description .= "Despacho: {$info['despacho']}\n";
-                        if ($info['email']) {
-                            $description .= "Email: {$info['email']}\n";
+                        if (! empty($info['ponente'])) {
+                            $description .= "Ponente: {$info['ponente']}\n";
                         }
                         if (! empty($info['sujetos'])) {
-                            $description .= "\nSujetos:\n";
+                            $description .= "\nSujetos procesales:\n";
                             foreach ($info['sujetos'] as $s) {
-                                $description .= "- {$s['rol']}: {$s['nombre']} ({$s['documento']})\n";
+                                $description .= "- {$s['rol']}: {$s['nombre']}\n";
                             }
                         }
 
@@ -152,6 +156,7 @@ class ListLegalCases extends ListRecords
                             'status' => 'abierto',
                             'priority' => 'media',
                             'court' => $court,
+                            'judge' => $judge,
                             'opposing_party' => $opposingParty,
                             'started_at' => $startedAt,
                         ]);

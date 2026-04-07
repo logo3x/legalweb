@@ -133,49 +133,70 @@ class ViewLegalCase extends ViewRecord
                 ->visible(fn () => (bool) $this->record->external_case_number)
                 ->requiresConfirmation()
                 ->modalHeading('Sincronizar con Rama Judicial')
-                ->modalDescription(fn () => "Se consultara el radicado {$this->record->external_case_number} en Tyba. Consume 1 credito. El proceso puede tomar 30-60 segundos.")
-                ->modalSubmitActionLabel('Iniciar sincronizacion')
+                ->modalDescription(fn () => "Se consultara el radicado {$this->record->external_case_number} en la API de la Rama Judicial para actualizar datos del proceso y registrar nuevas actuaciones.")
+                ->modalSubmitActionLabel('Sincronizar')
                 ->action(function () {
-                    if (! config('services.twocaptcha.api_key')) {
-                        Notification::make()->title('Servicio no disponible')->body('La consulta automatica a Tyba no esta configurada.')->warning()->send();
-
-                        return;
-                    }
-
                     $tyba = app(TybaService::class);
-                    $actuaciones = $tyba->consultarProceso($this->record->external_case_number);
+                    $info = $tyba->extractProcessInfo($this->record->external_case_number);
 
-                    if ($actuaciones === null) {
+                    if (! $info) {
                         Notification::make()
                             ->title('No se pudo consultar')
-                            ->body('Verifique que el radicado sea correcto y que tenga saldo en 2Captcha.')
+                            ->body('Verifique que el radicado sea correcto.')
                             ->danger()
-                            ->persistent()
                             ->send();
 
                         return;
                     }
 
-                    if (empty($actuaciones)) {
-                        Notification::make()
-                            ->title('Sin actuaciones')
-                            ->body('No se encontraron actuaciones para este radicado.')
-                            ->warning()
-                            ->send();
+                    // Actualizar datos del caso
+                    $updates = ['last_tyba_sync' => now()];
 
-                        return;
+                    if (! empty($info['despacho'])) {
+                        $updates['court'] = $info['despacho'];
                     }
+                    if (! empty($info['ponente'])) {
+                        $updates['judge'] = mb_convert_case(mb_strtolower($info['ponente']), MB_CASE_TITLE, 'UTF-8');
+                    }
+
+                    // Actualizar contraparte si no tiene
+                    if (empty($this->record->opposing_party) && ! empty($info['sujetos'])) {
+                        $demandados = collect($info['sujetos'])
+                            ->filter(fn ($s) => str_contains(strtolower($s['rol']), 'demandado'))
+                            ->pluck('nombre')->unique()->join(', ');
+                        if ($demandados) {
+                            $updates['opposing_party'] = $demandados;
+                        }
+                    }
+
+                    // Actualizar descripcion con sujetos actualizados
+                    $description = "Importado desde Rama Judicial\n";
+                    $description .= "Tipo: {$info['tipo_proceso']}\nClase: {$info['clase_proceso']}\n";
+                    $description .= "Departamento: {$info['departamento']}\n";
+                    $description .= "Despacho: {$info['despacho']}\n";
+                    if (! empty($info['ponente'])) {
+                        $description .= "Ponente: {$info['ponente']}\n";
+                    }
+                    if (! empty($info['sujetos'])) {
+                        $description .= "\nSujetos procesales:\n";
+                        foreach ($info['sujetos'] as $s) {
+                            $description .= "- {$s['rol']}: {$s['nombre']}\n";
+                        }
+                    }
+                    $updates['description'] = $description;
+
+                    $this->record->update($updates);
 
                     // Registrar actuaciones nuevas
                     $newCount = 0;
-                    foreach ($actuaciones as $a) {
+                    foreach ($info['actuaciones'] as $a) {
                         $date = null;
-                        foreach (['d/m/Y', 'Y-m-d', 'd-m-Y'] as $fmt) {
+                        foreach (['d/m/Y', 'Y-m-d'] as $fmt) {
                             try {
-                                $date = Carbon::createFromFormat($fmt, trim($a['date']));
+                                $date = Carbon::createFromFormat($fmt, trim($a['fecha']));
+
                                 break;
                             } catch (\Exception) {
-                                continue;
                             }
                         }
 
@@ -183,41 +204,39 @@ class ViewLegalCase extends ViewRecord
                             continue;
                         }
 
+                        $title = $a['tipo'].($a['ciclo'] ? " ({$a['ciclo']})" : '');
+
                         $exists = CaseEvent::where('legal_case_id', $this->record->id)
                             ->where('event_date', $date)
-                            ->where('title', $a['description'])
+                            ->where('title', $title)
                             ->exists();
 
                         if (! $exists) {
                             CaseEvent::create([
                                 'legal_case_id' => $this->record->id,
-                                'title' => $a['description'],
+                                'title' => $title,
                                 'event_date' => $date,
                                 'event_type' => 'actuacion',
-                                'description' => 'Sincronizado desde Rama Judicial (Tyba). Radicado: '.$this->record->external_case_number,
+                                'description' => ($a['anotacion'] ?: 'Sincronizado desde Rama Judicial.').' Radicado: '.$this->record->external_case_number,
                                 'user_id' => auth()->id(),
                             ]);
                             $newCount++;
                         }
                     }
 
-                    $this->record->update(['last_tyba_sync' => now()]);
-
-                    // Incrementar creditos usados
-                    $firm = auth()->user()->firm;
-                    $firm?->increment('tyba_queries_used');
+                    $totalActuaciones = count($info['actuaciones']);
 
                     if ($newCount > 0) {
                         Notification::make()
                             ->title('Sincronizacion exitosa')
-                            ->body('Se encontraron '.count($actuaciones)." actuaciones en Tyba. Se registraron {$newCount} nueva(s) en el expediente.")
+                            ->body("Datos del caso actualizados. Se encontraron {$totalActuaciones} actuaciones, {$newCount} nueva(s) registradas.")
                             ->success()
                             ->persistent()
                             ->send();
                     } else {
                         Notification::make()
-                            ->title('Sin novedades')
-                            ->body('Se consultaron '.count($actuaciones).' actuaciones pero todas ya estaban registradas.')
+                            ->title('Caso actualizado')
+                            ->body("Datos del proceso actualizados. Las {$totalActuaciones} actuaciones ya estaban registradas.")
                             ->info()
                             ->send();
                     }
