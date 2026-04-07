@@ -103,4 +103,9 @@ class LegalCase extends Model
     {
         return $this->hasMany(PortalAccessLog::class);
     }
+
+    public function tybaSyncLogs(): HasMany
+    {
+        return $this->hasMany(TybaSyncLog::class);
+    }
 }

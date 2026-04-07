@@ -10,6 +10,7 @@ use App\Filament\Resources\LegalCases\RelationManagers\DocumentsRelationManager;
 use App\Filament\Resources\LegalCases\RelationManagers\EventsRelationManager;
 use App\Filament\Resources\LegalCases\RelationManagers\FlowProgressRelationManager;
 use App\Filament\Resources\LegalCases\RelationManagers\PortalAccessLogsRelationManager;
+use App\Filament\Resources\LegalCases\RelationManagers\TybaSyncLogsRelationManager;
 use App\Filament\Resources\LegalCases\Schemas\LegalCaseForm;
 use App\Filament\Resources\LegalCases\Tables\LegalCasesTable;
 use App\Models\LegalCase;
@@ -209,6 +210,7 @@ class LegalCaseResource extends Resource
             FlowProgressRelationManager::class,
             EventsRelationManager::class,
             DocumentsRelationManager::class,
+            TybaSyncLogsRelationManager::class,
             PortalAccessLogsRelationManager::class,
         ];
     }

@@ -4,6 +4,7 @@ namespace App\Filament\Resources\LegalCases\Pages;
 
 use App\Filament\Resources\LegalCases\LegalCaseResource;
 use App\Models\CaseEvent;
+use App\Models\TybaSyncLog;
 use App\Services\AIService;
 use App\Services\DocumentGenerator;
 use App\Services\TybaService;
@@ -140,6 +141,13 @@ class ViewLegalCase extends ViewRecord
                     $info = $tyba->extractProcessInfo($this->record->external_case_number);
 
                     if (! $info) {
+                        TybaSyncLog::create([
+                            'legal_case_id' => $this->record->id,
+                            'status' => 'error',
+                            'mensaje' => 'No se pudo consultar el radicado',
+                            'origen' => 'manual',
+                        ]);
+
                         Notification::make()
                             ->title('No se pudo consultar')
                             ->body('Verifique que el radicado sea correcto.')
@@ -228,6 +236,16 @@ class ViewLegalCase extends ViewRecord
                     }
 
                     $totalActuaciones = count($info['actuaciones']);
+
+                    TybaSyncLog::create([
+                        'legal_case_id' => $this->record->id,
+                        'status' => $newCount > 0 ? 'ok' : 'sin_cambios',
+                        'nuevas_actuaciones' => $newCount,
+                        'mensaje' => $newCount > 0
+                            ? "{$newCount} nueva(s) actuacion(es) de {$totalActuaciones} totales"
+                            : "Sin novedades. {$totalActuaciones} actuaciones verificadas",
+                        'origen' => 'manual',
+                    ]);
 
                     if ($newCount > 0) {
                         Notification::make()
