@@ -65,7 +65,9 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    'timezone' => 'America/Bogota',
+
+    'cron_token' => env('CRON_TOKEN', 'legalweb-cron-2026'),
 
     /*
     |--------------------------------------------------------------------------

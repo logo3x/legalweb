@@ -67,7 +67,15 @@ try {
         setup_log('Storage link: '.(file_exists(public_path('storage')) ? 'Existe' : 'Falta'), file_exists(public_path('storage')) ? 'success' : 'warning');
 
         setup_log('---cron---');
+        $cronToken = config('app.cron_token');
+        $appUrl = config('app.url');
+        setup_log('Opcion 1 (si proc_open esta habilitado):', 'info');
         setup_log('* * * * * cd '.base_path().' && php artisan schedule:run >> /dev/null 2>&1', 'muted');
+        setup_log('Opcion 2 (via HTTP, recomendado para hosting compartido):', 'info');
+        setup_log("Cada 5 min: */5 * * * * curl -s {$appUrl}/cron/{$cronToken}/send-reminders > /dev/null", 'muted');
+        setup_log("Diario 3am: 0 3 * * * curl -s {$appUrl}/cron/{$cronToken}/sync-tyba > /dev/null", 'muted');
+        setup_log("Diario 3:05am: 5 3 * * * curl -s {$appUrl}/cron/{$cronToken}/queue > /dev/null", 'muted');
+        setup_log("Diario 8am: 0 8 * * * curl -s {$appUrl}/cron/{$cronToken}/check-deadlines > /dev/null", 'muted');
     }
 
     if ($step === 'key') {

@@ -1,13 +1,19 @@
 <?php
 
+use App\Console\Commands\CheckDeadlines;
+use App\Console\Commands\SyncTybaActuaciones;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\PortalController;
 use App\Http\Controllers\WompiController;
 use App\Models\CasePermission;
 use App\Models\FirmInvitation;
+use App\Models\Reminder;
 use App\Models\User;
+use App\Notifications\ReminderDueNotification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
+use Symfony\Component\Console\Output\BufferedOutput;
 
 Route::get('/', function () {
     return view('welcome');
@@ -91,3 +97,76 @@ Route::middleware('auth')->group(function () {
     Route::get('/wompi/callback', [WompiController::class, 'callback'])->name('wompi.callback');
 });
 Route::post('/wompi/webhook', [WompiController::class, 'webhook'])->middleware('throttle:60,1')->name('wompi.webhook');
+
+// Cron alternativo via HTTP (para hostings sin proc_open)
+Route::get('/cron/{token}/{task?}', function (string $token, ?string $task = null) {
+    if ($token !== config('app.cron_token')) {
+        abort(403);
+    }
+
+    $results = [];
+
+    // Tarea: sync-tyba (diaria 3am)
+    if (! $task || $task === 'sync-tyba') {
+        $command = new SyncTybaActuaciones;
+        $command->setLaravel(app());
+        $command->setOutput(new BufferedOutput);
+        $command->handle();
+        $results[] = 'sync-tyba: OK';
+    }
+
+    // Tarea: check-deadlines (diaria 8am)
+    if (! $task || $task === 'check-deadlines') {
+        $command = new CheckDeadlines;
+        $command->setLaravel(app());
+        $command->setOutput(new BufferedOutput);
+        $command->handle();
+        $results[] = 'check-deadlines: OK';
+    }
+
+    // Tarea: send-reminders (cada 5 min)
+    if (! $task || $task === 'send-reminders') {
+        $reminders = Reminder::with('user')
+            ->where('is_completed', false)
+            ->whereNotNull('remind_at')
+            ->where('remind_at', '<=', now())
+            ->where('remind_at', '>=', now()->subHour())
+            ->get();
+
+        $sent = 0;
+        foreach ($reminders as $reminder) {
+            if ($reminder->user) {
+                $reminder->user->notify(new ReminderDueNotification($reminder));
+                $sent++;
+            }
+        }
+        $results[] = "send-reminders: {$sent} enviados";
+    }
+
+    // Procesar jobs pendientes en la cola (max 50 seg)
+    if (! $task || $task === 'queue') {
+        $processed = 0;
+        $start = time();
+        while (time() - $start < 50) {
+            $job = app('queue')->connection('database')->pop();
+            if (! $job) {
+                break;
+            }
+            try {
+                $job->fire();
+                $job->delete();
+                $processed++;
+            } catch (Exception $e) {
+                $job->fail($e);
+                Log::error('Cron queue error: '.$e->getMessage());
+            }
+        }
+        $results[] = "queue: {$processed} job(s) procesados";
+    }
+
+    return response()->json([
+        'status' => 'ok',
+        'time' => now()->toDateTimeString(),
+        'results' => $results,
+    ]);
+})->middleware('throttle:6,1');
