@@ -376,6 +376,26 @@ class ViewLegalCase extends ViewRecord
                 ->modalDescription(fn () => $this->record->portal_enabled
                     ? 'El cliente ya no podra ver el estado de su caso.'
                     : 'El cliente podra ver el estado de su caso a traves del enlace.'),
+            Action::make('toggle_auto_report')
+                ->label(fn () => $this->record->auto_report_enabled ? 'Desactivar Reporte Mensual' : 'Activar Reporte Mensual')
+                ->icon(fn () => $this->record->auto_report_enabled ? 'heroicon-o-envelope-open' : 'heroicon-o-envelope')
+                ->color(fn () => $this->record->auto_report_enabled ? 'danger' : 'success')
+                ->action(function () {
+                    $this->record->update(['auto_report_enabled' => ! $this->record->auto_report_enabled]);
+                    $status = $this->record->fresh()->auto_report_enabled ? 'activado' : 'desactivado';
+
+                    Notification::make()->title("Reporte mensual {$status}")
+                        ->body($this->record->auto_report_enabled
+                            ? "El dia 1 de cada mes se enviara un PDF con el resumen del caso al correo del cliente ({$this->record->client->email})."
+                            : 'No se enviaran reportes automaticos para este caso.')
+                        ->success()
+                        ->send();
+                })
+                ->requiresConfirmation()
+                ->modalHeading(fn () => $this->record->auto_report_enabled ? 'Desactivar reporte mensual' : 'Activar reporte mensual')
+                ->modalDescription(fn () => $this->record->auto_report_enabled
+                    ? 'El cliente dejara de recibir el reporte mensual por correo electronico.'
+                    : "El dia 1 de cada mes se enviara automaticamente un PDF con el resumen del caso al correo del cliente ({$this->record->client->email}). Incluye actuaciones, flujo procesal y vencimientos."),
             EditAction::make()
                 ->label('Editar Caso'),
         ];

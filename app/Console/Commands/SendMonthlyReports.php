@@ -23,9 +23,10 @@ class SendMonthlyReports extends Command
         $endOfMonth = $previousMonth->copy()->endOfMonth();
         $periodo = $previousMonth->translatedFormat('F Y');
 
-        // Obtener casos activos con cliente que tenga email
+        // Obtener casos con reporte automatico habilitado
         $cases = LegalCase::withoutGlobalScopes()
             ->with(['client', 'user', 'user.firm', 'caseType', 'flowProgress.flowStep'])
+            ->where('auto_report_enabled', true)
             ->whereIn('status', ['abierto', 'en_progreso', 'en_espera'])
             ->whereHas('client', fn ($q) => $q->whereNotNull('email')->where('email', '!=', ''))
             ->get();
