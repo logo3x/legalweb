@@ -14,17 +14,22 @@ use App\Models\LegalCase;
 use App\Models\Reminder;
 use App\Models\TybaSyncLog;
 use App\Models\User;
+use Illuminate\Support\Facades\Log;
 
 class DemoDataService
 {
     public function seedForFirm(Firm $firm, User $owner): void
     {
-        $this->createCaseTypesAndFlows();
-        $this->createDemoClients($firm, $owner);
-        $cases = $this->createDemoCases($firm, $owner);
-        $this->createDemoReminders($firm, $owner, $cases);
-        $this->createDemoBilling($owner, $cases);
-        $this->createDemoSyncLogs($cases);
+        try {
+            $this->createCaseTypesAndFlows();
+            $this->createDemoClients($firm, $owner);
+            $cases = $this->createDemoCases($firm, $owner);
+            $this->createDemoReminders($firm, $owner, $cases);
+            $this->createDemoBilling($owner, $cases);
+            $this->createDemoSyncLogs($cases);
+        } catch (\Exception $e) {
+            Log::warning('Demo seed parcial: '.$e->getMessage());
+        }
     }
 
     private function createCaseTypesAndFlows(): void
@@ -80,15 +85,17 @@ class DemoDataService
 
     private function createDemoClients(Firm $firm, User $owner): void
     {
+        $suffix = $firm->id;
+
         Client::create([
             'firm_id' => $firm->id,
             'user_id' => $owner->id,
             'is_demo' => true,
             'document_type' => 'CC',
-            'document_number' => '1234567890',
+            'document_number' => "10000000{$suffix}1",
             'first_name' => 'Juan',
             'last_name' => 'Pérez García',
-            'email' => 'juan.perez@ejemplo.com',
+            'email' => "juan.perez.demo{$suffix}@ejemplo.com",
             'phone' => '3101234567',
             'city' => 'Bogotá',
         ]);
@@ -98,10 +105,10 @@ class DemoDataService
             'user_id' => $owner->id,
             'is_demo' => true,
             'document_type' => 'CC',
-            'document_number' => '9876543210',
+            'document_number' => "10000000{$suffix}2",
             'first_name' => 'María',
             'last_name' => 'López Hernández',
-            'email' => 'maria.lopez@ejemplo.com',
+            'email' => "maria.lopez.demo{$suffix}@ejemplo.com",
             'phone' => '3209876543',
             'city' => 'Medellín',
         ]);
@@ -111,10 +118,10 @@ class DemoDataService
             'user_id' => $owner->id,
             'is_demo' => true,
             'document_type' => 'NIT',
-            'document_number' => '900123456-1',
+            'document_number' => "9001234{$suffix}",
             'first_name' => 'Empresa',
             'last_name' => 'Ejemplo S.A.S.',
-            'email' => 'contacto@empresa.com',
+            'email' => "empresa.demo{$suffix}@ejemplo.com",
             'phone' => '6014567890',
             'city' => 'Bogotá',
         ]);
@@ -129,8 +136,8 @@ class DemoDataService
         $case1 = LegalCase::create([
             'firm_id' => $firm->id,
             'is_demo' => true,
-            'case_number' => 'LW-0001-2026',
-            'external_case_number' => '11001310500520230045600',
+            'case_number' => sprintf('LW-%04d-2026', $firm->id * 100 + 1),
+            'external_case_number' => sprintf('110013105005%011d', $firm->id * 100 + 1),
             'title' => 'PROCESOS VERBALES - Juan Perez vs Inmobiliaria Centro S.A.S.',
             'description' => "Importado desde Rama Judicial\nTipo: Codigo General del Proceso\nClase: PROCESOS VERBALES\nDepartamento: BOGOTA\nDespacho: JUZGADO 005 CIVIL DEL CIRCUITO DE BOGOTA\nPonente: Roberto Gomez Martinez\n\nSujetos procesales:\n- Demandante/accionante: JUAN PEREZ GARCIA\n- Demandado/indiciado/causante: INMOBILIARIA CENTRO S.A.S.\n- Defensor Privado: CARLOS RAMIREZ LOPEZ",
             'case_type_id' => $civilType->id,
@@ -167,8 +174,8 @@ class DemoDataService
         $case2 = LegalCase::create([
             'firm_id' => $firm->id,
             'is_demo' => true,
-            'case_number' => 'LW-0002-2026',
-            'external_case_number' => '05001310501320240012300',
+            'case_number' => sprintf('LW-%04d-2026', $firm->id * 100 + 2),
+            'external_case_number' => sprintf('050013105013%011d', $firm->id * 100 + 2),
             'title' => 'Demanda laboral - Maria Lopez vs Textiles del Sur S.A.',
             'description' => "Importado desde Rama Judicial\nTipo: Codigo Procesal del Trabajo\nClase: PROCESO ORDINARIO LABORAL\nDepartamento: ANTIOQUIA\nDespacho: JUZGADO 013 LABORAL DEL CIRCUITO DE MEDELLIN\n\nSujetos procesales:\n- Demandante/accionante: MARIA LOPEZ HERNANDEZ\n- Demandado/indiciado/causante: TEXTILES DEL SUR S.A.",
             'case_type_id' => $laboralType->id,
@@ -201,7 +208,7 @@ class DemoDataService
         $case3 = LegalCase::create([
             'firm_id' => $firm->id,
             'is_demo' => true,
-            'case_number' => 'LW-0003-2026',
+            'case_number' => sprintf('LW-%04d-2026', $firm->id * 100 + 3),
             'title' => 'Divorcio contencioso - Juan Perez vs Sandra Milena Torres',
             'description' => "Tipo: Codigo General del Proceso\nClase: DIVORCIO CONTENCIOSO\nDespacho: JUZGADO 002 DE FAMILIA DE BOGOTA\n\nSujetos procesales:\n- Demandante/accionante: JUAN PEREZ GARCIA\n- Demandado/indiciado/causante: SANDRA MILENA TORRES RUIZ",
             'case_type_id' => $familiaType->id,

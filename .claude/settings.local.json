@@ -68,7 +68,9 @@
       "Bash(php -l app/Models/User.php)",
       "Bash(php -l app/Filament/Pages/FirmSettings.php)",
       "Bash(zip -r dompdf-vendor.zip vendor/barryvdh vendor/dompdf vendor/sabberworm vendor/masterminds vendor/autoload.php vendor/composer/)",
-      "Bash(powershell -command \"Compress-Archive -Path vendor/barryvdh, vendor/dompdf, vendor/sabberworm, vendor/masterminds, vendor/autoload.php, vendor/composer -DestinationPath dompdf-vendor.zip -Force\")"
+      "Bash(powershell -command \"Compress-Archive -Path vendor/barryvdh, vendor/dompdf, vendor/sabberworm, vendor/masterminds, vendor/autoload.php, vendor/composer -DestinationPath dompdf-vendor.zip -Force\")",
+      "WebFetch(domain:siugj.ramajudicial.gov.co)",
+      "WebFetch(domain:gclegal.co)"
     ]
   }
 }
