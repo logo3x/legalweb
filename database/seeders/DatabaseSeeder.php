@@ -28,20 +28,20 @@ class DatabaseSeeder extends Seeder
         $freePlan = Plan::create([
             'name' => 'Gratuito',
             'slug' => 'gratuito',
-            'description' => 'Para explorar la plataforma',
+            'description' => '3 meses de prueba con todas las funcionalidades',
             'price_monthly' => 0,
             'price_yearly' => 0,
-            'max_cases' => 3,
+            'max_cases' => 0,
             'max_users' => 1,
-            'max_storage_mb' => 50,
+            'max_storage_mb' => 500,
             'has_portal' => true,
-            'has_notifications' => false,
+            'has_notifications' => true,
             'sort_order' => 1,
         ]);
 
         Plan::create([
-            'name' => 'Profesional',
-            'slug' => 'profesional',
+            'name' => 'Pro',
+            'slug' => 'pro',
             'description' => 'Para abogados con práctica activa',
             'price_monthly' => 39900,
             'price_yearly' => 199000,
