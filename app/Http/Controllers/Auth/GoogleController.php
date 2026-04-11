@@ -112,7 +112,7 @@ class GoogleController extends Controller
                 'plan_id' => $freePlan->id,
                 'status' => 'active',
                 'starts_at' => now(),
-                'trial_ends_at' => now()->addDays(30),
+                'trial_ends_at' => now()->addMonths(3),
             ]);
         }
 

@@ -348,69 +348,70 @@
             </div>
 
             <div class="grid md:grid-cols-3 gap-6">
-                {{-- Gratuito --}}
-                <div class="bg-white rounded-2xl p-8 border border-gray-200 shadow-sm card-hover">
-                    <h3 class="font-semibold text-brand text-xl mb-1">Gratuito</h3>
-                    <p class="text-sm text-gray-500 mb-5">Para explorar la plataforma</p>
+                {{-- Prueba Gratuita --}}
+                <div class="bg-white rounded-2xl p-8 border-2 border-green-300 shadow-lg relative card-hover">
+                    <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-500 text-white text-xs font-semibold px-4 py-1 rounded-full">Comience aqui</div>
+                    <h3 class="font-semibold text-brand text-xl mb-1">Prueba Gratuita</h3>
+                    <p class="text-sm text-gray-500 mb-5">3 meses para explorar todo</p>
                     <div class="mb-6">
-                        <span class="text-3xl font-display font-bold text-brand">Gratis</span>
-                        <span class="text-gray-400 text-sm">para siempre</span>
+                        <span class="text-3xl font-display font-bold text-green-500">$0</span>
+                        <span class="text-gray-400 text-sm">/ 3 meses</span>
                     </div>
                     <ul class="space-y-3 text-sm text-gray-600 mb-8">
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> <strong>3</strong> casos</li>
+                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> <strong>Casos ilimitados</strong></li>
                         <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Importacion Rama Judicial</li>
+                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Asistente IA completo</li>
                         <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Portal del cliente</li>
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Asistente IA</li>
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> 21 flujos procesales</li>
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Alertas de vencimientos</li>
+                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Alertas y vencimientos</li>
+                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Todas las funcionalidades</li>
                     </ul>
-                    <a href="{{ route('auth.google') }}" class="block text-center py-3 px-4 rounded-lg border-2 border-brand text-brand font-medium hover:bg-brand hover:text-white transition">
+                    <a href="{{ route('auth.google') }}" class="block text-center py-3 px-4 rounded-lg bg-green-500 text-white font-medium hover:bg-green-600 transition shadow-lg shadow-green-100">
                         Comenzar gratis
                     </a>
                 </div>
 
-                {{-- Profesional --}}
+                {{-- Pro --}}
                 <div class="bg-white rounded-2xl p-8 border-2 border-brand-light shadow-xl relative card-hover">
                     <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-brand-light text-white text-xs font-semibold px-4 py-1 rounded-full">Mas popular</div>
-                    <h3 class="font-semibold text-brand text-xl mb-1">Profesional</h3>
-                    <p class="text-sm text-gray-500 mb-5">Para practica activa</p>
+                    <h3 class="font-semibold text-brand text-xl mb-1">Pro</h3>
+                    <p class="text-sm text-gray-500 mb-5">Para practica profesional</p>
                     <div class="mb-6">
                         <span class="text-3xl font-display font-bold text-brand">Proximamente</span>
                     </div>
                     <ul class="space-y-3 text-sm text-gray-600 mb-8">
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> <strong>20</strong> casos</li>
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Todo lo del plan Gratuito</li>
+                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Hasta <strong>20 casos</strong></li>
                         <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> 3 usuarios</li>
+                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Todo lo de Prueba Gratuita</li>
                         <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Reportes PDF mensuales</li>
                         <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Facturacion por caso</li>
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Analitica de despachos</li>
+                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Sin limite de tiempo</li>
                     </ul>
                     <a href="{{ route('auth.google') }}" class="block text-center py-3 px-4 rounded-lg bg-brand-light text-white font-medium hover:bg-blue-600 transition shadow-lg shadow-blue-100">
-                        Comenzar prueba gratis
+                        Probar gratis primero
                     </a>
                 </div>
 
                 {{-- Firma --}}
                 <div class="bg-white rounded-2xl p-8 border border-gray-200 shadow-sm card-hover">
                     <h3 class="font-semibold text-brand text-xl mb-1">Firma</h3>
-                    <p class="text-sm text-gray-500 mb-5">Para firmas con equipo</p>
+                    <p class="text-sm text-gray-500 mb-5">Para equipos de abogados</p>
                     <div class="mb-6">
                         <span class="text-3xl font-display font-bold text-brand">Proximamente</span>
                     </div>
                     <ul class="space-y-3 text-sm text-gray-600 mb-8">
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> <strong>Casos ilimitados</strong></li>
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Todo lo del Profesional</li>
+                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Hasta <strong>60 casos</strong></li>
                         <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> 10 usuarios</li>
+                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Todo lo del plan Pro</li>
                         <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Permisos por caso</li>
                         <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Importacion masiva</li>
                         <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Soporte prioritario</li>
                     </ul>
                     <a href="{{ route('auth.google') }}" class="block text-center py-3 px-4 rounded-lg border-2 border-brand text-brand font-medium hover:bg-brand hover:text-white transition">
-                        Comenzar prueba gratis
+                        Probar gratis primero
                     </a>
                 </div>
             </div>
-            <p class="text-center text-sm text-gray-400 mt-8">Todos los planes incluyen sincronizacion con Rama Judicial, IA y 21 flujos procesales.</p>
+            <p class="text-center text-sm text-gray-400 mt-8">Comience con 3 meses gratis sin limite de casos. Sin tarjeta de credito.</p>
         </div>
     </section>
 
