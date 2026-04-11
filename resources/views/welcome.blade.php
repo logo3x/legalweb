@@ -57,8 +57,8 @@
                 <img src="/images/logo.png" alt="LegalWeb" class="h-10">
             </a>
             <div class="hidden md:flex items-center gap-8 text-sm">
+                <a href="#vista-previa" class="hover:text-brand-light transition">Vista Previa</a>
                 <a href="#funcionalidades" class="hover:text-brand-light transition">Funcionalidades</a>
-                <a href="#rama-judicial" class="hover:text-brand-light transition">Rama Judicial</a>
                 <a href="#como-funciona" class="hover:text-brand-light transition">Como Funciona</a>
                 <a href="#planes" class="hover:text-brand-light transition">Planes</a>
             </div>
@@ -126,8 +126,70 @@
         </div>
     </section>
 
-    {{-- Integracion Rama Judicial (NUEVA) --}}
-    <section id="rama-judicial" class="py-20 px-4 bg-white">
+    {{-- Vista previa de la plataforma --}}
+    <section id="vista-previa" class="py-20 px-4 bg-white">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-12">
+                <h2 class="font-display text-3xl md:text-4xl font-bold text-brand mb-4">Vea la plataforma por dentro</h2>
+                <p class="text-gray-500 max-w-2xl mx-auto">Asi se ve LegalWeb cuando gestiona sus casos. Datos reales importados desde la Rama Judicial.</p>
+            </div>
+
+            <div x-data="{ active: 0, tabs: [
+                { name: 'Dashboard', img: '/images/screenshots/dashboard.png', desc: 'Vista general con KPIs: casos activos, clientes, actuaciones recientes y alertas de vencimiento.' },
+                { name: 'Casos', img: '/images/screenshots/casos.png', desc: 'Lista de todos sus casos con importacion directa desde la Rama Judicial. Busqueda y filtros.' },
+                { name: 'Detalle del Caso', img: '/images/screenshots/caso-detalle.png', desc: 'Toda la informacion del proceso: datos de Rama Judicial, despacho, juez, sujetos, actuaciones.' },
+                { name: 'Agenda', img: '/images/screenshots/agenda.png', desc: 'Recordatorios y vencimientos con alertas automaticas. Plazos calculados en dias habiles.' },
+                { name: 'Reportes', img: '/images/screenshots/reportes.png', desc: 'Analitica completa: casos por estado, tipo, prioridad y productividad por abogado.' },
+                { name: 'Clientes', img: '/images/screenshots/clientes.png', desc: 'Gestion de clientes con busqueda de procesos en la Rama Judicial por nombre.' }
+            ] }">
+                {{-- Tabs --}}
+                <div class="flex flex-wrap justify-center gap-2 mb-8">
+                    <template x-for="(tab, index) in tabs" :key="index">
+                        <button @click="active = index"
+                            :class="active === index ? 'bg-brand-light text-white shadow-lg shadow-blue-200' : 'bg-white text-gray-600 border border-gray-200 hover:border-brand-light'"
+                            class="px-5 py-2.5 rounded-lg text-sm font-medium transition"
+                            x-text="tab.name">
+                        </button>
+                    </template>
+                </div>
+
+                {{-- Screenshot con descripcion --}}
+                <div class="bg-gray-900 rounded-2xl p-2 shadow-2xl">
+                    <div class="bg-gray-800 rounded-t-xl px-4 py-2 flex items-center gap-2">
+                        <div class="w-3 h-3 rounded-full bg-red-400"></div>
+                        <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
+                        <div class="w-3 h-3 rounded-full bg-green-400"></div>
+                        <span class="text-gray-400 text-xs ml-2">legalweb.com.co/admin</span>
+                    </div>
+                    <template x-for="(tab, index) in tabs" :key="'img-'+index">
+                        <img x-show="active === index"
+                            x-transition:enter="transition ease-out duration-300"
+                            x-transition:enter-start="opacity-0"
+                            x-transition:enter-end="opacity-100"
+                            :src="tab.img" :alt="tab.name"
+                            class="w-full rounded-b-xl">
+                    </template>
+                </div>
+
+                {{-- Descripcion --}}
+                <div class="mt-6 text-center">
+                    <template x-for="(tab, index) in tabs" :key="'desc-'+index">
+                        <p x-show="active === index" x-transition class="text-gray-500 max-w-xl mx-auto" x-text="tab.desc"></p>
+                    </template>
+                </div>
+
+                {{-- CTA --}}
+                <div class="text-center mt-8">
+                    <a href="{{ route('auth.google') }}" class="inline-flex items-center gap-2 bg-brand-light text-white font-semibold px-6 py-3 rounded-xl hover:bg-blue-600 transition shadow-lg shadow-blue-200">
+                        Probar gratis - Sin tarjeta de credito
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {{-- Integracion Rama Judicial --}}
+    <section id="rama-judicial" class="py-20 px-4">
         <div class="max-w-6xl mx-auto">
             <div class="text-center mb-16">
                 <div class="inline-flex items-center gap-2 bg-green-50 text-green-700 text-sm font-medium px-4 py-2 rounded-full mb-4">
