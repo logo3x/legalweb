@@ -151,8 +151,12 @@ class WompiController extends Controller
         $reference = $data['reference'] ?? '';
 
         // Filtro: ignorar pagos de otras apps que comparten la misma cuenta Wompi
+        // El webhook principal llega a https://citora.com.co/webhook/wompi
+        // Citora debe reenviar los que no son suyos, o verificamos via polling (verify-payments)
         if (! str_starts_with($reference, $this->originPrefix())) {
-            return response()->json(['status' => 'ignored']);
+            Log::info('Wompi webhook: pago de otra app ignorado', ['reference' => $reference]);
+
+            return response()->json(['status' => 'ignored', 'reason' => 'different_origin']);
         }
 
         // Verificar firma (OBLIGATORIO)

@@ -3,6 +3,7 @@
 use App\Console\Commands\CheckDeadlines;
 use App\Console\Commands\SendMonthlyReports;
 use App\Console\Commands\SyncTybaActuaciones;
+use App\Console\Commands\VerifyPendingPayments;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\PortalController;
 use App\Http\Controllers\WompiController;
@@ -172,6 +173,15 @@ Route::get('/cron/{token}/{task?}', function (string $token, ?string $task = nul
         $command->setOutput(new BufferedOutput);
         $command->handle();
         $results[] = 'monthly-reports: OK';
+    }
+
+    // Tarea: verify-payments (cada 15 min, verifica pagos pendientes)
+    if ($task === 'verify-payments') {
+        $command = new VerifyPendingPayments;
+        $command->setLaravel(app());
+        $command->setOutput(new BufferedOutput);
+        $command->handle();
+        $results[] = 'verify-payments: OK';
     }
 
     return response()->json([

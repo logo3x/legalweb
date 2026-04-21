@@ -76,6 +76,8 @@ try {
         setup_log("Diario 3am: 0 3 * * * curl -s {$appUrl}/cron/{$cronToken}/sync-tyba > /dev/null", 'muted');
         setup_log("Diario 3:05am: 5 3 * * * curl -s {$appUrl}/cron/{$cronToken}/queue > /dev/null", 'muted');
         setup_log("Diario 8am: 0 8 * * * curl -s {$appUrl}/cron/{$cronToken}/check-deadlines > /dev/null", 'muted');
+        setup_log("Cada 15 min: */15 * * * * curl -s {$appUrl}/cron/{$cronToken}/verify-payments > /dev/null", 'muted');
+        setup_log("Dia 1 - 7am: 0 7 1 * * curl -s {$appUrl}/cron/{$cronToken}/monthly-reports > /dev/null", 'muted');
     }
 
     if ($step === 'composer') {
@@ -125,31 +127,31 @@ try {
             $cleanupUrl = $baseUrl.'&step=cleanup_users&super='.urlencode($_GET['super'] ?? 'legalwebco@gmail.com').'&confirm=yes';
             setup_log("<a href='{$cleanupUrl}' style='color:#ea580c;font-weight:bold;text-decoration:underline;'>CONFIRMAR: Si, limpiar roles</a>", 'raw');
         } else {
-        $superEmail = $_GET['super'] ?? 'legalwebco@gmail.com';
+            $superEmail = $_GET['super'] ?? 'legalwebco@gmail.com';
 
-        $super = User::where('email', $superEmail)->first();
-        if ($super) {
-            $super->update(['role' => 'superadmin']);
-            setup_log("Superadmin: {$super->name} ({$super->email})", 'success');
-        } else {
-            setup_log("Usuario {$superEmail} no encontrado. Debe registrarse con Google primero.", 'error');
-        }
+            $super = User::where('email', $superEmail)->first();
+            if ($super) {
+                $super->update(['role' => 'superadmin']);
+                setup_log("Superadmin: {$super->name} ({$super->email})", 'success');
+            } else {
+                setup_log("Usuario {$superEmail} no encontrado. Debe registrarse con Google primero.", 'error');
+            }
 
-        User::where('email', '!=', $superEmail)
-            ->whereIn('role', ['superadmin', 'admin'])
-            ->each(function ($u) {
-                $firm = $u->firm;
-                if ($firm && User::where('firm_id', $firm->id)->count() === 1) {
-                    $u->update(['role' => 'admin']);
-                    setup_log("Mantenido como admin (firma): {$u->email}", 'warning');
-                } else {
-                    $u->update(['role' => 'abogado']);
-                    setup_log("Cambiado a abogado: {$u->email}", 'info');
-                }
-            });
+            User::where('email', '!=', $superEmail)
+                ->whereIn('role', ['superadmin', 'admin'])
+                ->each(function ($u) {
+                    $firm = $u->firm;
+                    if ($firm && User::where('firm_id', $firm->id)->count() === 1) {
+                        $u->update(['role' => 'admin']);
+                        setup_log("Mantenido como admin (firma): {$u->email}", 'warning');
+                    } else {
+                        $u->update(['role' => 'abogado']);
+                        setup_log("Cambiado a abogado: {$u->email}", 'info');
+                    }
+                });
 
-        setup_log('---usuarios---');
-        User::all()->each(fn ($u) => setup_log("{$u->email} | {$u->role} | Firma: ".($u->firm?->name ?? 'N/A'), 'muted'));
+            setup_log('---usuarios---');
+            User::all()->each(fn ($u) => setup_log("{$u->email} | {$u->role} | Firma: ".($u->firm?->name ?? 'N/A'), 'muted'));
         }
     }
 
