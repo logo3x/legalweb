@@ -203,16 +203,47 @@ try {
             }
 
             setup_log('---notificacion---');
-            setup_log('Probando notificacion NewFirmRegistered...', 'info');
+            setup_log('Probando notificacion NewFirmRegistered a TODOS los emails de NEW_FIRM_EMAILS y superadmins...', 'info');
 
             try {
                 $testFirm = Firm::first();
                 $testUser = User::first();
 
                 if ($testFirm && $testUser) {
-                    Notification::route('mail', $to)
-                        ->notify(new NewFirmRegistered($testFirm, $testUser));
-                    setup_log('Notificacion NewFirmRegistered enviada a '.$to, 'success');
+                    $emails = array_filter(array_map('trim', explode(',', config('services.notifications.new_firm_emails', ''))));
+
+                    if (empty($emails)) {
+                        setup_log('NEW_FIRM_EMAILS vacio o no configurado', 'warning');
+                    } else {
+                        setup_log('Emails configurados en NEW_FIRM_EMAILS ('.count($emails).'):', 'info');
+                        foreach ($emails as $email) {
+                            setup_log('  -> '.$email, 'muted');
+                        }
+                        foreach ($emails as $email) {
+                            try {
+                                Notification::route('mail', $email)
+                                    ->notify(new NewFirmRegistered($testFirm, $testUser));
+                                setup_log('Enviado OK: '.$email, 'success');
+                            } catch (Exception $e) {
+                                setup_log('ERROR '.$email.': '.$e->getMessage(), 'error');
+                            }
+                        }
+                    }
+
+                    setup_log('---superadmins---');
+                    $superadmins = User::where('role', 'superadmin')->get();
+                    if ($superadmins->isEmpty()) {
+                        setup_log('No hay superadmins configurados', 'warning');
+                    } else {
+                        foreach ($superadmins as $sa) {
+                            try {
+                                $sa->notify(new NewFirmRegistered($testFirm, $testUser));
+                                setup_log('Enviado a superadmin: '.$sa->email, 'success');
+                            } catch (Exception $e) {
+                                setup_log('ERROR superadmin '.$sa->email.': '.$e->getMessage(), 'error');
+                            }
+                        }
+                    }
                 } else {
                     setup_log('No hay firmas o usuarios para probar la notificacion', 'warning');
                 }
