@@ -2,11 +2,15 @@
 
 use App\Models\CaseType;
 use App\Models\Client;
+use App\Models\Firm;
 use App\Models\LegalCase;
 use App\Models\Reminder;
 use App\Models\User;
+use App\Notifications\NewFirmRegistered;
 use App\Services\TybaService;
 use Illuminate\Contracts\Console\Kernel;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification;
 
 $secret = 'legalweb-setup-2026';
 if (($_GET['key'] ?? '') !== $secret) {
@@ -158,6 +162,64 @@ try {
     if ($step === 'storage') {
         Artisan::call('storage:link');
         setup_log('Storage link creado', 'success');
+    }
+
+    if ($step === 'mail_test') {
+        $to = $_GET['to'] ?? config('mail.from.address', '');
+
+        if (! $to) {
+            setup_log('Pase ?to=correo@ejemplo.com', 'error');
+        } else {
+            setup_log('---config---');
+            setup_log('MAIL_MAILER: '.config('mail.default'));
+            setup_log('MAIL_HOST: '.config('mail.mailers.smtp.host', '-'));
+            setup_log('MAIL_PORT: '.config('mail.mailers.smtp.port', '-'));
+            setup_log('MAIL_USERNAME: '.config('mail.mailers.smtp.username', '-'));
+            setup_log('MAIL_ENCRYPTION: '.(config('mail.mailers.smtp.encryption') ?? 'sin cifrado'));
+            setup_log('MAIL_FROM_ADDRESS: '.config('mail.from.address'));
+            setup_log('MAIL_FROM_NAME: '.config('mail.from.name'));
+            setup_log('NEW_FIRM_EMAILS: '.config('services.notifications.new_firm_emails'));
+
+            setup_log('---envio---');
+            setup_log("Enviando correo de prueba a: {$to}", 'info');
+
+            try {
+                Mail::raw(
+                    "Este es un correo de prueba enviado desde LegalWeb.\n\n".
+                    'Fecha: '.now()->format('d/m/Y H:i:s')."\n".
+                    'App: '.config('app.name')."\n".
+                    'URL: '.config('app.url')."\n\n".
+                    'Si recibe este mensaje, la configuracion de correo esta funcionando correctamente.',
+                    function ($message) use ($to) {
+                        $message->to($to)
+                            ->subject('LegalWeb - Test de correo '.now()->format('H:i:s'));
+                    }
+                );
+                setup_log('Correo enviado correctamente a '.$to, 'success');
+                setup_log('Revise su bandeja de entrada (y spam)', 'info');
+            } catch (Exception $e) {
+                setup_log('ERROR al enviar: '.$e->getMessage(), 'error');
+                setup_log($e->getFile().':'.$e->getLine(), 'muted');
+            }
+
+            setup_log('---notificacion---');
+            setup_log('Probando notificacion NewFirmRegistered...', 'info');
+
+            try {
+                $testFirm = Firm::first();
+                $testUser = User::first();
+
+                if ($testFirm && $testUser) {
+                    Notification::route('mail', $to)
+                        ->notify(new NewFirmRegistered($testFirm, $testUser));
+                    setup_log('Notificacion NewFirmRegistered enviada a '.$to, 'success');
+                } else {
+                    setup_log('No hay firmas o usuarios para probar la notificacion', 'warning');
+                }
+            } catch (Exception $e) {
+                setup_log('ERROR notificacion: '.$e->getMessage(), 'error');
+            }
+        }
     }
 
     if ($step === 'cache') {
@@ -447,6 +509,7 @@ $stepTitles = [
     'migrate' => 'Migraciones',
     'seed' => 'Seeders',
     'storage' => 'Storage Link',
+    'mail_test' => 'Test de Correo',
     'cache' => 'Cache Config',
     'clear' => 'Limpiar Cache',
     'fresh' => 'Fresh Migrate + Seed',
@@ -638,6 +701,7 @@ $baseUrl = "?key={$secret}";
             <a href="<?= $baseUrl ?>&step=migrate" class="<?= $step === 'migrate' ? 'active' : '' ?>">Migrar</a>
             <a href="<?= $baseUrl ?>&step=seed" class="<?= $step === 'seed' ? 'active' : '' ?>">Seed</a>
             <a href="<?= $baseUrl ?>&step=storage" class="<?= $step === 'storage' ? 'active' : '' ?>">Storage Link</a>
+            <a href="<?= $baseUrl ?>&step=mail_test&to=lgoviedo17@hotmail.com" class="<?= $step === 'mail_test' ? 'active' : '' ?>">Test Correo</a>
 
             <div class="group-title">Cache</div>
             <a href="<?= $baseUrl ?>&step=cache" class="<?= $step === 'cache' ? 'active' : '' ?>">Cachear</a>
