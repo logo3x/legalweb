@@ -9,8 +9,11 @@ use App\Models\FirmInvitation;
 use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\User;
+use App\Notifications\NewFirmRegistered;
 use App\Services\DemoDataService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 use Laravel\Socialite\Facades\Socialite;
 
 class GoogleController extends Controller
@@ -128,8 +131,36 @@ class GoogleController extends Controller
 
         app(DemoDataService::class)->seedForFirm($firm, $user);
 
+        // Notificar a superadmins y emails configurados
+        $this->notifyNewFirmRegistered($firm, $user);
+
         Auth::login($user, remember: true);
 
         return redirect('/admin/onboarding');
+    }
+
+    /**
+     * Enviar notificacion a superadmins y emails configurados cuando se registra una nueva firma.
+     */
+    private function notifyNewFirmRegistered(Firm $firm, User $user): void
+    {
+        try {
+            $notification = new NewFirmRegistered($firm, $user);
+
+            // Notificar a todos los superadmins
+            User::where('role', 'superadmin')->each(function ($superadmin) use ($notification, $user) {
+                if ($superadmin->email && $superadmin->id !== $user->id) {
+                    $superadmin->notify($notification);
+                }
+            });
+
+            // Notificar a emails adicionales configurados en .env
+            $extraEmails = array_filter(array_map('trim', explode(',', config('services.notifications.new_firm_emails', ''))));
+            foreach ($extraEmails as $email) {
+                Notification::route('mail', $email)->notify($notification);
+            }
+        } catch (\Exception $e) {
+            Log::warning('Error enviando notificacion nueva firma: '.$e->getMessage());
+        }
     }
 }
