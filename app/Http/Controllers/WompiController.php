@@ -23,6 +23,15 @@ class WompiController extends Controller
     }
 
     /**
+     * Prefijo de reference para identificar pagos de esta app.
+     * Compartido con otras apps en la misma cuenta Wompi.
+     */
+    private function originPrefix(): string
+    {
+        return strtoupper(config('services.wompi.origin', 'legalweb')).'-';
+    }
+
+    /**
      * Redirige al Widget de Checkout de Wompi.
      */
     public function checkout(Request $request)
@@ -44,7 +53,7 @@ class WompiController extends Controller
             : $plan->price_monthly;
 
         $amountInCents = $amount * 100;
-        $reference = 'LEGALWEB-'.$firm->id.'-'.$plan->slug.'-'.now()->timestamp;
+        $reference = $this->originPrefix().$firm->id.'-'.$plan->slug.'-'.now()->timestamp;
         $currency = 'COP';
 
         // Crear suscripcion pendiente
@@ -99,7 +108,7 @@ class WompiController extends Controller
             $status = $transaction['status'] ?? 'UNKNOWN';
             $reference = $transaction['reference'] ?? '';
 
-            if ($status === 'APPROVED' && str_starts_with($reference, 'LEGALWEB-')) {
+            if ($status === 'APPROVED' && str_starts_with($reference, $this->originPrefix())) {
                 $subscription = Subscription::where('wompi_reference', $reference)->first();
 
                 if ($subscription) {
@@ -141,7 +150,8 @@ class WompiController extends Controller
         $data = $request->json('data.transaction', []);
         $reference = $data['reference'] ?? '';
 
-        if (! str_starts_with($reference, 'LEGALWEB-')) {
+        // Filtro: ignorar pagos de otras apps que comparten la misma cuenta Wompi
+        if (! str_starts_with($reference, $this->originPrefix())) {
             return response()->json(['status' => 'ignored']);
         }
 
