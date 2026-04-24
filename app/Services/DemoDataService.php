@@ -8,7 +8,7 @@ use App\Models\CaseFlow;
 use App\Models\CaseFlowProgress;
 use App\Models\CaseType;
 use App\Models\Client;
-use App\Models\DocumentRequirement;
+use App\Models\Document;
 use App\Models\Firm;
 use App\Models\FlowStep;
 use App\Models\LegalCase;
@@ -28,7 +28,7 @@ class DemoDataService
             $this->createDemoReminders($firm, $owner, $cases);
             $this->createDemoBilling($owner, $cases);
             $this->createDemoSyncLogs($cases);
-            $this->createDemoDocumentRequirements($owner, $cases);
+            $this->createDemoDocuments($owner, $cases);
         } catch (\Exception $e) {
             Log::warning('Demo seed parcial: '.$e->getMessage());
         }
@@ -396,7 +396,7 @@ class DemoDataService
         ]);
     }
 
-    private function createDemoDocumentRequirements(User $owner, array $cases): void
+    private function createDemoDocuments(User $owner, array $cases): void
     {
         // Caso 1 (Civil - Arrendamiento)
         $case1 = $cases[0];
@@ -410,7 +410,7 @@ class DemoDataService
         ];
 
         foreach ($docs1 as $d) {
-            DocumentRequirement::create([
+            Document::create([
                 'legal_case_id' => $case1->id,
                 'name' => $d['name'],
                 'responsible' => $d['resp'],
@@ -435,7 +435,7 @@ class DemoDataService
         ];
 
         foreach ($docs2 as $d) {
-            DocumentRequirement::create([
+            Document::create([
                 'legal_case_id' => $case2->id,
                 'name' => $d['name'],
                 'responsible' => $d['resp'],
@@ -460,7 +460,7 @@ class DemoDataService
         ];
 
         foreach ($docs3 as $d) {
-            DocumentRequirement::create([
+            Document::create([
                 'legal_case_id' => $case3->id,
                 'name' => $d['name'],
                 'responsible' => $d['resp'],

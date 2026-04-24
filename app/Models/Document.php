@@ -18,11 +18,30 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'file_type',
     'file_size',
     'uploaded_by',
+    'responsible',
+    'entity',
+    'estimated_cost',
+    'status',
+    'priority',
+    'due_date',
+    'received_at',
+    'external_url',
+    'notes',
+    'assigned_to',
 ])]
 class Document extends Model
 {
     /** @use HasFactory<DocumentFactory> */
     use HasFactory, SoftDeletes;
+
+    protected function casts(): array
+    {
+        return [
+            'due_date' => 'date',
+            'received_at' => 'date',
+            'estimated_cost' => 'decimal:2',
+        ];
+    }
 
     public function legalCase(): BelongsTo
     {
@@ -37,5 +56,10 @@ class Document extends Model
     public function uploader(): BelongsTo
     {
         return $this->belongsTo(User::class, 'uploaded_by');
+    }
+
+    public function assignedUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assigned_to');
     }
 }

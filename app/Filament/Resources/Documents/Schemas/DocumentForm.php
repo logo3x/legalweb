@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Documents\Schemas;
 
-use App\Models\CaseEvent;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -21,41 +21,69 @@ class DocumentForm
                     ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->case_number} - {$record->title}")
                     ->required()
                     ->searchable()
-                    ->preload()
-                    ->live(),
-                Select::make('case_event_id')
-                    ->label('Actuación (opcional)')
-                    ->options(function ($get) {
-                        $caseId = $get('legal_case_id');
-                        if (! $caseId) {
-                            return [];
-                        }
-
-                        return CaseEvent::where('legal_case_id', $caseId)
-                            ->whereHas('legalCase', fn ($q) => $q->where('firm_id', auth()->user()->firm_id))
-                            ->orderByDesc('event_date')
-                            ->get()
-                            ->mapWithKeys(fn ($e) => [$e->id => $e->event_date->format('d/m/Y').' - '.$e->title]);
-                    })
-                    ->searchable()
-                    ->preload()
-                    ->helperText('Seleccione primero un caso para ver sus actuaciones.'),
+                    ->preload(),
                 TextInput::make('name')
-                    ->label('Nombre del Documento')
-                    ->required(),
-                Textarea::make('description')
-                    ->label('Descripción')
+                    ->label('Nombre del documento')
+                    ->required()
                     ->columnSpanFull(),
+                Textarea::make('description')
+                    ->label('Descripcion')
+                    ->rows(2)
+                    ->columnSpanFull(),
+                Select::make('responsible')
+                    ->label('Quien debe conseguirlo')
+                    ->options([
+                        'cliente' => 'Cliente',
+                        'abogado' => 'Abogado',
+                        'firma' => 'Firma',
+                        'contraparte' => 'Contraparte',
+                        'juzgado' => 'Juzgado',
+                        'otro' => 'Otro',
+                    ])
+                    ->default('cliente')
+                    ->required(),
+                TextInput::make('entity')
+                    ->label('Entidad donde se consigue')
+                    ->placeholder('Ej: Notaria, Registraduria'),
+                TextInput::make('estimated_cost')
+                    ->label('Valor aproximado ($)')
+                    ->numeric()
+                    ->prefix('$'),
+                Select::make('status')
+                    ->label('Estado')
+                    ->options([
+                        'pendiente' => 'Pendiente',
+                        'solicitado' => 'Solicitado',
+                        'en_tramite' => 'En tramite',
+                        'recibido' => 'Recibido',
+                        'no_aplica' => 'No aplica',
+                    ])
+                    ->default('pendiente')
+                    ->required(),
+                Select::make('priority')
+                    ->label('Prioridad')
+                    ->options([
+                        'baja' => 'Baja',
+                        'media' => 'Media',
+                        'alta' => 'Alta',
+                        'urgente' => 'Urgente',
+                    ])
+                    ->default('media'),
+                DatePicker::make('due_date')
+                    ->label('Fecha limite'),
                 FileUpload::make('file_path')
-                    ->label('Archivo')
+                    ->label('Archivo (opcional)')
                     ->disk('public')
                     ->directory('documents')
                     ->preserveFilenames()
-                    ->acceptedFileTypes(['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'image/jpeg', 'image/png'])
+                    ->acceptedFileTypes(['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png'])
                     ->maxSize(10240)
                     ->downloadable()
                     ->openable()
-                    ->required()
+                    ->columnSpanFull(),
+                TextInput::make('external_url')
+                    ->label('Enlace al archivo (Drive, etc)')
+                    ->url()
                     ->columnSpanFull(),
             ]);
     }
