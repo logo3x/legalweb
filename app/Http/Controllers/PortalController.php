@@ -25,6 +25,8 @@ class PortalController extends Controller
                 'flowProgress' => fn ($q) => $q->join('flow_steps', 'flow_steps.id', '=', 'case_flow_progress.flow_step_id')
                     ->orderBy('flow_steps.order')
                     ->select('case_flow_progress.*'),
+                'documents' => fn ($q) => $q->orderByRaw("FIELD(status, 'pendiente', 'solicitado', 'en_tramite', 'recibido', 'no_aplica')")
+                    ->orderByRaw("FIELD(priority, 'urgente', 'alta', 'media', 'baja')"),
             ])
             ->firstOrFail();
 
