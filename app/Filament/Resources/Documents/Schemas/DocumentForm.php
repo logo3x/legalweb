@@ -32,6 +32,7 @@ class DocumentForm
                         }
 
                         return CaseEvent::where('legal_case_id', $caseId)
+                            ->whereHas('legalCase', fn ($q) => $q->where('firm_id', auth()->user()->firm_id))
                             ->orderByDesc('event_date')
                             ->get()
                             ->mapWithKeys(fn ($e) => [$e->id => $e->event_date->format('d/m/Y').' - '.$e->title]);
