@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Documents\Schemas;
 
+use App\Models\CaseEvent;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -16,16 +17,28 @@ class DocumentForm
             ->components([
                 Select::make('legal_case_id')
                     ->label('Caso')
-                    ->relationship('legalCase', 'title')
+                    ->relationship('legalCase', 'title', fn ($query) => $query->where('firm_id', auth()->user()->firm_id))
                     ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->case_number} - {$record->title}")
                     ->required()
                     ->searchable()
-                    ->preload(),
+                    ->preload()
+                    ->live(),
                 Select::make('case_event_id')
                     ->label('Actuación (opcional)')
-                    ->relationship('caseEvent', 'title')
+                    ->options(function ($get) {
+                        $caseId = $get('legal_case_id');
+                        if (! $caseId) {
+                            return [];
+                        }
+
+                        return CaseEvent::where('legal_case_id', $caseId)
+                            ->orderByDesc('event_date')
+                            ->get()
+                            ->mapWithKeys(fn ($e) => [$e->id => $e->event_date->format('d/m/Y').' - '.$e->title]);
+                    })
                     ->searchable()
-                    ->preload(),
+                    ->preload()
+                    ->helperText('Seleccione primero un caso para ver sus actuaciones.'),
                 TextInput::make('name')
                     ->label('Nombre del Documento')
                     ->required(),

@@ -67,7 +67,20 @@ class DocumentsRelationManager extends RelationManager
             ->defaultSort('created_at', 'desc')
             ->headerActions([
                 CreateAction::make()
-                    ->label('Subir Documento'),
+                    ->label('Subir Documento')
+                    ->mutateFormDataUsing(function (array $data): array {
+                        $data['uploaded_by'] = auth()->id();
+
+                        if (! empty($data['file_path'])) {
+                            $fullPath = storage_path('app/public/'.$data['file_path']);
+                            if (file_exists($fullPath)) {
+                                $data['file_size'] = filesize($fullPath);
+                                $data['file_type'] = pathinfo($data['file_path'], PATHINFO_EXTENSION);
+                            }
+                        }
+
+                        return $data;
+                    }),
             ])
             ->recordActions([
                 Action::make('download')
