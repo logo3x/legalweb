@@ -23,3 +23,10 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Skills y herramientas de desarrollo
+/.claude-flow
+/.claude/skills
+/.github/skills
+/.playwright-mcp
+/screenshots
