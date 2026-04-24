@@ -115,4 +115,9 @@ class LegalCase extends Model
     {
         return $this->hasMany(BillingEntry::class);
     }
+
+    public function documentRequirements(): HasMany
+    {
+        return $this->hasMany(DocumentRequirement::class);
+    }
 }

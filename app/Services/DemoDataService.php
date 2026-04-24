@@ -8,6 +8,7 @@ use App\Models\CaseFlow;
 use App\Models\CaseFlowProgress;
 use App\Models\CaseType;
 use App\Models\Client;
+use App\Models\DocumentRequirement;
 use App\Models\Firm;
 use App\Models\FlowStep;
 use App\Models\LegalCase;
@@ -27,6 +28,7 @@ class DemoDataService
             $this->createDemoReminders($firm, $owner, $cases);
             $this->createDemoBilling($owner, $cases);
             $this->createDemoSyncLogs($cases);
+            $this->createDemoDocumentRequirements($owner, $cases);
         } catch (\Exception $e) {
             Log::warning('Demo seed parcial: '.$e->getMessage());
         }
@@ -392,6 +394,84 @@ class DemoDataService
             'entry_date' => now()->subDays(12),
             'is_billable' => true,
         ]);
+    }
+
+    private function createDemoDocumentRequirements(User $owner, array $cases): void
+    {
+        // Caso 1 (Civil - Arrendamiento)
+        $case1 = $cases[0];
+        $docs1 = [
+            ['name' => 'Cedula de ciudadania del cliente', 'resp' => 'cliente', 'entity' => 'Registraduria Nacional', 'cost' => 0, 'status' => 'recibido', 'priority' => 'alta'],
+            ['name' => 'Contrato de arrendamiento original', 'resp' => 'cliente', 'entity' => null, 'cost' => 0, 'status' => 'recibido', 'priority' => 'alta'],
+            ['name' => 'Certificado de existencia demandado', 'resp' => 'abogado', 'entity' => 'Camara de Comercio', 'cost' => 22000, 'status' => 'recibido', 'priority' => 'alta'],
+            ['name' => 'Estados de cuenta con los pagos pendientes', 'resp' => 'cliente', 'entity' => null, 'cost' => 0, 'status' => 'recibido', 'priority' => 'media'],
+            ['name' => 'Poder especial autenticado', 'resp' => 'cliente', 'entity' => 'Notaria', 'cost' => 35000, 'status' => 'recibido', 'priority' => 'urgente'],
+            ['name' => 'Copia de comunicaciones previas', 'resp' => 'cliente', 'entity' => null, 'cost' => 0, 'status' => 'en_tramite', 'priority' => 'media'],
+        ];
+
+        foreach ($docs1 as $d) {
+            DocumentRequirement::create([
+                'legal_case_id' => $case1->id,
+                'name' => $d['name'],
+                'responsible' => $d['resp'],
+                'entity' => $d['entity'],
+                'estimated_cost' => $d['cost'],
+                'status' => $d['status'],
+                'priority' => $d['priority'],
+                'received_at' => $d['status'] === 'recibido' ? now()->subDays(rand(20, 80)) : null,
+                'assigned_to' => $owner->id,
+            ]);
+        }
+
+        // Caso 2 (Laboral)
+        $case2 = $cases[1];
+        $docs2 = [
+            ['name' => 'Cedula de ciudadania del cliente', 'resp' => 'cliente', 'entity' => null, 'cost' => 0, 'status' => 'recibido', 'priority' => 'alta'],
+            ['name' => 'Contrato laboral', 'resp' => 'cliente', 'entity' => null, 'cost' => 0, 'status' => 'recibido', 'priority' => 'urgente'],
+            ['name' => 'Certificado laboral con funciones y salario', 'resp' => 'cliente', 'entity' => 'Empleador', 'cost' => 0, 'status' => 'solicitado', 'priority' => 'alta'],
+            ['name' => 'Comprobantes de pago ultimos 12 meses', 'resp' => 'cliente', 'entity' => null, 'cost' => 0, 'status' => 'en_tramite', 'priority' => 'alta'],
+            ['name' => 'Carta de terminacion del contrato', 'resp' => 'cliente', 'entity' => null, 'cost' => 0, 'status' => 'recibido', 'priority' => 'urgente'],
+            ['name' => 'Historia clinica laboral (si aplica)', 'resp' => 'cliente', 'entity' => 'EPS', 'cost' => 15000, 'status' => 'pendiente', 'priority' => 'baja'],
+        ];
+
+        foreach ($docs2 as $d) {
+            DocumentRequirement::create([
+                'legal_case_id' => $case2->id,
+                'name' => $d['name'],
+                'responsible' => $d['resp'],
+                'entity' => $d['entity'],
+                'estimated_cost' => $d['cost'],
+                'status' => $d['status'],
+                'priority' => $d['priority'],
+                'received_at' => $d['status'] === 'recibido' ? now()->subDays(rand(5, 14)) : null,
+                'assigned_to' => $owner->id,
+            ]);
+        }
+
+        // Caso 3 (Familia - Divorcio)
+        $case3 = $cases[2];
+        $docs3 = [
+            ['name' => 'Registro civil de matrimonio', 'resp' => 'cliente', 'entity' => 'Notaria', 'cost' => 19000, 'status' => 'recibido', 'priority' => 'urgente'],
+            ['name' => 'Cedulas de ambos conyuges', 'resp' => 'cliente', 'entity' => null, 'cost' => 0, 'status' => 'recibido', 'priority' => 'alta'],
+            ['name' => 'Registros civiles de hijos menores', 'resp' => 'cliente', 'entity' => 'Notaria', 'cost' => 38000, 'status' => 'en_tramite', 'priority' => 'alta'],
+            ['name' => 'Declaracion extrajuicio de bienes', 'resp' => 'cliente', 'entity' => 'Notaria', 'cost' => 45000, 'status' => 'solicitado', 'priority' => 'media'],
+            ['name' => 'Certificado de tradicion del inmueble', 'resp' => 'abogado', 'entity' => 'Oficina de Instrumentos Publicos', 'cost' => 17000, 'status' => 'pendiente', 'priority' => 'media'],
+            ['name' => 'Poder especial', 'resp' => 'cliente', 'entity' => 'Notaria', 'cost' => 35000, 'status' => 'recibido', 'priority' => 'urgente'],
+        ];
+
+        foreach ($docs3 as $d) {
+            DocumentRequirement::create([
+                'legal_case_id' => $case3->id,
+                'name' => $d['name'],
+                'responsible' => $d['resp'],
+                'entity' => $d['entity'],
+                'estimated_cost' => $d['cost'],
+                'status' => $d['status'],
+                'priority' => $d['priority'],
+                'received_at' => $d['status'] === 'recibido' ? now()->subDays(rand(10, 30)) : null,
+                'assigned_to' => $owner->id,
+            ]);
+        }
     }
 
     private function createDemoSyncLogs(array $cases): void

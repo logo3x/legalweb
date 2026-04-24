@@ -1,0 +1,351 @@
+- generic [active] [ref=e1]:
+  - navigation [ref=e3]:
+    - link "LegalWeb logo" [ref=e5] [cursor=pointer]:
+      - /url: http://localhost/legalweb/public/admin
+      - img "LegalWeb logo" [ref=e6]
+    - button "Menú del usuario" [ref=e10] [cursor=pointer]:
+      - img "Avatar of Admin LegalWeb" [ref=e11]
+  - generic [ref=e12]:
+    - complementary [ref=e14]:
+      - navigation [ref=e15]:
+        - list [ref=e16]:
+          - listitem [ref=e17]:
+            - list [ref=e18]:
+              - listitem [ref=e19]:
+                - link "Escritorio" [ref=e20] [cursor=pointer]:
+                  - /url: http://localhost/legalweb/public/admin
+                  - img [ref=e21]
+                  - generic [ref=e23]: Escritorio
+              - listitem [ref=e24]:
+                - link "Casos" [ref=e25] [cursor=pointer]:
+                  - /url: http://localhost/legalweb/public/admin/legal-cases
+                  - img [ref=e26]
+                  - generic [ref=e28]: Casos
+              - listitem [ref=e29]:
+                - link "Clientes" [ref=e30] [cursor=pointer]:
+                  - /url: http://localhost/legalweb/public/admin/clients
+                  - img [ref=e31]
+                  - generic [ref=e33]: Clientes
+              - listitem [ref=e34]:
+                - link "Actuaciones" [ref=e35] [cursor=pointer]:
+                  - /url: http://localhost/legalweb/public/admin/case-events
+                  - img [ref=e36]
+                  - generic [ref=e38]: Actuaciones
+              - listitem [ref=e39]:
+                - link "Agenda 2" [ref=e40] [cursor=pointer]:
+                  - /url: http://localhost/legalweb/public/admin/reminders
+                  - img [ref=e41]
+                  - generic [ref=e43]: Agenda
+                  - generic [ref=e47]: "2"
+              - listitem [ref=e48]:
+                - link "Documentos" [ref=e49] [cursor=pointer]:
+                  - /url: http://localhost/legalweb/public/admin/documents
+                  - img [ref=e50]
+                  - generic [ref=e52]: Documentos
+              - listitem [ref=e53]:
+                - link "Reportes" [ref=e54] [cursor=pointer]:
+                  - /url: http://localhost/legalweb/public/admin/reports
+                  - img [ref=e55]
+                  - generic [ref=e57]: Reportes
+              - listitem [ref=e58]:
+                - link "Calculadora" [ref=e59] [cursor=pointer]:
+                  - /url: http://localhost/legalweb/public/admin/term-calculator
+                  - img [ref=e60]
+                  - generic [ref=e62]: Calculadora
+              - listitem [ref=e63]:
+                - link "Mi Plan" [ref=e64] [cursor=pointer]:
+                  - /url: http://localhost/legalweb/public/admin/planes
+                  - img [ref=e65]
+                  - generic [ref=e67]: Mi Plan
+          - listitem [ref=e68]:
+            - generic [ref=e69] [cursor=pointer]:
+              - generic [ref=e70]: Configuración
+              - button "Configuración" [expanded] [ref=e71]:
+                - img [ref=e72]
+            - list [ref=e74]:
+              - listitem [ref=e75]:
+                - link "Tipos De Proceso" [ref=e76] [cursor=pointer]:
+                  - /url: http://localhost/legalweb/public/admin/case-types
+                  - img [ref=e77]
+                  - generic [ref=e80]: Tipos De Proceso
+              - listitem [ref=e81]:
+                - link "Flujos De Proceso" [ref=e82] [cursor=pointer]:
+                  - /url: http://localhost/legalweb/public/admin/case-flows
+                  - img [ref=e83]
+                  - generic [ref=e85]: Flujos De Proceso
+          - listitem [ref=e86]:
+            - generic [ref=e87] [cursor=pointer]:
+              - generic [ref=e88]: Configuracion
+              - button "Configuracion" [expanded] [ref=e89]:
+                - img [ref=e90]
+            - list [ref=e92]:
+              - listitem [ref=e93]:
+                - link "Mi Firma" [ref=e94] [cursor=pointer]:
+                  - /url: http://localhost/legalweb/public/admin/firm-settings
+                  - img [ref=e95]
+                  - generic [ref=e98]: Mi Firma
+              - listitem [ref=e99]:
+                - link "Equipo" [ref=e100] [cursor=pointer]:
+                  - /url: http://localhost/legalweb/public/admin/team-members
+                  - img [ref=e101]
+                  - generic [ref=e103]: Equipo
+      - generic [ref=e104]:
+        - link "Terminos y Condiciones" [ref=e105] [cursor=pointer]:
+          - /url: http://localhost/legalweb/public/portal/terminos
+        - link "Politica de Privacidad" [ref=e106] [cursor=pointer]:
+          - /url: http://localhost/legalweb/public/portal/privacidad
+    - main [ref=e108]:
+      - generic [ref=e110]:
+        - generic [ref=e111]:
+          - heading "Reportes y Analytics" [level=1] [ref=e113]
+          - button "Descargar PDF" [ref=e116] [cursor=pointer]:
+            - img [ref=e117]
+            - text: Descargar PDF
+        - generic [ref=e120]:
+          - generic [ref=e121]:
+            - generic [ref=e122]:
+              - generic [ref=e123]: Total Casos
+              - generic [ref=e124]: "19"
+            - generic [ref=e125]:
+              - generic [ref=e126]: Clientes
+              - generic [ref=e127]: "15"
+            - generic [ref=e128]:
+              - generic [ref=e129]: Casos Cerrados
+              - generic [ref=e130]: "3"
+            - generic [ref=e131]:
+              - generic [ref=e132]: Promedio dias/caso
+              - generic [ref=e133]: 0 dias
+          - generic [ref=e134]:
+            - generic [ref=e135]:
+              - heading "Casos por Estado" [level=3] [ref=e136]
+              - generic [ref=e138]:
+                - generic [ref=e139]: Abierto
+                - generic [ref=e140]: 3 (16%)
+              - generic [ref=e144]:
+                - generic [ref=e145]: Archivado
+                - generic [ref=e146]: 5 (26%)
+              - generic [ref=e150]:
+                - generic [ref=e151]: Cerrado
+                - generic [ref=e152]: 3 (16%)
+              - generic [ref=e156]:
+                - generic [ref=e157]: En Espera
+                - generic [ref=e158]: 3 (16%)
+              - generic [ref=e162]:
+                - generic [ref=e163]: En Progreso
+                - generic [ref=e164]: 5 (26%)
+            - generic [ref=e167]:
+              - heading "Casos por Tipo de Proceso" [level=3] [ref=e168]
+              - generic [ref=e170]:
+                - generic [ref=e171]: Civil
+                - generic [ref=e172]: "4"
+              - generic [ref=e176]:
+                - generic [ref=e177]: Laboral
+                - generic [ref=e178]: "3"
+              - generic [ref=e182]:
+                - generic [ref=e183]: Penal
+                - generic [ref=e184]: "3"
+              - generic [ref=e188]:
+                - generic [ref=e189]: Administrativo
+                - generic [ref=e190]: "3"
+              - generic [ref=e194]:
+                - generic [ref=e195]: Comercial
+                - generic [ref=e196]: "3"
+              - generic [ref=e200]:
+                - generic [ref=e201]: Familia
+                - generic [ref=e202]: "3"
+            - generic [ref=e205]:
+              - heading "Casos por Prioridad" [level=3] [ref=e206]
+              - generic [ref=e207]:
+                - generic [ref=e210]: Alta
+                - generic [ref=e211]: "6"
+              - generic [ref=e212]:
+                - generic [ref=e215]: Baja
+                - generic [ref=e216]: "6"
+              - generic [ref=e217]:
+                - generic [ref=e220]: Media
+                - generic [ref=e221]: "3"
+              - generic [ref=e222]:
+                - generic [ref=e225]: Urgente
+                - generic [ref=e226]: "4"
+            - generic [ref=e227]:
+              - heading "Productividad por Abogado" [level=3] [ref=e228]
+              - generic [ref=e229]:
+                - generic [ref=e230]: Admin LegalWeb
+                - generic [ref=e231]: 1 casos
+              - generic [ref=e232]:
+                - generic [ref=e233]: Carlos Rodríguez
+                - generic [ref=e234]: 12 casos
+              - generic [ref=e235]:
+                - generic [ref=e236]: María López
+                - generic [ref=e237]: 6 casos
+          - generic [ref=e238]:
+            - generic [ref=e239]:
+              - generic [ref=e240]: "17"
+              - generic [ref=e241]: Actuaciones (30 dias)
+            - generic [ref=e242]:
+              - generic [ref=e243]: "51"
+              - generic [ref=e244]: Pasos Completados
+            - generic [ref=e245]:
+              - generic [ref=e246]: "123"
+              - generic [ref=e247]: Pasos Pendientes
+          - generic [ref=e248]:
+            - heading "Analitica de Despachos" [level=3] [ref=e249]
+            - paragraph [ref=e250]: Rendimiento de los juzgados en sus procesos. El tiempo promedio se calcula en dias calendario desde inicio hasta cierre.
+            - table [ref=e251]:
+              - rowgroup [ref=e252]:
+                - row "Despacho Casos Activos Cerrados Promedio dias" [ref=e253]:
+                  - columnheader "Despacho" [ref=e254]
+                  - columnheader "Casos" [ref=e255]
+                  - columnheader "Activos" [ref=e256]
+                  - columnheader "Cerrados" [ref=e257]
+                  - columnheader "Promedio dias" [ref=e258]
+              - rowgroup [ref=e259]:
+                - row "O'Hara-Leuschke - Juzgado 12 1 0 1 En curso" [ref=e260]:
+                  - cell "O'Hara-Leuschke - Juzgado 12" [ref=e261]
+                  - cell "1" [ref=e262]
+                  - cell "0" [ref=e263]:
+                    - generic [ref=e264]: "0"
+                  - cell "1" [ref=e265]:
+                    - generic [ref=e266]: "1"
+                  - cell "En curso" [ref=e267]
+                - row "- Juzgado 11 1 1 0 En curso" [ref=e268]:
+                  - cell "- Juzgado 11" [ref=e269]
+                  - cell "1" [ref=e270]
+                  - cell "1" [ref=e271]:
+                    - generic [ref=e272]: "1"
+                  - cell "0" [ref=e273]:
+                    - generic [ref=e274]: "0"
+                  - cell "En curso" [ref=e275]
+                - row "Hane-King - Juzgado 27 1 1 0 En curso" [ref=e276]:
+                  - cell "Hane-King - Juzgado 27" [ref=e277]
+                  - cell "1" [ref=e278]
+                  - cell "1" [ref=e279]:
+                    - generic [ref=e280]: "1"
+                  - cell "0" [ref=e281]:
+                    - generic [ref=e282]: "0"
+                  - cell "En curso" [ref=e283]
+                - row "Gutkowski Inc - Juzgado 5 1 0 1 En curso" [ref=e284]:
+                  - cell "Gutkowski Inc - Juzgado 5" [ref=e285]
+                  - cell "1" [ref=e286]
+                  - cell "0" [ref=e287]:
+                    - generic [ref=e288]: "0"
+                  - cell "1" [ref=e289]:
+                    - generic [ref=e290]: "1"
+                  - cell "En curso" [ref=e291]
+                - row "- Juzgado 6 1 1 0 En curso" [ref=e292]:
+                  - cell "- Juzgado 6" [ref=e293]
+                  - cell "1" [ref=e294]
+                  - cell "1" [ref=e295]:
+                    - generic [ref=e296]: "1"
+                  - cell "0" [ref=e297]:
+                    - generic [ref=e298]: "0"
+                  - cell "En curso" [ref=e299]
+                - row "Buckridge-Krajcik - Juzgado 26 1 1 0 En curso" [ref=e300]:
+                  - cell "Buckridge-Krajcik - Juzgado 26" [ref=e301]
+                  - cell "1" [ref=e302]
+                  - cell "1" [ref=e303]:
+                    - generic [ref=e304]: "1"
+                  - cell "0" [ref=e305]:
+                    - generic [ref=e306]: "0"
+                  - cell "En curso" [ref=e307]
+                - row "- Juzgado 9 1 1 0 En curso" [ref=e308]:
+                  - cell "- Juzgado 9" [ref=e309]
+                  - cell "1" [ref=e310]
+                  - cell "1" [ref=e311]:
+                    - generic [ref=e312]: "1"
+                  - cell "0" [ref=e313]:
+                    - generic [ref=e314]: "0"
+                  - cell "En curso" [ref=e315]
+                - row "Stroman, Kshlerin and Friesen - Juzgado 26 1 1 0 En curso" [ref=e316]:
+                  - cell "Stroman, Kshlerin and Friesen - Juzgado 26" [ref=e317]
+                  - cell "1" [ref=e318]
+                  - cell "1" [ref=e319]:
+                    - generic [ref=e320]: "1"
+                  - cell "0" [ref=e321]:
+                    - generic [ref=e322]: "0"
+                  - cell "En curso" [ref=e323]
+                - row "Daniel PLC - Juzgado 12 1 1 0 En curso" [ref=e324]:
+                  - cell "Daniel PLC - Juzgado 12" [ref=e325]
+                  - cell "1" [ref=e326]
+                  - cell "1" [ref=e327]:
+                    - generic [ref=e328]: "1"
+                  - cell "0" [ref=e329]:
+                    - generic [ref=e330]: "0"
+                  - cell "En curso" [ref=e331]
+                - row "Nienow LLC - Juzgado 28 1 1 0 En curso" [ref=e332]:
+                  - cell "Nienow LLC - Juzgado 28" [ref=e333]
+                  - cell "1" [ref=e334]
+                  - cell "1" [ref=e335]:
+                    - generic [ref=e336]: "1"
+                  - cell "0" [ref=e337]:
+                    - generic [ref=e338]: "0"
+                  - cell "En curso" [ref=e339]
+          - generic [ref=e340]:
+            - generic [ref=e341]:
+              - heading "Tipos de Actuaciones" [level=3] [ref=e342]
+              - paragraph [ref=e343]: Las 10 actuaciones mas frecuentes en sus procesos.
+              - generic [ref=e345]:
+                - generic [ref=e346]: Agregar Memorial
+                - generic [ref=e347]: "17"
+              - generic [ref=e351]:
+                - generic [ref=e352]: Fijacion Estado
+                - generic [ref=e353]: "12"
+              - generic [ref=e357]:
+                - generic [ref=e358]: Auto Decide
+                - generic [ref=e359]: "4"
+              - generic [ref=e363]:
+                - generic [ref=e364]: Auto Reconoce
+                - generic [ref=e365]: "3"
+              - generic [ref=e369]:
+                - generic [ref=e370]: Auto Ordena
+                - generic [ref=e371]: "2"
+              - generic [ref=e375]:
+                - generic [ref=e376]: Ad nostrum ipsam ratione.
+                - generic [ref=e377]: "1"
+              - generic [ref=e381]:
+                - generic [ref=e382]: At est dolores dignissimos ad.
+                - generic [ref=e383]: "1"
+              - generic [ref=e387]:
+                - generic [ref=e388]: Officia maxime voluptatem dolorem.
+                - generic [ref=e389]: "1"
+              - generic [ref=e393]:
+                - generic [ref=e394]: Voluptas debitis maiores.
+                - generic [ref=e395]: "1"
+              - generic [ref=e399]:
+                - generic [ref=e400]: Veritatis quasi nesciunt.
+                - generic [ref=e401]: "1"
+            - generic [ref=e404]:
+              - heading "Actividad Mensual" [level=3] [ref=e405]
+              - paragraph [ref=e406]: Actuaciones registradas por mes (ultimos 6 meses).
+              - generic [ref=e408]:
+                - generic [ref=e409]: Oct 2025
+                - generic [ref=e410]: 3 actuaciones
+              - generic [ref=e414]:
+                - generic [ref=e415]: Nov 2025
+                - generic [ref=e416]: 7 actuaciones
+              - generic [ref=e420]:
+                - generic [ref=e421]: Dec 2025
+                - generic [ref=e422]: 8 actuaciones
+              - generic [ref=e426]:
+                - generic [ref=e427]: Jan 2026
+                - generic [ref=e428]: 2 actuaciones
+              - generic [ref=e432]:
+                - generic [ref=e433]: Feb 2026
+                - generic [ref=e434]: 4 actuaciones
+              - generic [ref=e438]:
+                - generic [ref=e439]: Mar 2026
+                - generic [ref=e440]: 4 actuaciones
+              - generic [ref=e444]:
+                - generic [ref=e445]: Apr 2026
+                - generic [ref=e446]: 5 actuaciones
+              - generic [ref=e450]:
+                - generic [ref=e451]: May 2026
+                - generic [ref=e452]: 5 actuaciones
+              - generic [ref=e456]:
+                - generic [ref=e457]: Jun 2026
+                - generic [ref=e458]: 5 actuaciones
+              - generic [ref=e462]:
+                - generic [ref=e463]: Jul 2026
+                - generic [ref=e464]: 1 actuaciones
+  - generic:
+    - status

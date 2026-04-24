@@ -70,7 +70,18 @@
       "Bash(zip -r dompdf-vendor.zip vendor/barryvdh vendor/dompdf vendor/sabberworm vendor/masterminds vendor/autoload.php vendor/composer/)",
       "Bash(powershell -command \"Compress-Archive -Path vendor/barryvdh, vendor/dompdf, vendor/sabberworm, vendor/masterminds, vendor/autoload.php, vendor/composer -DestinationPath dompdf-vendor.zip -Force\")",
       "WebFetch(domain:siugj.ramajudicial.gov.co)",
-      "WebFetch(domain:gclegal.co)"
+      "WebFetch(domain:gclegal.co)",
+      "mcp__plugin_playwright_playwright__browser_navigate",
+      "mcp__plugin_playwright_playwright__browser_take_screenshot",
+      "mcp__plugin_playwright_playwright__browser_snapshot",
+      "mcp__plugin_playwright_playwright__browser_fill_form",
+      "mcp__plugin_playwright_playwright__browser_click",
+      "Bash(ls -la *.png)",
+      "Bash(mkdir -p public/images/screenshots)",
+      "Bash(cp screenshots/03-dashboard.png public/images/screenshots/dashboard.png)",
+      "Bash(cp screenshots/04-casos-lista.png public/images/screenshots/casos.png)",
+      "Bash(cp screenshots/05-caso-detalle.png public/images/screenshots/caso-detalle.png)",
+      "Bash(cp screenshots/07-agenda.png public/images/screenshots/agenda.png)"
     ]
   }
 }

@@ -1,0 +1,668 @@
+- generic [active] [ref=e1]:
+  - navigation [ref=e3]:
+    - link "LegalWeb logo" [ref=e5] [cursor=pointer]:
+      - /url: http://localhost/legalweb/public/admin
+      - img "LegalWeb logo" [ref=e6]
+    - button "Menú del usuario" [ref=e10] [cursor=pointer]:
+      - img "Avatar of Admin LegalWeb" [ref=e11]
+  - generic [ref=e12]:
+    - complementary [ref=e14]:
+      - navigation [ref=e15]:
+        - list [ref=e16]:
+          - listitem [ref=e17]:
+            - list [ref=e18]:
+              - listitem [ref=e19]:
+                - link "Escritorio" [ref=e20] [cursor=pointer]:
+                  - /url: http://localhost/legalweb/public/admin
+                  - img [ref=e21]
+                  - generic [ref=e23]: Escritorio
+              - listitem [ref=e24]:
+                - link "Casos" [ref=e25] [cursor=pointer]:
+                  - /url: http://localhost/legalweb/public/admin/legal-cases
+                  - img [ref=e26]
+                  - generic [ref=e28]: Casos
+              - listitem [ref=e29]:
+                - link "Clientes" [ref=e30] [cursor=pointer]:
+                  - /url: http://localhost/legalweb/public/admin/clients
+                  - img [ref=e31]
+                  - generic [ref=e33]: Clientes
+              - listitem [ref=e34]:
+                - link "Actuaciones" [ref=e35] [cursor=pointer]:
+                  - /url: http://localhost/legalweb/public/admin/case-events
+                  - img [ref=e36]
+                  - generic [ref=e38]: Actuaciones
+              - listitem [ref=e39]:
+                - link "Agenda 2" [ref=e40] [cursor=pointer]:
+                  - /url: http://localhost/legalweb/public/admin/reminders
+                  - img [ref=e41]
+                  - generic [ref=e43]: Agenda
+                  - generic [ref=e47]: "2"
+              - listitem [ref=e48]:
+                - link "Documentos" [ref=e49] [cursor=pointer]:
+                  - /url: http://localhost/legalweb/public/admin/documents
+                  - img [ref=e50]
+                  - generic [ref=e52]: Documentos
+              - listitem [ref=e53]:
+                - link "Reportes" [ref=e54] [cursor=pointer]:
+                  - /url: http://localhost/legalweb/public/admin/reports
+                  - img [ref=e55]
+                  - generic [ref=e57]: Reportes
+              - listitem [ref=e58]:
+                - link "Calculadora" [ref=e59] [cursor=pointer]:
+                  - /url: http://localhost/legalweb/public/admin/term-calculator
+                  - img [ref=e60]
+                  - generic [ref=e62]: Calculadora
+              - listitem [ref=e63]:
+                - link "Mi Plan" [ref=e64] [cursor=pointer]:
+                  - /url: http://localhost/legalweb/public/admin/planes
+                  - img [ref=e65]
+                  - generic [ref=e67]: Mi Plan
+          - listitem [ref=e68]:
+            - generic [ref=e69] [cursor=pointer]:
+              - generic [ref=e70]: Configuración
+              - button "Configuración" [expanded] [ref=e71]:
+                - img [ref=e72]
+            - list [ref=e74]:
+              - listitem [ref=e75]:
+                - link "Tipos De Proceso" [ref=e76] [cursor=pointer]:
+                  - /url: http://localhost/legalweb/public/admin/case-types
+                  - img [ref=e77]
+                  - generic [ref=e80]: Tipos De Proceso
+              - listitem [ref=e81]:
+                - link "Flujos De Proceso" [ref=e82] [cursor=pointer]:
+                  - /url: http://localhost/legalweb/public/admin/case-flows
+                  - img [ref=e83]
+                  - generic [ref=e85]: Flujos De Proceso
+          - listitem [ref=e86]:
+            - generic [ref=e87] [cursor=pointer]:
+              - generic [ref=e88]: Configuracion
+              - button "Configuracion" [expanded] [ref=e89]:
+                - img [ref=e90]
+            - list [ref=e92]:
+              - listitem [ref=e93]:
+                - link "Mi Firma" [ref=e94] [cursor=pointer]:
+                  - /url: http://localhost/legalweb/public/admin/firm-settings
+                  - img [ref=e95]
+                  - generic [ref=e98]: Mi Firma
+              - listitem [ref=e99]:
+                - link "Equipo" [ref=e100] [cursor=pointer]:
+                  - /url: http://localhost/legalweb/public/admin/team-members
+                  - img [ref=e101]
+                  - generic [ref=e103]: Equipo
+      - generic [ref=e104]:
+        - link "Terminos y Condiciones" [ref=e105] [cursor=pointer]:
+          - /url: http://localhost/legalweb/public/portal/terminos
+        - link "Politica de Privacidad" [ref=e106] [cursor=pointer]:
+          - /url: http://localhost/legalweb/public/portal/privacidad
+    - main [ref=e108]:
+      - generic [ref=e110]:
+        - generic [ref=e111]:
+          - generic [ref=e112]:
+            - navigation [ref=e113]:
+              - list [ref=e114]:
+                - listitem [ref=e115]:
+                  - link "Clientes" [ref=e116] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients
+                - listitem [ref=e117]:
+                  - img [ref=e118]
+                  - generic [ref=e120]: Listado
+            - heading "Clientes" [level=1] [ref=e121]
+          - link "Crear Cliente" [ref=e124] [cursor=pointer]:
+            - /url: http://localhost/legalweb/public/admin/clients/create
+        - generic [ref=e132]:
+          - generic [ref=e135]:
+            - generic [ref=e136]:
+              - generic [ref=e137]: Búsqueda
+              - generic [ref=e138]:
+                - img [ref=e140]
+                - searchbox "Búsqueda" [ref=e143]
+            - button "Filtrar" [ref=e146] [cursor=pointer]:
+              - img [ref=e147]
+              - generic [ref=e150]: "0"
+            - button "Alternar columnas" [ref=e153] [cursor=pointer]:
+              - img [ref=e154]
+          - table [ref=e157]:
+            - rowgroup [ref=e158]:
+              - row "Seleccionar/deseleccionar todos los elementos para las acciones masivas. Tipo Doc. Documento Nombres Apellidos Correo Teléfono Ciudad Abogado Casos Acciones" [ref=e159]:
+                - columnheader "Seleccionar/deseleccionar todos los elementos para las acciones masivas." [ref=e160]:
+                  - checkbox "Seleccionar/deseleccionar todos los elementos para las acciones masivas." [ref=e161]
+                - columnheader "Tipo Doc." [ref=e162]:
+                  - button "Tipo Doc." [ref=e163] [cursor=pointer]:
+                    - text: Tipo Doc.
+                    - img [ref=e164]
+                - columnheader "Documento" [ref=e166]
+                - columnheader "Nombres" [ref=e167]:
+                  - button "Nombres" [ref=e168] [cursor=pointer]:
+                    - text: Nombres
+                    - img [ref=e169]
+                - columnheader "Apellidos" [ref=e171]:
+                  - button "Apellidos" [ref=e172] [cursor=pointer]:
+                    - text: Apellidos
+                    - img [ref=e173]
+                - columnheader "Correo" [ref=e175]
+                - columnheader "Teléfono" [ref=e176]
+                - columnheader "Ciudad" [ref=e177]:
+                  - button "Ciudad" [ref=e178] [cursor=pointer]:
+                    - text: Ciudad
+                    - img [ref=e179]
+                - columnheader "Abogado" [ref=e181]:
+                  - button "Abogado" [ref=e182] [cursor=pointer]:
+                    - text: Abogado
+                    - img [ref=e183]
+                - columnheader "Casos" [ref=e185]:
+                  - button "Casos" [ref=e186] [cursor=pointer]:
+                    - text: Casos
+                    - img [ref=e187]
+                - columnheader "Acciones" [ref=e189]
+            - rowgroup [ref=e190]:
+              - row "Seleccionar/deseleccionar el elemento 1 para las acciones masivas. TI 5035076458 Cornelius Ejemplo Ratke miguel.bins@example.com 3248378394 Medellín Carlos Rodríguez 2 Buscar Procesos Editar" [ref=e191]:
+                - cell "Seleccionar/deseleccionar el elemento 1 para las acciones masivas." [ref=e192]:
+                  - checkbox "Seleccionar/deseleccionar el elemento 1 para las acciones masivas." [ref=e193]
+                - cell "TI" [ref=e194]:
+                  - link "TI" [ref=e195] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/1/edit
+                    - generic [ref=e196]: TI
+                - cell "5035076458" [ref=e197]:
+                  - link "5035076458" [ref=e198] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/1/edit
+                    - generic [ref=e199]: "5035076458"
+                - cell "Cornelius Ejemplo" [ref=e200]:
+                  - link "Cornelius Ejemplo" [ref=e201] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/1/edit
+                    - generic [ref=e202]:
+                      - paragraph [ref=e203]: Cornelius
+                      - paragraph [ref=e204]: Ejemplo
+                - cell "Ratke" [ref=e205]:
+                  - link "Ratke" [ref=e206] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/1/edit
+                    - generic [ref=e207]: Ratke
+                - cell "miguel.bins@example.com" [ref=e208]:
+                  - link "miguel.bins@example.com" [ref=e209] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/1/edit
+                    - generic [ref=e210]: miguel.bins@example.com
+                - cell "3248378394" [ref=e211]:
+                  - link "3248378394" [ref=e212] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/1/edit
+                    - generic [ref=e213]: "3248378394"
+                - cell "Medellín" [ref=e214]:
+                  - link "Medellín" [ref=e215] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/1/edit
+                    - generic [ref=e216]: Medellín
+                - cell "Carlos Rodríguez" [ref=e217]:
+                  - link "Carlos Rodríguez" [ref=e218] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/1/edit
+                    - generic [ref=e219]: Carlos Rodríguez
+                - cell "2" [ref=e220]:
+                  - link "2" [ref=e221] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/1/edit
+                    - generic [ref=e222]: "2"
+                - cell "Buscar Procesos Editar" [ref=e223]:
+                  - generic [ref=e224]:
+                    - button "Buscar Procesos" [ref=e225] [cursor=pointer]:
+                      - img [ref=e226]
+                      - text: Buscar Procesos
+                    - link "Editar" [ref=e228] [cursor=pointer]:
+                      - /url: http://localhost/legalweb/public/admin/clients/1/edit
+                      - img [ref=e229]
+                      - text: Editar
+              - row "Seleccionar/deseleccionar el elemento 2 para las acciones masivas. PP 3056541947 Marge Ejemplo Gislason jed.miller@example.org 3469976247 Barranquilla Carlos Rodríguez 1 Buscar Procesos Editar" [ref=e232]:
+                - cell "Seleccionar/deseleccionar el elemento 2 para las acciones masivas." [ref=e233]:
+                  - checkbox "Seleccionar/deseleccionar el elemento 2 para las acciones masivas." [ref=e234]
+                - cell "PP" [ref=e235]:
+                  - link "PP" [ref=e236] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/2/edit
+                    - generic [ref=e237]: PP
+                - cell "3056541947" [ref=e238]:
+                  - link "3056541947" [ref=e239] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/2/edit
+                    - generic [ref=e240]: "3056541947"
+                - cell "Marge Ejemplo" [ref=e241]:
+                  - link "Marge Ejemplo" [ref=e242] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/2/edit
+                    - generic [ref=e243]:
+                      - paragraph [ref=e244]: Marge
+                      - paragraph [ref=e245]: Ejemplo
+                - cell "Gislason" [ref=e246]:
+                  - link "Gislason" [ref=e247] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/2/edit
+                    - generic [ref=e248]: Gislason
+                - cell "jed.miller@example.org" [ref=e249]:
+                  - link "jed.miller@example.org" [ref=e250] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/2/edit
+                    - generic [ref=e251]: jed.miller@example.org
+                - cell "3469976247" [ref=e252]:
+                  - link "3469976247" [ref=e253] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/2/edit
+                    - generic [ref=e254]: "3469976247"
+                - cell "Barranquilla" [ref=e255]:
+                  - link "Barranquilla" [ref=e256] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/2/edit
+                    - generic [ref=e257]: Barranquilla
+                - cell "Carlos Rodríguez" [ref=e258]:
+                  - link "Carlos Rodríguez" [ref=e259] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/2/edit
+                    - generic [ref=e260]: Carlos Rodríguez
+                - cell "1" [ref=e261]:
+                  - link "1" [ref=e262] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/2/edit
+                    - generic [ref=e263]: "1"
+                - cell "Buscar Procesos Editar" [ref=e264]:
+                  - generic [ref=e265]:
+                    - button "Buscar Procesos" [ref=e266] [cursor=pointer]:
+                      - img [ref=e267]
+                      - text: Buscar Procesos
+                    - link "Editar" [ref=e269] [cursor=pointer]:
+                      - /url: http://localhost/legalweb/public/admin/clients/2/edit
+                      - img [ref=e270]
+                      - text: Editar
+              - row "Seleccionar/deseleccionar el elemento 3 para las acciones masivas. TI 5618766721 Donavon Ejemplo Fay bettie.goldner@example.org 3632484672 Bogotá Carlos Rodríguez 1 Buscar Procesos Editar" [ref=e273]:
+                - cell "Seleccionar/deseleccionar el elemento 3 para las acciones masivas." [ref=e274]:
+                  - checkbox "Seleccionar/deseleccionar el elemento 3 para las acciones masivas." [ref=e275]
+                - cell "TI" [ref=e276]:
+                  - link "TI" [ref=e277] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/3/edit
+                    - generic [ref=e278]: TI
+                - cell "5618766721" [ref=e279]:
+                  - link "5618766721" [ref=e280] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/3/edit
+                    - generic [ref=e281]: "5618766721"
+                - cell "Donavon Ejemplo" [ref=e282]:
+                  - link "Donavon Ejemplo" [ref=e283] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/3/edit
+                    - generic [ref=e284]:
+                      - paragraph [ref=e285]: Donavon
+                      - paragraph [ref=e286]: Ejemplo
+                - cell "Fay" [ref=e287]:
+                  - link "Fay" [ref=e288] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/3/edit
+                    - generic [ref=e289]: Fay
+                - cell "bettie.goldner@example.org" [ref=e290]:
+                  - link "bettie.goldner@example.org" [ref=e291] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/3/edit
+                    - generic [ref=e292]: bettie.goldner@example.org
+                - cell "3632484672" [ref=e293]:
+                  - link "3632484672" [ref=e294] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/3/edit
+                    - generic [ref=e295]: "3632484672"
+                - cell "Bogotá" [ref=e296]:
+                  - link "Bogotá" [ref=e297] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/3/edit
+                    - generic [ref=e298]: Bogotá
+                - cell "Carlos Rodríguez" [ref=e299]:
+                  - link "Carlos Rodríguez" [ref=e300] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/3/edit
+                    - generic [ref=e301]: Carlos Rodríguez
+                - cell "1" [ref=e302]:
+                  - link "1" [ref=e303] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/3/edit
+                    - generic [ref=e304]: "1"
+                - cell "Buscar Procesos Editar" [ref=e305]:
+                  - generic [ref=e306]:
+                    - button "Buscar Procesos" [ref=e307] [cursor=pointer]:
+                      - img [ref=e308]
+                      - text: Buscar Procesos
+                    - link "Editar" [ref=e310] [cursor=pointer]:
+                      - /url: http://localhost/legalweb/public/admin/clients/3/edit
+                      - img [ref=e311]
+                      - text: Editar
+              - row "Seleccionar/deseleccionar el elemento 4 para las acciones masivas. TI 9642412054 Tracey Ejemplo Rutherford skiles.genesis@example.com 3798150453 Medellín Carlos Rodríguez 2 Buscar Procesos Editar" [ref=e314]:
+                - cell "Seleccionar/deseleccionar el elemento 4 para las acciones masivas." [ref=e315]:
+                  - checkbox "Seleccionar/deseleccionar el elemento 4 para las acciones masivas." [ref=e316]
+                - cell "TI" [ref=e317]:
+                  - link "TI" [ref=e318] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/4/edit
+                    - generic [ref=e319]: TI
+                - cell "9642412054" [ref=e320]:
+                  - link "9642412054" [ref=e321] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/4/edit
+                    - generic [ref=e322]: "9642412054"
+                - cell "Tracey Ejemplo" [ref=e323]:
+                  - link "Tracey Ejemplo" [ref=e324] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/4/edit
+                    - generic [ref=e325]:
+                      - paragraph [ref=e326]: Tracey
+                      - paragraph [ref=e327]: Ejemplo
+                - cell "Rutherford" [ref=e328]:
+                  - link "Rutherford" [ref=e329] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/4/edit
+                    - generic [ref=e330]: Rutherford
+                - cell "skiles.genesis@example.com" [ref=e331]:
+                  - link "skiles.genesis@example.com" [ref=e332] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/4/edit
+                    - generic [ref=e333]: skiles.genesis@example.com
+                - cell "3798150453" [ref=e334]:
+                  - link "3798150453" [ref=e335] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/4/edit
+                    - generic [ref=e336]: "3798150453"
+                - cell "Medellín" [ref=e337]:
+                  - link "Medellín" [ref=e338] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/4/edit
+                    - generic [ref=e339]: Medellín
+                - cell "Carlos Rodríguez" [ref=e340]:
+                  - link "Carlos Rodríguez" [ref=e341] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/4/edit
+                    - generic [ref=e342]: Carlos Rodríguez
+                - cell "2" [ref=e343]:
+                  - link "2" [ref=e344] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/4/edit
+                    - generic [ref=e345]: "2"
+                - cell "Buscar Procesos Editar" [ref=e346]:
+                  - generic [ref=e347]:
+                    - button "Buscar Procesos" [ref=e348] [cursor=pointer]:
+                      - img [ref=e349]
+                      - text: Buscar Procesos
+                    - link "Editar" [ref=e351] [cursor=pointer]:
+                      - /url: http://localhost/legalweb/public/admin/clients/4/edit
+                      - img [ref=e352]
+                      - text: Editar
+              - row "Seleccionar/deseleccionar el elemento 5 para las acciones masivas. PP 5814632302 Una Ejemplo Quitzon fkemmer@example.org 3828280875 Cartagena Carlos Rodríguez 3 Buscar Procesos Editar" [ref=e355]:
+                - cell "Seleccionar/deseleccionar el elemento 5 para las acciones masivas." [ref=e356]:
+                  - checkbox "Seleccionar/deseleccionar el elemento 5 para las acciones masivas." [ref=e357]
+                - cell "PP" [ref=e358]:
+                  - link "PP" [ref=e359] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/5/edit
+                    - generic [ref=e360]: PP
+                - cell "5814632302" [ref=e361]:
+                  - link "5814632302" [ref=e362] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/5/edit
+                    - generic [ref=e363]: "5814632302"
+                - cell "Una Ejemplo" [ref=e364]:
+                  - link "Una Ejemplo" [ref=e365] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/5/edit
+                    - generic [ref=e366]:
+                      - paragraph [ref=e367]: Una
+                      - paragraph [ref=e368]: Ejemplo
+                - cell "Quitzon" [ref=e369]:
+                  - link "Quitzon" [ref=e370] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/5/edit
+                    - generic [ref=e371]: Quitzon
+                - cell "fkemmer@example.org" [ref=e372]:
+                  - link "fkemmer@example.org" [ref=e373] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/5/edit
+                    - generic [ref=e374]: fkemmer@example.org
+                - cell "3828280875" [ref=e375]:
+                  - link "3828280875" [ref=e376] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/5/edit
+                    - generic [ref=e377]: "3828280875"
+                - cell "Cartagena" [ref=e378]:
+                  - link "Cartagena" [ref=e379] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/5/edit
+                    - generic [ref=e380]: Cartagena
+                - cell "Carlos Rodríguez" [ref=e381]:
+                  - link "Carlos Rodríguez" [ref=e382] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/5/edit
+                    - generic [ref=e383]: Carlos Rodríguez
+                - cell "3" [ref=e384]:
+                  - link "3" [ref=e385] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/5/edit
+                    - generic [ref=e386]: "3"
+                - cell "Buscar Procesos Editar" [ref=e387]:
+                  - generic [ref=e388]:
+                    - button "Buscar Procesos" [ref=e389] [cursor=pointer]:
+                      - img [ref=e390]
+                      - text: Buscar Procesos
+                    - link "Editar" [ref=e392] [cursor=pointer]:
+                      - /url: http://localhost/legalweb/public/admin/clients/5/edit
+                      - img [ref=e393]
+                      - text: Editar
+              - row "Seleccionar/deseleccionar el elemento 6 para las acciones masivas. TI 5119983190 Samantha Ejemplo Kohler brett.heathcote@example.com 3292959377 Bucaramanga Carlos Rodríguez 0 Buscar Procesos Editar" [ref=e396]:
+                - cell "Seleccionar/deseleccionar el elemento 6 para las acciones masivas." [ref=e397]:
+                  - checkbox "Seleccionar/deseleccionar el elemento 6 para las acciones masivas." [ref=e398]
+                - cell "TI" [ref=e399]:
+                  - link "TI" [ref=e400] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/6/edit
+                    - generic [ref=e401]: TI
+                - cell "5119983190" [ref=e402]:
+                  - link "5119983190" [ref=e403] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/6/edit
+                    - generic [ref=e404]: "5119983190"
+                - cell "Samantha Ejemplo" [ref=e405]:
+                  - link "Samantha Ejemplo" [ref=e406] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/6/edit
+                    - generic [ref=e407]:
+                      - paragraph [ref=e408]: Samantha
+                      - paragraph [ref=e409]: Ejemplo
+                - cell "Kohler" [ref=e410]:
+                  - link "Kohler" [ref=e411] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/6/edit
+                    - generic [ref=e412]: Kohler
+                - cell "brett.heathcote@example.com" [ref=e413]:
+                  - link "brett.heathcote@example.com" [ref=e414] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/6/edit
+                    - generic [ref=e415]: brett.heathcote@example.com
+                - cell "3292959377" [ref=e416]:
+                  - link "3292959377" [ref=e417] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/6/edit
+                    - generic [ref=e418]: "3292959377"
+                - cell "Bucaramanga" [ref=e419]:
+                  - link "Bucaramanga" [ref=e420] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/6/edit
+                    - generic [ref=e421]: Bucaramanga
+                - cell "Carlos Rodríguez" [ref=e422]:
+                  - link "Carlos Rodríguez" [ref=e423] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/6/edit
+                    - generic [ref=e424]: Carlos Rodríguez
+                - cell "0" [ref=e425]:
+                  - link "0" [ref=e426] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/6/edit
+                    - generic [ref=e427]: "0"
+                - cell "Buscar Procesos Editar" [ref=e428]:
+                  - generic [ref=e429]:
+                    - button "Buscar Procesos" [ref=e430] [cursor=pointer]:
+                      - img [ref=e431]
+                      - text: Buscar Procesos
+                    - link "Editar" [ref=e433] [cursor=pointer]:
+                      - /url: http://localhost/legalweb/public/admin/clients/6/edit
+                      - img [ref=e434]
+                      - text: Editar
+              - row "Seleccionar/deseleccionar el elemento 7 para las acciones masivas. NIT 2124813415 Benny Ejemplo Bosco wbins@example.org 3120751757 Bucaramanga Carlos Rodríguez 1 Buscar Procesos Editar" [ref=e437]:
+                - cell "Seleccionar/deseleccionar el elemento 7 para las acciones masivas." [ref=e438]:
+                  - checkbox "Seleccionar/deseleccionar el elemento 7 para las acciones masivas." [ref=e439]
+                - cell "NIT" [ref=e440]:
+                  - link "NIT" [ref=e441] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/7/edit
+                    - generic [ref=e442]: NIT
+                - cell "2124813415" [ref=e443]:
+                  - link "2124813415" [ref=e444] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/7/edit
+                    - generic [ref=e445]: "2124813415"
+                - cell "Benny Ejemplo" [ref=e446]:
+                  - link "Benny Ejemplo" [ref=e447] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/7/edit
+                    - generic [ref=e448]:
+                      - paragraph [ref=e449]: Benny
+                      - paragraph [ref=e450]: Ejemplo
+                - cell "Bosco" [ref=e451]:
+                  - link "Bosco" [ref=e452] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/7/edit
+                    - generic [ref=e453]: Bosco
+                - cell "wbins@example.org" [ref=e454]:
+                  - link "wbins@example.org" [ref=e455] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/7/edit
+                    - generic [ref=e456]: wbins@example.org
+                - cell "3120751757" [ref=e457]:
+                  - link "3120751757" [ref=e458] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/7/edit
+                    - generic [ref=e459]: "3120751757"
+                - cell "Bucaramanga" [ref=e460]:
+                  - link "Bucaramanga" [ref=e461] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/7/edit
+                    - generic [ref=e462]: Bucaramanga
+                - cell "Carlos Rodríguez" [ref=e463]:
+                  - link "Carlos Rodríguez" [ref=e464] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/7/edit
+                    - generic [ref=e465]: Carlos Rodríguez
+                - cell "1" [ref=e466]:
+                  - link "1" [ref=e467] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/7/edit
+                    - generic [ref=e468]: "1"
+                - cell "Buscar Procesos Editar" [ref=e469]:
+                  - generic [ref=e470]:
+                    - button "Buscar Procesos" [ref=e471] [cursor=pointer]:
+                      - img [ref=e472]
+                      - text: Buscar Procesos
+                    - link "Editar" [ref=e474] [cursor=pointer]:
+                      - /url: http://localhost/legalweb/public/admin/clients/7/edit
+                      - img [ref=e475]
+                      - text: Editar
+              - row "Seleccionar/deseleccionar el elemento 8 para las acciones masivas. TI 7420534805 Dewitt Ejemplo Kuhlman lowe.zelma@example.com 3548705720 Cartagena Carlos Rodríguez 0 Buscar Procesos Editar" [ref=e478]:
+                - cell "Seleccionar/deseleccionar el elemento 8 para las acciones masivas." [ref=e479]:
+                  - checkbox "Seleccionar/deseleccionar el elemento 8 para las acciones masivas." [ref=e480]
+                - cell "TI" [ref=e481]:
+                  - link "TI" [ref=e482] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/8/edit
+                    - generic [ref=e483]: TI
+                - cell "7420534805" [ref=e484]:
+                  - link "7420534805" [ref=e485] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/8/edit
+                    - generic [ref=e486]: "7420534805"
+                - cell "Dewitt Ejemplo" [ref=e487]:
+                  - link "Dewitt Ejemplo" [ref=e488] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/8/edit
+                    - generic [ref=e489]:
+                      - paragraph [ref=e490]: Dewitt
+                      - paragraph [ref=e491]: Ejemplo
+                - cell "Kuhlman" [ref=e492]:
+                  - link "Kuhlman" [ref=e493] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/8/edit
+                    - generic [ref=e494]: Kuhlman
+                - cell "lowe.zelma@example.com" [ref=e495]:
+                  - link "lowe.zelma@example.com" [ref=e496] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/8/edit
+                    - generic [ref=e497]: lowe.zelma@example.com
+                - cell "3548705720" [ref=e498]:
+                  - link "3548705720" [ref=e499] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/8/edit
+                    - generic [ref=e500]: "3548705720"
+                - cell "Cartagena" [ref=e501]:
+                  - link "Cartagena" [ref=e502] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/8/edit
+                    - generic [ref=e503]: Cartagena
+                - cell "Carlos Rodríguez" [ref=e504]:
+                  - link "Carlos Rodríguez" [ref=e505] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/8/edit
+                    - generic [ref=e506]: Carlos Rodríguez
+                - cell "0" [ref=e507]:
+                  - link "0" [ref=e508] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/8/edit
+                    - generic [ref=e509]: "0"
+                - cell "Buscar Procesos Editar" [ref=e510]:
+                  - generic [ref=e511]:
+                    - button "Buscar Procesos" [ref=e512] [cursor=pointer]:
+                      - img [ref=e513]
+                      - text: Buscar Procesos
+                    - link "Editar" [ref=e515] [cursor=pointer]:
+                      - /url: http://localhost/legalweb/public/admin/clients/8/edit
+                      - img [ref=e516]
+                      - text: Editar
+              - row "Seleccionar/deseleccionar el elemento 9 para las acciones masivas. PP 3518326954 Santos Ejemplo Monahan rkeeling@example.com 3620831794 Cartagena Carlos Rodríguez 0 Buscar Procesos Editar" [ref=e519]:
+                - cell "Seleccionar/deseleccionar el elemento 9 para las acciones masivas." [ref=e520]:
+                  - checkbox "Seleccionar/deseleccionar el elemento 9 para las acciones masivas." [ref=e521]
+                - cell "PP" [ref=e522]:
+                  - link "PP" [ref=e523] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/9/edit
+                    - generic [ref=e524]: PP
+                - cell "3518326954" [ref=e525]:
+                  - link "3518326954" [ref=e526] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/9/edit
+                    - generic [ref=e527]: "3518326954"
+                - cell "Santos Ejemplo" [ref=e528]:
+                  - link "Santos Ejemplo" [ref=e529] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/9/edit
+                    - generic [ref=e530]:
+                      - paragraph [ref=e531]: Santos
+                      - paragraph [ref=e532]: Ejemplo
+                - cell "Monahan" [ref=e533]:
+                  - link "Monahan" [ref=e534] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/9/edit
+                    - generic [ref=e535]: Monahan
+                - cell "rkeeling@example.com" [ref=e536]:
+                  - link "rkeeling@example.com" [ref=e537] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/9/edit
+                    - generic [ref=e538]: rkeeling@example.com
+                - cell "3620831794" [ref=e539]:
+                  - link "3620831794" [ref=e540] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/9/edit
+                    - generic [ref=e541]: "3620831794"
+                - cell "Cartagena" [ref=e542]:
+                  - link "Cartagena" [ref=e543] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/9/edit
+                    - generic [ref=e544]: Cartagena
+                - cell "Carlos Rodríguez" [ref=e545]:
+                  - link "Carlos Rodríguez" [ref=e546] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/9/edit
+                    - generic [ref=e547]: Carlos Rodríguez
+                - cell "0" [ref=e548]:
+                  - link "0" [ref=e549] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/9/edit
+                    - generic [ref=e550]: "0"
+                - cell "Buscar Procesos Editar" [ref=e551]:
+                  - generic [ref=e552]:
+                    - button "Buscar Procesos" [ref=e553] [cursor=pointer]:
+                      - img [ref=e554]
+                      - text: Buscar Procesos
+                    - link "Editar" [ref=e556] [cursor=pointer]:
+                      - /url: http://localhost/legalweb/public/admin/clients/9/edit
+                      - img [ref=e557]
+                      - text: Editar
+              - row "Seleccionar/deseleccionar el elemento 10 para las acciones masivas. PP 1197619371 Bennie Ejemplo Beier jayme.hill@example.org 3050408424 Bucaramanga Carlos Rodríguez 2 Buscar Procesos Editar" [ref=e560]:
+                - cell "Seleccionar/deseleccionar el elemento 10 para las acciones masivas." [ref=e561]:
+                  - checkbox "Seleccionar/deseleccionar el elemento 10 para las acciones masivas." [ref=e562]
+                - cell "PP" [ref=e563]:
+                  - link "PP" [ref=e564] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/10/edit
+                    - generic [ref=e565]: PP
+                - cell "1197619371" [ref=e566]:
+                  - link "1197619371" [ref=e567] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/10/edit
+                    - generic [ref=e568]: "1197619371"
+                - cell "Bennie Ejemplo" [ref=e569]:
+                  - link "Bennie Ejemplo" [ref=e570] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/10/edit
+                    - generic [ref=e571]:
+                      - paragraph [ref=e572]: Bennie
+                      - paragraph [ref=e573]: Ejemplo
+                - cell "Beier" [ref=e574]:
+                  - link "Beier" [ref=e575] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/10/edit
+                    - generic [ref=e576]: Beier
+                - cell "jayme.hill@example.org" [ref=e577]:
+                  - link "jayme.hill@example.org" [ref=e578] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/10/edit
+                    - generic [ref=e579]: jayme.hill@example.org
+                - cell "3050408424" [ref=e580]:
+                  - link "3050408424" [ref=e581] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/10/edit
+                    - generic [ref=e582]: "3050408424"
+                - cell "Bucaramanga" [ref=e583]:
+                  - link "Bucaramanga" [ref=e584] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/10/edit
+                    - generic [ref=e585]: Bucaramanga
+                - cell "Carlos Rodríguez" [ref=e586]:
+                  - link "Carlos Rodríguez" [ref=e587] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/10/edit
+                    - generic [ref=e588]: Carlos Rodríguez
+                - cell "2" [ref=e589]:
+                  - link "2" [ref=e590] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/clients/10/edit
+                    - generic [ref=e591]: "2"
+                - cell "Buscar Procesos Editar" [ref=e592]:
+                  - generic [ref=e593]:
+                    - button "Buscar Procesos" [ref=e594] [cursor=pointer]:
+                      - img [ref=e595]
+                      - text: Buscar Procesos
+                    - link "Editar" [ref=e597] [cursor=pointer]:
+                      - /url: http://localhost/legalweb/public/admin/clients/10/edit
+                      - img [ref=e598]
+                      - text: Editar
+          - navigation "Navegación de paginación" [ref=e601]:
+            - generic [ref=e604]:
+              - generic [ref=e606]: por página
+              - combobox "por página" [ref=e608]:
+                - option "5"
+                - option "10" [selected]
+                - option "25"
+                - option "50"
+            - button "Siguiente" [ref=e609] [cursor=pointer]
+  - generic:
+    - status

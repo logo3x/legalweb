@@ -1,0 +1,639 @@
+- generic [active] [ref=e1]:
+  - navigation [ref=e3]:
+    - link "LegalWeb logo" [ref=e5] [cursor=pointer]:
+      - /url: http://localhost/legalweb/public/admin
+      - img "LegalWeb logo" [ref=e6]
+    - button "Menú del usuario" [ref=e10] [cursor=pointer]:
+      - img "Avatar of Admin LegalWeb" [ref=e11]
+  - generic [ref=e12]:
+    - complementary [ref=e14]:
+      - navigation [ref=e15]:
+        - list [ref=e16]:
+          - listitem [ref=e17]:
+            - list [ref=e18]:
+              - listitem [ref=e19]:
+                - link "Escritorio" [ref=e20] [cursor=pointer]:
+                  - /url: http://localhost/legalweb/public/admin
+                  - img [ref=e21]
+                  - generic [ref=e23]: Escritorio
+              - listitem [ref=e24]:
+                - link "Casos" [ref=e25] [cursor=pointer]:
+                  - /url: http://localhost/legalweb/public/admin/legal-cases
+                  - img [ref=e26]
+                  - generic [ref=e28]: Casos
+              - listitem [ref=e29]:
+                - link "Clientes" [ref=e30] [cursor=pointer]:
+                  - /url: http://localhost/legalweb/public/admin/clients
+                  - img [ref=e31]
+                  - generic [ref=e33]: Clientes
+              - listitem [ref=e34]:
+                - link "Actuaciones" [ref=e35] [cursor=pointer]:
+                  - /url: http://localhost/legalweb/public/admin/case-events
+                  - img [ref=e36]
+                  - generic [ref=e38]: Actuaciones
+              - listitem [ref=e39]:
+                - link "Agenda 2" [ref=e40] [cursor=pointer]:
+                  - /url: http://localhost/legalweb/public/admin/reminders
+                  - img [ref=e41]
+                  - generic [ref=e43]: Agenda
+                  - generic [ref=e47]: "2"
+              - listitem [ref=e48]:
+                - link "Documentos" [ref=e49] [cursor=pointer]:
+                  - /url: http://localhost/legalweb/public/admin/documents
+                  - img [ref=e50]
+                  - generic [ref=e52]: Documentos
+              - listitem [ref=e53]:
+                - link "Reportes" [ref=e54] [cursor=pointer]:
+                  - /url: http://localhost/legalweb/public/admin/reports
+                  - img [ref=e55]
+                  - generic [ref=e57]: Reportes
+              - listitem [ref=e58]:
+                - link "Calculadora" [ref=e59] [cursor=pointer]:
+                  - /url: http://localhost/legalweb/public/admin/term-calculator
+                  - img [ref=e60]
+                  - generic [ref=e62]: Calculadora
+              - listitem [ref=e63]:
+                - link "Mi Plan" [ref=e64] [cursor=pointer]:
+                  - /url: http://localhost/legalweb/public/admin/planes
+                  - img [ref=e65]
+                  - generic [ref=e67]: Mi Plan
+          - listitem [ref=e68]:
+            - generic [ref=e69] [cursor=pointer]:
+              - generic [ref=e70]: Configuración
+              - button "Configuración" [expanded] [ref=e71]:
+                - img [ref=e72]
+            - list [ref=e74]:
+              - listitem [ref=e75]:
+                - link "Tipos De Proceso" [ref=e76] [cursor=pointer]:
+                  - /url: http://localhost/legalweb/public/admin/case-types
+                  - img [ref=e77]
+                  - generic [ref=e80]: Tipos De Proceso
+              - listitem [ref=e81]:
+                - link "Flujos De Proceso" [ref=e82] [cursor=pointer]:
+                  - /url: http://localhost/legalweb/public/admin/case-flows
+                  - img [ref=e83]
+                  - generic [ref=e85]: Flujos De Proceso
+          - listitem [ref=e86]:
+            - generic [ref=e87] [cursor=pointer]:
+              - generic [ref=e88]: Configuracion
+              - button "Configuracion" [expanded] [ref=e89]:
+                - img [ref=e90]
+            - list [ref=e92]:
+              - listitem [ref=e93]:
+                - link "Mi Firma" [ref=e94] [cursor=pointer]:
+                  - /url: http://localhost/legalweb/public/admin/firm-settings
+                  - img [ref=e95]
+                  - generic [ref=e98]: Mi Firma
+              - listitem [ref=e99]:
+                - link "Equipo" [ref=e100] [cursor=pointer]:
+                  - /url: http://localhost/legalweb/public/admin/team-members
+                  - img [ref=e101]
+                  - generic [ref=e103]: Equipo
+      - generic [ref=e104]:
+        - link "Terminos y Condiciones" [ref=e105] [cursor=pointer]:
+          - /url: http://localhost/legalweb/public/portal/terminos
+        - link "Politica de Privacidad" [ref=e106] [cursor=pointer]:
+          - /url: http://localhost/legalweb/public/portal/privacidad
+    - main [ref=e108]:
+      - generic [ref=e110]:
+        - generic [ref=e111]:
+          - generic [ref=e112]:
+            - navigation [ref=e113]:
+              - list [ref=e114]:
+                - listitem [ref=e115]:
+                  - link "Casos" [ref=e116] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases
+                - listitem [ref=e117]:
+                  - img [ref=e118]
+                  - generic [ref=e120]: Listado
+            - heading "Casos" [level=1] [ref=e121]
+          - generic [ref=e123]:
+            - button "Importar desde Tyba" [ref=e124] [cursor=pointer]:
+              - img [ref=e125]
+              - text: Importar desde Tyba
+            - button "Importacion Masiva" [ref=e127] [cursor=pointer]:
+              - img [ref=e128]
+              - text: Importacion Masiva
+            - button "Historial de Importaciones" [ref=e130] [cursor=pointer]:
+              - img [ref=e131]
+              - text: Historial de Importaciones
+            - link "Crear Caso" [ref=e133] [cursor=pointer]:
+              - /url: http://localhost/legalweb/public/admin/legal-cases/create
+        - generic [ref=e141]:
+          - generic [ref=e144]:
+            - generic [ref=e145]:
+              - generic [ref=e146]: Búsqueda
+              - generic [ref=e147]:
+                - img [ref=e149]
+                - searchbox "Búsqueda" [ref=e152]
+            - button "Filtrar" [ref=e155] [cursor=pointer]:
+              - img [ref=e156]
+              - generic [ref=e159]: "0"
+            - button "Alternar columnas" [ref=e162] [cursor=pointer]:
+              - img [ref=e163]
+          - table [ref=e166]:
+            - rowgroup [ref=e167]:
+              - row "Seleccionar/deseleccionar todos los elementos para las acciones masivas. No. Caso Título Tipo Cliente Abogado Estado Prioridad Inicio Acciones" [ref=e168]:
+                - columnheader "Seleccionar/deseleccionar todos los elementos para las acciones masivas." [ref=e169]:
+                  - checkbox "Seleccionar/deseleccionar todos los elementos para las acciones masivas." [ref=e170]
+                - columnheader "No. Caso" [ref=e171]:
+                  - button "No. Caso" [ref=e172] [cursor=pointer]:
+                    - text: No. Caso
+                    - img [ref=e173]
+                - columnheader "Título" [ref=e175]
+                - columnheader "Tipo" [ref=e176]:
+                  - button "Tipo" [ref=e177] [cursor=pointer]:
+                    - text: Tipo
+                    - img [ref=e178]
+                - columnheader "Cliente" [ref=e180]
+                - columnheader "Abogado" [ref=e181]:
+                  - button "Abogado" [ref=e182] [cursor=pointer]:
+                    - text: Abogado
+                    - img [ref=e183]
+                - columnheader "Estado" [ref=e185]
+                - columnheader "Prioridad" [ref=e186]
+                - columnheader "Inicio" [ref=e187]:
+                  - button "Inicio" [ref=e188] [cursor=pointer]:
+                    - text: Inicio
+                    - img [ref=e189]
+                - columnheader "Acciones" [ref=e191]
+            - rowgroup [ref=e192]:
+              - row "Seleccionar/deseleccionar el elemento 19 para las acciones masivas. LW-TEST-TYBA Caso de prueba - Consulta Tyba Rama Judi... Civil Cornelius Ratke Admin LegalWeb en_progreso alta 01/01/2024 Ver Editar" [ref=e193]:
+                - cell "Seleccionar/deseleccionar el elemento 19 para las acciones masivas." [ref=e194]:
+                  - checkbox "Seleccionar/deseleccionar el elemento 19 para las acciones masivas." [ref=e195]
+                - cell "LW-TEST-TYBA" [ref=e196]:
+                  - link "LW-TEST-TYBA" [ref=e197] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/19
+                    - generic [ref=e198]: LW-TEST-TYBA
+                - cell "Caso de prueba - Consulta Tyba Rama Judi..." [ref=e199]:
+                  - link "Caso de prueba - Consulta Tyba Rama Judi..." [ref=e200] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/19
+                    - generic [ref=e201]: Caso de prueba - Consulta Tyba Rama Judi...
+                - cell "Civil" [ref=e202]:
+                  - link "Civil" [ref=e203] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/19
+                    - generic [ref=e205]: Civil
+                - cell "Cornelius Ratke" [ref=e206]:
+                  - link "Cornelius Ratke" [ref=e207] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/19
+                    - generic [ref=e208]: Cornelius Ratke
+                - cell "Admin LegalWeb" [ref=e209]:
+                  - link "Admin LegalWeb" [ref=e210] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/19
+                    - generic [ref=e211]: Admin LegalWeb
+                - cell "en_progreso" [ref=e212]:
+                  - link "en_progreso" [ref=e213] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/19
+                    - generic [ref=e215]: en_progreso
+                - cell "alta" [ref=e216]:
+                  - link "alta" [ref=e217] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/19
+                    - generic [ref=e219]: alta
+                - cell "01/01/2024" [ref=e220]:
+                  - link "01/01/2024" [ref=e221] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/19
+                    - generic [ref=e222]: 01/01/2024
+                - cell "Ver Editar" [ref=e223]:
+                  - generic [ref=e224]:
+                    - link "Ver" [ref=e225] [cursor=pointer]:
+                      - /url: http://localhost/legalweb/public/admin/legal-cases/19
+                      - img [ref=e226]
+                      - text: Ver
+                    - link "Editar" [ref=e229] [cursor=pointer]:
+                      - /url: http://localhost/legalweb/public/admin/legal-cases/19/edit
+                      - img [ref=e230]
+                      - text: Editar
+              - row "Seleccionar/deseleccionar el elemento 18 para las acciones masivas. LW-2426-7130 Ejemplo Vel qui ducimus. Familia Tracey Rutherford María López archivado alta 08/12/2025 Ver Editar" [ref=e233]:
+                - cell "Seleccionar/deseleccionar el elemento 18 para las acciones masivas." [ref=e234]:
+                  - checkbox "Seleccionar/deseleccionar el elemento 18 para las acciones masivas." [ref=e235]
+                - cell "LW-2426-7130 Ejemplo" [ref=e236]:
+                  - link "LW-2426-7130 Ejemplo" [ref=e237] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/18
+                    - generic [ref=e238]:
+                      - paragraph [ref=e239]: LW-2426-7130
+                      - paragraph [ref=e240]: Ejemplo
+                - cell "Vel qui ducimus." [ref=e241]:
+                  - link "Vel qui ducimus." [ref=e242] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/18
+                    - generic [ref=e243]: Vel qui ducimus.
+                - cell "Familia" [ref=e244]:
+                  - link "Familia" [ref=e245] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/18
+                    - generic [ref=e247]: Familia
+                - cell "Tracey Rutherford" [ref=e248]:
+                  - link "Tracey Rutherford" [ref=e249] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/18
+                    - generic [ref=e250]: Tracey Rutherford
+                - cell "María López" [ref=e251]:
+                  - link "María López" [ref=e252] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/18
+                    - generic [ref=e253]: María López
+                - cell "archivado" [ref=e254]:
+                  - link "archivado" [ref=e255] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/18
+                    - generic [ref=e257]: archivado
+                - cell "alta" [ref=e258]:
+                  - link "alta" [ref=e259] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/18
+                    - generic [ref=e261]: alta
+                - cell "08/12/2025" [ref=e262]:
+                  - link "08/12/2025" [ref=e263] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/18
+                    - generic [ref=e264]: 08/12/2025
+                - cell "Ver Editar" [ref=e265]:
+                  - generic [ref=e266]:
+                    - link "Ver" [ref=e267] [cursor=pointer]:
+                      - /url: http://localhost/legalweb/public/admin/legal-cases/18
+                      - img [ref=e268]
+                      - text: Ver
+                    - link "Editar" [ref=e271] [cursor=pointer]:
+                      - /url: http://localhost/legalweb/public/admin/legal-cases/18/edit
+                      - img [ref=e272]
+                      - text: Editar
+              - row "Seleccionar/deseleccionar el elemento 17 para las acciones masivas. LW-4005-6035 Ejemplo Mollitia sint ipsa adipisci ut. Familia Mabel Ward María López en_espera media 15/07/2024 Ver Editar" [ref=e275]:
+                - cell "Seleccionar/deseleccionar el elemento 17 para las acciones masivas." [ref=e276]:
+                  - checkbox "Seleccionar/deseleccionar el elemento 17 para las acciones masivas." [ref=e277]
+                - cell "LW-4005-6035 Ejemplo" [ref=e278]:
+                  - link "LW-4005-6035 Ejemplo" [ref=e279] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/17
+                    - generic [ref=e280]:
+                      - paragraph [ref=e281]: LW-4005-6035
+                      - paragraph [ref=e282]: Ejemplo
+                - cell "Mollitia sint ipsa adipisci ut." [ref=e283]:
+                  - link "Mollitia sint ipsa adipisci ut." [ref=e284] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/17
+                    - generic [ref=e285]: Mollitia sint ipsa adipisci ut.
+                - cell "Familia" [ref=e286]:
+                  - link "Familia" [ref=e287] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/17
+                    - generic [ref=e289]: Familia
+                - cell "Mabel Ward" [ref=e290]:
+                  - link "Mabel Ward" [ref=e291] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/17
+                    - generic [ref=e292]: Mabel Ward
+                - cell "María López" [ref=e293]:
+                  - link "María López" [ref=e294] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/17
+                    - generic [ref=e295]: María López
+                - cell "en_espera" [ref=e296]:
+                  - link "en_espera" [ref=e297] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/17
+                    - generic [ref=e299]: en_espera
+                - cell "media" [ref=e300]:
+                  - link "media" [ref=e301] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/17
+                    - generic [ref=e303]: media
+                - cell "15/07/2024" [ref=e304]:
+                  - link "15/07/2024" [ref=e305] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/17
+                    - generic [ref=e306]: 15/07/2024
+                - cell "Ver Editar" [ref=e307]:
+                  - generic [ref=e308]:
+                    - link "Ver" [ref=e309] [cursor=pointer]:
+                      - /url: http://localhost/legalweb/public/admin/legal-cases/17
+                      - img [ref=e310]
+                      - text: Ver
+                    - link "Editar" [ref=e313] [cursor=pointer]:
+                      - /url: http://localhost/legalweb/public/admin/legal-cases/17/edit
+                      - img [ref=e314]
+                      - text: Editar
+              - row "Seleccionar/deseleccionar el elemento 16 para las acciones masivas. LW-7269-9233 Ejemplo Sit doloribus quae ullam odit. Familia Marge Gislason María López en_espera alta 26/07/2024 Ver Editar" [ref=e317]:
+                - cell "Seleccionar/deseleccionar el elemento 16 para las acciones masivas." [ref=e318]:
+                  - checkbox "Seleccionar/deseleccionar el elemento 16 para las acciones masivas." [ref=e319]
+                - cell "LW-7269-9233 Ejemplo" [ref=e320]:
+                  - link "LW-7269-9233 Ejemplo" [ref=e321] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/16
+                    - generic [ref=e322]:
+                      - paragraph [ref=e323]: LW-7269-9233
+                      - paragraph [ref=e324]: Ejemplo
+                - cell "Sit doloribus quae ullam odit." [ref=e325]:
+                  - link "Sit doloribus quae ullam odit." [ref=e326] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/16
+                    - generic [ref=e327]: Sit doloribus quae ullam odit.
+                - cell "Familia" [ref=e328]:
+                  - link "Familia" [ref=e329] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/16
+                    - generic [ref=e331]: Familia
+                - cell "Marge Gislason" [ref=e332]:
+                  - link "Marge Gislason" [ref=e333] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/16
+                    - generic [ref=e334]: Marge Gislason
+                - cell "María López" [ref=e335]:
+                  - link "María López" [ref=e336] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/16
+                    - generic [ref=e337]: María López
+                - cell "en_espera" [ref=e338]:
+                  - link "en_espera" [ref=e339] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/16
+                    - generic [ref=e341]: en_espera
+                - cell "alta" [ref=e342]:
+                  - link "alta" [ref=e343] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/16
+                    - generic [ref=e345]: alta
+                - cell "26/07/2024" [ref=e346]:
+                  - link "26/07/2024" [ref=e347] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/16
+                    - generic [ref=e348]: 26/07/2024
+                - cell "Ver Editar" [ref=e349]:
+                  - generic [ref=e350]:
+                    - link "Ver" [ref=e351] [cursor=pointer]:
+                      - /url: http://localhost/legalweb/public/admin/legal-cases/16
+                      - img [ref=e352]
+                      - text: Ver
+                    - link "Editar" [ref=e355] [cursor=pointer]:
+                      - /url: http://localhost/legalweb/public/admin/legal-cases/16/edit
+                      - img [ref=e356]
+                      - text: Editar
+              - row "Seleccionar/deseleccionar el elemento 15 para las acciones masivas. LW-1794-3377 Ejemplo Consequatur illum et enim. Comercial Mabel Ward Carlos Rodríguez en_progreso media 03/08/2024 Ver Editar" [ref=e359]:
+                - cell "Seleccionar/deseleccionar el elemento 15 para las acciones masivas." [ref=e360]:
+                  - checkbox "Seleccionar/deseleccionar el elemento 15 para las acciones masivas." [ref=e361]
+                - cell "LW-1794-3377 Ejemplo" [ref=e362]:
+                  - link "LW-1794-3377 Ejemplo" [ref=e363] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/15
+                    - generic [ref=e364]:
+                      - paragraph [ref=e365]: LW-1794-3377
+                      - paragraph [ref=e366]: Ejemplo
+                - cell "Consequatur illum et enim." [ref=e367]:
+                  - link "Consequatur illum et enim." [ref=e368] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/15
+                    - generic [ref=e369]: Consequatur illum et enim.
+                - cell "Comercial" [ref=e370]:
+                  - link "Comercial" [ref=e371] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/15
+                    - generic [ref=e373]: Comercial
+                - cell "Mabel Ward" [ref=e374]:
+                  - link "Mabel Ward" [ref=e375] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/15
+                    - generic [ref=e376]: Mabel Ward
+                - cell "Carlos Rodríguez" [ref=e377]:
+                  - link "Carlos Rodríguez" [ref=e378] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/15
+                    - generic [ref=e379]: Carlos Rodríguez
+                - cell "en_progreso" [ref=e380]:
+                  - link "en_progreso" [ref=e381] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/15
+                    - generic [ref=e383]: en_progreso
+                - cell "media" [ref=e384]:
+                  - link "media" [ref=e385] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/15
+                    - generic [ref=e387]: media
+                - cell "03/08/2024" [ref=e388]:
+                  - link "03/08/2024" [ref=e389] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/15
+                    - generic [ref=e390]: 03/08/2024
+                - cell "Ver Editar" [ref=e391]:
+                  - generic [ref=e392]:
+                    - link "Ver" [ref=e393] [cursor=pointer]:
+                      - /url: http://localhost/legalweb/public/admin/legal-cases/15
+                      - img [ref=e394]
+                      - text: Ver
+                    - link "Editar" [ref=e397] [cursor=pointer]:
+                      - /url: http://localhost/legalweb/public/admin/legal-cases/15/edit
+                      - img [ref=e398]
+                      - text: Editar
+              - row "Seleccionar/deseleccionar el elemento 14 para las acciones masivas. LW-5793-0522 Ejemplo In perspiciatis magni in consequatur. Comercial Benny Bosco Carlos Rodríguez abierto alta 25/10/2024 Ver Editar" [ref=e401]:
+                - cell "Seleccionar/deseleccionar el elemento 14 para las acciones masivas." [ref=e402]:
+                  - checkbox "Seleccionar/deseleccionar el elemento 14 para las acciones masivas." [ref=e403]
+                - cell "LW-5793-0522 Ejemplo" [ref=e404]:
+                  - link "LW-5793-0522 Ejemplo" [ref=e405] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/14
+                    - generic [ref=e406]:
+                      - paragraph [ref=e407]: LW-5793-0522
+                      - paragraph [ref=e408]: Ejemplo
+                - cell "In perspiciatis magni in consequatur." [ref=e409]:
+                  - link "In perspiciatis magni in consequatur." [ref=e410] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/14
+                    - generic [ref=e411]: In perspiciatis magni in consequatur.
+                - cell "Comercial" [ref=e412]:
+                  - link "Comercial" [ref=e413] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/14
+                    - generic [ref=e415]: Comercial
+                - cell "Benny Bosco" [ref=e416]:
+                  - link "Benny Bosco" [ref=e417] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/14
+                    - generic [ref=e418]: Benny Bosco
+                - cell "Carlos Rodríguez" [ref=e419]:
+                  - link "Carlos Rodríguez" [ref=e420] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/14
+                    - generic [ref=e421]: Carlos Rodríguez
+                - cell "abierto" [ref=e422]:
+                  - link "abierto" [ref=e423] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/14
+                    - generic [ref=e425]: abierto
+                - cell "alta" [ref=e426]:
+                  - link "alta" [ref=e427] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/14
+                    - generic [ref=e429]: alta
+                - cell "25/10/2024" [ref=e430]:
+                  - link "25/10/2024" [ref=e431] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/14
+                    - generic [ref=e432]: 25/10/2024
+                - cell "Ver Editar" [ref=e433]:
+                  - generic [ref=e434]:
+                    - link "Ver" [ref=e435] [cursor=pointer]:
+                      - /url: http://localhost/legalweb/public/admin/legal-cases/14
+                      - img [ref=e436]
+                      - text: Ver
+                    - link "Editar" [ref=e439] [cursor=pointer]:
+                      - /url: http://localhost/legalweb/public/admin/legal-cases/14/edit
+                      - img [ref=e440]
+                      - text: Editar
+              - row "Seleccionar/deseleccionar el elemento 13 para las acciones masivas. LW-3609-4079 Ejemplo Quasi ullam ex quia. Comercial Micah Larson Carlos Rodríguez cerrado alta 09/11/2025 Ver Editar" [ref=e443]:
+                - cell "Seleccionar/deseleccionar el elemento 13 para las acciones masivas." [ref=e444]:
+                  - checkbox "Seleccionar/deseleccionar el elemento 13 para las acciones masivas." [ref=e445]
+                - cell "LW-3609-4079 Ejemplo" [ref=e446]:
+                  - link "LW-3609-4079 Ejemplo" [ref=e447] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/13
+                    - generic [ref=e448]:
+                      - paragraph [ref=e449]: LW-3609-4079
+                      - paragraph [ref=e450]: Ejemplo
+                - cell "Quasi ullam ex quia." [ref=e451]:
+                  - link "Quasi ullam ex quia." [ref=e452] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/13
+                    - generic [ref=e453]: Quasi ullam ex quia.
+                - cell "Comercial" [ref=e454]:
+                  - link "Comercial" [ref=e455] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/13
+                    - generic [ref=e457]: Comercial
+                - cell "Micah Larson" [ref=e458]:
+                  - link "Micah Larson" [ref=e459] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/13
+                    - generic [ref=e460]: Micah Larson
+                - cell "Carlos Rodríguez" [ref=e461]:
+                  - link "Carlos Rodríguez" [ref=e462] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/13
+                    - generic [ref=e463]: Carlos Rodríguez
+                - cell "cerrado" [ref=e464]:
+                  - link "cerrado" [ref=e465] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/13
+                    - generic [ref=e467]: cerrado
+                - cell "alta" [ref=e468]:
+                  - link "alta" [ref=e469] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/13
+                    - generic [ref=e471]: alta
+                - cell "09/11/2025" [ref=e472]:
+                  - link "09/11/2025" [ref=e473] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/13
+                    - generic [ref=e474]: 09/11/2025
+                - cell "Ver Editar" [ref=e475]:
+                  - generic [ref=e476]:
+                    - link "Ver" [ref=e477] [cursor=pointer]:
+                      - /url: http://localhost/legalweb/public/admin/legal-cases/13
+                      - img [ref=e478]
+                      - text: Ver
+                    - link "Editar" [ref=e481] [cursor=pointer]:
+                      - /url: http://localhost/legalweb/public/admin/legal-cases/13/edit
+                      - img [ref=e482]
+                      - text: Editar
+              - row "Seleccionar/deseleccionar el elemento 12 para las acciones masivas. LW-6678-6497 Ejemplo Quisquam ut asperiores nemo. Administrativo Lonie Aufderhar Carlos Rodríguez en_progreso urgente 16/09/2024 Ver Editar" [ref=e485]:
+                - cell "Seleccionar/deseleccionar el elemento 12 para las acciones masivas." [ref=e486]:
+                  - checkbox "Seleccionar/deseleccionar el elemento 12 para las acciones masivas." [ref=e487]
+                - cell "LW-6678-6497 Ejemplo" [ref=e488]:
+                  - link "LW-6678-6497 Ejemplo" [ref=e489] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/12
+                    - generic [ref=e490]:
+                      - paragraph [ref=e491]: LW-6678-6497
+                      - paragraph [ref=e492]: Ejemplo
+                - cell "Quisquam ut asperiores nemo." [ref=e493]:
+                  - link "Quisquam ut asperiores nemo." [ref=e494] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/12
+                    - generic [ref=e495]: Quisquam ut asperiores nemo.
+                - cell "Administrativo" [ref=e496]:
+                  - link "Administrativo" [ref=e497] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/12
+                    - generic [ref=e499]: Administrativo
+                - cell "Lonie Aufderhar" [ref=e500]:
+                  - link "Lonie Aufderhar" [ref=e501] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/12
+                    - generic [ref=e502]: Lonie Aufderhar
+                - cell "Carlos Rodríguez" [ref=e503]:
+                  - link "Carlos Rodríguez" [ref=e504] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/12
+                    - generic [ref=e505]: Carlos Rodríguez
+                - cell "en_progreso" [ref=e506]:
+                  - link "en_progreso" [ref=e507] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/12
+                    - generic [ref=e509]: en_progreso
+                - cell "urgente" [ref=e510]:
+                  - link "urgente" [ref=e511] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/12
+                    - generic [ref=e513]: urgente
+                - cell "16/09/2024" [ref=e514]:
+                  - link "16/09/2024" [ref=e515] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/12
+                    - generic [ref=e516]: 16/09/2024
+                - cell "Ver Editar" [ref=e517]:
+                  - generic [ref=e518]:
+                    - link "Ver" [ref=e519] [cursor=pointer]:
+                      - /url: http://localhost/legalweb/public/admin/legal-cases/12
+                      - img [ref=e520]
+                      - text: Ver
+                    - link "Editar" [ref=e523] [cursor=pointer]:
+                      - /url: http://localhost/legalweb/public/admin/legal-cases/12/edit
+                      - img [ref=e524]
+                      - text: Editar
+              - row "Seleccionar/deseleccionar el elemento 11 para las acciones masivas. LW-0361-6776 Ejemplo In ut perspiciatis esse tempore velit. Administrativo Bennie Beier Carlos Rodríguez archivado urgente 07/12/2024 Ver Editar" [ref=e527]:
+                - cell "Seleccionar/deseleccionar el elemento 11 para las acciones masivas." [ref=e528]:
+                  - checkbox "Seleccionar/deseleccionar el elemento 11 para las acciones masivas." [ref=e529]
+                - cell "LW-0361-6776 Ejemplo" [ref=e530]:
+                  - link "LW-0361-6776 Ejemplo" [ref=e531] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/11
+                    - generic [ref=e532]:
+                      - paragraph [ref=e533]: LW-0361-6776
+                      - paragraph [ref=e534]: Ejemplo
+                - cell "In ut perspiciatis esse tempore velit." [ref=e535]:
+                  - link "In ut perspiciatis esse tempore velit." [ref=e536] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/11
+                    - generic [ref=e537]: In ut perspiciatis esse tempore velit.
+                - cell "Administrativo" [ref=e538]:
+                  - link "Administrativo" [ref=e539] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/11
+                    - generic [ref=e541]: Administrativo
+                - cell "Bennie Beier" [ref=e542]:
+                  - link "Bennie Beier" [ref=e543] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/11
+                    - generic [ref=e544]: Bennie Beier
+                - cell "Carlos Rodríguez" [ref=e545]:
+                  - link "Carlos Rodríguez" [ref=e546] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/11
+                    - generic [ref=e547]: Carlos Rodríguez
+                - cell "archivado" [ref=e548]:
+                  - link "archivado" [ref=e549] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/11
+                    - generic [ref=e551]: archivado
+                - cell "urgente" [ref=e552]:
+                  - link "urgente" [ref=e553] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/11
+                    - generic [ref=e555]: urgente
+                - cell "07/12/2024" [ref=e556]:
+                  - link "07/12/2024" [ref=e557] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/11
+                    - generic [ref=e558]: 07/12/2024
+                - cell "Ver Editar" [ref=e559]:
+                  - generic [ref=e560]:
+                    - link "Ver" [ref=e561] [cursor=pointer]:
+                      - /url: http://localhost/legalweb/public/admin/legal-cases/11
+                      - img [ref=e562]
+                      - text: Ver
+                    - link "Editar" [ref=e565] [cursor=pointer]:
+                      - /url: http://localhost/legalweb/public/admin/legal-cases/11/edit
+                      - img [ref=e566]
+                      - text: Editar
+              - row "Seleccionar/deseleccionar el elemento 10 para las acciones masivas. LW-9045-4280 Ejemplo Est voluptatibus illo qui quasi. Administrativo Una Quitzon Carlos Rodríguez archivado urgente 14/08/2024 Ver Editar" [ref=e569]:
+                - cell "Seleccionar/deseleccionar el elemento 10 para las acciones masivas." [ref=e570]:
+                  - checkbox "Seleccionar/deseleccionar el elemento 10 para las acciones masivas." [ref=e571]
+                - cell "LW-9045-4280 Ejemplo" [ref=e572]:
+                  - link "LW-9045-4280 Ejemplo" [ref=e573] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/10
+                    - generic [ref=e574]:
+                      - paragraph [ref=e575]: LW-9045-4280
+                      - paragraph [ref=e576]: Ejemplo
+                - cell "Est voluptatibus illo qui quasi." [ref=e577]:
+                  - link "Est voluptatibus illo qui quasi." [ref=e578] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/10
+                    - generic [ref=e579]: Est voluptatibus illo qui quasi.
+                - cell "Administrativo" [ref=e580]:
+                  - link "Administrativo" [ref=e581] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/10
+                    - generic [ref=e583]: Administrativo
+                - cell "Una Quitzon" [ref=e584]:
+                  - link "Una Quitzon" [ref=e585] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/10
+                    - generic [ref=e586]: Una Quitzon
+                - cell "Carlos Rodríguez" [ref=e587]:
+                  - link "Carlos Rodríguez" [ref=e588] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/10
+                    - generic [ref=e589]: Carlos Rodríguez
+                - cell "archivado" [ref=e590]:
+                  - link "archivado" [ref=e591] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/10
+                    - generic [ref=e593]: archivado
+                - cell "urgente" [ref=e594]:
+                  - link "urgente" [ref=e595] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/10
+                    - generic [ref=e597]: urgente
+                - cell "14/08/2024" [ref=e598]:
+                  - link "14/08/2024" [ref=e599] [cursor=pointer]:
+                    - /url: http://localhost/legalweb/public/admin/legal-cases/10
+                    - generic [ref=e600]: 14/08/2024
+                - cell "Ver Editar" [ref=e601]:
+                  - generic [ref=e602]:
+                    - link "Ver" [ref=e603] [cursor=pointer]:
+                      - /url: http://localhost/legalweb/public/admin/legal-cases/10
+                      - img [ref=e604]
+                      - text: Ver
+                    - link "Editar" [ref=e607] [cursor=pointer]:
+                      - /url: http://localhost/legalweb/public/admin/legal-cases/10/edit
+                      - img [ref=e608]
+                      - text: Editar
+          - navigation "Navegación de paginación" [ref=e611]:
+            - generic [ref=e614]:
+              - generic [ref=e616]: por página
+              - combobox "por página" [ref=e618]:
+                - option "5"
+                - option "10" [selected]
+                - option "25"
+                - option "50"
+            - button "Siguiente" [ref=e619] [cursor=pointer]
+  - generic:
+    - status
