@@ -51,19 +51,23 @@ class CasesOverview extends StatsOverviewWidget
             Stat::make('Casos Activos', $activeCases)
                 ->description("{$totalCases} en total")
                 ->descriptionIcon('heroicon-m-briefcase')
-                ->color('primary'),
+                ->color('primary')
+                ->url(route('filament.admin.resources.legal-cases.index')),
             Stat::make('Clientes', $totalClients)
                 ->description('Registrados')
                 ->descriptionIcon('heroicon-m-users')
-                ->color('success'),
+                ->color('success')
+                ->url(route('filament.admin.resources.clients.index')),
             Stat::make('Actuaciones', $recentEvents)
                 ->description('Ultimos 30 dias')
                 ->descriptionIcon('heroicon-m-calendar-days')
-                ->color('warning'),
+                ->color('warning')
+                ->url(route('filament.admin.resources.case-events.index')),
             Stat::make('Alertas', $urgentReminders + $overdueReminders)
                 ->description($alertDescription)
                 ->descriptionIcon('heroicon-m-bell-alert')
-                ->color($alertColor),
+                ->color($alertColor)
+                ->url(route('filament.admin.resources.reminders.index')),
         ];
     }
 }

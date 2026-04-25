@@ -337,10 +337,10 @@ class ViewLegalCase extends ViewRecord
                     ->form(function () {
                         $record = $this->record;
 
-                        if (! $record->portal_token) {
-                            $record->generatePortalToken();
-                            $record->refresh();
-                        }
+                        // Ensures the portal is enabled and a token exists,
+                        // without invalidating links that were previously shared.
+                        $record->generatePortalToken();
+                        $record->refresh();
 
                         $url = route('portal.show', $record->portal_token);
 
