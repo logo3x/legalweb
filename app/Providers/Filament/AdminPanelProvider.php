@@ -47,7 +47,11 @@ class AdminPanelProvider extends PanelProvider
             ->font('Inter')
             ->renderHook(
                 'panels::head.end',
-                fn () => new HtmlString('<script async src="https://www.googletagmanager.com/gtag/js?id=G-2Q7KJTB5MT"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-2Q7KJTB5MT");</script>'),
+                fn () => new HtmlString('<script async src="https://www.googletagmanager.com/gtag/js?id=G-2Q7KJTB5MT"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-2Q7KJTB5MT");</script><meta name="csrf-token" content="'.csrf_token().'">'),
+            )
+            ->renderHook(
+                'panels::body.end',
+                fn () => view('filament.tour'),
             )
             ->renderHook(
                 'panels::auth.login.form.after',

@@ -34,7 +34,8 @@ class ViewLegalCase extends ViewRecord
                     ->label('Resumen del Caso')
                     ->icon('heroicon-o-document-text')
                     ->modalWidth('2xl')
-                    ->modalHeading('Resumen del Caso')
+                    ->modalHeading('Resumen del Caso (IA)')
+                    ->modalDescription('Borrador orientativo basado en los datos del caso. NO sustituye el criterio profesional. Verifique antes de actuar.')
                     ->modalCancelActionLabel('Cerrar')
                     ->modalSubmitActionLabel('Copiar al portapapeles')
                     ->form(function () {
@@ -61,7 +62,8 @@ class ViewLegalCase extends ViewRecord
                     ->label('Sugerir Siguiente Paso')
                     ->icon('heroicon-o-light-bulb')
                     ->modalWidth('2xl')
-                    ->modalHeading('Siguiente Paso Sugerido')
+                    ->modalHeading('Siguiente Paso Sugerido (IA)')
+                    ->modalDescription('Sugerencia basada en la etapa actual y actuaciones del caso. Solo orientativa. Verifique plazos y normativa antes de actuar.')
                     ->modalCancelActionLabel('Cerrar')
                     ->modalSubmitActionLabel('Copiar al portapapeles')
                     ->form(function () {
@@ -87,6 +89,7 @@ class ViewLegalCase extends ViewRecord
                 Action::make('ai_draft')
                     ->label('Generar Borrador Word')
                     ->icon('heroicon-o-pencil-square')
+                    ->modalDescription('Genera un borrador inicial en Word con placeholders <<<COMPLETAR>>> donde falten datos. Usted debe revisar, completar, verificar normas citadas y firmar antes de presentar. La IA puede equivocarse - usted es responsable del documento final.')
                     ->form([
                         Select::make('document_type')
                             ->label('Tipo de Documento')

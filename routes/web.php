@@ -95,6 +95,20 @@ Route::get('/download/{filename}', function (string $filename) {
     return response()->download($path, $filename);
 })->middleware('auth')->name('download.file');
 
+// Tour completion
+Route::post('/admin/tour/complete', function () {
+    auth()->user()?->update(['tour_completed_at' => now()]);
+
+    return response()->json(['ok' => true]);
+})->middleware('auth')->name('tour.complete');
+
+// Tour reset (volver a verlo)
+Route::post('/admin/tour/reset', function () {
+    auth()->user()?->update(['tour_completed_at' => null]);
+
+    return redirect('/admin');
+})->middleware('auth')->name('tour.reset');
+
 // Wompi Payments
 Route::middleware('auth')->group(function () {
     Route::match(['get', 'post'], '/wompi/checkout', [WompiController::class, 'checkout'])->name('wompi.checkout');

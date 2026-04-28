@@ -94,8 +94,14 @@ class DocumentsRelationManager extends RelationManager
                 DatePicker::make('received_at')
                     ->label('Fecha de recepcion')
                     ->visible(fn ($get) => $get('status') === 'recibido'),
+                TextInput::make('external_url')
+                    ->label('Enlace al archivo (RECOMENDADO)')
+                    ->url()
+                    ->placeholder('https://drive.google.com/... o https://1drv.ms/...')
+                    ->columnSpanFull()
+                    ->helperText('Recomendado: guarde el archivo en su Google Drive, OneDrive o Dropbox y pegue el enlace aqui. Asi mantiene el control y la privacidad de su informacion.'),
                 FileUpload::make('file_path')
-                    ->label('Archivo (opcional)')
+                    ->label('Subir archivo (alternativa)')
                     ->disk('public')
                     ->directory('documents')
                     ->preserveFilenames()
@@ -104,13 +110,7 @@ class DocumentsRelationManager extends RelationManager
                     ->downloadable()
                     ->openable()
                     ->columnSpanFull()
-                    ->helperText('Suba el archivo cuando lo tenga. Tambien puede usar el campo de enlace si esta en la nube.'),
-                TextInput::make('external_url')
-                    ->label('Enlace al archivo (Drive, Dropbox, etc)')
-                    ->url()
-                    ->placeholder('https://drive.google.com/...')
-                    ->columnSpanFull()
-                    ->helperText('Si el documento esta en la nube, pegue el enlace aqui.'),
+                    ->helperText('Solo si no puede usar la nube. Max 10 MB. Recuerde: usted es responsable de la informacion subida.'),
                 Textarea::make('notes')
                     ->label('Notas adicionales')
                     ->rows(2)
