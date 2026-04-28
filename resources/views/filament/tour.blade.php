@@ -8,18 +8,30 @@
         $showTour = false;
     }
 @endphp
+<!-- LegalWeb Tour render hook: showTour={{ $showTour ? 'true' : 'false' }} forced={{ $forced ?? false ? 'true' : 'false' }} pending={{ $pending ?? false ? 'true' : 'false' }} adminRoot={{ $isAdminRoot ?? false ? 'true' : 'false' }} auth={{ auth()->check() ? 'true' : 'false' }} -->
 @if($showTour)
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.css"/>
 <script src="https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.js.iife.js"></script>
 @verbatim
 <script>
+console.log('[LegalWeb Tour] script bloque cargado, esperando driver.js...');
 (function () {
+    let attempts = 0;
     function startLegalwebTour() {
+        attempts++;
         if (typeof driver === 'undefined' || typeof driver.driver !== 'function') {
+            if (attempts > 50) {
+                console.error('[LegalWeb Tour] driver.js no cargo despues de 10 segundos. CDN bloqueado?');
+                return;
+            }
             return setTimeout(startLegalwebTour, 200);
         }
-        if (window.__legalwebTourStarted) return;
+        if (window.__legalwebTourStarted) {
+            console.log('[LegalWeb Tour] ya estaba iniciado, abort');
+            return;
+        }
         window.__legalwebTourStarted = true;
+        console.log('[LegalWeb Tour] iniciando tour...');
 
         const driverObj = driver.driver({
         showProgress: true,
