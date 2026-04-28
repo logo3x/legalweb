@@ -56,66 +56,66 @@ console.log('[LegalWeb Tour] script bloque cargado, esperando driver.js...');
         steps: [
             {
                 popover: {
-                    title: '&iexcl;Hola! Bienvenido a LegalWeb &#128075;',
-                    description: '<p style="margin:0 0 10px 0;">Antes de que te lances a importar casos como un toro, deja que te muestre las cosas chveres en 90 segundos.</p><p style="margin:0;font-size:13px;opacity:0.85;">Tranquilo, puedes cerrar este tour cuando quieras y volverlo a ver desde <strong>Mi Firma &rarr; Volver a ver tour</strong>. Promesa.</p>',
+                    title: 'Bienvenido a LegalWeb &#128075;',
+                    description: '<p style="margin:0 0 10px 0;">Permitanos mostrarle las funcionalidades principales en menos de 90 segundos. Le ahorrara muchas horas de exploracion.</p><p style="margin:0;font-size:13px;opacity:0.85;">Puede cerrar el tour cuando lo desee y volver a verlo desde <strong>Mi Firma &rarr; Volver a ver tour</strong>.</p>',
                 }
             },
             {
                 element: 'aside nav',
                 popover: {
-                    title: 'Tu cuartel general &#127960;&#65039;',
-                    description: '<p style="margin:0;">Aqui esta TODO lo que necesitas: <strong>Casos, Clientes, Actuaciones, Agenda, Documentos y Reportes</strong>. Es como el menu de tu restaurante favorito, pero legal.</p>',
+                    title: 'Menu principal &#127960;&#65039;',
+                    description: '<p style="margin:0;">Aqui encontrara todos los modulos del sistema: <strong>Casos, Clientes, Actuaciones, Agenda, Documentos y Reportes</strong>. Todo lo que necesita en un solo lugar.</p>',
                     side: 'right',
                 }
             },
             {
                 element: 'a[href*="/admin/legal-cases"]',
                 popover: {
-                    title: 'Casos: el corazon del sistema &#10084;&#65039;',
-                    description: '<p style="margin:0 0 8px 0;">Aqui creas, importas y gestionas todos tus procesos.</p><p style="margin:0;background:rgba(58,134,255,0.15);padding:10px;border-radius:8px;font-size:13px;"><strong>&#128161; Tip pro:</strong> con el numero de radicado importas un caso desde la <strong>Rama Judicial</strong> en segundos. Tambien puedes hacer importacion masiva.</p>',
+                    title: 'Casos: gestion integral de procesos &#9878;&#65039;',
+                    description: '<p style="margin:0 0 8px 0;">El corazon del sistema. Aqui crea, importa y administra todos sus procesos judiciales.</p><p style="margin:0;background:rgba(58,134,255,0.15);padding:10px;border-radius:8px;font-size:13px;"><strong>&#128161; Tip:</strong> con solo el numero de radicado puede importar un caso completo desde la <strong>Rama Judicial</strong> en segundos. Tambien dispone de importacion masiva.</p>',
                     side: 'right',
                 }
             },
             {
                 element: 'a[href*="/admin/clients"]',
                 popover: {
-                    title: 'Clientes: tu agenda dorada &#128178;',
-                    description: '<p style="margin:0 0 8px 0;">Tu lista de clientes con toda su info.</p><p style="margin:0;background:rgba(58,134,255,0.15);padding:10px;border-radius:8px;font-size:13px;"><strong>&#128161; Tip pro:</strong> escribe la cedula y trae todos los procesos asociados a esa persona en la Rama Judicial. Magia pura.</p>',
+                    title: 'Clientes: directorio centralizado &#128100;',
+                    description: '<p style="margin:0 0 8px 0;">Su base de datos de clientes, con historial completo de procesos asociados.</p><p style="margin:0;background:rgba(58,134,255,0.15);padding:10px;border-radius:8px;font-size:13px;"><strong>&#128161; Tip:</strong> ingrese el numero de cedula y el sistema buscara automaticamente todos los procesos vinculados en la Rama Judicial.</p>',
                     side: 'right',
                 }
             },
             {
                 element: 'a[href*="/admin/reminders"]',
                 popover: {
-                    title: 'Agenda: nunca mas se te olvida nada &#9200;',
-                    description: '<p style="margin:0 0 8px 0;">Recordatorios automaticos generados desde las actuaciones de la Rama Judicial.</p><p style="margin:0;font-size:13px;">Te avisamos por <strong>email</strong> y aqui en la <strong>campanita &#128276;</strong> de arriba a la derecha. Cero excusas para perder un termino.</p>',
+                    title: 'Agenda y vencimientos &#9200;',
+                    description: '<p style="margin:0 0 8px 0;">Recordatorios generados automaticamente a partir de las actuaciones de la Rama Judicial.</p><p style="margin:0;font-size:13px;">Recibira notificaciones por <strong>correo electronico</strong> y en la <strong>campanita &#128276;</strong> del panel. Asi no se le pasa ningun termino.</p>',
                     side: 'right',
                 }
             },
             {
                 element: 'a[href*="/admin/reports"]',
                 popover: {
-                    title: 'Reportes: presume con datos &#128202;',
-                    description: '<p style="margin:0;">Estadisticas de tu firma: casos por estado, productividad por abogado, analitica de despachos y reportes en PDF listos para descargar y mandar al socio mayoritario.</p>',
+                    title: 'Reportes y analitica &#128202;',
+                    description: '<p style="margin:0;">Indicadores clave de su firma: casos por estado, productividad por abogado, analitica de despachos y reportes en PDF listos para presentar.</p>',
                     side: 'right',
                 }
             },
             {
                 popover: {
-                    title: 'Asistente IA en cada caso &#129302;',
-                    description: '<p style="margin:0 0 10px 0;">Cuando entres a un caso, veras un boton <strong>"Asistente IA"</strong> que te puede:</p><ul style="margin:0 0 10px 18px;padding:0;font-size:14px;line-height:1.6;"><li>Resumir el caso en 30 segundos</li><li>Sugerir proximos pasos</li><li>Generar borradores de demandas, tutelas y memoriales</li></ul><p style="margin:0;background:rgba(255,180,0,0.2);padding:10px;border-radius:8px;font-size:13px;border-left:3px solid #ffb400;"><strong>&#9888;&#65039; Importante:</strong> son <strong>borradores orientativos</strong>. La IA no reemplaza tu criterio profesional. Siempre revisa antes de firmar.</p>',
+                    title: 'Asistente IA integrado &#129302;',
+                    description: '<p style="margin:0 0 10px 0;">Dentro de cada caso encontrara el boton <strong>"Asistente IA"</strong>, que le permite:</p><ul style="margin:0 0 10px 18px;padding:0;font-size:14px;line-height:1.6;"><li>Generar resumenes ejecutivos del expediente</li><li>Sugerir proximos pasos procesales</li><li>Redactar borradores de demandas, tutelas y memoriales</li></ul><p style="margin:0;background:rgba(255,180,0,0.2);padding:10px;border-radius:8px;font-size:13px;border-left:3px solid #ffb400;"><strong>&#9888;&#65039; Importante:</strong> los textos generados son <strong>borradores orientativos</strong>. La IA no reemplaza el criterio profesional del abogado. Revise siempre antes de utilizar.</p>',
                 }
             },
             {
                 popover: {
                     title: 'Sincronizacion automatica &#128260;',
-                    description: '<p style="margin:0 0 8px 0;">Todos los dias a las <strong>3:00 AM</strong>, mientras duermes, consultamos la Rama Judicial por ti.</p><p style="margin:0;font-size:14px;">Si hay novedades, te las contamos por <strong>email</strong> y en la <strong>campanita &#128276;</strong>. Tu solo te enteras cuando despiertas.</p>',
+                    description: '<p style="margin:0 0 8px 0;">Cada dia a las <strong>3:00 AM</strong> el sistema consulta la Rama Judicial por usted.</p><p style="margin:0;font-size:14px;">Si detecta nuevas actuaciones, le notificaremos por <strong>correo</strong> y en la <strong>campanita &#128276;</strong>. Manejo proactivo, sin esfuerzo manual.</p>',
                 }
             },
             {
                 popover: {
-                    title: '!Listo, capitan! &#128640;',
-                    description: '<p style="margin:0 0 10px 0;">Hora de empezar. Te recomendamos:</p><ol style="margin:0 0 10px 18px;padding:0;font-size:14px;line-height:1.7;"><li>Ir a <strong>Casos</strong> y darle a <strong>"Importar desde Tyba"</strong></li><li>Pegar tu primer numero de radicado</li><li>Ver la magia ocurrir &#10024;</li></ol><p style="margin:0;font-size:13px;opacity:0.9;">&iquest;Necesitas ayuda? Escribenos a <strong>legalwebco@gmail.com</strong>. Estamos para servirte.</p>',
+                    title: 'Todo listo para comenzar &#128640;',
+                    description: '<p style="margin:0 0 10px 0;">Le sugerimos empezar asi:</p><ol style="margin:0 0 10px 18px;padding:0;font-size:14px;line-height:1.7;"><li>Ingrese al modulo <strong>Casos</strong></li><li>Seleccione <strong>"Importar desde Tyba"</strong></li><li>Indique el numero de radicado de su primer proceso</li></ol><p style="margin:0;font-size:13px;opacity:0.9;">&iquest;Tiene alguna duda? Escribanos a <strong>legalwebco@gmail.com</strong>. Estaremos atentos.</p>',
                 }
             },
         ],
