@@ -10,18 +10,25 @@
 @endphp
 <!-- LegalWeb Tour render hook: showTour={{ $showTour ? 'true' : 'false' }} forced={{ $forced ?? false ? 'true' : 'false' }} pending={{ $pending ?? false ? 'true' : 'false' }} adminRoot={{ $isAdminRoot ?? false ? 'true' : 'false' }} auth={{ auth()->check() ? 'true' : 'false' }} -->
 @if($showTour)
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.css"/>
-<script src="https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.js.iife.js"></script>
+<link rel="stylesheet" href="{{ asset('vendor/driverjs/driver.css') }}"/>
+<script src="{{ asset('vendor/driverjs/driver.js.iife.js') }}"></script>
 @verbatim
 <script>
 console.log('[LegalWeb Tour] script bloque cargado, esperando driver.js...');
 (function () {
+    function getDriverApi() {
+        if (typeof window.driver === 'undefined') return null;
+        if (window.driver.js && typeof window.driver.js.driver === 'function') return window.driver.js.driver;
+        if (typeof window.driver.driver === 'function') return window.driver.driver;
+        return null;
+    }
     let attempts = 0;
     function startLegalwebTour() {
         attempts++;
-        if (typeof driver === 'undefined' || typeof driver.driver !== 'function') {
+        const driverFn = getDriverApi();
+        if (!driverFn) {
             if (attempts > 50) {
-                console.error('[LegalWeb Tour] driver.js no cargo despues de 10 segundos. CDN bloqueado?');
+                console.error('[LegalWeb Tour] driver.js no se inicializo despues de 10s', { hasGlobal: typeof window.driver, value: window.driver });
                 return;
             }
             return setTimeout(startLegalwebTour, 200);
@@ -33,7 +40,7 @@ console.log('[LegalWeb Tour] script bloque cargado, esperando driver.js...');
         window.__legalwebTourStarted = true;
         console.log('[LegalWeb Tour] iniciando tour...');
 
-        const driverObj = driver.driver({
+        const driverObj = driverFn({
         showProgress: true,
         animate: true,
         smoothScroll: true,
