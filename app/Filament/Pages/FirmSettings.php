@@ -219,7 +219,11 @@ class FirmSettings extends Page
                 ->modalDescription('Le mostraremos nuevamente el tour introductorio con las funcionalidades principales de la plataforma.')
                 ->modalSubmitActionLabel('Si, mostrar tour')
                 ->action(function () {
-                    auth()->user()->update(['tour_completed_at' => null]);
+                    try {
+                        auth()->user()->update(['tour_completed_at' => null]);
+                    } catch (\Throwable $e) {
+                        // Si la columna no existe (falta migrar), igual disparamos el tour via query param
+                    }
                     $this->redirect('/admin?tour=1');
                 }),
         ];
