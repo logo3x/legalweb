@@ -220,7 +220,7 @@ class FirmSettings extends Page
                 ->modalSubmitActionLabel('Si, mostrar tour')
                 ->action(function () {
                     auth()->user()->update(['tour_completed_at' => null]);
-                    $this->redirect('/admin');
+                    $this->redirect('/admin?tour=1');
                 }),
         ];
     }

@@ -1,8 +1,9 @@
 @php
     try {
-        $showTour = auth()->check()
-            && empty(auth()->user()->getAttribute('tour_completed_at'))
-            && (request()->is('admin') || request()->is('admin/'));
+        $isAdminRoot = request()->is('admin') || request()->is('admin/');
+        $forced = request()->query('tour') === '1';
+        $pending = auth()->check() && empty(auth()->user()->getAttribute('tour_completed_at'));
+        $showTour = auth()->check() && $isAdminRoot && ($forced || $pending);
     } catch (\Throwable $e) {
         $showTour = false;
     }
@@ -12,10 +13,15 @@
 <script src="https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.js.iife.js"></script>
 @verbatim
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    if (typeof driver === 'undefined') return;
+(function () {
+    function startLegalwebTour() {
+        if (typeof driver === 'undefined' || typeof driver.driver !== 'function') {
+            return setTimeout(startLegalwebTour, 200);
+        }
+        if (window.__legalwebTourStarted) return;
+        window.__legalwebTourStarted = true;
 
-    const driverObj = driver.driver({
+        const driverObj = driver.driver({
         showProgress: true,
         animate: true,
         smoothScroll: true,
@@ -94,20 +100,30 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             },
         ],
-        onDestroyed: () => {
-            fetch('/admin/tour/complete', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content,
-                    'Accept': 'application/json',
-                },
-            }).catch(() => {});
-        },
-    });
+            onDestroyed: () => {
+                fetch('/admin/tour/complete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content,
+                        'Accept': 'application/json',
+                    },
+                }).catch(() => {});
+                if (window.location.search.indexOf('tour=1') !== -1) {
+                    history.replaceState({}, '', window.location.pathname);
+                }
+            },
+        });
 
-    setTimeout(() => driverObj.drive(), 800);
-});
+        setTimeout(() => driverObj.drive(), 600);
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', startLegalwebTour);
+    } else {
+        startLegalwebTour();
+    }
+})();
 </script>
 @endverbatim
 <style>
