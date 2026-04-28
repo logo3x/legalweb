@@ -31,6 +31,8 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->registration()
+            ->databaseNotifications()
+            ->databaseNotificationsPolling('30s')
             ->brandName('LegalWeb')
             ->brandLogo(asset('images/logo.png'))
             ->brandLogoHeight('2.5rem')

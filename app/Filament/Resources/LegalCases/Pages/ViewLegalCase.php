@@ -20,6 +20,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
+use Illuminate\Support\Facades\Log;
 
 class ViewLegalCase extends ViewRecord
 {
@@ -104,19 +105,38 @@ class ViewLegalCase extends ViewRecord
                             ->required(),
                     ])
                     ->action(function (array $data) {
-                        $content = app(AIService::class)->draftDocument($this->record, $data['document_type']);
-
-                        if (! $content) {
-                            Notification::make()->title('Error')->body('No se pudo generar el borrador.')->danger()->send();
+                        try {
+                            $content = app(AIService::class)->draftDocument($this->record, $data['document_type']);
+                        } catch (\Exception $e) {
+                            Log::error('AI draft error: '.$e->getMessage());
+                            Notification::make()->title('Error de IA')->body($e->getMessage())->danger()->send();
 
                             return;
                         }
 
-                        $filePath = app(DocumentGenerator::class)->generateWord(
-                            $this->record,
-                            $data['document_type'],
-                            $content
-                        );
+                        if (! $content) {
+                            Notification::make()
+                                ->title('No se pudo generar el borrador')
+                                ->body('Verifique que GEMINI_API_KEY u OPENROUTER_API_KEY esten configurados en .env. Revise storage/logs/laravel.log para mas detalle.')
+                                ->danger()
+                                ->persistent()
+                                ->send();
+
+                            return;
+                        }
+
+                        try {
+                            $filePath = app(DocumentGenerator::class)->generateWord(
+                                $this->record,
+                                $data['document_type'],
+                                $content
+                            );
+                        } catch (\Exception $e) {
+                            Log::error('Word generation error: '.$e->getMessage());
+                            Notification::make()->title('Error generando Word')->body($e->getMessage())->danger()->send();
+
+                            return;
+                        }
 
                         $fileName = basename($filePath);
 

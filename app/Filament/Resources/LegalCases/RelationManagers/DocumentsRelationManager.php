@@ -122,13 +122,16 @@ class DocumentsRelationManager extends RelationManager
     {
         return $table
             ->recordTitleAttribute('name')
-            ->description('Lista de documentos del caso. Puede registrar documentos pendientes de conseguir (con info de entidad, valor, estado) o documentos ya recibidos (con archivo subido o enlace). Todo el ciclo de vida en un solo lugar.')
+            ->description('Lista de documentos del caso. Los documentos que el cliente debe aportar aparecen en amarillo. Cuando el cliente confirma desde el portal, recibira notificacion en la campanita.')
             ->columns([
                 TextColumn::make('name')
                     ->label('Documento')
                     ->searchable()
                     ->limit(40)
-                    ->tooltip(fn ($record) => $record->description),
+                    ->tooltip(fn ($record) => $record->description)
+                    ->weight(fn ($record) => $record->responsible === 'cliente' && in_array($record->status, ['pendiente', 'solicitado', 'en_tramite']) ? 'bold' : null)
+                    ->icon(fn ($record) => $record->responsible === 'cliente' && in_array($record->status, ['pendiente', 'solicitado', 'en_tramite']) ? 'heroicon-s-exclamation-circle' : null)
+                    ->iconColor('warning'),
                 TextColumn::make('responsible')
                     ->label('Responsable')
                     ->badge()

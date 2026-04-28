@@ -4,6 +4,8 @@ namespace App\Notifications;
 
 use App\Models\CaseFlowProgress;
 use App\Models\LegalCase;
+use Filament\Notifications\Actions\Action;
+use Filament\Notifications\Notification as FilamentNotification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -21,7 +23,25 @@ class TermDeadlineNotification extends Notification implements ShouldQueue
 
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['mail', 'database'];
+    }
+
+    public function toDatabase(object $notifiable): array
+    {
+        $color = $this->daysRemaining <= 1 ? 'danger' : ($this->daysRemaining <= 3 ? 'warning' : 'info');
+
+        return FilamentNotification::make()
+            ->title("Termino por vencer ({$this->daysRemaining} dias)")
+            ->body($this->case->case_number.' - '.$this->progress->flowStep->name)
+            ->icon('heroicon-o-clock')
+            ->iconColor($color)
+            ->actions([
+                Action::make('ver')
+                    ->label('Ver caso')
+                    ->url(url("/admin/legal-cases/{$this->case->id}"))
+                    ->markAsRead(),
+            ])
+            ->getDatabaseMessage();
     }
 
     public function toMail(object $notifiable): MailMessage

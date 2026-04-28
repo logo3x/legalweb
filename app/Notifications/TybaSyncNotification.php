@@ -3,6 +3,8 @@
 namespace App\Notifications;
 
 use App\Models\LegalCase;
+use Filament\Notifications\Actions\Action;
+use Filament\Notifications\Notification as FilamentNotification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -19,7 +21,23 @@ class TybaSyncNotification extends Notification implements ShouldQueue
 
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['mail', 'database'];
+    }
+
+    public function toDatabase(object $notifiable): array
+    {
+        return FilamentNotification::make()
+            ->title("{$this->newActuaciones} nueva(s) actuacion(es)")
+            ->body("Caso {$this->case->case_number} - Rama Judicial detecto novedades")
+            ->icon('heroicon-o-arrow-path')
+            ->iconColor('warning')
+            ->actions([
+                Action::make('ver')
+                    ->label('Ver caso')
+                    ->url(url("/admin/legal-cases/{$this->case->id}"))
+                    ->markAsRead(),
+            ])
+            ->getDatabaseMessage();
     }
 
     public function toMail(object $notifiable): MailMessage

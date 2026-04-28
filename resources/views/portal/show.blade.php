@@ -234,109 +234,163 @@
         </div>
     @endif
 
-    {{-- Documentos del caso --}}
-    @if($case->documents->isNotEmpty())
-        @php
-            $docsClient = $case->documents->where('responsible', 'cliente');
-            $docsOther = $case->documents->where('responsible', '!=', 'cliente');
-            $pendingClient = $docsClient->whereIn('status', ['pendiente', 'solicitado', 'en_tramite']);
-        @endphp
+    {{-- Documentos pendientes del cliente (DESTACADO) --}}
+    @php
+        $pendingClient = $case->documents->where('responsible', 'cliente')->whereIn('status', ['pendiente', 'solicitado', 'en_tramite']);
+    @endphp
 
-        <div style="background: #fff; border-radius: 16px; border: 1px solid #e5e7eb; padding: 24px; margin-bottom: 20px;">
-            <h2 style="font-size: 16px; font-weight: 700; color: #1E3A5F; margin: 0 0 4px 0;">Documentos del Proceso</h2>
-            <p style="font-size: 12px; color: #6b7280; margin: 0 0 16px 0;">Estado de la documentacion necesaria para su caso.</p>
+    @if($pendingClient->isNotEmpty())
+        <div style="background: linear-gradient(135deg, #fef3c7, #fffbeb); border: 2px solid #f59e0b; border-radius: 16px; padding: 24px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                <div style="width: 44px; height: 44px; background: #f59e0b; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <svg style="width: 24px; height: 24px; color: #fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                </div>
+                <div>
+                    <h2 style="font-size: 17px; font-weight: 700; color: #78350f; margin: 0;">Documentos que debe aportar</h2>
+                    <p style="font-size: 12px; color: #92400e; margin: 2px 0 0 0;">{{ $pendingClient->count() }} documento(s) pendiente(s) de su parte</p>
+                </div>
+            </div>
 
-            {{-- Alerta si hay documentos pendientes del cliente --}}
-            @if($pendingClient->isNotEmpty())
-                <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 14px; margin-bottom: 16px;">
-                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-                        <svg style="width: 18px; height: 18px; color: #d97706;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
-                        <span style="font-size: 13px; font-weight: 600; color: #92400e;">Documentos que usted debe aportar ({{ $pendingClient->count() }})</span>
-                    </div>
-                    <p style="font-size: 12px; color: #a16207; margin: 0;">Los siguientes documentos son necesarios para su proceso. Por favor contacte a su abogado para hacerlos llegar.</p>
+            @if(session('doc_success'))
+                <div style="background: #dcfce7; border: 1px solid #86efac; border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; font-size: 13px; color: #166534;">
+                    {{ session('doc_success') }}
                 </div>
             @endif
 
-            {{-- Lista de documentos --}}
-            @foreach($case->documents as $doc)
-                @php
-                    $statusConfig = [
-                        'pendiente' => ['bg' => '#f3f4f6', 'color' => '#374151', 'label' => 'Pendiente'],
-                        'solicitado' => ['bg' => '#dbeafe', 'color' => '#1e40af', 'label' => 'Solicitado'],
-                        'en_tramite' => ['bg' => '#fef3c7', 'color' => '#92400e', 'label' => 'En tramite'],
-                        'recibido' => ['bg' => '#dcfce7', 'color' => '#166534', 'label' => 'Recibido'],
-                        'no_aplica' => ['bg' => '#fee2e2', 'color' => '#991b1b', 'label' => 'No aplica'],
-                    ];
-                    $sc = $statusConfig[$doc->status] ?? $statusConfig['pendiente'];
-
-                    $responsibleLabels = [
-                        'cliente' => 'Usted (cliente)',
-                        'abogado' => 'Su abogado',
-                        'firma' => 'La firma',
-                        'contraparte' => 'Contraparte',
-                        'juzgado' => 'Juzgado',
-                        'otro' => 'Otro',
-                    ];
-                    $respLabel = $responsibleLabels[$doc->responsible ?? 'otro'] ?? 'Otro';
-                @endphp
-
-                <div style="display: flex; align-items: flex-start; gap: 14px; padding: 12px; border: 1px solid #f3f4f6; border-radius: 10px; margin-bottom: 8px; background: {{ $doc->responsible === 'cliente' && in_array($doc->status, ['pendiente', 'solicitado']) ? '#fffbeb' : '#fff' }};">
-                    <div style="flex-shrink: 0; margin-top: 2px;">
-                        @if($doc->status === 'recibido')
-                            <div style="width: 32px; height: 32px; background: #dcfce7; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-                                <svg style="width: 18px; height: 18px; color: #16a34a;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            @foreach($pendingClient as $doc)
+                <div style="background: #fff; border: 1px solid #fde68a; border-radius: 12px; padding: 14px; margin-bottom: 10px;">
+                    <div style="display: flex; align-items: start; gap: 12px; margin-bottom: 10px;">
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="font-size: 14px; font-weight: 600; color: #1f2937; margin-bottom: 4px;">{{ $doc->name }}</div>
+                            @if($doc->description)
+                                <p style="font-size: 12px; color: #6b7280; margin: 4px 0;">{{ $doc->description }}</p>
+                            @endif
+                            <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 6px; font-size: 11px; color: #9ca3af;">
+                                @if($doc->entity)
+                                    <span><strong style="color: #6b7280;">Donde conseguirlo:</strong> {{ $doc->entity }}</span>
+                                @endif
+                                @if($doc->due_date)
+                                    <span style="color: {{ $doc->due_date->isPast() ? '#dc2626' : '#9ca3af' }};">
+                                        <strong style="color: {{ $doc->due_date->isPast() ? '#dc2626' : '#6b7280' }};">Antes de:</strong> {{ $doc->due_date->format('d/m/Y') }}
+                                    </span>
+                                @endif
                             </div>
-                        @elseif(in_array($doc->status, ['solicitado', 'en_tramite']))
-                            <div style="width: 32px; height: 32px; background: #fef3c7; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-                                <svg style="width: 18px; height: 18px; color: #d97706;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                            </div>
-                        @else
-                            <div style="width: 32px; height: 32px; background: #f3f4f6; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-                                <svg style="width: 18px; height: 18px; color: #9ca3af;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                            </div>
-                        @endif
+                        </div>
                     </div>
 
-                    <div style="flex: 1; min-width: 0;">
-                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px;">
-                            <span style="font-size: 13px; font-weight: 600; color: #1f2937;">{{ $doc->name }}</span>
-                            <span style="display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; background: {{ $sc['bg'] }}; color: {{ $sc['color'] }};">{{ $sc['label'] }}</span>
-                        </div>
-                        @if($doc->description)
-                            <p style="font-size: 12px; color: #6b7280; margin: 2px 0;">{{ Str::limit($doc->description, 150) }}</p>
-                        @endif
-                        <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 4px; font-size: 11px; color: #9ca3af;">
-                            <span><strong style="color: #6b7280;">Responsable:</strong> {{ $respLabel }}</span>
-                            @if($doc->entity)
-                                <span><strong style="color: #6b7280;">Entidad:</strong> {{ $doc->entity }}</span>
-                            @endif
-                            @if($doc->due_date && $doc->status !== 'recibido')
-                                <span style="color: {{ $doc->due_date->isPast() ? '#dc2626' : '#9ca3af' }};">
-                                    <strong style="color: {{ $doc->due_date->isPast() ? '#dc2626' : '#6b7280' }};">Necesario antes de:</strong> {{ $doc->due_date->format('d/m/Y') }}
-                                </span>
-                            @endif
-                            @if($doc->received_at)
-                                <span><strong style="color: #6b7280;">Recibido:</strong> {{ $doc->received_at->format('d/m/Y') }}</span>
-                            @endif
-                        </div>
+                    {{-- Acciones del cliente --}}
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px; padding-top: 10px; border-top: 1px solid #fef3c7;">
+                        <form action="{{ route('portal.document.ready', ['token' => $portalToken, 'document' => $doc->id]) }}" method="POST" style="margin: 0;">
+                            @csrf
+                            <button type="submit" style="background: #16a34a; color: #fff; padding: 8px 14px; border: none; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                                <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                Ya lo tengo listo
+                            </button>
+                        </form>
+                        <form action="{{ route('portal.document.upload', ['token' => $portalToken, 'document' => $doc->id]) }}" method="POST" enctype="multipart/form-data" style="margin: 0; display: flex; align-items: center; gap: 6px;">
+                            @csrf
+                            <label style="background: #3A86FF; color: #fff; padding: 8px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                                <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0l-4 4m4-4v12"/></svg>
+                                Subir archivo
+                                <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" style="display: none;" onchange="this.form.submit()">
+                            </label>
+                        </form>
                     </div>
                 </div>
             @endforeach
 
-            {{-- Resumen --}}
-            @php
-                $totalDocs = $case->documents->count();
-                $recibidos = $case->documents->where('status', 'recibido')->count();
-                $porcentaje = $totalDocs > 0 ? round(($recibidos / $totalDocs) * 100) : 0;
-            @endphp
-            <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid #f3f4f6; display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-size: 12px; color: #6b7280;"><strong>{{ $recibidos }}</strong> de <strong>{{ $totalDocs }}</strong> documentos recibidos</span>
-                <span style="font-size: 12px; font-weight: 700; color: #16a34a;">{{ $porcentaje }}%</span>
-            </div>
-            <div style="width: 100%; height: 6px; background: #f3f4f6; border-radius: 999px; overflow: hidden; margin-top: 6px;">
-                <div style="width: {{ max(3, $porcentaje) }}%; height: 100%; background: linear-gradient(90deg, #16a34a, #22c55e); border-radius: 999px;"></div>
+            <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #fde68a; font-size: 11px; color: #92400e; line-height: 1.5;">
+                <strong>Como funciona:</strong> Use "Ya lo tengo listo" para avisar a su abogado sin necesidad de subir el archivo. Use "Subir archivo" para enviar directamente el documento (PDF, imagen o Word, max 10 MB).
             </div>
         </div>
+    @endif
+
+    {{-- Documentos del caso (todos) --}}
+    @if($case->documents->isNotEmpty())
+        @php
+            $otrosDocs = $case->documents->reject(fn ($d) => $d->responsible === 'cliente' && in_array($d->status, ['pendiente', 'solicitado', 'en_tramite']));
+        @endphp
+
+        @if($otrosDocs->isNotEmpty())
+            <div style="background: #fff; border-radius: 16px; border: 1px solid #e5e7eb; padding: 24px; margin-bottom: 20px;">
+                <h2 style="font-size: 16px; font-weight: 700; color: #1E3A5F; margin: 0 0 4px 0;">Documentos del Proceso</h2>
+                <p style="font-size: 12px; color: #6b7280; margin: 0 0 16px 0;">Estado de la documentacion del caso.</p>
+
+                @foreach($otrosDocs as $doc)
+                    @php
+                        $statusConfig = [
+                            'pendiente' => ['bg' => '#f3f4f6', 'color' => '#374151', 'label' => 'Pendiente'],
+                            'solicitado' => ['bg' => '#dbeafe', 'color' => '#1e40af', 'label' => 'Solicitado'],
+                            'en_tramite' => ['bg' => '#fef3c7', 'color' => '#92400e', 'label' => 'En tramite'],
+                            'recibido' => ['bg' => '#dcfce7', 'color' => '#166534', 'label' => 'Recibido'],
+                            'no_aplica' => ['bg' => '#fee2e2', 'color' => '#991b1b', 'label' => 'No aplica'],
+                        ];
+                        $sc = $statusConfig[$doc->status] ?? $statusConfig['pendiente'];
+
+                        $responsibleLabels = [
+                            'cliente' => 'Usted (cliente)',
+                            'abogado' => 'Su abogado',
+                            'firma' => 'La firma',
+                            'contraparte' => 'Contraparte',
+                            'juzgado' => 'Juzgado',
+                            'otro' => 'Otro',
+                        ];
+                        $respLabel = $responsibleLabels[$doc->responsible ?? 'otro'] ?? 'Otro';
+                    @endphp
+
+                    <div style="display: flex; align-items: flex-start; gap: 14px; padding: 12px; border: 1px solid #f3f4f6; border-radius: 10px; margin-bottom: 8px;">
+                        <div style="flex-shrink: 0; margin-top: 2px;">
+                            @if($doc->status === 'recibido')
+                                <div style="width: 32px; height: 32px; background: #dcfce7; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                    <svg style="width: 18px; height: 18px; color: #16a34a;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                </div>
+                            @elseif(in_array($doc->status, ['solicitado', 'en_tramite']))
+                                <div style="width: 32px; height: 32px; background: #fef3c7; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                    <svg style="width: 18px; height: 18px; color: #d97706;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                </div>
+                            @else
+                                <div style="width: 32px; height: 32px; background: #f3f4f6; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                    <svg style="width: 18px; height: 18px; color: #9ca3af;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                </div>
+                            @endif
+                        </div>
+
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px;">
+                                <span style="font-size: 13px; font-weight: 600; color: #1f2937;">{{ $doc->name }}</span>
+                                <span style="display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; background: {{ $sc['bg'] }}; color: {{ $sc['color'] }};">{{ $sc['label'] }}</span>
+                            </div>
+                            @if($doc->description)
+                                <p style="font-size: 12px; color: #6b7280; margin: 2px 0;">{{ Str::limit($doc->description, 150) }}</p>
+                            @endif
+                            <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 4px; font-size: 11px; color: #9ca3af;">
+                                <span><strong style="color: #6b7280;">Responsable:</strong> {{ $respLabel }}</span>
+                                @if($doc->entity)
+                                    <span><strong style="color: #6b7280;">Entidad:</strong> {{ $doc->entity }}</span>
+                                @endif
+                                @if($doc->received_at)
+                                    <span><strong style="color: #6b7280;">Recibido:</strong> {{ $doc->received_at->format('d/m/Y') }}</span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+
+                {{-- Resumen --}}
+                @php
+                    $totalDocs = $case->documents->count();
+                    $recibidos = $case->documents->where('status', 'recibido')->count();
+                    $porcentaje = $totalDocs > 0 ? round(($recibidos / $totalDocs) * 100) : 0;
+                @endphp
+                <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid #f3f4f6; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 12px; color: #6b7280;"><strong>{{ $recibidos }}</strong> de <strong>{{ $totalDocs }}</strong> documentos recibidos</span>
+                    <span style="font-size: 12px; font-weight: 700; color: #16a34a;">{{ $porcentaje }}%</span>
+                </div>
+                <div style="width: 100%; height: 6px; background: #f3f4f6; border-radius: 999px; overflow: hidden; margin-top: 6px;">
+                    <div style="width: {{ max(3, $porcentaje) }}%; height: 100%; background: linear-gradient(90deg, #16a34a, #22c55e); border-radius: 999px;"></div>
+                </div>
+            </div>
+        @endif
     @endif
 
     {{-- Contacto del abogado --}}

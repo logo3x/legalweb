@@ -33,6 +33,8 @@ Route::prefix('portal')->name('portal.')->middleware('throttle:30,1')->group(fun
     Route::get('/privacidad', [PortalController::class, 'privacy'])->name('privacy');
     Route::get('/{token}', [PortalController::class, 'show'])->name('show');
     Route::post('/{token}/aceptar', [PortalController::class, 'accept'])->name('accept');
+    Route::post('/{token}/document/{document}/ready', [PortalController::class, 'documentReady'])->name('document.ready');
+    Route::post('/{token}/document/{document}/upload', [PortalController::class, 'documentUpload'])->name('document.upload');
 });
 
 // Delete invitation

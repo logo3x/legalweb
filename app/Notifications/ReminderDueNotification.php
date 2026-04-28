@@ -3,6 +3,8 @@
 namespace App\Notifications;
 
 use App\Models\Reminder;
+use Filament\Notifications\Actions\Action;
+use Filament\Notifications\Notification as FilamentNotification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -16,7 +18,33 @@ class ReminderDueNotification extends Notification implements ShouldQueue
 
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['mail', 'database'];
+    }
+
+    public function toDatabase(object $notifiable): array
+    {
+        $url = $this->reminder->legal_case_id
+            ? url("/admin/legal-cases/{$this->reminder->legal_case_id}")
+            : url('/admin/reminders');
+
+        $color = match ($this->reminder->priority) {
+            'urgente' => 'danger',
+            'alta' => 'warning',
+            default => 'info',
+        };
+
+        return FilamentNotification::make()
+            ->title($this->reminder->title)
+            ->body('Vence: '.$this->reminder->due_date->format('d/m/Y H:i'))
+            ->icon('heroicon-o-bell-alert')
+            ->iconColor($color)
+            ->actions([
+                Action::make('ver')
+                    ->label('Ver detalle')
+                    ->url($url)
+                    ->markAsRead(),
+            ])
+            ->getDatabaseMessage();
     }
 
     public function toMail(object $notifiable): MailMessage
