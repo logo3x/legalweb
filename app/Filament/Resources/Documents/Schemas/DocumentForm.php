@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\Documents\Schemas;
 
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -71,20 +70,12 @@ class DocumentForm
                     ->default('media'),
                 DatePicker::make('due_date')
                     ->label('Fecha limite'),
-                FileUpload::make('file_path')
-                    ->label('Archivo (opcional)')
-                    ->disk('public')
-                    ->directory('documents')
-                    ->preserveFilenames()
-                    ->acceptedFileTypes(['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png'])
-                    ->maxSize(10240)
-                    ->downloadable()
-                    ->openable()
-                    ->columnSpanFull(),
                 TextInput::make('external_url')
-                    ->label('Enlace al archivo (Drive, etc)')
+                    ->label('Enlace al archivo')
                     ->url()
-                    ->columnSpanFull(),
+                    ->placeholder('https://drive.google.com/...')
+                    ->columnSpanFull()
+                    ->helperText('Guarde el archivo en Drive, OneDrive o Dropbox y pegue el enlace aqui.'),
             ]);
     }
 }

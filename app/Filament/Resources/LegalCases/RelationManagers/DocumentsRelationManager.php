@@ -2,14 +2,12 @@
 
 namespace App\Filament\Resources\LegalCases\RelationManagers;
 
-use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -19,7 +17,6 @@ use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use Illuminate\Support\Facades\Storage;
 
 class DocumentsRelationManager extends RelationManager
 {
@@ -95,22 +92,11 @@ class DocumentsRelationManager extends RelationManager
                     ->label('Fecha de recepcion')
                     ->visible(fn ($get) => $get('status') === 'recibido'),
                 TextInput::make('external_url')
-                    ->label('Enlace al archivo (RECOMENDADO)')
+                    ->label('Enlace al archivo')
                     ->url()
                     ->placeholder('https://drive.google.com/... o https://1drv.ms/...')
                     ->columnSpanFull()
-                    ->helperText('Recomendado: guarde el archivo en su Google Drive, OneDrive o Dropbox y pegue el enlace aqui. Asi mantiene el control y la privacidad de su informacion.'),
-                FileUpload::make('file_path')
-                    ->label('Subir archivo (alternativa)')
-                    ->disk('public')
-                    ->directory('documents')
-                    ->preserveFilenames()
-                    ->acceptedFileTypes(['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'image/jpeg', 'image/png'])
-                    ->maxSize(10240)
-                    ->downloadable()
-                    ->openable()
-                    ->columnSpanFull()
-                    ->helperText('Solo si no puede usar la nube. Max 10 MB. Recuerde: usted es responsable de la informacion subida.'),
+                    ->helperText('Guarde el archivo en su Google Drive, OneDrive, Dropbox o similar y pegue el enlace aqui. La plataforma no almacena documentos para proteger la privacidad y confidencialidad de su informacion.'),
                 Textarea::make('notes')
                     ->label('Notas adicionales')
                     ->rows(2)
@@ -190,22 +176,16 @@ class DocumentsRelationManager extends RelationManager
                     ->placeholder('-')
                     ->toggleable()
                     ->color(fn ($record) => $record->due_date && $record->due_date->isPast() && $record->status !== 'recibido' ? 'danger' : null),
-                TextColumn::make('file_path')
-                    ->label('Archivo')
-                    ->formatStateUsing(fn ($state, $record) => $state ? 'Descargar' : ($record->external_url ? 'Ver enlace' : null))
-                    ->url(fn ($record) => $record->file_path
-                        ? asset('storage/'.$record->file_path)
-                        : $record->external_url)
+                TextColumn::make('external_url')
+                    ->label('Enlace')
+                    ->formatStateUsing(fn ($state) => $state ? 'Abrir' : null)
+                    ->url(fn ($record) => $record->external_url)
                     ->openUrlInNewTab()
                     ->color('primary')
-                    ->icon(fn ($state, $record) => ($state || $record->external_url) ? 'heroicon-o-document' : null)
+                    ->icon(fn ($state) => $state ? 'heroicon-o-link' : null)
                     ->placeholder('-'),
                 TextColumn::make('assignedUser.name')
                     ->label('Asignado')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->placeholder('-'),
-                TextColumn::make('uploader.name')
-                    ->label('Subido por')
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->placeholder('-'),
                 TextColumn::make('created_at')
@@ -239,30 +219,15 @@ class DocumentsRelationManager extends RelationManager
                 CreateAction::make()
                     ->label('Agregar documento')
                     ->mutateFormDataUsing(function (array $data): array {
-                        if (! empty($data['file_path'])) {
-                            $data['uploaded_by'] = auth()->id();
-
-                            $fullPath = storage_path('app/public/'.$data['file_path']);
-                            if (file_exists($fullPath)) {
-                                $data['file_size'] = filesize($fullPath);
-                                $data['file_type'] = pathinfo($data['file_path'], PATHINFO_EXTENSION);
-                            }
-
-                            if (($data['status'] ?? '') === 'pendiente') {
-                                $data['status'] = 'recibido';
-                                $data['received_at'] = now();
-                            }
+                        if (! empty($data['external_url']) && ($data['status'] ?? '') === 'pendiente') {
+                            $data['status'] = 'recibido';
+                            $data['received_at'] = now();
                         }
 
                         return $data;
                     }),
             ])
             ->recordActions([
-                Action::make('download')
-                    ->label('Descargar')
-                    ->icon('heroicon-o-arrow-down-tray')
-                    ->visible(fn ($record) => ! empty($record->file_path))
-                    ->action(fn ($record) => Storage::disk('public')->download($record->file_path, $record->name)),
                 EditAction::make(),
                 DeleteAction::make(),
             ])

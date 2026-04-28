@@ -206,4 +206,22 @@ class FirmSettings extends Page
                 ->submit('save'),
         ];
     }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('replay_tour')
+                ->label('Volver a ver tour')
+                ->icon('heroicon-o-academic-cap')
+                ->color('gray')
+                ->requiresConfirmation()
+                ->modalHeading('Reiniciar el tour guiado')
+                ->modalDescription('Le mostraremos nuevamente el tour introductorio con las funcionalidades principales de la plataforma.')
+                ->modalSubmitActionLabel('Si, mostrar tour')
+                ->action(function () {
+                    auth()->user()->update(['tour_completed_at' => null]);
+                    $this->redirect('/admin');
+                }),
+        ];
+    }
 }

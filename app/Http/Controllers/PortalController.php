@@ -127,16 +127,16 @@ class PortalController extends Controller
     }
 
     /**
-     * Cliente sube directamente el archivo del documento.
+     * Cliente envia un enlace al documento (Drive, OneDrive, etc).
      */
-    public function documentUpload(Request $request, string $token, int $documentId)
+    public function documentLink(Request $request, string $token, int $documentId)
     {
         $request->validate([
-            'file' => 'required|file|max:10240|mimes:pdf,jpg,jpeg,png,doc,docx',
+            'external_url' => 'required|url|max:500',
         ], [
-            'file.required' => 'Debe seleccionar un archivo.',
-            'file.max' => 'El archivo no puede superar 10 MB.',
-            'file.mimes' => 'Tipo de archivo no permitido. Use PDF, imagen o Word.',
+            'external_url.required' => 'Debe ingresar un enlace.',
+            'external_url.url' => 'El enlace no es valido. Debe comenzar con https://',
+            'external_url.max' => 'El enlace es demasiado largo.',
         ]);
 
         $case = LegalCase::where('portal_token', $token)
@@ -149,16 +149,11 @@ class PortalController extends Controller
             ->where('responsible', 'cliente')
             ->firstOrFail();
 
-        $file = $request->file('file');
-        $path = $file->store('documents', 'public');
-
         $document->update([
-            'file_path' => $path,
-            'file_type' => $file->getClientOriginalExtension(),
-            'file_size' => $file->getSize(),
+            'external_url' => $request->input('external_url'),
             'status' => 'recibido',
             'received_at' => now(),
-            'notes' => trim(($document->notes ?? '').' [Subido por el cliente desde el portal el '.now()->format('d/m/Y H:i').']'),
+            'notes' => trim(($document->notes ?? '').' [Enlace enviado por el cliente desde el portal el '.now()->format('d/m/Y H:i').']'),
         ]);
 
         if ($case->user) {
@@ -166,6 +161,6 @@ class PortalController extends Controller
         }
 
         return redirect()->route('portal.show', $token)
-            ->with('doc_success', 'Documento "'.$document->name.'" subido correctamente. Su abogado fue notificado.');
+            ->with('doc_success', 'Enlace de "'.$document->name.'" enviado correctamente. Su abogado fue notificado.');
     }
 }

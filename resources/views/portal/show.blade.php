@@ -279,28 +279,29 @@
                     </div>
 
                     {{-- Acciones del cliente --}}
-                    <div style="display: flex; flex-wrap: wrap; gap: 8px; padding-top: 10px; border-top: 1px solid #fef3c7;">
-                        <form action="{{ route('portal.document.ready', ['token' => $portalToken, 'document' => $doc->id]) }}" method="POST" style="margin: 0;">
+                    <div style="padding-top: 10px; border-top: 1px solid #fef3c7;">
+                        <form action="{{ route('portal.document.link', ['token' => $portalToken, 'document' => $doc->id]) }}" method="POST" style="margin: 0; display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
                             @csrf
-                            <button type="submit" style="background: #16a34a; color: #fff; padding: 8px 14px; border: none; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px;">
-                                <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                                Ya lo tengo listo
+                            <input type="url" name="external_url" placeholder="Pegue aqui el enlace de Drive, OneDrive, etc."
+                                style="flex: 1; min-width: 200px; padding: 8px 12px; border: 1px solid #fde68a; border-radius: 8px; font-size: 12px;">
+                            <button type="submit" style="background: #3A86FF; color: #fff; padding: 8px 14px; border: none; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                                <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244"/></svg>
+                                Enviar enlace
                             </button>
                         </form>
-                        <form action="{{ route('portal.document.upload', ['token' => $portalToken, 'document' => $doc->id]) }}" method="POST" enctype="multipart/form-data" style="margin: 0; display: flex; align-items: center; gap: 6px;">
+                        <form action="{{ route('portal.document.ready', ['token' => $portalToken, 'document' => $doc->id]) }}" method="POST" style="margin: 8px 0 0 0;">
                             @csrf
-                            <label style="background: #3A86FF; color: #fff; padding: 8px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px;">
-                                <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0l-4 4m4-4v12"/></svg>
-                                Subir archivo
-                                <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" style="display: none;" onchange="this.form.submit()">
-                            </label>
+                            <button type="submit" style="background: transparent; color: #16a34a; padding: 4px 0; border: none; font-size: 11px; font-weight: 600; cursor: pointer; text-decoration: underline; display: flex; align-items: center; gap: 4px;">
+                                <svg style="width: 12px; height: 12px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                O solo avisar que lo tengo listo (sin enviar archivo)
+                            </button>
                         </form>
                     </div>
                 </div>
             @endforeach
 
             <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #fde68a; font-size: 11px; color: #92400e; line-height: 1.5;">
-                <strong>Como funciona:</strong> Use "Ya lo tengo listo" para avisar a su abogado sin necesidad de subir el archivo. Use "Subir archivo" para enviar directamente el documento (PDF, imagen o Word, max 10 MB).
+                <strong>Como enviar el archivo:</strong> Sube el archivo a Google Drive, OneDrive o WhatsApp Web, copia el enlace y pegalo arriba. Asegurese de configurar el enlace para que su abogado pueda verlo. Si prefiere, puede solo avisar que tiene el documento listo.
             </div>
         </div>
     @endif
