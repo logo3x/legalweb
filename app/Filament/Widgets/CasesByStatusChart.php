@@ -13,14 +13,25 @@ class CasesByStatusChart extends ApexChartWidget
 
     protected static ?int $sort = 3;
 
+    public static function canView(): bool
+    {
+        $firmId = auth()->user()?->firm_id;
+        if (! $firmId) {
+            return false;
+        }
+
+        return LegalCase::where('firm_id', $firmId)->exists();
+    }
+
     protected function getOptions(): array
     {
-        $firmId = auth()->user()->firm_id;
+        $firmId = auth()->user()?->firm_id;
 
         $statuses = LegalCase::where('firm_id', $firmId)
             ->selectRaw('status, count(*) as total')
             ->groupBy('status')
-            ->pluck('total', 'status');
+            ->pluck('total', 'status')
+            ->filter(fn ($v, $k) => ! empty($k));
 
         $labels = [
             'abierto' => 'Abierto',
@@ -39,8 +50,12 @@ class CasesByStatusChart extends ApexChartWidget
         ];
 
         $data = $statuses->mapWithKeys(fn ($count, $status) => [
-            $labels[$status] ?? $status => $count,
+            $labels[$status] ?? $status => (int) $count,
         ]);
+
+        if ($data->isEmpty()) {
+            $data = collect(['Sin datos' => 0]);
+        }
 
         return [
             'chart' => ['type' => 'bar', 'height' => 300],
@@ -48,7 +63,7 @@ class CasesByStatusChart extends ApexChartWidget
                 ['name' => 'Casos', 'data' => $data->values()->toArray()],
             ],
             'xaxis' => ['categories' => $data->keys()->toArray()],
-            'colors' => collect($statuses->keys())->map(fn ($s) => $colors[$s] ?? '#6B7280')->toArray(),
+            'colors' => collect($statuses->keys())->map(fn ($s) => $colors[$s] ?? '#6B7280')->values()->toArray() ?: ['#6B7280'],
             'plotOptions' => [
                 'bar' => ['distributed' => true, 'borderRadius' => 4],
             ],
