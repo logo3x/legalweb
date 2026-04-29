@@ -40,7 +40,7 @@ class AdminPanelProvider extends PanelProvider
                 if ($firm && $firm->logo_path) {
                     return new HtmlString(
                         '<img src="'.e($firm->logo_url).'" alt="'.e($firm->name).'" '
-                        .'style="height:2.25rem;width:auto;max-width:200px;object-fit:contain;display:block;">'
+                        .'style="height:3rem;width:auto;max-width:240px;object-fit:contain;display:block;">'
                     );
                 }
 
@@ -51,7 +51,7 @@ class AdminPanelProvider extends PanelProvider
                     .'</div>'
                 );
             })
-            ->brandLogoHeight('2.25rem')
+            ->brandLogoHeight('3rem')
             ->colors([
                 'primary' => Color::hex('#3A86FF'),
                 'danger' => Color::Red,
