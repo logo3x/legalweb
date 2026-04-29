@@ -85,50 +85,45 @@ class DocumentGenerator
     {
         $header = $section->addHeader();
 
+        $logoPng = null;
         if ($firm?->logo_path && file_exists(storage_path('app/public/'.$firm->logo_path))) {
             try {
-                $logoPath = storage_path('app/public/'.$firm->logo_path);
-                $pngPath = $this->ensurePng($logoPath);
-
-                if ($pngPath) {
-                    $header->addImage($pngPath, ['width' => 60, 'height' => 60, 'alignment' => Jc::LEFT]);
-                }
+                $logoPng = $this->ensurePng(storage_path('app/public/'.$firm->logo_path));
             } catch (\Exception $e) {
-                // Si la imagen falla, continuar sin logo
+                $logoPng = null;
             }
         }
 
-        if ($firm) {
-            $header->addText(
-                $firm->name,
-                ['bold' => true, 'size' => 14, 'color' => '1E3A5F'],
-                ['alignment' => Jc::LEFT]
-            );
+        if ($logoPng && $firm) {
+            // Tabla 2 columnas: logo | datos de la firma
+            $table = $header->addTable(['borderSize' => 0, 'cellMargin' => 0]);
+            $table->addRow();
 
-            $details = [];
-            if ($firm->nit) {
-                $details[] = 'NIT: '.$firm->nit;
-            }
-            if ($firm->address) {
-                $details[] = $firm->address;
-            }
-            if ($firm->city) {
-                $details[] = $firm->city;
-            }
-            if ($firm->phone) {
-                $details[] = 'Tel: '.$firm->phone;
-            }
-            if ($firm->email) {
-                $details[] = $firm->email;
+            $logoCell = $table->addCell(2600, ['valign' => 'center']);
+
+            [$origW, $origH] = getimagesize($logoPng);
+            $maxH = 80;
+            $maxW = 160;
+            $ratio = $origH > 0 ? ($origW / $origH) : 1;
+
+            if ($ratio * $maxH > $maxW) {
+                $imgW = $maxW;
+                $imgH = (int) round($maxW / $ratio);
+            } else {
+                $imgH = $maxH;
+                $imgW = (int) round($maxH * $ratio);
             }
 
-            if ($details) {
-                $header->addText(
-                    implode(' | ', $details),
-                    ['size' => 8, 'color' => '666666'],
-                    ['alignment' => Jc::LEFT]
-                );
-            }
+            $logoCell->addImage($logoPng, [
+                'width' => $imgW,
+                'height' => $imgH,
+                'alignment' => Jc::LEFT,
+            ]);
+
+            $infoCell = $table->addCell(6700, ['valign' => 'center']);
+            $this->addFirmInfoLines($infoCell, $firm);
+        } elseif ($firm) {
+            $this->addFirmInfoLines($header, $firm);
         }
 
         $section->addText(
@@ -144,9 +139,45 @@ class DocumentGenerator
         );
     }
 
+    private function addFirmInfoLines($container, Firm $firm): void
+    {
+        $container->addText(
+            $firm->name,
+            ['bold' => true, 'size' => 14, 'color' => '1E3A5F'],
+            ['alignment' => Jc::LEFT]
+        );
+
+        $details = [];
+        if ($firm->nit) {
+            $details[] = 'NIT: '.$firm->nit;
+        }
+        if ($firm->address) {
+            $details[] = $firm->address;
+        }
+        if ($firm->city) {
+            $details[] = $firm->city;
+        }
+        if ($firm->phone) {
+            $details[] = 'Tel: '.$firm->phone;
+        }
+        if ($firm->email) {
+            $details[] = $firm->email;
+        }
+
+        if ($details) {
+            $container->addText(
+                implode(' | ', $details),
+                ['size' => 8, 'color' => '666666'],
+                ['alignment' => Jc::LEFT]
+            );
+        }
+    }
+
     private function ensurePng(string $path): ?string
     {
-        $pngPath = storage_path('app/public/generated/'.md5($path).'.png');
+        // Incluir mtime para invalidar cache cuando la firma re-sube el logo.
+        $cacheKey = md5($path.'-'.@filemtime($path));
+        $pngPath = storage_path('app/public/generated/logo-'.$cacheKey.'.png');
 
         if (file_exists($pngPath)) {
             return $pngPath;
@@ -156,7 +187,7 @@ class DocumentGenerator
             mkdir(dirname($pngPath), 0755, true);
         }
 
-        $image = @imagecreatefromstring(file_get_contents($path));
+        $image = @imagecreatefromstring((string) @file_get_contents($path));
 
         if (! $image) {
             return null;
