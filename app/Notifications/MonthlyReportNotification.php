@@ -41,6 +41,7 @@ class MonthlyReportNotification extends Notification implements ShouldQueue
             ->attach($this->pdfPath, [
                 'as' => "Reporte_{$this->case->case_number}_{$this->periodo}.pdf",
                 'mime' => 'application/pdf',
-            ]);
+            ])
+            ->with($this->case->user?->firm?->emailBrand() ?? []);
     }
 }

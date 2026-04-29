@@ -51,6 +51,7 @@ class TybaSyncNotification extends Notification implements ShouldQueue
             ->line('Fuente: Rama Judicial de Colombia (Tyba)')
             ->line('Las actuaciones han sido registradas automaticamente en el expediente digital.')
             ->action('Ver caso', url("/admin/legal-cases/{$this->case->id}"))
-            ->salutation('LegalWeb - Control inteligente de sus procesos legales');
+            ->salutation('LegalWeb - Control inteligente de sus procesos legales')
+            ->with($this->case->user?->firm?->emailBrand() ?? []);
     }
 }

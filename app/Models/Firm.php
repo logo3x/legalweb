@@ -70,6 +70,32 @@ class Firm extends Model
         return '/images/default-firm-logo.svg';
     }
 
+    /**
+     * Datos de marca listos para inyectar en correos via MailMessage::with().
+     * Solo devuelve firmLogo cuando la firma tiene un PNG/JPG cargado (los
+     * clientes de correo no renderizan SVG de forma confiable).
+     *
+     * @return array{firmLogo: ?string, firmName: ?string}
+     */
+    public function emailBrand(): array
+    {
+        $logoUrl = null;
+
+        if ($this->logo_path) {
+            $extension = strtolower(pathinfo($this->logo_path, PATHINFO_EXTENSION));
+            $emailFriendly = in_array($extension, ['png', 'jpg', 'jpeg', 'webp', 'gif']);
+
+            if ($emailFriendly) {
+                $logoUrl = url(Storage::url($this->logo_path));
+            }
+        }
+
+        return [
+            'firmLogo' => $logoUrl,
+            'firmName' => $this->name,
+        ];
+    }
+
     public function realCasesCount(): int
     {
         return $this->legalCases()->where('is_demo', false)->count();

@@ -66,6 +66,7 @@ class ClientDocumentReadyNotification extends Notification implements ShouldQueu
             ->line("**{$this->document->name}**")
             ->line("Caso: {$this->case->title} ({$this->case->case_number})")
             ->action('Ver caso', url("/admin/legal-cases/{$this->case->id}"))
-            ->salutation('LegalWeb - Control inteligente de sus procesos legales');
+            ->salutation('LegalWeb - Control inteligente de sus procesos legales')
+            ->with($this->case->user?->firm?->emailBrand() ?? []);
     }
 }

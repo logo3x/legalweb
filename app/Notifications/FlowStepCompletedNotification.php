@@ -49,6 +49,7 @@ class FlowStepCompletedNotification extends Notification implements ShouldQueue
 
         return $mail
             ->line("Atentamente, {$firmName}")
-            ->salutation('Este es un mensaje automatico de LegalWeb. No responda a este correo.');
+            ->salutation('Este es un mensaje automatico de LegalWeb. No responda a este correo.')
+            ->with($this->case->user?->firm?->emailBrand() ?? []);
     }
 }

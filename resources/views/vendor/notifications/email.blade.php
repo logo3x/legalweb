@@ -1,6 +1,11 @@
 @php
     $appName = config('app.name', 'LegalWeb');
-    $logoUrl = url('/images/logo-square.png');
+    $hasFirmBrand = ! empty($firmLogo ?? null);
+    $brandName = $hasFirmBrand ? ($firmName ?: $appName) : $appName;
+    $brandLogoUrl = $hasFirmBrand ? $firmLogo : url('/images/logo-square.png');
+    $brandTagline = $hasFirmBrand
+        ? 'Caso gestionado a traves de LegalWeb'
+        : 'Control inteligente de procesos legales';
     $year = now()->format('Y');
     $primaryColor = '#3A86FF';
     $brandColor = '#1E3A5F';
@@ -45,9 +50,9 @@
                     <tr>
                         <td class="header-band" align="center" style="padding:36px 24px;background:linear-gradient(135deg,{{ $brandColor }} 0%,#2C4A75 100%);">
                             <a href="{{ url('/') }}" style="text-decoration:none;display:inline-block;">
-                                <img src="{{ $logoUrl }}" alt="{{ $appName }}" width="120" height="120" style="display:block;border-radius:18px;margin:0 auto 14px;background:#ffffff;padding:8px;box-shadow:0 8px 24px rgba(0,0,0,0.15);">
-                                <div style="color:#ffffff;font-size:24px;font-weight:800;letter-spacing:-0.02em;">{{ $appName }}</div>
-                                <div style="color:rgba(255,255,255,0.8);font-size:13px;margin-top:4px;font-weight:500;">Control inteligente de procesos legales</div>
+                                <img src="{{ $brandLogoUrl }}" alt="{{ $brandName }}" style="display:block;max-width:200px;max-height:120px;width:auto;height:auto;border-radius:14px;margin:0 auto 14px;background:#ffffff;padding:10px;box-shadow:0 8px 24px rgba(0,0,0,0.15);">
+                                <div style="color:#ffffff;font-size:22px;font-weight:800;letter-spacing:-0.02em;">{{ $brandName }}</div>
+                                <div style="color:rgba(255,255,255,0.75);font-size:13px;margin-top:4px;font-weight:500;">{{ $brandTagline }}</div>
                             </a>
                         </td>
                     </tr>
@@ -114,7 +119,7 @@
                                 @else
                                     <p style="margin:0;font-size:14px;color:#6b7280;line-height:1.6;">
                                         Atentamente,<br>
-                                        <strong style="color:{{ $brandColor }};">{{ $appName }}</strong>
+                                        <strong style="color:{{ $brandColor }};">{{ $brandName }}</strong>
                                     </p>
                                 @endif
                             </div>
@@ -146,8 +151,13 @@
                                 <a href="{{ url('/portal/privacidad') }}" style="color:#6b7280;text-decoration:underline;">Pol&iacute;tica de Privacidad</a>
                             </p>
                             <p style="margin:0;font-size:11px;color:#9ca3af;">
-                                &copy; {{ $year }} {{ $appName }}. Todos los derechos reservados.
+                                &copy; {{ $year }} {{ $brandName }}. Todos los derechos reservados.
                             </p>
+                            @if($hasFirmBrand)
+                                <p style="margin:8px 0 0 0;font-size:10px;color:#cbd5e1;line-height:1.6;">
+                                    Plataforma de gesti&oacute;n por <strong style="color:#94a3b8;">{{ $appName }}</strong>
+                                </p>
+                            @endif
                         </td>
                     </tr>
 
