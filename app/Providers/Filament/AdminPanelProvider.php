@@ -34,13 +34,24 @@ class AdminPanelProvider extends PanelProvider
             ->databaseNotifications()
             ->databaseNotificationsPolling('30s')
             ->brandName('LegalWeb')
-            ->brandLogo(new HtmlString(
-                '<div style="display:flex;align-items:center;gap:.55rem;line-height:1;">'
-                .'<img src="'.asset('images/logo-icon.svg').'" alt="LegalWeb" style="height:2rem;width:auto;display:block;">'
-                .'<span style="font-family:Poppins,Inter,sans-serif;font-weight:700;font-size:1.05rem;color:#1E3A5F;letter-spacing:-.01em;">LegalWeb</span>'
-                .'</div>'
-            ))
-            ->brandLogoHeight('2rem')
+            ->brandLogo(function () {
+                $firm = auth()->user()?->firm;
+
+                if ($firm && $firm->logo_path) {
+                    return new HtmlString(
+                        '<img src="'.e($firm->logo_url).'" alt="'.e($firm->name).'" '
+                        .'style="height:2.25rem;width:auto;max-width:200px;object-fit:contain;display:block;">'
+                    );
+                }
+
+                return new HtmlString(
+                    '<div style="display:flex;align-items:center;gap:.55rem;line-height:1;">'
+                    .'<img src="'.asset('images/logo-icon.svg').'" alt="LegalWeb" style="height:2rem;width:auto;display:block;">'
+                    .'<span style="font-family:Poppins,Inter,sans-serif;font-weight:700;font-size:1.05rem;color:#1E3A5F;letter-spacing:-.01em;">LegalWeb</span>'
+                    .'</div>'
+                );
+            })
+            ->brandLogoHeight('2.25rem')
             ->colors([
                 'primary' => Color::hex('#3A86FF'),
                 'danger' => Color::Red,
