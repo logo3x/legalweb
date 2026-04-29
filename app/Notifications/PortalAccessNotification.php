@@ -32,6 +32,6 @@ class PortalAccessNotification extends Notification implements ShouldQueue
             ->line("IP: {$this->ipAddress}")
             ->line('El cliente acepto los terminos y condiciones de uso del portal.')
             ->action('Ver caso', url("/admin/legal-cases/{$this->case->id}"))
-            ->salutation('LegalWeb - Control inteligente de tus procesos legales');
+            ->salutation('LegalWeb - Control inteligente de sus procesos legales');
     }
 }

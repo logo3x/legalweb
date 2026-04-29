@@ -59,6 +59,6 @@ class TermDeadlineNotification extends Notification implements ShouldQueue
             ->line("Dias restantes: **{$this->daysRemaining}**")
             ->action('Ver caso', url("/admin/legal-cases/{$this->case->id}"))
             ->line('Por favor tome las acciones necesarias para evitar el vencimiento del termino.')
-            ->salutation('LegalWeb - Control inteligente de tus procesos legales');
+            ->salutation('LegalWeb - Control inteligente de sus procesos legales');
     }
 }

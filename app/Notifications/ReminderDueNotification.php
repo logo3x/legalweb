@@ -75,6 +75,6 @@ class ReminderDueNotification extends Notification implements ShouldQueue
             $mail->action('Ver agenda', url('/admin/reminders'));
         }
 
-        return $mail->salutation('LegalWeb - Control inteligente de tus procesos legales');
+        return $mail->salutation('LegalWeb - Control inteligente de sus procesos legales');
     }
 }
