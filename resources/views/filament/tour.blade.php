@@ -80,7 +80,7 @@ console.log('[LegalWeb Tour] script bloque cargado, esperando driver.js...');
                 element: 'a[href*="/admin/clients"]',
                 popover: {
                     title: 'Clientes: directorio centralizado &#128100;',
-                    description: '<p style="margin:0 0 8px 0;">Su base de datos de clientes, con historial completo de procesos asociados.</p><p style="margin:0;background:rgba(58,134,255,0.15);padding:10px;border-radius:8px;font-size:13px;"><strong>&#128161; Sugerencia:</strong> desde el listado, use la acci&oacute;n <strong>&laquo;Buscar Procesos&raquo;</strong> para consultar en la Rama Judicial los procesos asociados al nombre del cliente.</p>',
+                    description: '<p style="margin:0 0 8px 0;">Su base de datos de clientes, con historial completo de procesos asociados.</p><p style="margin:0;background:rgba(58,134,255,0.15);padding:10px;border-radius:8px;font-size:13px;"><strong>&#128161; Sugerencia:</strong> una vez registrado un cliente, en su fila del listado encontrar&aacute; la acci&oacute;n <strong>&laquo;Buscar Procesos&raquo;</strong>, que consulta en la Rama Judicial los procesos asociados al nombre del cliente.</p>',
                     side: 'right',
                 }
             },
