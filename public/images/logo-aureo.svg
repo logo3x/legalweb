@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1618 1000" role="img" aria-label="Legal Web">
+  <title>Legal Web</title>
+  <defs>
+    <linearGradient id="lwShield" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#3B82F6"/>
+      <stop offset="55%" stop-color="#1D4ED8"/>
+      <stop offset="100%" stop-color="#1E3A8A"/>
+    </linearGradient>
+    <linearGradient id="lwShieldEdge" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#60A5FA" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#1E40AF" stop-opacity="0.95"/>
+    </linearGradient>
+  </defs>
+
+  <!--
+    Canvas: 1618 x 1000  (phi : 1)
+    Seccion aurea horizontal: simbolo 0..618, texto 618..1618
+    Escudo enmarcado por 1/phi^3 padding ~ 90 horizontal, 146 vertical
+    Ancho util escudo 438, alto util 708 (438 * phi = 708)
+  -->
+
+  <!-- Escudo: outline -->
+  <path d="
+    M 309 146
+    C 309 146, 410 188, 528 196
+    L 528 470
+    C 528 660, 440 790, 309 854
+    C 178 790, 90 660, 90 470
+    L 90 196
+    C 208 188, 309 146, 309 146
+    Z"
+    fill="url(#lwShield)"
+    stroke="url(#lwShieldEdge)"
+    stroke-width="14"
+    stroke-linejoin="round"/>
+
+  <!-- Escudo: borde interior aureo -->
+  <path d="
+    M 309 218
+    C 309 218, 388 250, 470 256
+    L 470 466
+    C 470 612, 402 712, 309 762
+    C 216 712, 148 612, 148 466
+    L 148 256
+    C 230 250, 309 218, 309 218
+    Z"
+    fill="none"
+    stroke="#93C5FD"
+    stroke-width="3"
+    stroke-opacity="0.55"/>
+
+  <!--
+    Balanza dentro del escudo
+    Centro x = 309. Brazo total = 270 (ancho_util / phi).
+    Altura total balanza = 270 (proporcion 1:1 sobre el brazo).
+    Plataformas a y = 392 (suspendidas), columna 392..620, base 620..690
+  -->
+  <!-- Plato izquierdo -->
+  <path d="M 174 392 L 244 392 L 232 412 L 186 412 Z" fill="#FFFFFF"/>
+  <!-- Plato derecho -->
+  <path d="M 374 392 L 444 392 L 432 412 L 386 412 Z" fill="#FFFFFF"/>
+  <!-- Cadenas -->
+  <line x1="209" y1="392" x2="287" y2="356" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"/>
+  <line x1="409" y1="392" x2="331" y2="356" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"/>
+  <!-- Travesano horizontal -->
+  <rect x="174" y="346" width="270" height="10" rx="5" fill="#FFFFFF"/>
+  <!-- Esfera superior -->
+  <circle cx="309" cy="332" r="14" fill="#FFFFFF"/>
+  <!-- Columna -->
+  <rect x="299" y="356" width="20" height="252" rx="6" fill="#FFFFFF"/>
+  <!-- Base -->
+  <path d="M 244 608 L 374 608 L 358 660 L 260 660 Z" fill="#FFFFFF"/>
+
+  <!--
+    Acento "circuito" (identidad digital): linea con nodos
+    Sale del lado inferior izquierdo del escudo, simbolizando red/web.
+  -->
+  <g stroke="#60A5FA" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="#60A5FA">
+    <polyline points="106,520 158,520 178,540 218,540" fill="none"/>
+    <circle cx="106" cy="520" r="9"/>
+    <circle cx="218" cy="540" r="9"/>
+  </g>
+
+  <!--
+    Tipografia "Legal Web"
+    Altura cap aproximada 200. Linea base alineada al eje vertical aureo del simbolo.
+    Tagline a 1/phi de la altura del titulo (~124px).
+  -->
+  <g font-family="'Helvetica Neue', Arial, sans-serif" fill="#1E3A8A">
+    <text x="700" y="500" font-size="248" font-weight="800" letter-spacing="-6">Legal Web</text>
+    <text x="704" y="640" font-size="76" font-weight="400" letter-spacing="0.5" fill="#334155">Control inteligente de tus procesos legales</text>
+  </g>
+</svg>

@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" role="img" aria-label="Legal Web">
+  <title>Legal Web</title>
+  <defs>
+    <linearGradient id="lwsShield" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#3B82F6"/>
+      <stop offset="55%" stop-color="#1D4ED8"/>
+      <stop offset="100%" stop-color="#1E3A8A"/>
+    </linearGradient>
+    <linearGradient id="lwsShieldEdge" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#60A5FA" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#1E40AF" stop-opacity="0.95"/>
+    </linearGradient>
+  </defs>
+
+  <!--
+    Canvas 1000x1000.
+    Escudo centrado. Ancho 618 (1000/phi), alto 1000*0.708 = 708.
+    Centro x=500, escudo en x: 191..809; y: 146..854.
+  -->
+
+  <!-- Escudo: outline -->
+  <path d="
+    M 500 146
+    C 500 146, 601 188, 809 196
+    L 809 470
+    C 809 660, 670 790, 500 854
+    C 330 790, 191 660, 191 470
+    L 191 196
+    C 399 188, 500 146, 500 146
+    Z"
+    fill="url(#lwsShield)"
+    stroke="url(#lwsShieldEdge)"
+    stroke-width="14"
+    stroke-linejoin="round"/>
+
+  <!-- Borde interior aureo -->
+  <path d="
+    M 500 218
+    C 500 218, 579 250, 751 256
+    L 751 466
+    C 751 612, 633 712, 500 762
+    C 367 712, 249 612, 249 466
+    L 249 256
+    C 421 250, 500 218, 500 218
+    Z"
+    fill="none"
+    stroke="#93C5FD"
+    stroke-width="3"
+    stroke-opacity="0.55"/>
+
+  <!--
+    Balanza centrada en x=500.
+    Brazo = 270 (escudo_ancho / phi^1.5 aprox).
+  -->
+  <path d="M 365 392 L 435 392 L 423 412 L 377 412 Z" fill="#FFFFFF"/>
+  <path d="M 565 392 L 635 392 L 623 412 L 577 412 Z" fill="#FFFFFF"/>
+  <line x1="400" y1="392" x2="478" y2="356" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"/>
+  <line x1="600" y1="392" x2="522" y2="356" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"/>
+  <rect x="365" y="346" width="270" height="10" rx="5" fill="#FFFFFF"/>
+  <circle cx="500" cy="332" r="14" fill="#FFFFFF"/>
+  <rect x="490" y="356" width="20" height="252" rx="6" fill="#FFFFFF"/>
+  <path d="M 435 608 L 565 608 L 549 660 L 451 660 Z" fill="#FFFFFF"/>
+
+  <!-- Acento circuito -->
+  <g stroke="#60A5FA" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="#60A5FA">
+    <polyline points="207,520 259,520 279,540 319,540" fill="none"/>
+    <circle cx="207" cy="520" r="9"/>
+    <circle cx="319" cy="540" r="9"/>
+  </g>
+</svg>
