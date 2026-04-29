@@ -68,21 +68,29 @@ class FirmSettings extends Page
                 Grid::make(3)
                     ->schema([
                         Section::make('Logo')
+                            ->description('Aparecera en el panel, correos y portal del cliente.')
                             ->columnSpan(1)
                             ->schema([
                                 FileUpload::make('logo_path')
-                                    ->label('')
+                                    ->label('Logo de la firma')
                                     ->image()
-                                    ->avatar()
                                     ->disk('public')
                                     ->directory('logos')
-                                    ->imageResizeMode('cover')
-                                    ->imageCropAspectRatio('1:1')
-                                    ->imageResizeTargetWidth('200')
-                                    ->imageResizeTargetHeight('200')
-                                    ->circleCropper(),
-                                Placeholder::make('logo_hint')
-                                    ->content('Suba el logo de su firma. Si no agrega uno, se usara un logo generico.'),
+                                    ->imageResizeMode('contain')
+                                    ->imageResizeTargetWidth('800')
+                                    ->imageResizeTargetHeight('400')
+                                    ->maxSize(2048)
+                                    ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'])
+                                    ->helperText(new HtmlString(
+                                        '<div style="font-size:12px;line-height:1.5;color:#475569;">'
+                                        .'<strong style="color:#1E3A5F;">Recomendaciones:</strong><br>'
+                                        .'&bull; <strong>Formato:</strong> PNG con fondo transparente (ideal), SVG, JPG o WebP.<br>'
+                                        .'&bull; <strong>Proporcion:</strong> horizontal (ej. 600&times;200 px) o cuadrada (400&times;400 px).<br>'
+                                        .'&bull; <strong>Resolucion minima:</strong> 400 px en su lado mas largo.<br>'
+                                        .'&bull; <strong>Tamano maximo:</strong> 2 MB.<br>'
+                                        .'&bull; Recorte el logo cerca del contenido (sin mucho espacio en blanco alrededor).'
+                                        .'</div>'
+                                    )),
                             ]),
                         Section::make('Datos principales')
                             ->columnSpan(2)

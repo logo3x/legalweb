@@ -8,6 +8,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Illuminate\Support\HtmlString;
 
 class FirmForm
 {
@@ -57,7 +58,15 @@ class FirmForm
                             ->label('Logo')
                             ->image()
                             ->disk('public')
-                            ->directory('logos'),
+                            ->directory('logos')
+                            ->imageResizeMode('contain')
+                            ->imageResizeTargetWidth('800')
+                            ->imageResizeTargetHeight('400')
+                            ->maxSize(2048)
+                            ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'])
+                            ->helperText(new HtmlString(
+                                'PNG transparente, SVG, JPG o WebP &middot; horizontal (600&times;200) o cuadrado (400&times;400) &middot; max 2 MB &middot; recorte cerca del contenido.'
+                            )),
                         Toggle::make('onboarding_completed')
                             ->label('Onboarding completado'),
                     ]),
