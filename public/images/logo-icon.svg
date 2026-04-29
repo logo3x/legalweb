@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="LegalWeb">
+  <title>LegalWeb</title>
+  <defs>
+    <linearGradient id="lwiShield" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#3B82F6"/>
+      <stop offset="55%" stop-color="#1D4ED8"/>
+      <stop offset="100%" stop-color="#1E3A8A"/>
+    </linearGradient>
+    <linearGradient id="lwiEdge" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#60A5FA" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#1E40AF" stop-opacity="0.95"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Escudo: ocupa todo el lienzo -->
+  <path d="
+    M 50 4
+    C 50 4, 64 10, 96 12
+    L 96 48
+    C 96 72, 78 90, 50 96
+    C 22 90, 4 72, 4 48
+    L 4 12
+    C 36 10, 50 4, 50 4
+    Z"
+    fill="url(#lwiShield)"
+    stroke="url(#lwiEdge)"
+    stroke-width="1.6"
+    stroke-linejoin="round"/>
+
+  <!-- Borde interior aureo -->
+  <path d="
+    M 50 12
+    C 50 12, 61 16, 86 18
+    L 86 46
+    C 86 65, 72 78, 50 84
+    C 28 78, 14 65, 14 46
+    L 14 18
+    C 39 16, 50 12, 50 12
+    Z"
+    fill="none"
+    stroke="#93C5FD"
+    stroke-width="0.6"
+    stroke-opacity="0.55"/>
+
+  <!--
+    Balanza centrada x=50, escala visible.
+    Travesano y=39, columna 39..68, base 68..76.
+  -->
+  <!-- Plato izquierdo -->
+  <path d="M 26 44 L 38 44 L 36 47 L 28 47 Z" fill="#FFFFFF"/>
+  <!-- Plato derecho -->
+  <path d="M 62 44 L 74 44 L 72 47 L 64 47 Z" fill="#FFFFFF"/>
+  <!-- Cadenas -->
+  <line x1="32" y1="44" x2="46" y2="38" stroke="#FFFFFF" stroke-width="0.7" stroke-linecap="round"/>
+  <line x1="68" y1="44" x2="54" y2="38" stroke="#FFFFFF" stroke-width="0.7" stroke-linecap="round"/>
+  <!-- Travesano horizontal -->
+  <rect x="26" y="36" width="48" height="2" rx="1" fill="#FFFFFF"/>
+  <!-- Esfera superior -->
+  <circle cx="50" cy="34" r="2.4" fill="#FFFFFF"/>
+  <!-- Columna -->
+  <rect x="48.4" y="38" width="3.2" height="30" rx="1" fill="#FFFFFF"/>
+  <!-- Base -->
+  <path d="M 38 68 L 62 68 L 59 76 L 41 76 Z" fill="#FFFFFF"/>
+
+  <!-- Acento circuito -->
+  <g stroke="#60A5FA" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#60A5FA">
+    <polyline points="6,52 14,52 17,55 24,55" fill="none"/>
+    <circle cx="6" cy="52" r="1.4"/>
+    <circle cx="24" cy="55" r="1.4"/>
+  </g>
+</svg>

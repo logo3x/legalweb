@@ -34,8 +34,13 @@ class AdminPanelProvider extends PanelProvider
             ->databaseNotifications()
             ->databaseNotificationsPolling('30s')
             ->brandName('LegalWeb')
-            ->brandLogo(asset('images/logo.svg'))
-            ->brandLogoHeight('2.5rem')
+            ->brandLogo(new HtmlString(
+                '<div style="display:flex;align-items:center;gap:.55rem;line-height:1;">'
+                .'<img src="'.asset('images/logo-icon.svg').'" alt="LegalWeb" style="height:2rem;width:auto;display:block;">'
+                .'<span style="font-family:Poppins,Inter,sans-serif;font-weight:700;font-size:1.05rem;color:#1E3A5F;letter-spacing:-.01em;">LegalWeb</span>'
+                .'</div>'
+            ))
+            ->brandLogoHeight('2rem')
             ->colors([
                 'primary' => Color::hex('#3A86FF'),
                 'danger' => Color::Red,
