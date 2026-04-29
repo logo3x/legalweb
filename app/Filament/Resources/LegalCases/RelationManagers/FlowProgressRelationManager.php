@@ -18,6 +18,11 @@ class FlowProgressRelationManager extends RelationManager
 
     protected static ?string $title = 'Flujo de Proceso';
 
+    public function isReadOnly(): bool
+    {
+        return false;
+    }
+
     public function form(Schema $schema): Schema
     {
         return $schema->components([]);

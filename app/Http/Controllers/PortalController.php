@@ -15,8 +15,9 @@ class PortalController extends Controller
 {
     public function show(string $token): View
     {
+        // Buscar primero solo por token (sin filtrar por portal_enabled) para
+        // diferenciar entre "token inexistente" y "portal desactivado".
         $case = LegalCase::where('portal_token', $token)
-            ->where('portal_enabled', true)
             ->with([
                 'client',
                 'caseType',
@@ -31,6 +32,13 @@ class PortalController extends Controller
                     ->orderByRaw("FIELD(priority, 'urgente', 'alta', 'media', 'baja')"),
             ])
             ->firstOrFail();
+
+        if (! $case->portal_enabled) {
+            return view('portal.disabled', [
+                'firmName' => $case->user?->firm?->name,
+                'firmLogo' => $case->user?->firm?->logo_path ? asset('storage/'.$case->user->firm->logo_path) : null,
+            ]);
+        }
 
         $hasAccepted = session()->has("portal_accepted_{$case->id}");
         $portalToken = $token;

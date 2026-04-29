@@ -23,6 +23,11 @@ class BillingRelationManager extends RelationManager
 
     protected static ?string $title = 'Facturacion';
 
+    public function isReadOnly(): bool
+    {
+        return false;
+    }
+
     public function form(Schema $schema): Schema
     {
         return $schema

@@ -26,6 +26,11 @@ class EventsRelationManager extends RelationManager
 
     protected static ?string $title = 'Actuaciones';
 
+    public function isReadOnly(): bool
+    {
+        return false;
+    }
+
     public function form(Schema $schema): Schema
     {
         return $schema
