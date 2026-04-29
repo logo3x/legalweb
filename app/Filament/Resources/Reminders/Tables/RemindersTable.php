@@ -10,7 +10,6 @@ use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
@@ -135,8 +134,7 @@ class RemindersTable
                         return $i;
                     }),
             ])
-            ->filtersLayout(FiltersLayout::AboveContentCollapsible)
-            ->filtersFormColumns(4)
+            ->filtersFormColumns(2)
             ->persistFiltersInSession()
             ->recordActions([
                 Action::make('complete')

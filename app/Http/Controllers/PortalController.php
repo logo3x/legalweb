@@ -136,7 +136,14 @@ class PortalController extends Controller
         ]);
 
         if ($case->user) {
-            $case->user->notify(new ClientDocumentReadyNotification($case, $document, 'ready'));
+            try {
+                $case->user->notify(new ClientDocumentReadyNotification($case, $document, 'ready'));
+            } catch (\Throwable $e) {
+                \Log::warning('Portal notify documentReady fallo: '.$e->getMessage(), [
+                    'case_id' => $case->id,
+                    'document_id' => $document->id,
+                ]);
+            }
         }
 
         return redirect()->route('portal.show', $token)
@@ -179,7 +186,14 @@ class PortalController extends Controller
         ]);
 
         if ($case->user) {
-            $case->user->notify(new ClientDocumentReadyNotification($case, $document, 'uploaded'));
+            try {
+                $case->user->notify(new ClientDocumentReadyNotification($case, $document, 'uploaded'));
+            } catch (\Throwable $e) {
+                \Log::warning('Portal notify documentLink fallo: '.$e->getMessage(), [
+                    'case_id' => $case->id,
+                    'document_id' => $document->id,
+                ]);
+            }
         }
 
         return redirect()->route('portal.show', $token)

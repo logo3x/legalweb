@@ -8,7 +8,6 @@ use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
@@ -118,8 +117,7 @@ class DocumentsTable
                         ->whereNotIn('status', ['recibido', 'no_aplica'])),
                 TrashedFilter::make(),
             ])
-            ->filtersLayout(FiltersLayout::AboveContentCollapsible)
-            ->filtersFormColumns(4)
+            ->filtersFormColumns(2)
             ->persistFiltersInSession()
             ->recordActions([
                 EditAction::make(),
