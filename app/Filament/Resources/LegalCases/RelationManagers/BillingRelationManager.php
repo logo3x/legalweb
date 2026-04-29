@@ -57,20 +57,36 @@ class BillingRelationManager extends RelationManager
                     ->step(0.25)
                     ->minValue(0.25)
                     ->placeholder('Ej: 1.5')
-                    ->visible(fn ($get) => $get('type') === 'hora'),
+                    ->visible(fn ($get) => $get('type') === 'hora')
+                    ->live(onBlur: true)
+                    ->afterStateUpdated(function ($state, $set, $get) {
+                        $hours = (float) $state;
+                        $rate = (float) $get('rate_per_hour');
+                        if ($hours > 0 && $rate > 0) {
+                            $set('amount', $hours * $rate);
+                        }
+                    }),
                 TextInput::make('rate_per_hour')
                     ->label('Tarifa por hora ($)')
                     ->numeric()
                     ->prefix('$')
                     ->placeholder('Ej: 150000')
-                    ->visible(fn ($get) => $get('type') === 'hora'),
+                    ->visible(fn ($get) => $get('type') === 'hora')
+                    ->live(onBlur: true)
+                    ->afterStateUpdated(function ($state, $set, $get) {
+                        $rate = (float) $state;
+                        $hours = (float) $get('hours');
+                        if ($hours > 0 && $rate > 0) {
+                            $set('amount', $hours * $rate);
+                        }
+                    }),
                 TextInput::make('amount')
                     ->label('Monto ($)')
                     ->numeric()
                     ->prefix('$')
                     ->required()
                     ->placeholder('Ej: 250000')
-                    ->helperText(fn ($get) => $get('type') === 'hora' ? 'Se calcula automaticamente si ingresa horas y tarifa' : null),
+                    ->helperText(fn ($get) => $get('type') === 'hora' ? 'Se calcula al salir del campo Horas o Tarifa. Puede ajustarlo manualmente si lo desea.' : null),
                 Toggle::make('is_billable')
                     ->label('Facturable al cliente')
                     ->default(true),
@@ -153,8 +169,11 @@ class BillingRelationManager extends RelationManager
             ->headerActions([
                 CreateAction::make()
                     ->label('Registrar')
+                    ->modalHeading('Registrar entrada de facturacion')
+                    ->modalSubmitActionLabel('Guardar')
+                    ->modalCancelActionLabel('Cancelar')
                     ->mutateFormDataUsing(function (array $data): array {
-                        if ($data['type'] === 'hora' && ! empty($data['hours']) && ! empty($data['rate_per_hour'])) {
+                        if (($data['type'] ?? null) === 'hora' && ! empty($data['hours']) && ! empty($data['rate_per_hour'])) {
                             $data['amount'] = $data['hours'] * $data['rate_per_hour'];
                         }
 
@@ -162,8 +181,22 @@ class BillingRelationManager extends RelationManager
                     }),
             ])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
+                EditAction::make()
+                    ->modalHeading('Editar entrada de facturacion')
+                    ->modalSubmitActionLabel('Guardar cambios')
+                    ->modalCancelActionLabel('Cancelar')
+                    ->mutateFormDataUsing(function (array $data): array {
+                        if (($data['type'] ?? null) === 'hora' && ! empty($data['hours']) && ! empty($data['rate_per_hour'])) {
+                            $data['amount'] = $data['hours'] * $data['rate_per_hour'];
+                        }
+
+                        return $data;
+                    }),
+                DeleteAction::make()
+                    ->modalHeading('Eliminar entrada')
+                    ->modalDescription('Esta accion no se puede deshacer.')
+                    ->modalSubmitActionLabel('Si, eliminar')
+                    ->modalCancelActionLabel('Cancelar'),
             ]);
     }
 }
