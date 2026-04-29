@@ -164,6 +164,158 @@ try {
         setup_log('Storage link creado', 'success');
     }
 
+    if ($step === 'trim_logos') {
+        if (! extension_loaded('gd')) {
+            setup_log('Extension GD no disponible. No se puede procesar imagenes.', 'error');
+        } else {
+            $firms = Firm::whereNotNull('logo_path')->get();
+
+            if ($firms->isEmpty()) {
+                setup_log('Ninguna firma tiene logo subido.', 'warning');
+            }
+
+            foreach ($firms as $firm) {
+                $relativePath = $firm->logo_path;
+                $absolutePath = storage_path('app/public/'.$relativePath);
+
+                if (! file_exists($absolutePath)) {
+                    setup_log("[{$firm->name}] archivo no encontrado: {$relativePath}", 'error');
+
+                    continue;
+                }
+
+                $info = getimagesize($absolutePath);
+                if (! $info) {
+                    setup_log("[{$firm->name}] no es imagen valida: {$relativePath}", 'error');
+
+                    continue;
+                }
+
+                $originalSize = filesize($absolutePath);
+                $type = $info[2];
+
+                $img = match ($type) {
+                    IMAGETYPE_PNG => imagecreatefrompng($absolutePath),
+                    IMAGETYPE_JPEG => imagecreatefromjpeg($absolutePath),
+                    IMAGETYPE_GIF => imagecreatefromgif($absolutePath),
+                    IMAGETYPE_WEBP => function_exists('imagecreatefromwebp') ? imagecreatefromwebp($absolutePath) : null,
+                    default => null,
+                };
+
+                if (! $img) {
+                    setup_log("[{$firm->name}] formato no soportado", 'error');
+
+                    continue;
+                }
+
+                $w = imagesx($img);
+                $h = imagesy($img);
+                $hasAlpha = in_array($type, [IMAGETYPE_PNG, IMAGETYPE_WEBP]);
+
+                // Buscar bounding box del contenido visible
+                $minX = $w;
+                $minY = $h;
+                $maxX = -1;
+                $maxY = -1;
+
+                for ($y = 0; $y < $h; $y++) {
+                    for ($x = 0; $x < $w; $x++) {
+                        $rgba = imagecolorat($img, $x, $y);
+                        $alpha = ($rgba >> 24) & 0xFF;
+                        $r = ($rgba >> 16) & 0xFF;
+                        $g = ($rgba >> 8) & 0xFF;
+                        $b = $rgba & 0xFF;
+
+                        // Pixel es "contenido" si no es transparente y no es casi blanco
+                        $isTransparent = $hasAlpha && $alpha > 100;
+                        $isWhite = $r > 240 && $g > 240 && $b > 240;
+
+                        if (! $isTransparent && ! $isWhite) {
+                            if ($x < $minX) {
+                                $minX = $x;
+                            }
+                            if ($y < $minY) {
+                                $minY = $y;
+                            }
+                            if ($x > $maxX) {
+                                $maxX = $x;
+                            }
+                            if ($y > $maxY) {
+                                $maxY = $y;
+                            }
+                        }
+                    }
+                }
+
+                if ($maxX < 0 || $maxY < 0) {
+                    setup_log("[{$firm->name}] imagen vacia o totalmente blanca, sin cambios", 'warning');
+                    imagedestroy($img);
+
+                    continue;
+                }
+
+                $newW = $maxX - $minX + 1;
+                $newH = $maxY - $minY + 1;
+
+                if ($newW >= $w * 0.97 && $newH >= $h * 0.97) {
+                    setup_log("[{$firm->name}] ya esta recortada (sin whitespace significativo)", 'muted');
+                    imagedestroy($img);
+
+                    continue;
+                }
+
+                // Padding aureo (4%) alrededor del contenido
+                $padding = (int) max(2, max($newW, $newH) * 0.04);
+                $finalW = $newW + $padding * 2;
+                $finalH = $newH + $padding * 2;
+
+                $newImg = imagecreatetruecolor($finalW, $finalH);
+
+                if ($hasAlpha) {
+                    imagealphablending($newImg, false);
+                    imagesavealpha($newImg, true);
+                    $transparent = imagecolorallocatealpha($newImg, 255, 255, 255, 127);
+                    imagefill($newImg, 0, 0, $transparent);
+                } else {
+                    $white = imagecolorallocate($newImg, 255, 255, 255);
+                    imagefill($newImg, 0, 0, $white);
+                }
+
+                imagecopy($newImg, $img, $padding, $padding, $minX, $minY, $newW, $newH);
+
+                // Backup antes de sobrescribir
+                $backupPath = $absolutePath.'.bak';
+                if (! file_exists($backupPath)) {
+                    copy($absolutePath, $backupPath);
+                }
+
+                $saved = match ($type) {
+                    IMAGETYPE_PNG => imagepng($newImg, $absolutePath, 6),
+                    IMAGETYPE_JPEG => imagejpeg($newImg, $absolutePath, 92),
+                    IMAGETYPE_GIF => imagegif($newImg, $absolutePath),
+                    IMAGETYPE_WEBP => function_exists('imagewebp') ? imagewebp($newImg, $absolutePath, 90) : false,
+                    default => false,
+                };
+
+                imagedestroy($img);
+                imagedestroy($newImg);
+
+                if ($saved) {
+                    $newSize = filesize($absolutePath);
+                    $reductionPct = round(($w * $h - $finalW * $finalH) / ($w * $h) * 100);
+                    setup_log(
+                        "[{$firm->name}] {$w}x{$h} ({$originalSize}b) -> {$finalW}x{$finalH} ({$newSize}b) | -{$reductionPct}% area",
+                        'success'
+                    );
+                } else {
+                    setup_log("[{$firm->name}] error al guardar imagen recortada", 'error');
+                }
+            }
+
+            setup_log('Backup original guardado como .bak en cada archivo procesado', 'info');
+        }
+    }
+
     if ($step === 'mail_test') {
         $to = $_GET['to'] ?? config('mail.from.address', '');
 
@@ -540,6 +692,7 @@ $stepTitles = [
     'migrate' => 'Migraciones',
     'seed' => 'Seeders',
     'storage' => 'Storage Link',
+    'trim_logos' => 'Recortar logos de firmas',
     'mail_test' => 'Test de Correo',
     'cache' => 'Cache Config',
     'clear' => 'Limpiar Cache',
@@ -732,6 +885,7 @@ $baseUrl = "?key={$secret}";
             <a href="<?= $baseUrl ?>&step=migrate" class="<?= $step === 'migrate' ? 'active' : '' ?>">Migrar</a>
             <a href="<?= $baseUrl ?>&step=seed" class="<?= $step === 'seed' ? 'active' : '' ?>">Seed</a>
             <a href="<?= $baseUrl ?>&step=storage" class="<?= $step === 'storage' ? 'active' : '' ?>">Storage Link</a>
+            <a href="<?= $baseUrl ?>&step=trim_logos" class="<?= $step === 'trim_logos' ? 'active' : '' ?>">Recortar logos firmas</a>
             <a href="<?= $baseUrl ?>&step=mail_test&to=lgoviedo17@hotmail.com" class="<?= $step === 'mail_test' ? 'active' : '' ?>">Test Correo</a>
 
             <div class="group-title">Cache</div>
