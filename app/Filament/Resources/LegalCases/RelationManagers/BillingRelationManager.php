@@ -81,7 +81,10 @@ class BillingRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
-            ->description('Registre las horas trabajadas, gastos y conceptos de este caso. Los montos facturables se incluyen en la cuenta de cobro.')
+            ->description('Registre las horas trabajadas, gastos y conceptos de este caso. Use "Registrar" arriba a la derecha para anadir la primera entrada.')
+            ->emptyStateHeading('Aun no ha registrado entradas de facturacion')
+            ->emptyStateDescription('Use el boton "Registrar" para anotar horas trabajadas, gastos del proceso (notarias, copias, transporte) o conceptos a cobrar al cliente. Marque cada entrada como facturable o no facturable. Al final podra generar la cuenta de cobro con lo facturable.')
+            ->emptyStateIcon('heroicon-o-banknotes')
             ->columns([
                 TextColumn::make('entry_date')
                     ->label('Fecha')

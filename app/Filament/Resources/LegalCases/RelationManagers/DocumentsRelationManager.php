@@ -108,7 +108,10 @@ class DocumentsRelationManager extends RelationManager
     {
         return $table
             ->recordTitleAttribute('name')
-            ->description('Lista de documentos del caso. Los documentos que el cliente debe aportar aparecen en amarillo. Cuando el cliente confirma desde el portal, recibira notificacion en la campanita.')
+            ->description('Liste aqui los documentos que requiere el caso. Use "Agregar documento" para anadirlos uno a uno.')
+            ->emptyStateHeading('Aun no ha registrado documentos')
+            ->emptyStateDescription('Use el boton "Agregar documento" arriba a la derecha para listar los soportes que necesita el caso (cedula, poder, certificados, etc.). Cada documento se asigna a un responsable: cliente, abogado, firma, juzgado u otro. Si lo asigna al cliente, podra solicitarlo desde el portal del cliente.')
+            ->emptyStateIcon('heroicon-o-document-plus')
             ->columns([
                 TextColumn::make('name')
                     ->label('Documento')
