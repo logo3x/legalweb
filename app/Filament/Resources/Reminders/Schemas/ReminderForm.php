@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Reminders\Schemas;
 
+use App\Models\LegalCase;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -47,11 +48,27 @@ class ReminderForm
                     ->hintIcon('heroicon-o-question-mark-circle', tooltip: 'Fecha en que recibira una alerta por email. Dejelo vacio para no recibir alerta.'),
                 Select::make('legal_case_id')
                     ->label('Caso relacionado (opcional)')
-                    ->relationship('legalCase', 'case_number', fn ($query) => $query->where('firm_id', auth()->user()->firm_id))
-                    ->getOptionLabelFromRecordUsing(fn ($record) => $record->case_number.' - '.str($record->title)->limit(60))
-                    ->searchable(['case_number', 'title'])
+                    ->placeholder('Sin caso asociado')
+                    ->searchable()
                     ->preload()
-                    ->placeholder('Sin caso asociado'),
+                    ->options(fn () => LegalCase::where('firm_id', auth()->user()->firm_id)
+                        ->orderByDesc('id')
+                        ->limit(50)
+                        ->get()
+                        ->mapWithKeys(fn ($c) => [$c->id => $c->case_number.' - '.str($c->title)->limit(60)])
+                        ->toArray())
+                    ->getSearchResultsUsing(fn (string $search) => LegalCase::where('firm_id', auth()->user()->firm_id)
+                        ->where(fn ($q) => $q->where('case_number', 'like', "%{$search}%")
+                            ->orWhere('title', 'like', "%{$search}%"))
+                        ->limit(50)
+                        ->get()
+                        ->mapWithKeys(fn ($c) => [$c->id => $c->case_number.' - '.str($c->title)->limit(60)])
+                        ->toArray())
+                    ->getOptionLabelUsing(function ($value) {
+                        $case = LegalCase::find($value);
+
+                        return $case ? $case->case_number.' - '.str($case->title)->limit(60) : null;
+                    }),
                 Textarea::make('description')
                     ->label('Descripcion')
                     ->placeholder('Detalles adicionales del recordatorio')
