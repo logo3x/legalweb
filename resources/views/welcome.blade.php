@@ -13,6 +13,7 @@
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-2Q7KJTB5MT"></script>
     <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-2Q7KJTB5MT');</script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/intersect@3.x.x/dist/cdn.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
@@ -32,20 +33,70 @@
         }
     </script>
     <style>
+        html { scroll-behavior: smooth; }
+        @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; } }
+        section[id] { scroll-margin-top: 90px; }
+
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @keyframes float-slow { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(20px, -30px); } }
+        @keyframes float-slower { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-30px, 20px); } }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes countUp { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes shine { from { background-position: -200% center; } to { background-position: 200% center; } }
+        @keyframes pulse-ring { 0% { transform: scale(0.8); opacity: 1; } 100% { transform: scale(2); opacity: 0; } }
         .float { animation: float 6s ease-in-out infinite; }
+        .blob { position: absolute; border-radius: 50%; filter: blur(60px); opacity: 0.4; pointer-events: none; }
+        .blob-1 { animation: float-slow 12s ease-in-out infinite; }
+        .blob-2 { animation: float-slower 16s ease-in-out infinite; }
         .fade-in { animation: fadeInUp 0.8s ease-out forwards; }
         .fade-in-delay-1 { animation-delay: 0.2s; opacity: 0; }
         .fade-in-delay-2 { animation-delay: 0.4s; opacity: 0; }
         .fade-in-delay-3 { animation-delay: 0.6s; opacity: 0; }
         .gradient-text { background: linear-gradient(135deg, #3A86FF, #1E3A5F); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .hero-gradient { background: linear-gradient(180deg, #F5F7FA 0%, #EBF0FF 50%, #F5F7FA 100%); }
-        .card-hover { transition: all 0.3s; }
-        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(58, 134, 255, 0.12); }
+        .card-hover { transition: transform .35s cubic-bezier(.2,.8,.2,1), box-shadow .35s, border-color .35s; }
+        .card-hover:hover { transform: translateY(-6px); box-shadow: 0 18px 50px rgba(58, 134, 255, 0.18); }
         .feature-icon { transition: all 0.3s; }
-        .card-hover:hover .feature-icon { transform: scale(1.1); }
+        .card-hover:hover .feature-icon { transform: scale(1.12) rotate(-3deg); }
+
+        /* Scroll reveal */
+        .reveal { opacity: 0; transform: translateY(28px); transition: opacity .7s cubic-bezier(.2,.8,.2,1), transform .7s cubic-bezier(.2,.8,.2,1); will-change: transform, opacity; }
+        .reveal.is-visible { opacity: 1; transform: translateY(0); }
+        .reveal-zoom { opacity: 0; transform: scale(.96); transition: opacity .7s ease-out, transform .7s ease-out; }
+        .reveal-zoom.is-visible { opacity: 1; transform: scale(1); }
+        .reveal-stagger > * { opacity: 0; transform: translateY(24px); transition: opacity .6s cubic-bezier(.2,.8,.2,1), transform .6s cubic-bezier(.2,.8,.2,1); }
+        .reveal-stagger.is-visible > *:nth-child(1) { transition-delay: .05s; }
+        .reveal-stagger.is-visible > *:nth-child(2) { transition-delay: .15s; }
+        .reveal-stagger.is-visible > *:nth-child(3) { transition-delay: .25s; }
+        .reveal-stagger.is-visible > *:nth-child(4) { transition-delay: .35s; }
+        .reveal-stagger.is-visible > *:nth-child(5) { transition-delay: .45s; }
+        .reveal-stagger.is-visible > *:nth-child(6) { transition-delay: .55s; }
+        .reveal-stagger.is-visible > * { opacity: 1; transform: translateY(0); }
+
+        /* Navbar shrink-on-scroll */
+        .nav-shell { transition: padding .3s ease, box-shadow .3s ease, background-color .3s ease; }
+        .nav-shell.scrolled { padding-top: .35rem; padding-bottom: .35rem; box-shadow: 0 6px 20px rgba(15, 23, 42, .06); background-color: rgba(255,255,255,.95); }
+
+        /* Active nav link indicator */
+        .nav-link { position: relative; }
+        .nav-link::after { content: ''; position: absolute; left: 50%; bottom: -6px; transform: translateX(-50%) scaleX(0); width: 24px; height: 2px; background: #3A86FF; border-radius: 2px; transition: transform .3s; transform-origin: center; }
+        .nav-link.active::after, .nav-link:hover::after { transform: translateX(-50%) scaleX(1); }
+        .nav-link.active { color: #3A86FF; }
+
+        /* Scroll-to-top */
+        .scroll-top { position: fixed; bottom: 24px; right: 24px; width: 46px; height: 46px; border-radius: 50%; background: #3A86FF; color: white; display: flex; align-items: center; justify-content: center; opacity: 0; transform: translateY(12px); transition: opacity .3s, transform .3s, background-color .2s; z-index: 60; box-shadow: 0 10px 24px rgba(58,134,255,.35); cursor: pointer; border: none; }
+        .scroll-top.visible { opacity: 1; transform: translateY(0); }
+        .scroll-top:hover { background: #2563eb; }
+
+        /* Live pulse */
+        .live-dot { position: relative; }
+        .live-dot::before { content: ''; position: absolute; inset: 0; border-radius: 50%; background: rgba(74, 222, 128, .55); animation: pulse-ring 1.8s cubic-bezier(.4,0,.6,1) infinite; }
+
+        /* Shine on CTA */
+        .cta-shine { background: linear-gradient(110deg, #3A86FF 0%, #4fa0ff 35%, #3A86FF 70%); background-size: 200% auto; animation: shine 4s linear infinite; }
+
+        /* Mobile menu */
+        .mobile-menu { transition: transform .3s ease, opacity .3s ease; }
+        .mobile-menu.hidden-menu { transform: translateY(-12px); opacity: 0; pointer-events: none; }
     </style>
 </head>
 <body class="bg-brand-bg font-sans text-gray-700 antialiased">
