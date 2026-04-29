@@ -47,9 +47,9 @@ class ReminderForm
                     ->hintIcon('heroicon-o-question-mark-circle', tooltip: 'Fecha en que recibira una alerta por email. Dejelo vacio para no recibir alerta.'),
                 Select::make('legal_case_id')
                     ->label('Caso relacionado (opcional)')
-                    ->relationship('legalCase', 'title')
-                    ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->case_number} - {$record->title}")
-                    ->searchable()
+                    ->relationship('legalCase', 'case_number', fn ($query) => $query->where('firm_id', auth()->user()->firm_id))
+                    ->getOptionLabelFromRecordUsing(fn ($record) => $record->case_number.' - '.str($record->title)->limit(60))
+                    ->searchable(['case_number', 'title'])
                     ->preload()
                     ->placeholder('Sin caso asociado'),
                 Textarea::make('description')

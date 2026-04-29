@@ -17,10 +17,10 @@ class CaseEventForm
             ->components([
                 Select::make('legal_case_id')
                     ->label('Caso')
-                    ->relationship('legalCase', 'title', fn ($query) => $query->where('firm_id', auth()->user()->firm_id))
-                    ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->case_number} - {$record->title}")
+                    ->relationship('legalCase', 'case_number', fn ($query) => $query->where('firm_id', auth()->user()->firm_id))
+                    ->getOptionLabelFromRecordUsing(fn ($record) => $record->case_number.' - '.str($record->title)->limit(60))
                     ->required()
-                    ->searchable()
+                    ->searchable(['case_number', 'title'])
                     ->preload(),
                 TextInput::make('title')
                     ->label('Título')
