@@ -65,7 +65,7 @@
 
     <footer style="border-top: 1px solid #e5e7eb; margin-top: 40px;">
         <div style="max-width: 900px; margin: 0 auto; padding: 20px; text-align: center;">
-            <img src="/images/logo.svg?v=3" alt="LegalWeb" style="height: 24px; margin: 0 auto 8px; opacity: 0.5;">
+            <img src="/images/logo.svg?v=4" alt="LegalWeb" style="height: 24px; margin: 0 auto 8px; opacity: 0.5;">
             <p style="font-size: 11px; color: #9ca3af; margin: 0;">Esta plataforma es una herramienta tecnologica de gestion. No sustituye el criterio profesional del abogado.</p>
             <div style="margin-top: 8px; display: flex; justify-content: center; gap: 16px; font-size: 11px;">
                 <a href="{{ route('portal.terms', isset($portalToken) ? ['ref' => $portalToken] : []) }}" style="color: #9ca3af; text-decoration: none;">Terminos</a>
