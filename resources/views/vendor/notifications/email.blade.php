@@ -2,7 +2,7 @@
     $appName = config('app.name', 'LegalWeb');
     $hasFirmBrand = ! empty($firmLogo ?? null);
     $brandName = $hasFirmBrand ? ($firmName ?: $appName) : $appName;
-    $brandLogoUrl = $hasFirmBrand ? $firmLogo : url('/images/logo-square.png');
+    $brandLogoUrl = $hasFirmBrand ? $firmLogo : url('/images/logo-icon-email.png');
     $brandTagline = $hasFirmBrand
         ? 'Caso gestionado a traves de LegalWeb'
         : 'Control inteligente de procesos legales';
@@ -48,10 +48,16 @@
 
                     {{-- Header con logo --}}
                     <tr>
-                        <td class="header-band" align="center" bgcolor="{{ $brandColor }}" style="padding:36px 24px;background-color:{{ $brandColor }};background-image:linear-gradient(135deg,{{ $brandColor }} 0%,#2C4A75 100%);">
+                        <td class="header-band" align="center" bgcolor="{{ $brandColor }}" style="padding:32px 24px 28px;background-color:{{ $brandColor }};background-image:linear-gradient(135deg,{{ $brandColor }} 0%,#2C4A75 100%);">
                             <a href="{{ url('/') }}" style="text-decoration:none;display:inline-block;">
-                                <img src="{{ $brandLogoUrl }}" alt="{{ $brandName }}" width="180" height="auto" style="display:block;width:180px;max-width:180px;height:auto;border:0;outline:none;border-radius:14px;margin:0 auto 14px;background:#ffffff;padding:10px;box-shadow:0 8px 24px rgba(0,0,0,0.15);">
-                                <div style="color:#ffffff;font-size:22px;font-weight:800;letter-spacing:-0.02em;font-family:'Inter','Segoe UI',Helvetica,Arial,sans-serif;">{{ $brandName }}</div>
+                                @if($hasFirmBrand)
+                                    {{-- Logo de firma: cuadro blanco para asegurar legibilidad si no es transparente --}}
+                                    <img src="{{ $brandLogoUrl }}" alt="{{ $brandName }}" width="180" height="auto" style="display:block;width:180px;max-width:180px;height:auto;border:0;outline:none;border-radius:12px;margin:0 auto 12px;background:#ffffff;padding:10px;box-shadow:0 6px 18px rgba(0,0,0,0.15);">
+                                @else
+                                    {{-- Icono LegalWeb: PNG transparente, va directo sobre el header azul --}}
+                                    <img src="{{ $brandLogoUrl }}" alt="{{ $brandName }}" width="96" height="96" style="display:block;width:96px;height:96px;border:0;outline:none;margin:0 auto 10px;">
+                                @endif
+                                <div style="color:#ffffff;font-size:24px;font-weight:800;letter-spacing:-0.02em;font-family:'Inter','Segoe UI',Helvetica,Arial,sans-serif;">{{ $brandName }}</div>
                                 <div style="color:rgba(255,255,255,0.85);font-size:13px;margin-top:4px;font-weight:500;font-family:'Inter','Segoe UI',Helvetica,Arial,sans-serif;">{{ $brandTagline }}</div>
                             </a>
                         </td>
