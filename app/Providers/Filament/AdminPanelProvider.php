@@ -34,7 +34,7 @@ class AdminPanelProvider extends PanelProvider
             ->databaseNotifications()
             ->databaseNotificationsPolling('30s')
             ->brandName('LegalWeb')
-            ->brandLogo(asset('images/logo.png'))
+            ->brandLogo(asset('images/logo.svg'))
             ->brandLogoHeight('2.5rem')
             ->colors([
                 'primary' => Color::hex('#3A86FF'),

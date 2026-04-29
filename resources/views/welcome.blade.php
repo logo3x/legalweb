@@ -105,7 +105,7 @@
     <nav id="main-nav" class="nav-shell bg-white/80 backdrop-blur-md border-b border-gray-100 fixed w-full z-50" x-data="{ open: false }">
         <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
             <a href="/" class="flex items-center">
-                <img src="/images/logo.png" alt="LegalWeb" class="h-10 transition-transform duration-300 hover:scale-105">
+                <img src="/images/logo.svg" alt="LegalWeb" class="h-10 transition-transform duration-300 hover:scale-105">
             </a>
             <div class="hidden md:flex items-center gap-8 text-sm">
                 <a href="#vista-previa" class="nav-link hover:text-brand-light transition">Vista Previa</a>
@@ -492,7 +492,7 @@
     <section class="py-20 px-4 bg-gradient-to-br from-brand to-blue-900 relative overflow-hidden">
         <div class="blob blob-2" style="width: 400px; height: 400px; background: #3A86FF; top: -150px; left: 50%; transform: translateX(-50%); opacity: 0.18;"></div>
         <div class="max-w-3xl mx-auto text-center relative reveal" data-reveal>
-            <img src="/images/logo-square.png" alt="LegalWeb" class="w-20 h-20 mx-auto mb-6 rounded-xl shadow-lg float">
+            <img src="/images/logo-square.svg" alt="LegalWeb" class="w-20 h-20 mx-auto mb-6 rounded-xl shadow-lg float">
             <h2 class="font-display text-3xl md:text-4xl font-bold text-white mb-4">Modernice su practica legal hoy</h2>
             <p class="text-blue-200 text-lg mb-8 max-w-xl mx-auto">Unase a los abogados colombianos que ya gestionan sus procesos con tecnologia inteligente.</p>
             <a href="{{ route('auth.google') }}" class="inline-flex items-center gap-3 bg-white text-brand font-semibold px-8 py-4 rounded-xl hover:bg-gray-100 transition text-lg shadow-lg">
@@ -513,7 +513,7 @@
         <div class="max-w-6xl mx-auto">
             <div class="grid md:grid-cols-4 gap-8 mb-8">
                 <div>
-                    <img src="/images/logo.png" alt="LegalWeb" class="h-8 mb-4">
+                    <img src="/images/logo.svg" alt="LegalWeb" class="h-8 mb-4">
                     <p class="text-sm text-gray-500">Control inteligente de sus procesos legales. Conectado con la Rama Judicial de Colombia.</p>
                 </div>
                 <div>
