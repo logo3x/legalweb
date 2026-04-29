@@ -102,32 +102,54 @@
 <body class="bg-brand-bg font-sans text-gray-700 antialiased">
 
     {{-- Navbar --}}
-    <nav class="bg-white/80 backdrop-blur-md border-b border-gray-100 fixed w-full z-50">
+    <nav id="main-nav" class="nav-shell bg-white/80 backdrop-blur-md border-b border-gray-100 fixed w-full z-50" x-data="{ open: false }">
         <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
             <a href="/" class="flex items-center">
-                <img src="/images/logo.png" alt="LegalWeb" class="h-10">
+                <img src="/images/logo.png" alt="LegalWeb" class="h-10 transition-transform duration-300 hover:scale-105">
             </a>
             <div class="hidden md:flex items-center gap-8 text-sm">
-                <a href="#vista-previa" class="hover:text-brand-light transition">Vista Previa</a>
-                <a href="#funcionalidades" class="hover:text-brand-light transition">Funcionalidades</a>
-                <a href="#como-funciona" class="hover:text-brand-light transition">Como Funciona</a>
-                <a href="#planes" class="hover:text-brand-light transition">Planes</a>
+                <a href="#vista-previa" class="nav-link hover:text-brand-light transition">Vista Previa</a>
+                <a href="#funcionalidades" class="nav-link hover:text-brand-light transition">Funcionalidades</a>
+                <a href="#como-funciona" class="nav-link hover:text-brand-light transition">C&oacute;mo Funciona</a>
+                <a href="#planes" class="nav-link hover:text-brand-light transition">Planes</a>
             </div>
             <div class="flex items-center gap-3">
-                <a href="/admin/login" class="text-sm font-medium text-brand hover:text-brand-light transition">Iniciar Sesion</a>
-                <a href="{{ route('auth.google') }}" class="text-sm font-medium bg-brand-light text-white px-5 py-2.5 rounded-lg hover:bg-blue-600 transition shadow-sm">
+                <a href="/admin/login" class="hidden sm:inline text-sm font-medium text-brand hover:text-brand-light transition">Iniciar Sesi&oacute;n</a>
+                <a href="{{ route('auth.google') }}" class="text-sm font-medium bg-brand-light text-white px-5 py-2.5 rounded-lg hover:bg-blue-600 transition shadow-sm hover:shadow-md hover:-translate-y-0.5 transform">
                     Comenzar Gratis
                 </a>
+                <button @click="open = !open" class="md:hidden p-2 -mr-2 text-brand" aria-label="Men&uacute;">
+                    <svg x-show="!open" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                    <svg x-show="open" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" x-cloak><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L6 6M18 6L18 18M6 6L18 18M18 6L6 18"/></svg>
+                </button>
+            </div>
+        </div>
+        {{-- Mobile menu --}}
+        <div x-show="open" x-transition.opacity class="md:hidden border-t border-gray-100 bg-white" x-cloak>
+            <div class="px-4 py-4 flex flex-col gap-3 text-sm">
+                <a href="#vista-previa" @click="open = false" class="py-2 hover:text-brand-light">Vista Previa</a>
+                <a href="#funcionalidades" @click="open = false" class="py-2 hover:text-brand-light">Funcionalidades</a>
+                <a href="#como-funciona" @click="open = false" class="py-2 hover:text-brand-light">C&oacute;mo Funciona</a>
+                <a href="#planes" @click="open = false" class="py-2 hover:text-brand-light">Planes</a>
+                <a href="/admin/login" @click="open = false" class="py-2 font-medium text-brand">Iniciar Sesi&oacute;n</a>
             </div>
         </div>
     </nav>
 
     {{-- Hero --}}
-    <section class="hero-gradient pt-28 pb-24 px-4 overflow-hidden">
-        <div class="max-w-6xl mx-auto">
+    <section class="hero-gradient pt-28 pb-24 px-4 overflow-hidden relative">
+        {{-- Blobs decorativos animados --}}
+        <div class="blob blob-1" style="width: 320px; height: 320px; background: #3A86FF; top: 10%; left: -120px;"></div>
+        <div class="blob blob-2" style="width: 380px; height: 380px; background: #1E3A5F; bottom: -150px; right: -100px; opacity: 0.25;"></div>
+        <div class="blob blob-1" style="width: 220px; height: 220px; background: #93C5FD; top: 40%; right: 10%; opacity: 0.3; animation-delay: -3s;"></div>
+
+        <div class="max-w-6xl mx-auto relative">
             <div class="text-center">
                 <div class="inline-flex items-center gap-2 bg-white/80 backdrop-blur text-brand-light text-sm font-medium px-4 py-2 rounded-full mb-6 shadow-sm border border-blue-100 fade-in">
-                    <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                    <span class="relative flex w-2 h-2">
+                        <span class="absolute inline-flex w-full h-full rounded-full bg-green-400 opacity-60 live-dot"></span>
+                        <span class="relative inline-flex w-2 h-2 rounded-full bg-green-500"></span>
+                    </span>
                     Conectado con la Rama Judicial de Colombia
                 </div>
                 <h1 class="font-display text-5xl md:text-7xl font-extrabold text-brand leading-tight mb-6 fade-in fade-in-delay-1">
@@ -138,7 +160,7 @@
                     Genera documentos con IA. Dale visibilidad a tus clientes.
                 </p>
                 <div class="flex flex-col sm:flex-row gap-4 justify-center mb-8 fade-in fade-in-delay-3">
-                    <a href="{{ route('auth.google') }}" class="inline-flex items-center justify-center gap-3 bg-brand-light text-white font-semibold px-8 py-4 rounded-xl hover:bg-blue-600 transition shadow-lg shadow-blue-200 text-lg">
+                    <a href="{{ route('auth.google') }}" class="cta-shine inline-flex items-center justify-center gap-3 text-white font-semibold px-8 py-4 rounded-xl transition shadow-lg shadow-blue-200 hover:shadow-xl hover:-translate-y-0.5 transform text-lg">
                         <svg class="w-5 h-5" viewBox="0 0 24 24">
                             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="white" fill-opacity="0.8"/>
                             <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="white" fill-opacity="0.9"/>
@@ -147,31 +169,31 @@
                         </svg>
                         Comenzar con Google - Gratis
                     </a>
-                    <a href="#rama-judicial" class="inline-flex items-center justify-center gap-2 bg-white text-brand font-semibold px-8 py-4 rounded-xl hover:bg-gray-50 transition border border-gray-200 text-lg">
-                        Ver integracion Rama Judicial
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    <a href="#rama-judicial" class="inline-flex items-center justify-center gap-2 bg-white text-brand font-semibold px-8 py-4 rounded-xl hover:bg-gray-50 hover:-translate-y-0.5 transform transition border border-gray-200 text-lg group">
+                        Ver integraci&oacute;n Rama Judicial
+                        <svg class="w-5 h-5 group-hover:translate-y-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                     </a>
                 </div>
-                <p class="text-sm text-gray-400">3 casos gratis para siempre. Sin tarjeta de credito. Configuracion en 60 segundos.</p>
+                <p class="text-sm text-gray-400">3 casos gratis para siempre. Sin tarjeta de cr&eacute;dito. Configuraci&oacute;n en 60 segundos.</p>
             </div>
 
-            {{-- Stats --}}
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-16 max-w-3xl mx-auto" x-data="{ shown: false }" x-intersect="shown = true">
-                <div class="bg-white/80 backdrop-blur rounded-2xl p-5 text-center border border-gray-100 shadow-sm">
-                    <div class="text-3xl font-display font-bold text-brand-light" x-show="shown" x-transition>21</div>
+            {{-- Stats con contadores animados --}}
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-16 max-w-3xl mx-auto reveal-stagger reveal" data-reveal>
+                <div class="bg-white/80 backdrop-blur rounded-2xl p-5 text-center border border-gray-100 shadow-sm hover:shadow-md transition">
+                    <div class="text-3xl font-display font-bold text-brand-light" data-counter="21">0</div>
                     <div class="text-xs text-gray-500 mt-1">Flujos procesales</div>
                 </div>
-                <div class="bg-white/80 backdrop-blur rounded-2xl p-5 text-center border border-gray-100 shadow-sm">
-                    <div class="text-3xl font-display font-bold text-green-500" x-show="shown" x-transition>24/7</div>
-                    <div class="text-xs text-gray-500 mt-1">Monitoreo automatico</div>
+                <div class="bg-white/80 backdrop-blur rounded-2xl p-5 text-center border border-gray-100 shadow-sm hover:shadow-md transition">
+                    <div class="text-3xl font-display font-bold text-green-500">24/7</div>
+                    <div class="text-xs text-gray-500 mt-1">Monitoreo autom&aacute;tico</div>
                 </div>
-                <div class="bg-white/80 backdrop-blur rounded-2xl p-5 text-center border border-gray-100 shadow-sm">
-                    <div class="text-3xl font-display font-bold text-purple-500" x-show="shown" x-transition>IA</div>
-                    <div class="text-xs text-gray-500 mt-1">Asistente juridico</div>
+                <div class="bg-white/80 backdrop-blur rounded-2xl p-5 text-center border border-gray-100 shadow-sm hover:shadow-md transition">
+                    <div class="text-3xl font-display font-bold text-purple-500">IA</div>
+                    <div class="text-xs text-gray-500 mt-1">Asistente jur&iacute;dico</div>
                 </div>
-                <div class="bg-white/80 backdrop-blur rounded-2xl p-5 text-center border border-gray-100 shadow-sm">
-                    <div class="text-3xl font-display font-bold text-amber-500" x-show="shown" x-transition>100%</div>
-                    <div class="text-xs text-gray-500 mt-1">Legislacion colombiana</div>
+                <div class="bg-white/80 backdrop-blur rounded-2xl p-5 text-center border border-gray-100 shadow-sm hover:shadow-md transition">
+                    <div class="text-3xl font-display font-bold text-amber-500" data-counter="100" data-suffix="%">0</div>
+                    <div class="text-xs text-gray-500 mt-1">Legislaci&oacute;n colombiana</div>
                 </div>
             </div>
         </div>
@@ -180,9 +202,9 @@
     {{-- Vista previa de la plataforma --}}
     <section id="vista-previa" class="py-20 px-4 bg-white">
         <div class="max-w-6xl mx-auto">
-            <div class="text-center mb-12">
+            <div class="text-center mb-12 reveal" data-reveal>
                 <h2 class="font-display text-3xl md:text-4xl font-bold text-brand mb-4">Vea la plataforma por dentro</h2>
-                <p class="text-gray-500 max-w-2xl mx-auto">Asi se ve LegalWeb cuando gestiona sus casos. Datos reales importados desde la Rama Judicial.</p>
+                <p class="text-gray-500 max-w-2xl mx-auto">As&iacute; se ve LegalWeb cuando gestiona sus casos. Datos reales importados desde la Rama Judicial.</p>
             </div>
 
             <div x-data="{ active: 0, tabs: [
@@ -205,7 +227,7 @@
                 </div>
 
                 {{-- Screenshot con descripcion --}}
-                <div class="bg-gray-900 rounded-2xl p-2 shadow-2xl">
+                <div class="bg-gray-900 rounded-2xl p-2 shadow-2xl reveal-zoom" data-reveal>
                     <div class="bg-gray-800 rounded-t-xl px-4 py-2 flex items-center gap-2">
                         <div class="w-3 h-3 rounded-full bg-red-400"></div>
                         <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
@@ -242,15 +264,15 @@
     {{-- Integracion Rama Judicial --}}
     <section id="rama-judicial" class="py-20 px-4">
         <div class="max-w-6xl mx-auto">
-            <div class="text-center mb-16">
+            <div class="text-center mb-16 reveal" data-reveal>
                 <div class="inline-flex items-center gap-2 bg-green-50 text-green-700 text-sm font-medium px-4 py-2 rounded-full mb-4">
                     <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
                     Exclusivo en Colombia
                 </div>
                 <h2 class="font-display text-3xl md:text-4xl font-bold text-brand mb-4">Conectado directamente con la Rama Judicial</h2>
-                <p class="text-gray-500 max-w-2xl mx-auto">Importe procesos con el numero de radicado. El sistema trae automaticamente toda la informacion: despacho, juez, sujetos procesales y actuaciones.</p>
+                <p class="text-gray-500 max-w-2xl mx-auto">Importe procesos con el n&uacute;mero de radicado. El sistema trae autom&aacute;ticamente toda la informaci&oacute;n: despacho, juez, sujetos procesales y actuaciones.</p>
             </div>
-            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 reveal-stagger reveal" data-reveal>
                 <div class="bg-gradient-to-br from-blue-50 to-white rounded-2xl p-6 border border-blue-100 card-hover">
                     <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-4 feature-icon">
                         <svg class="w-6 h-6 text-brand-light" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
@@ -286,11 +308,11 @@
     {{-- Funcionalidades --}}
     <section id="funcionalidades" class="py-20 px-4">
         <div class="max-w-6xl mx-auto">
-            <div class="text-center mb-16">
-                <h2 class="font-display text-3xl md:text-4xl font-bold text-brand mb-4">Todo lo que necesita para su practica legal</h2>
-                <p class="text-gray-500 max-w-xl mx-auto">Herramientas disenadas por y para abogados colombianos</p>
+            <div class="text-center mb-16 reveal" data-reveal>
+                <h2 class="font-display text-3xl md:text-4xl font-bold text-brand mb-4">Todo lo que necesita para su pr&aacute;ctica legal</h2>
+                <p class="text-gray-500 max-w-xl mx-auto">Herramientas dise&ntilde;adas por y para abogados colombianos</p>
             </div>
-            <div class="grid md:grid-cols-3 gap-8">
+            <div class="grid md:grid-cols-3 gap-8 reveal-stagger reveal" data-reveal>
                 <div class="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm card-hover">
                     <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mb-5 feature-icon">
                         <svg class="w-6 h-6 text-brand-light" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
@@ -340,11 +362,11 @@
     {{-- Como funciona --}}
     <section id="como-funciona" class="py-20 px-4 bg-white">
         <div class="max-w-6xl mx-auto">
-            <div class="text-center mb-16">
+            <div class="text-center mb-16 reveal" data-reveal>
                 <h2 class="font-display text-3xl md:text-4xl font-bold text-brand mb-4">Comience en 3 pasos</h2>
                 <p class="text-gray-500">Sin instalaciones. Sin complicaciones. Listo en 60 segundos.</p>
             </div>
-            <div class="grid md:grid-cols-3 gap-12">
+            <div class="grid md:grid-cols-3 gap-12 reveal-stagger reveal" data-reveal>
                 <div class="text-center">
                     <div class="w-20 h-20 bg-gradient-to-br from-blue-100 to-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-sm">
                         <span class="text-3xl font-display font-bold gradient-text">1</span>
@@ -373,7 +395,7 @@
     {{-- Social proof --}}
     <section class="py-16 px-4 bg-brand/[0.03]">
         <div class="max-w-4xl mx-auto">
-            <div class="grid md:grid-cols-3 gap-8 text-center">
+            <div class="grid md:grid-cols-3 gap-8 text-center reveal-stagger reveal" data-reveal>
                 <div>
                     <div class="text-4xl font-display font-bold text-brand mb-2">Ley 1581</div>
                     <div class="text-sm text-gray-500">Cumplimiento en proteccion de datos personales</div>
@@ -393,12 +415,12 @@
     {{-- Planes --}}
     <section id="planes" class="py-20 px-4">
         <div class="max-w-4xl mx-auto">
-            <div class="text-center mb-10">
+            <div class="text-center mb-10 reveal" data-reveal>
                 <h2 class="font-display text-3xl md:text-4xl font-bold text-brand mb-4">Planes que crecen con su firma</h2>
                 <p class="text-gray-500 mb-8">Comience gratis. Escale cuando lo necesite.</p>
             </div>
 
-            <div class="grid md:grid-cols-3 gap-6">
+            <div class="grid md:grid-cols-3 gap-6 reveal-stagger reveal" data-reveal>
                 {{-- Prueba Gratuita --}}
                 <div class="bg-white rounded-2xl p-8 border-2 border-green-300 shadow-lg relative card-hover">
                     <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-500 text-white text-xs font-semibold px-4 py-1 rounded-full">Comience aqui</div>
@@ -467,8 +489,9 @@
     </section>
 
     {{-- CTA Final --}}
-    <section class="py-20 px-4 bg-gradient-to-br from-brand to-blue-900">
-        <div class="max-w-3xl mx-auto text-center">
+    <section class="py-20 px-4 bg-gradient-to-br from-brand to-blue-900 relative overflow-hidden">
+        <div class="blob blob-2" style="width: 400px; height: 400px; background: #3A86FF; top: -150px; left: 50%; transform: translateX(-50%); opacity: 0.18;"></div>
+        <div class="max-w-3xl mx-auto text-center relative reveal" data-reveal>
             <img src="/images/logo-square.png" alt="LegalWeb" class="w-20 h-20 mx-auto mb-6 rounded-xl shadow-lg float">
             <h2 class="font-display text-3xl md:text-4xl font-bold text-white mb-4">Modernice su practica legal hoy</h2>
             <p class="text-blue-200 text-lg mb-8 max-w-xl mx-auto">Unase a los abogados colombianos que ya gestionan sus procesos con tecnologia inteligente.</p>
@@ -523,6 +546,89 @@
             </div>
         </div>
     </footer>
+
+    {{-- Scroll to top button --}}
+    <button id="scroll-top-btn" class="scroll-top" aria-label="Volver arriba">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"/></svg>
+    </button>
+
+    <script>
+        (function () {
+            // Reveal on scroll
+            const revealEls = document.querySelectorAll('[data-reveal]');
+            if ('IntersectionObserver' in window && revealEls.length) {
+                const io = new IntersectionObserver(function (entries) {
+                    entries.forEach(function (entry) {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('is-visible');
+                            io.unobserve(entry.target);
+                        }
+                    });
+                }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+                revealEls.forEach(function (el) { io.observe(el); });
+            } else {
+                revealEls.forEach(function (el) { el.classList.add('is-visible'); });
+            }
+
+            // Animated counters
+            const counters = document.querySelectorAll('[data-counter]');
+            if ('IntersectionObserver' in window && counters.length) {
+                const co = new IntersectionObserver(function (entries) {
+                    entries.forEach(function (entry) {
+                        if (!entry.isIntersecting) return;
+                        const el = entry.target;
+                        const target = parseInt(el.getAttribute('data-counter'), 10);
+                        const suffix = el.getAttribute('data-suffix') || '';
+                        const duration = 1400;
+                        const start = performance.now();
+                        function tick(now) {
+                            const elapsed = now - start;
+                            const progress = Math.min(elapsed / duration, 1);
+                            const eased = 1 - Math.pow(1 - progress, 3);
+                            el.textContent = Math.round(target * eased) + suffix;
+                            if (progress < 1) requestAnimationFrame(tick);
+                        }
+                        requestAnimationFrame(tick);
+                        co.unobserve(el);
+                    });
+                }, { threshold: 0.5 });
+                counters.forEach(function (el) { co.observe(el); });
+            }
+
+            // Navbar shrink + scroll spy + scroll-top button
+            const nav = document.getElementById('main-nav');
+            const scrollBtn = document.getElementById('scroll-top-btn');
+            const sectionIds = ['vista-previa', 'funcionalidades', 'como-funciona', 'planes'];
+            const sections = sectionIds.map(function (id) { return document.getElementById(id); }).filter(Boolean);
+            const navLinks = document.querySelectorAll('.nav-link');
+
+            function onScroll() {
+                const y = window.scrollY;
+                if (nav) nav.classList.toggle('scrolled', y > 16);
+                if (scrollBtn) scrollBtn.classList.toggle('visible', y > 600);
+
+                // Scroll spy
+                let active = null;
+                const offset = 140;
+                for (const s of sections) {
+                    const rect = s.getBoundingClientRect();
+                    if (rect.top - offset <= 0 && rect.bottom - offset > 0) { active = s.id; break; }
+                }
+                navLinks.forEach(function (link) {
+                    const href = link.getAttribute('href') || '';
+                    link.classList.toggle('active', active && href === '#' + active);
+                });
+            }
+            window.addEventListener('scroll', onScroll, { passive: true });
+            onScroll();
+
+            if (scrollBtn) {
+                scrollBtn.addEventListener('click', function () {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+            }
+        })();
+    </script>
 
 </body>
 </html>
