@@ -8,6 +8,8 @@ use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 
@@ -74,8 +76,49 @@ class DocumentsTable
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
+                SelectFilter::make('legal_case_id')
+                    ->label('Caso')
+                    ->relationship('legalCase', 'case_number', fn ($query) => $query->where('firm_id', auth()->user()->firm_id))
+                    ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->case_number} - ".str($record->title)->limit(40))
+                    ->searchable()
+                    ->preload(),
+                SelectFilter::make('status')
+                    ->label('Estado')
+                    ->options([
+                        'pendiente' => 'Pendiente',
+                        'solicitado' => 'Solicitado',
+                        'en_tramite' => 'En tramite',
+                        'recibido' => 'Recibido',
+                        'no_aplica' => 'No aplica',
+                    ]),
+                SelectFilter::make('responsible')
+                    ->label('Responsable')
+                    ->options([
+                        'cliente' => 'Cliente',
+                        'abogado' => 'Abogado',
+                        'firma' => 'Firma',
+                        'contraparte' => 'Contraparte',
+                        'juzgado' => 'Juzgado',
+                        'otro' => 'Otro',
+                    ]),
+                SelectFilter::make('priority')
+                    ->label('Prioridad')
+                    ->options([
+                        'urgente' => 'Urgente',
+                        'alta' => 'Alta',
+                        'media' => 'Media',
+                        'baja' => 'Baja',
+                    ]),
+                Filter::make('vencidos')
+                    ->label('Solo vencidos')
+                    ->toggle()
+                    ->query(fn ($query) => $query->whereNotNull('due_date')
+                        ->whereDate('due_date', '<', now())
+                        ->whereNotIn('status', ['recibido', 'no_aplica'])),
                 TrashedFilter::make(),
             ])
+            ->filtersFormColumns(2)
+            ->persistFiltersInSession()
             ->recordActions([
                 EditAction::make(),
             ])

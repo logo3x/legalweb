@@ -2,12 +2,15 @@
 
 namespace App\Filament\Resources\Reminders\Tables;
 
+use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
@@ -90,7 +93,49 @@ class RemindersTable
                         'alta' => 'Alta',
                         'urgente' => 'Urgente',
                     ]),
+                SelectFilter::make('legal_case_id')
+                    ->label('Caso')
+                    ->relationship('legalCase', 'case_number', fn ($query) => $query->where('firm_id', auth()->user()->firm_id))
+                    ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->case_number} - ".str($record->title)->limit(40))
+                    ->searchable()
+                    ->preload(),
+                Filter::make('vencidos')
+                    ->label('Solo vencidos')
+                    ->toggle()
+                    ->query(fn ($query) => $query->where('is_completed', false)
+                        ->whereNotNull('due_date')
+                        ->where('due_date', '<', now())),
+                Filter::make('proximos_7')
+                    ->label('Proximos 7 dias')
+                    ->toggle()
+                    ->query(fn ($query) => $query->where('is_completed', false)
+                        ->whereNotNull('due_date')
+                        ->whereBetween('due_date', [now(), now()->addDays(7)])),
+                Filter::make('due_date')
+                    ->label('Rango de fechas')
+                    ->schema([
+                        DatePicker::make('desde')->label('Desde'),
+                        DatePicker::make('hasta')->label('Hasta'),
+                    ])
+                    ->query(function ($query, array $data) {
+                        return $query
+                            ->when($data['desde'] ?? null, fn ($q, $d) => $q->whereDate('due_date', '>=', $d))
+                            ->when($data['hasta'] ?? null, fn ($q, $d) => $q->whereDate('due_date', '<=', $d));
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        $i = [];
+                        if ($data['desde'] ?? null) {
+                            $i[] = 'Desde: '.Carbon::parse($data['desde'])->format('d/m/Y');
+                        }
+                        if ($data['hasta'] ?? null) {
+                            $i[] = 'Hasta: '.Carbon::parse($data['hasta'])->format('d/m/Y');
+                        }
+
+                        return $i;
+                    }),
             ])
+            ->filtersFormColumns(2)
+            ->persistFiltersInSession()
             ->recordActions([
                 Action::make('complete')
                     ->label('Completar')

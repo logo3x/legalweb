@@ -313,6 +313,7 @@ class DemoDataService
 
     private function createDemoReminders(Firm $firm, User $owner, array $cases): void
     {
+        // Caso 1 (Civil) - audiencia proxima
         Reminder::create([
             'firm_id' => $firm->id,
             'user_id' => $owner->id,
@@ -325,6 +326,20 @@ class DemoDataService
             'remind_at' => now()->addDays(4)->setHour(8)->setMinute(0),
         ]);
 
+        // Caso 1 (Civil) - tarea
+        Reminder::create([
+            'firm_id' => $firm->id,
+            'user_id' => $owner->id,
+            'legal_case_id' => $cases[0]->id ?? null,
+            'title' => 'Reunion con cliente para revisar estrategia',
+            'description' => 'Repasar pruebas adicionales y testigos para audiencia de instruccion.',
+            'type' => 'reunion',
+            'priority' => 'media',
+            'due_date' => now()->addDays(10)->setHour(15)->setMinute(0),
+            'remind_at' => now()->addDays(9)->setHour(8)->setMinute(0),
+        ]);
+
+        // Caso 2 (Laboral) - vencimiento urgente
         Reminder::create([
             'firm_id' => $firm->id,
             'user_id' => $owner->id,
@@ -335,6 +350,58 @@ class DemoDataService
             'priority' => 'urgente',
             'due_date' => now()->addDays(2)->setHour(17)->setMinute(0),
             'remind_at' => now()->addDay()->setHour(8)->setMinute(0),
+        ]);
+
+        // Caso 2 (Laboral) - audiencia
+        Reminder::create([
+            'firm_id' => $firm->id,
+            'user_id' => $owner->id,
+            'legal_case_id' => $cases[1]->id ?? null,
+            'title' => 'Audiencia de conciliacion laboral',
+            'description' => 'Llevar liquidacion de prestaciones, contrato laboral y comprobantes de pago.',
+            'type' => 'audiencia',
+            'priority' => 'alta',
+            'due_date' => now()->addDays(20)->setHour(10)->setMinute(0),
+            'remind_at' => now()->addDays(19)->setHour(8)->setMinute(0),
+        ]);
+
+        // Caso 3 (Familia) - audiencia conciliacion
+        Reminder::create([
+            'firm_id' => $firm->id,
+            'user_id' => $owner->id,
+            'legal_case_id' => $cases[2]->id ?? null,
+            'title' => 'Audiencia de conciliacion en divorcio',
+            'description' => 'Asistir con cliente, llevar pruebas de bienes comunes y propuesta de custodia compartida.',
+            'type' => 'audiencia',
+            'priority' => 'alta',
+            'due_date' => now()->addDays(15)->setHour(11)->setMinute(0),
+            'remind_at' => now()->addDays(14)->setHour(8)->setMinute(0),
+        ]);
+
+        // Caso 3 (Familia) - tarea pendiente
+        Reminder::create([
+            'firm_id' => $firm->id,
+            'user_id' => $owner->id,
+            'legal_case_id' => $cases[2]->id ?? null,
+            'title' => 'Solicitar declaracion extrajuicio en notaria',
+            'description' => 'Cliente debe ir a la notaria con dos testigos para la declaracion de bienes.',
+            'type' => 'tarea',
+            'priority' => 'media',
+            'due_date' => now()->addDays(7)->setHour(17)->setMinute(0),
+            'remind_at' => now()->addDays(6)->setHour(8)->setMinute(0),
+        ]);
+
+        // Recordatorio vencido (sin caso) para mostrar el estado de alerta
+        Reminder::create([
+            'firm_id' => $firm->id,
+            'user_id' => $owner->id,
+            'legal_case_id' => null,
+            'title' => 'Renovar pagos de tarjeta profesional',
+            'description' => 'Tramite anual ante el Consejo Superior de la Judicatura.',
+            'type' => 'tarea',
+            'priority' => 'media',
+            'due_date' => now()->subDays(3)->setHour(17)->setMinute(0),
+            'remind_at' => now()->subDays(4)->setHour(8)->setMinute(0),
         ]);
     }
 
@@ -394,6 +461,45 @@ class DemoDataService
             'entry_date' => now()->subDays(12),
             'is_billable' => true,
         ]);
+
+        BillingEntry::create([
+            'legal_case_id' => $cases[1]->id,
+            'user_id' => $owner->id,
+            'type' => 'gasto',
+            'description' => 'Copias autenticadas de comprobantes de pago',
+            'amount' => 18000,
+            'entry_date' => now()->subDays(10),
+            'is_billable' => true,
+        ]);
+
+        // Caso 3 (Familia / Divorcio) - mezcla horas, gastos y honorarios
+        $case3 = $cases[2];
+        $billingCase3 = [
+            ['type' => 'hora', 'desc' => 'Consulta inicial y entrevista con cliente', 'hours' => 1.5, 'rate' => 130000, 'days_ago' => 28],
+            ['type' => 'hora', 'desc' => 'Estudio del registro civil de matrimonio y bienes comunes', 'hours' => 2, 'rate' => 130000, 'days_ago' => 25],
+            ['type' => 'gasto', 'desc' => 'Copia autenticada del registro civil de matrimonio', 'amount' => 19000, 'days_ago' => 25],
+            ['type' => 'hora', 'desc' => 'Redaccion de demanda de divorcio contencioso', 'hours' => 5, 'rate' => 130000, 'days_ago' => 22],
+            ['type' => 'gasto', 'desc' => 'Radicacion fisica en juzgado y copias del expediente', 'amount' => 28000, 'days_ago' => 21],
+            ['type' => 'concepto', 'desc' => 'Honorarios fijos - 30% al iniciar el proceso', 'amount' => 1500000, 'days_ago' => 22],
+            ['type' => 'hora', 'desc' => 'Revision auto admisorio y preparacion notificacion personal', 'hours' => 2, 'rate' => 130000, 'days_ago' => 14],
+            ['type' => 'gasto', 'desc' => 'Servicio de notificacion personal', 'amount' => 90000, 'days_ago' => 12],
+        ];
+
+        foreach ($billingCase3 as $b) {
+            $amount = $b['amount'] ?? ($b['hours'] * $b['rate']);
+            BillingEntry::create([
+                'legal_case_id' => $case3->id,
+                'user_id' => $owner->id,
+                'type' => $b['type'],
+                'description' => $b['desc'],
+                'hours' => $b['hours'] ?? null,
+                'rate_per_hour' => $b['rate'] ?? null,
+                'amount' => $amount,
+                'entry_date' => now()->subDays($b['days_ago']),
+                'is_billable' => true,
+                'is_billed' => $b['days_ago'] > 20,
+            ]);
+        }
     }
 
     private function createDemoDocuments(User $owner, array $cases): void
