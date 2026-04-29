@@ -43,11 +43,11 @@
 
                     {{-- Header con logo --}}
                     <tr>
-                        <td class="header-band" align="center" style="padding:28px 24px;background:linear-gradient(135deg,{{ $brandColor }} 0%,#2C4A75 100%);">
+                        <td class="header-band" align="center" style="padding:36px 24px;background:linear-gradient(135deg,{{ $brandColor }} 0%,#2C4A75 100%);">
                             <a href="{{ url('/') }}" style="text-decoration:none;display:inline-block;">
-                                <img src="{{ $logoUrl }}" alt="{{ $appName }}" width="48" height="48" style="display:block;border-radius:10px;margin:0 auto 8px;">
-                                <div style="color:#ffffff;font-size:20px;font-weight:700;letter-spacing:-0.01em;">{{ $appName }}</div>
-                                <div style="color:rgba(255,255,255,0.75);font-size:12px;margin-top:2px;">Control inteligente de procesos legales</div>
+                                <img src="{{ $logoUrl }}" alt="{{ $appName }}" width="120" height="120" style="display:block;border-radius:18px;margin:0 auto 14px;background:#ffffff;padding:8px;box-shadow:0 8px 24px rgba(0,0,0,0.15);">
+                                <div style="color:#ffffff;font-size:24px;font-weight:800;letter-spacing:-0.02em;">{{ $appName }}</div>
+                                <div style="color:rgba(255,255,255,0.8);font-size:13px;margin-top:4px;font-weight:500;">Control inteligente de procesos legales</div>
                             </a>
                         </td>
                     </tr>
