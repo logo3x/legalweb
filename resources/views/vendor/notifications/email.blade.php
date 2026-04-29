@@ -48,11 +48,11 @@
 
                     {{-- Header con logo --}}
                     <tr>
-                        <td class="header-band" align="center" style="padding:36px 24px;background:linear-gradient(135deg,{{ $brandColor }} 0%,#2C4A75 100%);">
+                        <td class="header-band" align="center" bgcolor="{{ $brandColor }}" style="padding:36px 24px;background-color:{{ $brandColor }};background-image:linear-gradient(135deg,{{ $brandColor }} 0%,#2C4A75 100%);">
                             <a href="{{ url('/') }}" style="text-decoration:none;display:inline-block;">
-                                <img src="{{ $brandLogoUrl }}" alt="{{ $brandName }}" style="display:block;max-width:200px;max-height:120px;width:auto;height:auto;border-radius:14px;margin:0 auto 14px;background:#ffffff;padding:10px;box-shadow:0 8px 24px rgba(0,0,0,0.15);">
-                                <div style="color:#ffffff;font-size:22px;font-weight:800;letter-spacing:-0.02em;">{{ $brandName }}</div>
-                                <div style="color:rgba(255,255,255,0.75);font-size:13px;margin-top:4px;font-weight:500;">{{ $brandTagline }}</div>
+                                <img src="{{ $brandLogoUrl }}" alt="{{ $brandName }}" width="180" height="auto" style="display:block;width:180px;max-width:180px;height:auto;border:0;outline:none;border-radius:14px;margin:0 auto 14px;background:#ffffff;padding:10px;box-shadow:0 8px 24px rgba(0,0,0,0.15);">
+                                <div style="color:#ffffff;font-size:22px;font-weight:800;letter-spacing:-0.02em;font-family:'Inter','Segoe UI',Helvetica,Arial,sans-serif;">{{ $brandName }}</div>
+                                <div style="color:rgba(255,255,255,0.85);font-size:13px;margin-top:4px;font-weight:500;font-family:'Inter','Segoe UI',Helvetica,Arial,sans-serif;">{{ $brandTagline }}</div>
                             </a>
                         </td>
                     </tr>
