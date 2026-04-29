@@ -15,11 +15,14 @@ class PortalController extends Controller
 {
     public function show(string $token): View
     {
-        // Buscar primero solo por token (sin filtrar por portal_enabled) para
-        // diferenciar entre "token inexistente" y "portal desactivado".
-        $case = LegalCase::where('portal_token', $token)
+        // Portal es publico: bypass FirmScope u otros scopes que filtran por
+        // firma/usuario. Sin esto, si una sesion previa autenticada queda en
+        // el contexto de Livewire/Filament, el scope no se aplica de forma
+        // homogenea entre navegadores. withoutGlobalScopes() lo evita.
+        $case = LegalCase::withoutGlobalScopes()
+            ->where('portal_token', $token)
             ->with([
-                'client',
+                'client' => fn ($q) => $q->withoutGlobalScopes(),
                 'caseType',
                 'user.firm',
                 'caseFlow',
@@ -61,9 +64,10 @@ class PortalController extends Controller
 
     public function accept(Request $request, string $token)
     {
-        $case = LegalCase::where('portal_token', $token)
+        $case = LegalCase::withoutGlobalScopes()
+            ->where('portal_token', $token)
             ->where('portal_enabled', true)
-            ->with('client')
+            ->with(['client' => fn ($q) => $q->withoutGlobalScopes()])
             ->firstOrFail();
 
         LegalAcceptance::create([
@@ -111,12 +115,17 @@ class PortalController extends Controller
      */
     public function documentReady(Request $request, string $token, int $documentId)
     {
-        $case = LegalCase::where('portal_token', $token)
+        $case = LegalCase::withoutGlobalScopes()
+            ->where('portal_token', $token)
             ->where('portal_enabled', true)
-            ->with('user', 'client')
+            ->with([
+                'user',
+                'client' => fn ($q) => $q->withoutGlobalScopes(),
+            ])
             ->firstOrFail();
 
-        $document = Document::where('id', $documentId)
+        $document = Document::withoutGlobalScopes()
+            ->where('id', $documentId)
             ->where('legal_case_id', $case->id)
             ->where('responsible', 'cliente')
             ->firstOrFail();
@@ -147,12 +156,17 @@ class PortalController extends Controller
             'external_url.max' => 'El enlace es demasiado largo.',
         ]);
 
-        $case = LegalCase::where('portal_token', $token)
+        $case = LegalCase::withoutGlobalScopes()
+            ->where('portal_token', $token)
             ->where('portal_enabled', true)
-            ->with('user', 'client')
+            ->with([
+                'user',
+                'client' => fn ($q) => $q->withoutGlobalScopes(),
+            ])
             ->firstOrFail();
 
-        $document = Document::where('id', $documentId)
+        $document = Document::withoutGlobalScopes()
+            ->where('id', $documentId)
             ->where('legal_case_id', $case->id)
             ->where('responsible', 'cliente')
             ->firstOrFail();

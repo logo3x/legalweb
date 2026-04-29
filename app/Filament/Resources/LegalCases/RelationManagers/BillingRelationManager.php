@@ -89,7 +89,12 @@ class BillingRelationManager extends RelationManager
                     ->helperText(fn ($get) => $get('type') === 'hora' ? 'Se calcula al salir del campo Horas o Tarifa. Puede ajustarlo manualmente si lo desea.' : null),
                 Toggle::make('is_billable')
                     ->label('Facturable al cliente')
+                    ->helperText('Si esta activo, el monto se incluye al generar la cuenta de cobro.')
                     ->default(true),
+                Toggle::make('is_billed')
+                    ->label('Cobrado')
+                    ->helperText('Marquelo cuando el cliente ya pago este concepto.')
+                    ->default(false),
                 Select::make('user_id')
                     ->label('Abogado')
                     ->relationship('user', 'name', fn ($query) => $query->where('firm_id', auth()->user()->firm_id))
