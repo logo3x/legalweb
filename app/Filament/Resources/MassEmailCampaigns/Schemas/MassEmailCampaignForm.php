@@ -4,6 +4,7 @@ namespace App\Filament\Resources\MassEmailCampaigns\Schemas;
 
 use App\Models\Firm;
 use App\Models\MassEmailCampaign;
+use App\Models\MassEmailTemplate;
 use App\Models\Plan;
 use App\Models\User;
 use Filament\Forms\Components\DateTimePicker;
@@ -24,6 +25,29 @@ class MassEmailCampaignForm
                 Section::make('Mensaje')
                     ->columns(1)
                     ->schema([
+                        Select::make('template_loader')
+                            ->label('Cargar plantilla (opcional)')
+                            ->placeholder('Seleccione una plantilla para precargar asunto y cuerpo')
+                            ->options(fn () => MassEmailTemplate::where('is_active', true)
+                                ->orderBy('category')
+                                ->orderBy('name')
+                                ->get()
+                                ->mapWithKeys(fn ($t) => [$t->id => '['.(MassEmailTemplate::CATEGORIES[$t->category] ?? $t->category).'] '.$t->name])
+                                ->toArray())
+                            ->searchable()
+                            ->dehydrated(false)
+                            ->live()
+                            ->afterStateUpdated(function ($state, $set) {
+                                if (! $state) {
+                                    return;
+                                }
+                                $tpl = MassEmailTemplate::find($state);
+                                if ($tpl) {
+                                    $set('subject', $tpl->subject);
+                                    $set('body', $tpl->body);
+                                }
+                            })
+                            ->helperText('Las plantillas se gestionan en Super Admin > Plantillas de correo. Cargarlas aqui sobrescribe lo que tenga en Asunto y Cuerpo.'),
                         TextInput::make('subject')
                             ->label('Asunto')
                             ->required()
