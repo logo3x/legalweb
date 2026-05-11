@@ -83,6 +83,15 @@ class MassEmailCampaignForm
                             ->options(Firm::TRACKING_STATUSES)
                             ->visible(fn ($get) => $get('audience_type') === 'by_status')
                             ->helperText('Solo usuarios de firmas con alguno de estos estados internos.'),
+                        TextInput::make('audience_filters.inactive_days')
+                            ->label('Dias sin acceder')
+                            ->numeric()
+                            ->minValue(1)
+                            ->maxValue(365)
+                            ->default(30)
+                            ->required()
+                            ->visible(fn ($get) => $get('audience_type') === 'by_inactivity')
+                            ->helperText('Incluira usuarios cuyo ultimo login fue hace mas de N dias (o que nunca han iniciado sesion y su cuenta tiene mas de N dias). Sugerencias: 7 (corto), 30 (medio), 90 (largo).'),
                         Select::make('audience_user_ids')
                             ->label('Usuarios especificos')
                             ->multiple()

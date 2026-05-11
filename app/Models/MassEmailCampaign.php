@@ -28,6 +28,8 @@ class MassEmailCampaign extends Model
         'all' => 'Todos los usuarios',
         'by_plan' => 'Por plan',
         'by_status' => 'Por estado de firma',
+        'by_inactivity' => 'Por inactividad (dias sin acceder)',
+        'never_logged_in' => 'Nunca iniciaron sesion',
         'specific' => 'Usuarios especificos',
     ];
 
@@ -82,6 +84,23 @@ class MassEmailCampaign extends Model
                         $q->whereIn('tracking_status', $statuses);
                     });
                 }
+                break;
+
+            case 'by_inactivity':
+                $days = (int) ($this->audience_filters['inactive_days'] ?? 30);
+                $threshold = now()->subDays($days);
+                // Usuarios que existen hace al menos $days dias y cuyo ultimo login
+                // fue antes del umbral, o que nunca iniciaron sesion pero su cuenta
+                // tiene mas de $days dias de antiguedad.
+                $query->where('created_at', '<=', $threshold)
+                    ->where(function ($q) use ($threshold) {
+                        $q->where('last_login_at', '<', $threshold)
+                            ->orWhereNull('last_login_at');
+                    });
+                break;
+
+            case 'never_logged_in':
+                $query->whereNull('last_login_at');
                 break;
 
             case 'specific':
