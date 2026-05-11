@@ -23,16 +23,30 @@ use Illuminate\Support\Facades\Storage;
     'website',
     'description',
     'onboarding_completed',
+    'tracking_status',
+    'tracking_tags',
+    'tracking_notes',
+    'last_admin_review_at',
 ])]
 class Firm extends Model
 {
     /** @use HasFactory<FirmFactory> */
     use HasFactory;
 
+    public const TRACKING_STATUSES = [
+        'prospecto' => 'Prospecto',
+        'activo' => 'Activo',
+        'pausado' => 'Pausado',
+        'perdido' => 'Perdido',
+        'no_contactar' => 'No contactar',
+    ];
+
     protected function casts(): array
     {
         return [
             'onboarding_completed' => 'boolean',
+            'tracking_tags' => 'array',
+            'last_admin_review_at' => 'datetime',
         ];
     }
 
