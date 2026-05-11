@@ -138,7 +138,7 @@ class ProbarNotificaciones extends Page
 
     private function testReminderDue($user, LegalCase $case): void
     {
-        $reminder = $user->reminders()
+        $reminder = Reminder::where('user_id', $user->id)
             ->where('is_completed', false)
             ->first()
             ?? new Reminder([
