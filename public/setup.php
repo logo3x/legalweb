@@ -102,6 +102,42 @@ try {
         setup_log(trim(Artisan::output()), 'muted');
     }
 
+    if ($step === 'migrate_status') {
+        Artisan::call('migrate:status');
+        $output = trim(Artisan::output());
+        setup_log('Estado de migraciones (archivos vs BD):', 'info');
+        foreach (explode("\n", $output) as $line) {
+            $line = trim($line);
+            if (! $line) {
+                continue;
+            }
+            $type = 'muted';
+            if (stripos($line, 'Pending') !== false) {
+                $type = 'warning';
+            } elseif (stripos($line, 'Ran') !== false) {
+                $type = 'muted';
+            }
+            setup_log(htmlspecialchars($line), $type);
+        }
+    }
+
+    if ($step === 'git_pull') {
+        if (! function_exists('shell_exec')) {
+            setup_log('shell_exec esta deshabilitado en este hosting. Use FTP o el panel git de cPanel para actualizar el codigo.', 'error');
+        } else {
+            $cwd = base_path();
+            $out = shell_exec('cd '.escapeshellarg($cwd).' && git fetch --all 2>&1 && git reset --hard origin/main 2>&1');
+            setup_log('Salida de git pull:', 'info');
+            foreach (explode("\n", trim((string) $out)) as $line) {
+                if (trim($line)) {
+                    setup_log(htmlspecialchars(trim($line)), 'muted');
+                }
+            }
+            $commit = trim((string) shell_exec('cd '.escapeshellarg($cwd).' && git log -1 --oneline 2>&1'));
+            setup_log('Commit actual: '.htmlspecialchars($commit), 'success');
+        }
+    }
+
     if ($step === 'migrate') {
         Artisan::call('migrate', ['--force' => true]);
         $migrationOutput = trim(Artisan::output());
@@ -910,6 +946,8 @@ $baseUrl = "?key={$secret}";
             <a href="<?= $baseUrl ?>&step=info" class="<?= $step === 'info' ? 'active' : '' ?>">Estado</a>
             <a href="<?= $baseUrl ?>&step=composer" class="<?= $step === 'composer' ? 'active' : '' ?>">Composer Install</a>
             <a href="<?= $baseUrl ?>&step=key" class="<?= $step === 'key' ? 'active' : '' ?>">App Key</a>
+            <a href="<?= $baseUrl ?>&step=git_pull" class="<?= $step === 'git_pull' ? 'active' : '' ?>">Git pull</a>
+            <a href="<?= $baseUrl ?>&step=migrate_status" class="<?= $step === 'migrate_status' ? 'active' : '' ?>">Estado migraciones</a>
             <a href="<?= $baseUrl ?>&step=migrate" class="<?= $step === 'migrate' ? 'active' : '' ?>">Migrar</a>
             <a href="<?= $baseUrl ?>&step=seed" class="<?= $step === 'seed' ? 'active' : '' ?>">Seed</a>
             <a href="<?= $baseUrl ?>&step=seed_email_templates" class="<?= $step === 'seed_email_templates' ? 'active' : '' ?>">Seed plantillas correo</a>
