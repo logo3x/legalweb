@@ -57,6 +57,7 @@ class FirmSettings extends Page
             'website' => $firm->website,
             'description' => $firm->description,
             'logo_path' => $firm->logo_path,
+            'security_email_enabled' => auth()->user()->security_email_enabled ?? true,
         ]);
     }
 
@@ -140,6 +141,16 @@ class FirmSettings extends Page
                             ->columnSpanFull()
                             ->rows(3),
                     ]),
+                Section::make('Seguridad de la cuenta')
+                    ->description('Configuraciones relacionadas con su cuenta personal.')
+                    ->schema([
+                        Toggle::make('security_email_enabled')
+                            ->label('Recibir alerta por correo cada que inicie sesion')
+                            ->helperText('Le llegara un correo con la fecha, IP y navegador del inicio de sesion. Es una capa adicional de seguridad similar a la que usan los bancos. Recomendamos mantenerla activa.')
+                            ->default(true)
+                            ->live(),
+                    ]),
+
                 Section::make('Terminos y Condiciones')
                     ->schema([
                         Placeholder::make('terms_info')
@@ -166,6 +177,17 @@ class FirmSettings extends Page
         $firm = auth()->user()->firm;
         $wasOnboarding = ! $firm->onboarding_completed;
         unset($data['accept_terms']);
+
+        // Campos personales del usuario (no de la firma).
+        $userFields = [];
+        if (array_key_exists('security_email_enabled', $data)) {
+            $userFields['security_email_enabled'] = (bool) $data['security_email_enabled'];
+            unset($data['security_email_enabled']);
+        }
+        if (! empty($userFields)) {
+            auth()->user()->update($userFields);
+        }
+
         $firm->update(array_merge($data, ['onboarding_completed' => true]));
 
         if ($wasOnboarding) {

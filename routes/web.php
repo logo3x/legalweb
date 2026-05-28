@@ -7,8 +7,10 @@ use App\Console\Commands\VerifyPendingPayments;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\PortalController;
 use App\Http\Controllers\WompiController;
+use App\Jobs\SendMassEmailCampaign;
 use App\Models\CasePermission;
 use App\Models\FirmInvitation;
+use App\Models\MassEmailCampaign;
 use App\Models\Reminder;
 use App\Models\User;
 use App\Notifications\ReminderDueNotification;
@@ -198,6 +200,19 @@ Route::get('/cron/{token}/{task?}', function (string $token, ?string $task = nul
         $command->setOutput(new BufferedOutput);
         $command->handle();
         $results[] = 'verify-payments: OK';
+    }
+
+    // Tarea: mass-emails (cada 5 min, despacha campañas programadas que llegaron a su hora)
+    if (! $task || $task === 'mass-emails') {
+        $pending = MassEmailCampaign::where('status', 'programado')
+            ->whereNotNull('scheduled_at')
+            ->where('scheduled_at', '<=', now())
+            ->get();
+
+        foreach ($pending as $campaign) {
+            SendMassEmailCampaign::dispatch($campaign->id);
+        }
+        $results[] = 'mass-emails: '.$pending->count().' campania(s) despachadas';
     }
 
     return response()->json([

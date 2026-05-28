@@ -2,7 +2,10 @@
 
 namespace App\Filament\Resources\Firms\Schemas;
 
+use App\Models\Firm;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -17,6 +20,28 @@ class FirmForm
         return $schema
             ->columns(2)
             ->components([
+                Section::make('Seguimiento')
+                    ->description('Estado interno, notas y etiquetas de esta firma. Solo visible para superadmin.')
+                    ->columns(2)
+                    ->columnSpanFull()
+                    ->collapsible()
+                    ->schema([
+                        Select::make('tracking_status')
+                            ->label('Estado')
+                            ->options(Firm::TRACKING_STATUSES)
+                            ->default('activo')
+                            ->native(false)
+                            ->required(),
+                        TagsInput::make('tracking_tags')
+                            ->label('Etiquetas')
+                            ->placeholder('Agregar etiqueta y presionar Enter')
+                            ->helperText('Use etiquetas libres: contactado, interesado, demo agendada, etc.'),
+                        Textarea::make('tracking_notes')
+                            ->label('Notas de seguimiento')
+                            ->rows(4)
+                            ->placeholder('Anote aqui el historial de contacto, observaciones, acuerdos, etc.')
+                            ->columnSpanFull(),
+                    ]),
                 Section::make('Datos de la Firma')
                     ->columns(2)
                     ->columnSpanFull()
