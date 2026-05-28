@@ -309,7 +309,7 @@ class TybaService
 
     /**
      * @param  array<int, array<string, mixed>>  $rawActuaciones
-     * @return array<int, array{ciclo: string, tipo: string, fecha: string, fecha_registro: string, anotacion: string}>
+     * @return array<int, array{ciclo: string, tipo: string, fecha: string, fecha_registro: string, fecha_inicial: string, fecha_final: string, anotacion: string, cod_regla: string, con_documentos: bool, cant_documentos: int}>
      */
     private function formatActuaciones(array $rawActuaciones): array
     {
@@ -319,6 +319,8 @@ class TybaService
             $tipo = trim($a['actuacion'] ?? '');
             $fecha = $this->formatDate($a['fechaActuacion'] ?? '');
             $fechaRegistro = $this->formatDate($a['fechaRegistro'] ?? '');
+            $fechaInicial = $this->formatDate($a['fechaInicial'] ?? '');
+            $fechaFinal = $this->formatDate($a['fechaFinal'] ?? '');
 
             if (! $tipo || ! $fecha) {
                 continue;
@@ -329,7 +331,12 @@ class TybaService
                 'tipo' => $tipo,
                 'fecha' => $fecha,
                 'fecha_registro' => $fechaRegistro,
+                'fecha_inicial' => $fechaInicial,
+                'fecha_final' => $fechaFinal,
                 'anotacion' => trim($a['anotacion'] ?? ''),
+                'cod_regla' => trim((string) ($a['codRegla'] ?? '')),
+                'con_documentos' => (bool) ($a['conDocumentos'] ?? false),
+                'cant_documentos' => (int) ($a['cant'] ?? 0),
             ];
         }
 

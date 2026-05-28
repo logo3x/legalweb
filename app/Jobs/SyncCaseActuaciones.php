@@ -92,7 +92,7 @@ class SyncCaseActuaciones implements ShouldQueue
                 'title' => $title,
                 'event_date' => $date,
                 'event_type' => 'actuacion',
-                'description' => ($a['anotacion'] ?? '').($a['anotacion'] ? ' | ' : '')."Sincronizado. Radicado: {$radicado}",
+                'description' => $this->buildEventDescription($a, $radicado),
                 'user_id' => $this->case->user_id,
             ]);
 
@@ -128,43 +128,55 @@ class SyncCaseActuaciones implements ShouldQueue
     }
 
     /**
-     * Crear recordatorios inteligentes para actuaciones relevantes.
-     * Calcula plazos legales usando el calendario judicial colombiano.
+     * Crear recordatorios para actuaciones con plazo asociado.
+     *
+     * Fuentes de fecha (en orden de preferencia):
+     *  1. fechaFinal devuelta por la API (la propia Rama Judicial calcula
+     *     el termino para esa actuacion).
+     *  2. Calculo via JudicialCalendarService cuando el tipo de actuacion
+     *     coincide con una regla conocida (auto admite, traslado, etc.).
      *
      * @param  array<string, mixed>  $actuacion
      */
     private function createReminderIfNeeded(array $actuacion, Carbon $date): void
     {
         $tipo = strtolower($actuacion['tipo']);
-
-        // Mapa de actuaciones importantes con plazo legal en dias habiles
         $alertRules = $this->getAlertRules($tipo);
 
-        if (! $alertRules) {
-            return;
+        $dueDate = null;
+        $fuenteFecha = '';
+
+        // 1. La API entrega fechaFinal -> usarla directamente
+        if (! empty($actuacion['fecha_final'])) {
+            $dueDate = $this->parseDate($actuacion['fecha_final']);
+            $fuenteFecha = 'Termino tomado de la Rama Judicial';
         }
 
-        // Verificar que no exista ya
-        $exists = Reminder::where('legal_case_id', $this->case->id)
-            ->where('due_date', '>=', $date)
-            ->where('title', 'like', '%'.$actuacion['tipo'].'%')
-            ->exists();
-
-        if ($exists) {
-            return;
-        }
-
-        $calendar = app(JudicialCalendarService::class);
-
-        // Calcular fecha de vencimiento del plazo
-        $dueDate = $date;
-        if ($alertRules['dias'] > 0) {
-            $deadline = $calendar->calculateDeadline($date, $alertRules['dias'], 'business');
+        // 2. Calculo por regla legal conocida
+        if (! $dueDate && $alertRules && $alertRules['dias'] > 0) {
+            $deadline = app(JudicialCalendarService::class)
+                ->calculateDeadline($date, $alertRules['dias'], 'business');
             $dueDate = $deadline['deadline'];
+            $fuenteFecha = "Plazo de {$alertRules['dias']} dias habiles desde la actuacion";
+        }
+
+        // Sin fecha aprovechable: no creamos recordatorio
+        if (! $dueDate) {
+            return;
         }
 
         // Solo crear si la fecha de vencimiento es futura o reciente
         if ($dueDate->lt(now()->subDays(3))) {
+            return;
+        }
+
+        // Evitar duplicados: misma actuacion + misma fecha de vencimiento
+        $exists = Reminder::where('legal_case_id', $this->case->id)
+            ->where('due_date', $dueDate)
+            ->where('title', 'like', '%'.$actuacion['tipo'].'%')
+            ->exists();
+
+        if ($exists) {
             return;
         }
 
@@ -176,32 +188,82 @@ class SyncCaseActuaciones implements ShouldQueue
             default => 'baja',
         };
 
-        // Sobreescribir prioridad para actuaciones criticas
-        if ($alertRules['prioridad_minima'] === 'alta' && $priority === 'baja') {
-            $priority = 'media';
-        }
-        if ($alertRules['prioridad_minima'] === 'urgente') {
-            $priority = 'urgente';
+        // Sobrescribir prioridad cuando la regla la pide minima
+        if ($alertRules) {
+            if ($alertRules['prioridad_minima'] === 'alta' && $priority === 'baja') {
+                $priority = 'media';
+            }
+            if ($alertRules['prioridad_minima'] === 'urgente') {
+                $priority = 'urgente';
+            }
         }
 
-        $plazoTexto = $alertRules['dias'] > 0
-            ? " (plazo: {$alertRules['dias']} dias habiles, vence {$dueDate->format('d/m/Y')})"
-            : '';
+        $tipoRecordatorio = $alertRules['tipo_recordatorio'] ?? 'vencimiento';
+        $descripcionBase = $alertRules['descripcion']
+            ?? 'Termino judicial detectado en sincronizacion automatica.';
 
         Reminder::create([
             'firm_id' => $this->case->firm_id,
             'user_id' => $this->case->user_id,
             'legal_case_id' => $this->case->id,
             'title' => $actuacion['tipo'].' - '.$this->case->case_number,
-            'description' => "{$alertRules['descripcion']}{$plazoTexto}\n"
-                ."Actuacion del {$date->format('d/m/Y')} detectada automaticamente.\n"
+            'description' => "{$descripcionBase}\n"
+                ."{$fuenteFecha}.\n"
+                ."Actuacion: {$date->format('d/m/Y')} | Vence: {$dueDate->format('d/m/Y')}\n"
                 ."Radicado: {$this->case->external_case_number}",
-            'type' => $alertRules['tipo_recordatorio'],
+            'type' => $tipoRecordatorio,
             'due_date' => $dueDate,
             'remind_at' => $dueDate->copy()->subDay()->setHour(8),
             'is_completed' => false,
             'priority' => $priority,
         ]);
+    }
+
+    /**
+     * Construye la descripcion del CaseEvent agregando todos los campos
+     * que la Rama Judicial devuelve para la actuacion.
+     *
+     * @param  array<string, mixed>  $a
+     */
+    private function buildEventDescription(array $a, string $radicado): string
+    {
+        $parts = [];
+
+        if (! empty($a['anotacion'])) {
+            $parts[] = $a['anotacion'];
+        }
+
+        $hasInicial = ! empty($a['fecha_inicial']);
+        $hasFinal = ! empty($a['fecha_final']);
+        if ($hasInicial || $hasFinal) {
+            $segs = [];
+            if ($hasInicial) {
+                $segs[] = "inicio {$a['fecha_inicial']}";
+            }
+            if ($hasFinal) {
+                $segs[] = "fin {$a['fecha_final']}";
+            }
+            $parts[] = 'Termino: '.implode(' - ', $segs);
+        }
+
+        if (! empty($a['cod_regla'])) {
+            $parts[] = "Regla CGP: {$a['cod_regla']}";
+        }
+
+        if (! empty($a['fecha_registro']) && ($a['fecha_registro'] !== ($a['fecha'] ?? ''))) {
+            $parts[] = "Registrado en Rama Judicial: {$a['fecha_registro']}";
+        }
+
+        if (! empty($a['con_documentos'])) {
+            $cant = (int) ($a['cant_documentos'] ?? 0);
+            $parts[] = $cant > 0
+                ? "Adjuntos: {$cant} documento(s) disponibles en Rama Judicial"
+                : 'La actuacion tiene documentos disponibles en Rama Judicial';
+        }
+
+        $parts[] = "Sincronizado automaticamente. Radicado: {$radicado}";
+
+        return implode("\n", $parts);
     }
 
     /**
