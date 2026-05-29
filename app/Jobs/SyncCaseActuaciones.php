@@ -79,7 +79,7 @@ class SyncCaseActuaciones implements ShouldQueue
             $title = $a['tipo'].($a['ciclo'] ? " ({$a['ciclo']})" : '');
 
             $exists = CaseEvent::where('legal_case_id', $this->case->id)
-                ->where('event_date', $date)
+                ->whereDate('event_date', $date)
                 ->where('title', $title)
                 ->exists();
 
@@ -172,7 +172,7 @@ class SyncCaseActuaciones implements ShouldQueue
 
         // Evitar duplicados: misma actuacion + misma fecha de vencimiento
         $exists = Reminder::where('legal_case_id', $this->case->id)
-            ->where('due_date', $dueDate)
+            ->whereDate('due_date', $dueDate)
             ->where('title', 'like', '%'.$actuacion['tipo'].'%')
             ->exists();
 
@@ -415,7 +415,9 @@ class SyncCaseActuaciones implements ShouldQueue
 
         foreach ($formats as $format) {
             try {
-                return Carbon::createFromFormat($format, trim($date));
+                // startOfDay() normaliza la hora; createFromFormat sin hora
+                // deja la hora actual y rompe los chequeos de duplicado.
+                return Carbon::createFromFormat($format, trim($date))->startOfDay();
             } catch (\Exception) {
                 continue;
             }

@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Notifications\NewFirmRegistered;
 use App\Services\TybaService;
 use Illuminate\Contracts\Console\Kernel;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
@@ -768,6 +769,52 @@ try {
         }
     }
 
+    if ($step === 'dedup_actuaciones') {
+        // Limpia case_events duplicados creados antes del fix de parseDate
+        // (cuando la hora variaba entre sincronizaciones).
+        $confirm = ($_GET['confirm'] ?? '') === 'yes';
+
+        $dupes = DB::select("
+            SELECT legal_case_id, DATE(event_date) AS d, title, COUNT(*) AS n, MIN(id) AS keep_id
+            FROM case_events
+            WHERE event_type = 'actuacion'
+            GROUP BY legal_case_id, DATE(event_date), title
+            HAVING n > 1
+        ");
+
+        if (empty($dupes)) {
+            setup_log('No hay actuaciones duplicadas en case_events.', 'success');
+        } else {
+            setup_log('Grupos de duplicados detectados: '.count($dupes), 'warning');
+
+            $totalRemove = 0;
+            foreach ($dupes as $g) {
+                $count = $g->n - 1;
+                $totalRemove += $count;
+                setup_log("  Caso {$g->legal_case_id} | {$g->d} | {$g->title} -> {$g->n} copias (eliminar {$count}, conservar id {$g->keep_id})", 'muted');
+            }
+            setup_log("Total filas a eliminar: {$totalRemove}", 'info');
+
+            if (! $confirm) {
+                $confirmUrl = $baseUrl.'&step=dedup_actuaciones&confirm=yes';
+                setup_log("<a href='{$confirmUrl}' style='color:#dc2626;font-weight:bold;text-decoration:underline;'>CONFIRMAR: eliminar duplicados (conserva el mas antiguo de cada grupo)</a>", 'raw');
+            } else {
+                $eliminados = 0;
+                foreach ($dupes as $g) {
+                    $deleted = DB::table('case_events')
+                        ->where('legal_case_id', $g->legal_case_id)
+                        ->whereRaw('DATE(event_date) = ?', [$g->d])
+                        ->where('title', $g->title)
+                        ->where('event_type', 'actuacion')
+                        ->where('id', '!=', $g->keep_id)
+                        ->delete();
+                    $eliminados += $deleted;
+                }
+                setup_log("Eliminadas {$eliminados} filas duplicadas. Quedo conservada la mas antigua por grupo.", 'success');
+            }
+        }
+    }
+
     if ($step === 'logs') {
         $logFile = storage_path('logs/laravel.log');
         if (file_exists($logFile)) {
@@ -853,6 +900,7 @@ $stepTitles = [
     'test_tyba' => 'Crear Caso Tyba',
     'sync_tyba' => 'Sincronizar Tyba',
     'tyba_raw' => 'Inspeccionar API Tyba',
+    'dedup_actuaciones' => 'Limpiar actuaciones duplicadas',
 ];
 
 $baseUrl = "?key={$secret}";
@@ -1054,6 +1102,7 @@ $baseUrl = "?key={$secret}";
             <a href="<?= $baseUrl ?>&step=test_tyba&user_id=&radicado=68081310300120240001800" class="<?= $step === 'test_tyba' ? 'active' : '' ?>">Crear caso</a>
             <a href="<?= $baseUrl ?>&step=sync_tyba&case_id=" class="<?= $step === 'sync_tyba' ? 'active' : '' ?>">Sincronizar</a>
             <a href="<?= $baseUrl ?>&step=tyba_raw&case_id=" class="<?= $step === 'tyba_raw' ? 'active' : '' ?>">Inspeccionar API</a>
+            <a href="<?= $baseUrl ?>&step=dedup_actuaciones" class="<?= $step === 'dedup_actuaciones' ? 'active' : '' ?>">Limpiar duplicados</a>
 
             <div class="group-title">Otros</div>
             <a href="<?= $baseUrl ?>&step=logs" class="<?= $step === 'logs' ? 'active' : '' ?>">Logs</a>
