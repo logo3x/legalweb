@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Notifications\NewFirmRegistered;
 use App\Services\TybaService;
 use Illuminate\Contracts\Console\Kernel;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 
@@ -684,6 +685,99 @@ try {
         }
     }
 
+    if ($step === 'tyba_raw') {
+        $caseId = $_GET['case_id'] ?? null;
+
+        if (! $caseId) {
+            setup_log('Pase ?case_id=X (id del caso a inspeccionar)', 'error');
+            LegalCase::withoutGlobalScopes()
+                ->whereNotNull('external_case_number')
+                ->limit(20)
+                ->get()
+                ->each(fn ($c) => setup_log("  #{$c->id} {$c->case_number} | Radicado: {$c->external_case_number}", 'muted'));
+        } else {
+            $case = LegalCase::withoutGlobalScopes()->find($caseId);
+
+            if (! $case || ! $case->external_case_number) {
+                setup_log('Caso no encontrado o sin radicado', 'error');
+            } else {
+                $radicado = preg_replace('/[^0-9]/', '', $case->external_case_number);
+                $apiBase = 'https://consultaprocesos.ramajudicial.gov.co:448/api/v2';
+
+                setup_log("Caso: {$case->case_number} | Radicado: {$radicado}", 'info');
+
+                // Paso 1: buscar idProceso e idConexion
+                setup_log('---busqueda---');
+                $searchResp = Http::timeout(15)->get("{$apiBase}/Procesos/Consulta/NumeroRadicacion", [
+                    'numero' => $radicado,
+                    'SoloActivos' => 'false',
+                    'pagina' => 1,
+                ]);
+
+                if (! $searchResp->successful()) {
+                    setup_log("HTTP {$searchResp->status()} al buscar radicado", 'error');
+                } else {
+                    $procesos = $searchResp->json()['procesos'] ?? [];
+                    if (empty($procesos)) {
+                        setup_log('No se encontro el radicado en la API', 'error');
+                    } else {
+                        $idProceso = $procesos[0]['idProceso'] ?? null;
+                        $idConexion = $procesos[0]['idConexion'] ?? null;
+
+                        setup_log("idProceso: {$idProceso} | idConexion: {$idConexion}", 'success');
+
+                        // Paso 2: traer actuaciones crudas
+                        setup_log('---actuaciones-crudas---');
+                        $actResp = Http::timeout(15)->get("{$apiBase}/Proceso/Actuaciones/{$idProceso}", [
+                            'idConexion' => $idConexion,
+                            'pagina' => 1,
+                        ]);
+
+                        if (! $actResp->successful()) {
+                            setup_log("HTTP {$actResp->status()} al consultar actuaciones", 'error');
+                        } else {
+                            $data = $actResp->json();
+                            $actuaciones = $data['actuaciones'] ?? [];
+                            setup_log('Total actuaciones devueltas: '.count($actuaciones), 'info');
+
+                            $muestra = array_slice($actuaciones, 0, 5);
+                            foreach ($muestra as $i => $a) {
+                                setup_log('---actuacion-'.($i + 1).'---');
+                                foreach ($a as $key => $value) {
+                                    $valStr = is_scalar($value) || $value === null
+                                        ? (string) ($value ?? '(null)')
+                                        : json_encode($value, JSON_UNESCAPED_UNICODE);
+                                    $valStr = mb_substr($valStr, 0, 400);
+                                    setup_log("  {$key}: {$valStr}", trim($valStr) === '' ? 'warning' : 'muted');
+                                }
+                            }
+
+                            // Paso 3: probar endpoint de documentos para la 1a actuacion con conDocumentos=true
+                            $conDocs = collect($actuaciones)->first(fn ($a) => ! empty($a['conDocumentos']));
+                            if ($conDocs) {
+                                $idRegAct = $conDocs['idRegActuacion'] ?? null;
+                                setup_log('---documentos-actuacion-'.($conDocs['actuacion'] ?? '').'---');
+                                setup_log("Probando endpoint Documento/?idRegActuacion={$idRegAct}", 'info');
+
+                                $docResp = Http::timeout(15)->get("{$apiBase}/Documento", [
+                                    'idRegActuacion' => $idRegAct,
+                                ]);
+                                setup_log("HTTP {$docResp->status()}", $docResp->successful() ? 'success' : 'error');
+
+                                if ($docResp->successful()) {
+                                    $docs = $docResp->json();
+                                    setup_log('Respuesta: '.json_encode($docs, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT), 'muted');
+                                }
+                            } else {
+                                setup_log('Ninguna actuacion tiene conDocumentos=true en la primera pagina', 'warning');
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     if ($step === 'logs') {
         $logFile = storage_path('logs/laravel.log');
         if (file_exists($logFile)) {
@@ -768,6 +862,7 @@ $stepTitles = [
     'demo_reminders' => 'Recordatorios Demo',
     'test_tyba' => 'Crear Caso Tyba',
     'sync_tyba' => 'Sincronizar Tyba',
+    'tyba_raw' => 'Inspeccionar API Tyba',
 ];
 
 $baseUrl = "?key={$secret}";
@@ -968,6 +1063,7 @@ $baseUrl = "?key={$secret}";
             <div class="group-title">Tyba</div>
             <a href="<?= $baseUrl ?>&step=test_tyba&user_id=&radicado=68081310300120240001800" class="<?= $step === 'test_tyba' ? 'active' : '' ?>">Crear caso</a>
             <a href="<?= $baseUrl ?>&step=sync_tyba&case_id=" class="<?= $step === 'sync_tyba' ? 'active' : '' ?>">Sincronizar</a>
+            <a href="<?= $baseUrl ?>&step=tyba_raw&case_id=" class="<?= $step === 'tyba_raw' ? 'active' : '' ?>">Inspeccionar API</a>
 
             <div class="group-title">Otros</div>
             <a href="<?= $baseUrl ?>&step=logs" class="<?= $step === 'logs' ? 'active' : '' ?>">Logs</a>
