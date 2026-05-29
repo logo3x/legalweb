@@ -220,45 +220,52 @@ class SyncCaseActuaciones implements ShouldQueue
     }
 
     /**
-     * Construye la descripcion del CaseEvent agregando todos los campos
-     * que la Rama Judicial devuelve para la actuacion.
+     * Construye la descripcion del CaseEvent.
+     *
+     * La API a menudo devuelve `anotacion` vacia; en ese caso usamos la
+     * descripcion educativa de la regla legal (cuando aplique) para que
+     * el evento no quede pelado.
+     *
+     * Tambien filtramos campos triviales: fechaInicial/fechaFinal solo se
+     * incluyen si difieren de fechaActuacion (caso contrario son redundantes).
      *
      * @param  array<string, mixed>  $a
      */
     private function buildEventDescription(array $a, string $radicado): string
     {
         $parts = [];
+        $fecha = $a['fecha'] ?? '';
 
         if (! empty($a['anotacion'])) {
             $parts[] = $a['anotacion'];
+        } else {
+            // Sin anotacion: usar descripcion educativa de la regla legal si la hay
+            $rule = $this->getAlertRules(strtolower($a['tipo'] ?? ''));
+            if ($rule) {
+                $parts[] = $rule['descripcion'];
+            }
         }
 
-        $hasInicial = ! empty($a['fecha_inicial']);
-        $hasFinal = ! empty($a['fecha_final']);
-        if ($hasInicial || $hasFinal) {
-            $segs = [];
-            if ($hasInicial) {
-                $segs[] = "inicio {$a['fecha_inicial']}";
-            }
-            if ($hasFinal) {
-                $segs[] = "fin {$a['fecha_final']}";
-            }
-            $parts[] = 'Termino: '.implode(' - ', $segs);
+        // Solo agregar termino si las fechas representan un rango real
+        $hasRangoTermino = ! empty($a['fecha_inicial'])
+            && ! empty($a['fecha_final'])
+            && ($a['fecha_inicial'] !== $fecha || $a['fecha_final'] !== $fecha)
+            && ($a['fecha_inicial'] !== $a['fecha_final']);
+
+        if ($hasRangoTermino) {
+            $parts[] = "Termino: inicio {$a['fecha_inicial']} - fin {$a['fecha_final']}";
         }
 
         if (! empty($a['cod_regla'])) {
             $parts[] = "Regla CGP: {$a['cod_regla']}";
         }
 
-        if (! empty($a['fecha_registro']) && ($a['fecha_registro'] !== ($a['fecha'] ?? ''))) {
-            $parts[] = "Registrado en Rama Judicial: {$a['fecha_registro']}";
+        if (! empty($a['fecha_registro']) && $a['fecha_registro'] !== $fecha) {
+            $parts[] = "Publicado en Rama Judicial: {$a['fecha_registro']}";
         }
 
         if (! empty($a['con_documentos'])) {
-            $cant = (int) ($a['cant_documentos'] ?? 0);
-            $parts[] = $cant > 0
-                ? "Adjuntos: {$cant} documento(s) disponibles en Rama Judicial"
-                : 'La actuacion tiene documentos disponibles en Rama Judicial';
+            $parts[] = 'La actuacion tiene documentos disponibles en Rama Judicial';
         }
 
         $parts[] = "Sincronizado automaticamente. Radicado: {$radicado}";

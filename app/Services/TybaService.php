@@ -309,7 +309,7 @@ class TybaService
 
     /**
      * @param  array<int, array<string, mixed>>  $rawActuaciones
-     * @return array<int, array{ciclo: string, tipo: string, fecha: string, fecha_registro: string, fecha_inicial: string, fecha_final: string, anotacion: string, cod_regla: string, con_documentos: bool, cant_documentos: int}>
+     * @return array<int, array{ciclo: string, tipo: string, fecha: string, fecha_registro: string, fecha_inicial: string, fecha_final: string, anotacion: string, cod_regla: string, con_documentos: bool}>
      */
     private function formatActuaciones(array $rawActuaciones): array
     {
@@ -326,6 +326,13 @@ class TybaService
                 continue;
             }
 
+            // codRegla viene "00" cuando la Rama no asigno regla; lo descartamos
+            // para no ensuciar la descripcion.
+            $codRegla = trim((string) ($a['codRegla'] ?? ''));
+            if ($codRegla === '00' || $codRegla === '0') {
+                $codRegla = '';
+            }
+
             $actuaciones[] = [
                 'ciclo' => '',
                 'tipo' => $tipo,
@@ -334,9 +341,8 @@ class TybaService
                 'fecha_inicial' => $fechaInicial,
                 'fecha_final' => $fechaFinal,
                 'anotacion' => trim($a['anotacion'] ?? ''),
-                'cod_regla' => trim((string) ($a['codRegla'] ?? '')),
-                'con_documentos' => (bool) ($a['conDocumentos'] ?? false),
-                'cant_documentos' => (int) ($a['cant'] ?? 0),
+                'cod_regla' => $codRegla,
+                'con_documentos' => ! empty($a['conDocumentos']),
             ];
         }
 

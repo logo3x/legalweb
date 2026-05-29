@@ -758,25 +758,9 @@ try {
                                 }
                             }
 
-                            // Paso 3: probar endpoint de documentos para la 1a actuacion con conDocumentos=true
-                            $conDocs = collect($actuaciones)->first(fn ($a) => ! empty($a['conDocumentos']));
-                            if ($conDocs) {
-                                $idRegAct = $conDocs['idRegActuacion'] ?? null;
-                                setup_log('---documentos-actuacion-'.($conDocs['actuacion'] ?? '').'---');
-                                setup_log("Probando endpoint Documento/?idRegActuacion={$idRegAct}", 'info');
-
-                                $docResp = Http::timeout(15)->get("{$apiBase}/Documento", [
-                                    'idRegActuacion' => $idRegAct,
-                                ]);
-                                setup_log("HTTP {$docResp->status()}", $docResp->successful() ? 'success' : 'error');
-
-                                if ($docResp->successful()) {
-                                    $docs = $docResp->json();
-                                    setup_log('Respuesta: '.json_encode($docs, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT), 'muted');
-                                }
-                            } else {
-                                setup_log('Ninguna actuacion tiene conDocumentos=true en la primera pagina', 'warning');
-                            }
+                            // Nota: el endpoint /Documento devuelve 404 en la API publica
+                            // (confirmado 2026-05). La descarga de adjuntos requiere
+                            // raspar la web de consultaprocesos.ramajudicial.gov.co.
                         }
                     }
                 }
