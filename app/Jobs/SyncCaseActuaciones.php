@@ -277,15 +277,33 @@ class SyncCaseActuaciones implements ShouldQueue
      * Reglas de alerta segun tipo de actuacion.
      * Dias = plazo legal en dias habiles desde la actuacion.
      *
+     * Cuando una actuacion no tiene `anotacion` en la API, la descripcion
+     * de la regla se usa como texto del evento. Por eso conviene tener
+     * cobertura amplia: si el tipo no cae en una regla especifica, los
+     * fallbacks genericos al final ('agregar memorial', 'auto', ...)
+     * garantizan que el evento traiga al menos contexto educativo.
+     *
      * @return array{dias: int, tipo_recordatorio: string, prioridad_minima: string, descripcion: string}|null
      */
     private function getAlertRules(string $tipo): ?array
     {
         return match (true) {
-            // Autos que requieren respuesta
+            // Autos especificos
             str_contains($tipo, 'auto admite') => [
                 'dias' => 20, 'tipo_recordatorio' => 'vencimiento', 'prioridad_minima' => 'alta',
                 'descripcion' => 'Auto admisorio de demanda. Plazo para notificar y/o contestar.',
+            ],
+            str_contains($tipo, 'auto inadmite') => [
+                'dias' => 5, 'tipo_recordatorio' => 'vencimiento', 'prioridad_minima' => 'urgente',
+                'descripcion' => 'Auto inadmisorio. Plazo de 5 dias para subsanar antes de rechazo.',
+            ],
+            str_contains($tipo, 'auto rechaza') => [
+                'dias' => 5, 'tipo_recordatorio' => 'vencimiento', 'prioridad_minima' => 'alta',
+                'descripcion' => 'Auto que rechaza la demanda. Revisar si procede recurso (reposicion o apelacion).',
+            ],
+            str_contains($tipo, 'auto niega') => [
+                'dias' => 3, 'tipo_recordatorio' => 'vencimiento', 'prioridad_minima' => 'alta',
+                'descripcion' => 'Auto que niega pretension o solicitud. Plazo de 3 dias para reposicion.',
             ],
             str_contains($tipo, 'auto requiere') => [
                 'dias' => 5, 'tipo_recordatorio' => 'vencimiento', 'prioridad_minima' => 'alta',
@@ -299,9 +317,29 @@ class SyncCaseActuaciones implements ShouldQueue
                 'dias' => 5, 'tipo_recordatorio' => 'vencimiento', 'prioridad_minima' => 'media',
                 'descripcion' => 'Auto que ordena una actuacion. Verificar cumplimiento.',
             ],
+            str_contains($tipo, 'auto decreta') => [
+                'dias' => 3, 'tipo_recordatorio' => 'vencimiento', 'prioridad_minima' => 'media',
+                'descripcion' => 'Auto que decreta prueba o medida. Revisar contenido y plazos.',
+            ],
             str_contains($tipo, 'auto reconoce') => [
                 'dias' => 0, 'tipo_recordatorio' => 'vencimiento', 'prioridad_minima' => 'media',
                 'descripcion' => 'Auto que reconoce personeria o apoderado. Verificar contenido.',
+            ],
+            str_contains($tipo, 'auto aprueba') => [
+                'dias' => 0, 'tipo_recordatorio' => 'vencimiento', 'prioridad_minima' => 'media',
+                'descripcion' => 'Auto aprobatorio. Revisar contenido y eventuales obligaciones.',
+            ],
+            str_contains($tipo, 'auto concede') => [
+                'dias' => 0, 'tipo_recordatorio' => 'vencimiento', 'prioridad_minima' => 'media',
+                'descripcion' => 'Auto que concede recurso o solicitud. Verificar tramite siguiente.',
+            ],
+            str_contains($tipo, 'auto resuelve') => [
+                'dias' => 3, 'tipo_recordatorio' => 'vencimiento', 'prioridad_minima' => 'media',
+                'descripcion' => 'Auto que resuelve solicitud o incidente. Revisar si procede recurso.',
+            ],
+            str_contains($tipo, 'auto continua') => [
+                'dias' => 0, 'tipo_recordatorio' => 'vencimiento', 'prioridad_minima' => 'baja',
+                'descripcion' => 'Auto que continua actuacion. Sin plazo automatico, verificar siguiente paso.',
             ],
             str_contains($tipo, 'fija fecha') || str_contains($tipo, 'auto fija') => [
                 'dias' => 0, 'tipo_recordatorio' => 'audiencia', 'prioridad_minima' => 'alta',
@@ -318,6 +356,14 @@ class SyncCaseActuaciones implements ShouldQueue
                 'descripcion' => 'Sentencia proferida. Plazo para recurrir (apelacion).',
             ],
 
+            // Memoriales y radicaciones
+            str_contains($tipo, 'agregar memorial')
+                || str_contains($tipo, 'memorial allegado')
+                || str_contains($tipo, 'recibe memorial') => [
+                    'dias' => 0, 'tipo_recordatorio' => 'vencimiento', 'prioridad_minima' => 'baja',
+                    'descripcion' => 'Memorial radicado en el expediente. Revisar contenido y verificar si requiere respuesta.',
+                ],
+
             // Traslados y notificaciones
             str_contains($tipo, 'traslado') => [
                 'dias' => 3, 'tipo_recordatorio' => 'vencimiento', 'prioridad_minima' => 'alta',
@@ -330,6 +376,33 @@ class SyncCaseActuaciones implements ShouldQueue
             str_contains($tipo, 'notificacion') => [
                 'dias' => 0, 'tipo_recordatorio' => 'vencimiento', 'prioridad_minima' => 'media',
                 'descripcion' => 'Notificacion realizada. Verificar contenido y plazos.',
+            ],
+            str_contains($tipo, 'edicto') || str_contains($tipo, 'aviso') => [
+                'dias' => 5, 'tipo_recordatorio' => 'vencimiento', 'prioridad_minima' => 'media',
+                'descripcion' => 'Notificacion por edicto/aviso. Verificar plazos de respuesta.',
+            ],
+
+            // Tramite del expediente
+            str_contains($tipo, 'pasa al despacho')
+                || str_contains($tipo, 'pasa a despacho')
+                || str_contains($tipo, 'sustanciacion')
+                || str_contains($tipo, 'pasa a fallo') => [
+                    'dias' => 0, 'tipo_recordatorio' => 'vencimiento', 'prioridad_minima' => 'baja',
+                    'descripcion' => 'Expediente en tramite interno del despacho. No requiere accion inmediata; pendiente de providencia.',
+                ],
+            str_contains($tipo, 'constancia') => [
+                'dias' => 0, 'tipo_recordatorio' => 'vencimiento', 'prioridad_minima' => 'baja',
+                'descripcion' => 'Constancia secretarial. Anotacion administrativa del despacho.',
+            ],
+            str_contains($tipo, 'embargo') => [
+                'dias' => 0, 'tipo_recordatorio' => 'vencimiento', 'prioridad_minima' => 'alta',
+                'descripcion' => 'Actuacion relacionada con embargo. Revisar bienes y oficios.',
+            ],
+
+            // Catch-all para autos sin coincidencia especifica
+            str_contains($tipo, 'auto') => [
+                'dias' => 0, 'tipo_recordatorio' => 'vencimiento', 'prioridad_minima' => 'media',
+                'descripcion' => 'Providencia del despacho. Revisar contenido y eventuales recursos o plazos.',
             ],
 
             default => null,
