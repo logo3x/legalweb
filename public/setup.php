@@ -689,12 +689,18 @@ try {
         $caseId = $_GET['case_id'] ?? null;
 
         if (! $caseId) {
-            setup_log('Pase ?case_id=X (id del caso a inspeccionar)', 'error');
+            setup_log('Pase ?case_id=X (id del caso a inspeccionar) o haga click en uno de la lista:', 'error');
             LegalCase::withoutGlobalScopes()
                 ->whereNotNull('external_case_number')
                 ->limit(20)
                 ->get()
-                ->each(fn ($c) => setup_log("  #{$c->id} {$c->case_number} | Radicado: {$c->external_case_number}", 'muted'));
+                ->each(function ($c) use ($baseUrl) {
+                    $url = $baseUrl.'&step=tyba_raw&case_id='.$c->id;
+                    setup_log(
+                        "<a href='{$url}' style='color:#3A86FF;text-decoration:none;'>#{$c->id} {$c->case_number}</a> | Radicado: {$c->external_case_number}",
+                        'raw'
+                    );
+                });
         } else {
             $case = LegalCase::withoutGlobalScopes()->find($caseId);
 
