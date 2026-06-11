@@ -9,6 +9,14 @@ class MassEmailTemplatesSeeder extends Seeder
 {
     public function run(): void
     {
+        // Plantillas a eliminar — mencionan el plan Firma que fue desactivado
+        // o tienen datos obsoletos del modelo de planes anterior.
+        $obsolete = [
+            'Plan firma - para equipos',
+            'Plan firma - upgrade equipo',
+        ];
+        MassEmailTemplate::whereIn('name', $obsolete)->delete();
+
         $templates = [
             [
                 'category' => 'onboarding',
@@ -19,8 +27,8 @@ class MassEmailTemplatesSeeder extends Seeder
             [
                 'category' => 'retencion',
                 'name' => 'Fin de prueba gratuita - oferta especial',
-                'subject' => 'Su prueba gratuita esta por terminar',
-                'body' => "Hola {{name}}, su periodo de prueba gratuita en LegalWeb esta por terminar.\n\nPara que pueda seguir gestionando sus casos sin interrupciones, le ofrecemos un 30% de descuento en cualquier plan pagado si activa antes del fin de mes.\n\nIngrese a su panel y vea las opciones en la seccion 'Mejorar plan'.\n\nSi tiene dudas o quiere una demo personalizada, responda este correo y agendamos.",
+                'subject' => 'Su prueba gratuita esta por terminar - 20% de descuento',
+                'body' => "Hola {{name}}, su periodo de prueba gratuita en LegalWeb esta por terminar.\n\nPara que pueda seguir gestionando sus casos sin interrupciones, le ofrecemos un 20% de descuento en su primer mes de suscripcion Profesional si activa antes del fin de mes. Quedaria en 96000 COP en lugar de 120000.\n\nIngrese a Mi Plan en el panel para activar la suscripcion. Si necesita el codigo de descuento o tiene alguna duda, responda este correo.",
             ],
             [
                 'category' => 'reactivacion',
@@ -41,19 +49,11 @@ class MassEmailTemplatesSeeder extends Seeder
                 'body' => "Hola {{name}}, le compartimos las novedades de este mes en LegalWeb:\n\n- Nueva funcionalidad de busqueda de procesos por nombre directamente en la Rama Judicial, sin necesidad de tener al cliente registrado.\n\n- Notificaciones por correo y campanita mejoradas para vencimientos de terminos procesales.\n\n- Asistente IA con prompts mejorados que reducen riesgo de alucinaciones y devuelven solo informacion verificable.\n\nIngrese al panel para probarlas. Si encuentra algo que se pueda mejorar, escribanos.",
             ],
             [
-                'category' => 'marketing',
-                'name' => 'Plan firma - para equipos',
-                'subject' => 'Pensando en crecer? Conozca nuestro plan Firma',
-                'body' => "Hola {{name}}, si esta pensando en crecer su practica o sumar colegas a su equipo, le presentamos nuestro plan Firma:\n\n- Hasta 60 casos activos\n- 10 usuarios con permisos por caso\n- Importacion masiva de procesos desde la Rama Judicial\n- Reportes PDF mensuales para sus clientes\n- Soporte prioritario\n\nSi le interesa o quiere una demo en vivo, responda este correo y agendamos una llamada de 15 minutos.",
-            ],
-            [
                 'category' => 'general',
                 'name' => 'Recordatorio termino legal generico',
                 'subject' => 'Recordatorio importante para abogados en Colombia',
                 'body' => "Hola {{name}}, le recordamos que la Rama Judicial tiene plazos estrictos y los terminos procesales se cuentan en dias habiles segun el calendario judicial.\n\nEn LegalWeb calculamos automaticamente los plazos de sus 21 flujos procesales mas comunes y le enviamos alertas antes de que venzan, para que nunca se le pase un termino.\n\nSi no esta usando esta funcionalidad, le invitamos a explorarla en el modulo Casos > Flujo Procesal.",
             ],
-
-            // Plantillas dirigidas a usuarios inactivos
             [
                 'category' => 'reactivacion',
                 'name' => 'Inactivo 7 dias - retomar pronto',
@@ -78,8 +78,6 @@ class MassEmailTemplatesSeeder extends Seeder
                 'subject' => 'Le ayudamos a empezar con LegalWeb?',
                 'body' => "Hola {{name}}, gracias por registrarse en LegalWeb.\n\nNotamos que aun no ha ingresado por primera vez al panel. Sabemos que empezar con una herramienta nueva puede ser intimidante, asi que queremos ofrecerle una mano.\n\nSi quiere, le agendamos una demo personalizada de 15 minutos donde le mostramos como importar su primer caso, configurar el portal del cliente y usar el Asistente IA. Responda este correo con su disponibilidad y coordinamos.\n\nO si prefiere explorar solo, le sugerimos empezar por el tour guiado que aparece la primera vez que ingresa al panel.",
             ],
-
-            // Plantillas para invitar a primer pago (post trial)
             [
                 'category' => 'retencion',
                 'name' => 'Ultima semana de prueba - convertir',
@@ -92,8 +90,6 @@ class MassEmailTemplatesSeeder extends Seeder
                 'subject' => 'Su prueba ya termino, pero su informacion sigue aqui',
                 'body' => "Hola {{name}}, su periodo de prueba en LegalWeb termino la semana pasada.\n\nQueremos avisarle que sus casos, clientes y documentos siguen guardados de forma segura. Si activa la suscripcion Profesional puede retomar exactamente donde lo dejo: 120000 COP/mes, sin perder nada.\n\nIngrese a Mi Plan en el panel para reactivar en 60 segundos. Si decide no continuar, en 30 dias mas archivaremos su cuenta y le avisaremos antes.",
             ],
-
-            // Anuncios de nuevas funcionalidades
             [
                 'category' => 'novedades',
                 'name' => 'Nueva funcion - busqueda por nombre en Rama Judicial',
@@ -106,8 +102,6 @@ class MassEmailTemplatesSeeder extends Seeder
                 'subject' => 'Ahora le avisamos cada que alguien entra a su cuenta',
                 'body' => "Hola {{name}}, agregamos una capa adicional de seguridad a su cuenta de LegalWeb: alertas por correo cada que se inicia sesion.\n\nEl correo le llega con la fecha, hora, IP y navegador del acceso, similar a como lo hacen los bancos. Si reconoce el acceso no necesita hacer nada. Si no, le decimos exactamente que hacer para proteger su cuenta.\n\nLa funcion esta activa por defecto. Puede desactivarla desde Mi Firma > Seguridad de la cuenta si la prefiere apagada. Recomendamos mantenerla activa.",
             ],
-
-            // Marketing referido y comunidad
             [
                 'category' => 'marketing',
                 'name' => 'Programa de referidos',
@@ -116,12 +110,10 @@ class MassEmailTemplatesSeeder extends Seeder
             ],
             [
                 'category' => 'marketing',
-                'name' => 'Plan firma - upgrade equipo',
-                'subject' => 'Su firma esta creciendo? Considere el plan Firma',
-                'body' => "Hola {{name}}, hemos notado que sus colegas tambien estan usando LegalWeb desde su firma. Cuando una firma trabaja en equipo, vale la pena unificar la gestion.\n\nEl plan Firma incluye permisos por caso (cada abogado solo ve sus casos), centralizacion de facturacion por abogado, reportes consolidados y un solo punto de pago.\n\nResponda este correo si quiere mas detalles o agendar una llamada de 15 minutos donde le mostramos como funciona en vivo.",
+                'name' => 'Suscripcion anual con descuento',
+                'subject' => 'Pague semestral y ahorre 17% (un mes gratis)',
+                'body' => "Hola {{name}}, si LegalWeb se volvio parte de su practica diaria, le proponemos una opcion mas economica.\n\nEn lugar de pagar mensual 120000 COP, puede pagar semestral 600000 COP. Eso equivale a 100000/mes — un ahorro del 17% (basicamente un mes gratis al ano).\n\nIngrese a Mi Plan y elija semestral al activar su suscripcion. Si ya esta en mensual, escribanos y le aplicamos el cambio para su proximo ciclo.",
             ],
-
-            // Educativo / tips juridicos
             [
                 'category' => 'general',
                 'name' => 'Tip - como nunca perder un termino procesal',
@@ -137,12 +129,13 @@ class MassEmailTemplatesSeeder extends Seeder
         ];
 
         foreach ($templates as $tpl) {
-            MassEmailTemplate::firstOrCreate(
+            // Actualizar si existe, crear si no
+            MassEmailTemplate::updateOrCreate(
                 ['name' => $tpl['name']],
                 $tpl
             );
         }
 
-        $this->command?->info('MassEmailTemplatesSeeder: '.count($templates).' plantillas cargadas.');
+        $this->command?->info('MassEmailTemplatesSeeder: '.count($templates).' plantillas activas, '.count($obsolete).' obsoletas eliminadas.');
     }
 }

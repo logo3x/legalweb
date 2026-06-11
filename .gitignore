@@ -28,5 +28,8 @@ Thumbs.db
 /.claude-flow
 /.claude/skills
 /.github/skills
+/.agents
+/.codex
 /.playwright-mcp
 /screenshots
+AGENTS.md
