@@ -4,7 +4,7 @@ namespace App\Notifications;
 
 use App\Models\Document;
 use App\Models\LegalCase;
-use Filament\Notifications\Actions\Action;
+use Filament\Actions\Action;
 use Filament\Notifications\Notification as FilamentNotification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
