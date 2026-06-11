@@ -190,6 +190,17 @@ try {
         }
     }
 
+    if ($step === 'cleanup_duplicate_events') {
+        Artisan::call('app:cleanup-duplicate-events');
+        setup_log('Limpieza de actuaciones duplicadas ejecutada', 'success');
+        $out = trim(Artisan::output());
+        foreach (explode("\n", $out) as $line) {
+            if (trim($line)) {
+                setup_log(htmlspecialchars(trim($line)), 'muted');
+            }
+        }
+    }
+
     if ($step === 'cleanup_users') {
         if (($_GET['confirm'] ?? '') !== 'yes') {
             setup_log('Esta accion cambiara los roles de todos los usuarios excepto el superadmin.', 'warning');
@@ -1085,6 +1096,7 @@ $baseUrl = "?key={$secret}";
             <a href="<?= $baseUrl ?>&step=seed" class="<?= $step === 'seed' ? 'active' : '' ?>">Seed</a>
             <a href="<?= $baseUrl ?>&step=seed_email_templates" class="<?= $step === 'seed_email_templates' ? 'active' : '' ?>">Seed plantillas correo</a>
             <a href="<?= $baseUrl ?>&step=seed_mass_email_demo" class="<?= $step === 'seed_mass_email_demo' ? 'active' : '' ?>">Seed campanas demo</a>
+            <a href="<?= $baseUrl ?>&step=cleanup_duplicate_events" class="<?= $step === 'cleanup_duplicate_events' ? 'active' : '' ?>">Limpiar actuaciones duplicadas</a>
             <a href="<?= $baseUrl ?>&step=storage" class="<?= $step === 'storage' ? 'active' : '' ?>">Storage Link</a>
             <a href="<?= $baseUrl ?>&step=trim_logos" class="<?= $step === 'trim_logos' ? 'active' : '' ?>">Recortar logos firmas</a>
             <a href="<?= $baseUrl ?>&step=mail_test&to=lgoviedo17@hotmail.com" class="<?= $step === 'mail_test' ? 'active' : '' ?>">Test Correo</a>

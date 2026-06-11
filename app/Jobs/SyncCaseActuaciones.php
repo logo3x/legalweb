@@ -78,23 +78,26 @@ class SyncCaseActuaciones implements ShouldQueue
 
             $title = $a['tipo'].($a['ciclo'] ? " ({$a['ciclo']})" : '');
 
-            $exists = CaseEvent::where('legal_case_id', $this->case->id)
-                ->whereDate('event_date', $date)
-                ->where('title', $title)
-                ->exists();
+            // Dedup robusto: match exacto en (legal_case_id, title, event_date).
+            // whereDate antes fallaba con timezones cuando event_date se guardaba
+            // con offset distinto al de comparacion. firstOrCreate usa el valor
+            // normalizado por startOfDay() y MySQL lo compara como timestamp exacto.
+            $event = CaseEvent::firstOrCreate(
+                [
+                    'legal_case_id' => $this->case->id,
+                    'title' => $title,
+                    'event_date' => $date,
+                ],
+                [
+                    'event_type' => 'actuacion',
+                    'description' => $this->buildEventDescription($a),
+                    'user_id' => $this->case->user_id,
+                ]
+            );
 
-            if ($exists) {
+            if (! $event->wasRecentlyCreated) {
                 continue;
             }
-
-            CaseEvent::create([
-                'legal_case_id' => $this->case->id,
-                'title' => $title,
-                'event_date' => $date,
-                'event_type' => 'actuacion',
-                'description' => $this->buildEventDescription($a, $radicado),
-                'user_id' => $this->case->user_id,
-            ]);
 
             $newCount++;
 
@@ -231,7 +234,7 @@ class SyncCaseActuaciones implements ShouldQueue
      *
      * @param  array<string, mixed>  $a
      */
-    private function buildEventDescription(array $a, string $radicado): string
+    private function buildEventDescription(array $a): string
     {
         $parts = [];
         $fecha = $a['fecha'] ?? '';
@@ -265,12 +268,13 @@ class SyncCaseActuaciones implements ShouldQueue
         }
 
         if (! empty($a['con_documentos'])) {
-            $parts[] = 'La actuacion tiene documentos disponibles en Rama Judicial';
+            $parts[] = 'Tiene documentos asociados en la Rama Judicial.';
         }
 
-        $parts[] = "Sincronizado automaticamente. Radicado: {$radicado}";
-
-        return implode("\n", $parts);
+        // Si despues de todo no logramos extraer nada significativo, dejamos
+        // descripcion vacia. La linea generica "Sincronizado..." solo agrega
+        // ruido y compite con la informacion real en la UI.
+        return implode("\n\n", array_filter($parts));
     }
 
     /**
