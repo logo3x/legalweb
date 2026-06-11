@@ -10,12 +10,14 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Facades\Schema as DbSchema;
 use Illuminate\Support\HtmlString;
 use UnitEnum;
 
@@ -57,7 +59,9 @@ class FirmSettings extends Page
             'website' => $firm->website,
             'description' => $firm->description,
             'logo_path' => $firm->logo_path,
-            'security_email_enabled' => auth()->user()->security_email_enabled ?? true,
+            'security_email_enabled' => DbSchema::hasColumn('users', 'security_email_enabled')
+                ? (auth()->user()->getAttribute('security_email_enabled') ?? true)
+                : true,
         ]);
     }
 
@@ -143,6 +147,7 @@ class FirmSettings extends Page
                     ]),
                 Section::make('Seguridad de la cuenta')
                     ->description('Configuraciones relacionadas con su cuenta personal.')
+                    ->visible(fn () => DbSchema::hasColumn('users', 'security_email_enabled'))
                     ->schema([
                         Toggle::make('security_email_enabled')
                             ->label('Recibir alerta por correo cada que inicie sesion')
@@ -185,7 +190,12 @@ class FirmSettings extends Page
             unset($data['security_email_enabled']);
         }
         if (! empty($userFields)) {
-            auth()->user()->update($userFields);
+            try {
+                auth()->user()->update($userFields);
+            } catch (\Throwable $e) {
+                // Si la columna aun no existe en produccion (migracion pendiente),
+                // ignoramos silenciosamente y seguimos guardando los datos de la firma.
+            }
         }
 
         $firm->update(array_merge($data, ['onboarding_completed' => true]));
