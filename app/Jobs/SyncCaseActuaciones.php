@@ -11,7 +11,9 @@ use App\Services\JudicialCalendarService;
 use App\Services\TybaService;
 use Carbon\Carbon;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class SyncCaseActuaciones implements ShouldQueue
@@ -83,22 +85,19 @@ class SyncCaseActuaciones implements ShouldQueue
 
             $title = $a['tipo'].($a['ciclo'] ? " ({$a['ciclo']})" : '');
 
-            // Dedup por DIA (no timestamp exacto): registros viejos pueden tener
-            // hora 17:11/19:56 etc por bug previo de parseDate sin startOfDay.
-            // Comparar por whereDate evita crear duplicados al re-sincronizar
-            // un caso que ya tiene eventos guardados con hora distinta.
+            // Dedup por event_day (columna DATE explicita con indice unico).
+            // event_day es la unica fuente de verdad para "dia" — no depende
+            // de timezone ni de la hora exacta de event_date.
+            $eventDay = $date->toDateString();
+
             $existing = CaseEvent::where('legal_case_id', $this->case->id)
                 ->where('title', $title)
-                ->whereDate('event_date', $date->toDateString())
+                ->where('event_day', $eventDay)
                 ->first();
 
             $newDescription = $this->buildEventDescription($a);
 
             if ($existing) {
-                // Si el existente tiene descripcion vieja generica o vacia y
-                // ahora podemos enriquecerla, actualizamos. Tambien normalizamos
-                // event_date a startOfDay para que futuros dedups con firstOrCreate
-                // funcionen exactos.
                 $updates = [];
                 if ($existing->event_date && $existing->event_date->format('H:i:s') !== '00:00:00') {
                     $updates['event_date'] = $date;
@@ -116,16 +115,29 @@ class SyncCaseActuaciones implements ShouldQueue
                 continue;
             }
 
-            CaseEvent::create([
-                'legal_case_id' => $this->case->id,
-                'title' => $title,
-                'event_date' => $date,
-                'event_type' => 'actuacion',
-                'description' => $newDescription,
-                'user_id' => $this->case->user_id,
-            ]);
+            // Insertar con manejo de race condition: si el indice unico
+            // rechaza el insert (porque alguna corrida paralela acaba de crearlo),
+            // simplemente lo ignoramos y seguimos.
+            try {
+                CaseEvent::create([
+                    'legal_case_id' => $this->case->id,
+                    'title' => $title,
+                    'event_date' => $date,
+                    'event_day' => $eventDay,
+                    'event_type' => 'actuacion',
+                    'description' => $newDescription,
+                    'user_id' => $this->case->user_id,
+                ]);
 
-            $newCount++;
+                $newCount++;
+            } catch (QueryException $e) {
+                if (str_contains($e->getMessage(), 'ce_case_title_day_uniq')
+                    || str_contains($e->getMessage(), 'Duplicate entry')) {
+                    // Otra corrida ya lo creo — no es error, no incrementamos
+                    continue;
+                }
+                throw $e;
+            }
 
             // Crear recordatorio automatico para actuaciones con fechas futuras
             $this->createReminderIfNeeded($a, $date);
@@ -449,9 +461,17 @@ class SyncCaseActuaciones implements ShouldQueue
      */
     private function dedupExistingEventsForCase(): void
     {
-        $groups = \DB::table('case_events')
-            ->selectRaw('title, DATE(event_date) as event_day, COUNT(*) as cnt, MIN(id) as keep_id')
+        // Primero asegurar que event_day este poblado para todos los eventos del caso
+        DB::statement(
+            'UPDATE case_events SET event_day = DATE(event_date) WHERE legal_case_id = ? AND event_day IS NULL',
+            [$this->case->id]
+        );
+
+        // Luego agrupar por (titulo, event_day) y borrar duplicados
+        $groups = DB::table('case_events')
+            ->selectRaw('title, event_day, COUNT(*) as cnt, MIN(id) as keep_id')
             ->where('legal_case_id', $this->case->id)
+            ->whereNotNull('event_day')
             ->groupBy('title', 'event_day')
             ->having('cnt', '>', 1)
             ->get();
@@ -459,7 +479,7 @@ class SyncCaseActuaciones implements ShouldQueue
         foreach ($groups as $g) {
             CaseEvent::where('legal_case_id', $this->case->id)
                 ->where('title', $g->title)
-                ->whereRaw('DATE(event_date) = ?', [$g->event_day])
+                ->where('event_day', $g->event_day)
                 ->where('id', '!=', $g->keep_id)
                 ->delete();
         }
