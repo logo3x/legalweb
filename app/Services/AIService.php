@@ -10,13 +10,22 @@ class AIService
 {
     private ?string $lastProvider = null;
 
+    private ?string $lastError = null;
+
     public function getLastProvider(): ?string
     {
         return $this->lastProvider;
     }
 
+    public function getLastError(): ?string
+    {
+        return $this->lastError;
+    }
+
     private function call(string $systemPrompt, string $userMessage, int $maxTokens = 2000): ?string
     {
+        $this->lastError = null;
+
         $result = $this->callGemini($systemPrompt, $userMessage, $maxTokens);
 
         if ($result) {
@@ -52,31 +61,53 @@ class AIService
         $apiKey = config('services.gemini.api_key');
 
         if (! $apiKey) {
+            $this->lastError = 'Gemini sin API key configurada.';
+
             return null;
         }
 
-        try {
-            $model = config('services.gemini.model');
-            $baseUrl = config('services.gemini.base_url');
+        // Modelos gratis 2026 - el primero falla? probamos el siguiente
+        $models = array_filter([
+            config('services.gemini.model'),
+            'gemini-flash-latest',
+            'gemini-2.5-flash',
+            'gemini-1.5-flash',
+        ]);
+        $models = array_unique($models);
+        $baseUrl = config('services.gemini.base_url');
 
-            $response = Http::timeout(45)->post("{$baseUrl}/models/{$model}:generateContent?key={$apiKey}", [
-                'system_instruction' => [
-                    'parts' => [['text' => $systemPrompt]],
-                ],
-                'contents' => [
-                    ['parts' => [['text' => $userMessage]]],
-                ],
-                'generationConfig' => [
-                    'maxOutputTokens' => $maxTokens,
-                    'temperature' => 0.3,
-                ],
-            ]);
+        foreach ($models as $model) {
+            try {
+                $response = Http::timeout(45)->post("{$baseUrl}/models/{$model}:generateContent?key={$apiKey}", [
+                    'system_instruction' => [
+                        'parts' => [['text' => $systemPrompt]],
+                    ],
+                    'contents' => [
+                        ['parts' => [['text' => $userMessage]]],
+                    ],
+                    'generationConfig' => [
+                        'maxOutputTokens' => $maxTokens,
+                        'temperature' => 0.3,
+                    ],
+                ]);
 
-            if ($response->successful()) {
-                return $response->json('candidates.0.content.parts.0.text');
+                if ($response->successful()) {
+                    $text = $response->json('candidates.0.content.parts.0.text');
+                    if ($text) {
+                        $this->lastProvider = "Gemini ({$model})";
+
+                        return $text;
+                    }
+                }
+
+                $status = $response->status();
+                $errMsg = $response->json('error.message') ?? 'sin detalle';
+                Log::info("Gemini {$model} fallo", ['status' => $status, 'error' => $errMsg]);
+                $this->lastError = "Gemini {$model}: HTTP {$status} - {$errMsg}";
+            } catch (\Exception $e) {
+                Log::info("Gemini {$model} excepcion: ".$e->getMessage());
+                $this->lastError = "Gemini {$model}: ".$e->getMessage();
             }
-        } catch (\Exception $e) {
-            Log::info('Gemini API error: '.$e->getMessage());
         }
 
         return null;
@@ -87,16 +118,26 @@ class AIService
         $apiKey = config('services.openrouter.api_key');
 
         if (! $apiKey) {
+            if (! $this->lastError) {
+                $this->lastError = 'OpenRouter sin API key configurada.';
+            }
+
             return null;
         }
 
+        // Lista actualizada de modelos free en 2026 — el orden importa, los primeros
+        // suelen tener mejores cuotas. Si todos fallan por rate-limit, agregar uno paid.
         $models = array_filter([
             config('services.openrouter.model'),
+            'z-ai/glm-4.5-air:free',
+            'deepseek/deepseek-chat-v3.1:free',
             'meta-llama/llama-3.3-70b-instruct:free',
             'google/gemini-2.0-flash-exp:free',
-            'deepseek/deepseek-chat-v3.1:free',
             'qwen/qwen-2.5-72b-instruct:free',
+            'mistralai/mistral-small-3.2-24b-instruct:free',
+            'nvidia/nemotron-nano-9b-v2:free',
         ]);
+        $models = array_unique($models);
 
         foreach ($models as $model) {
             try {
@@ -120,15 +161,19 @@ class AIService
                     return $response->json('choices.0.message.content');
                 }
 
-                Log::info("OpenRouter model {$model} failed", ['status' => $response->status()]);
+                $status = $response->status();
+                $errMsg = $response->json('error.message') ?? 'sin detalle';
+                Log::info("OpenRouter {$model} fallo", ['status' => $status, 'error' => $errMsg]);
+                $this->lastError = "OpenRouter {$model}: HTTP {$status} - {$errMsg}";
             } catch (\Exception $e) {
-                Log::info("OpenRouter model {$model} error: ".$e->getMessage());
+                Log::info("OpenRouter {$model} excepcion: ".$e->getMessage());
+                $this->lastError = "OpenRouter {$model}: ".$e->getMessage();
 
                 continue;
             }
         }
 
-        Log::error('OpenRouter: todos los modelos fallaron');
+        Log::error('OpenRouter: todos los modelos free fallaron', ['lastError' => $this->lastError]);
 
         return null;
     }

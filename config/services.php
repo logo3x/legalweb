@@ -59,13 +59,15 @@ return [
 
     'gemini' => [
         'api_key' => env('GEMINI_API_KEY'),
-        'model' => env('GEMINI_MODEL', 'gemini-2.0-flash'),
+        // gemini-flash-latest sigue dentro del tier gratis en 2026; 2.0-flash quedo paywall
+        'model' => env('GEMINI_MODEL', 'gemini-flash-latest'),
         'base_url' => 'https://generativelanguage.googleapis.com/v1beta',
     ],
 
     'openrouter' => [
         'api_key' => env('OPENROUTER_API_KEY'),
-        'model' => env('OPENROUTER_MODEL', 'google/gemini-2.0-flash-001'),
+        // El loop de fallback en AIService prueba varios modelos free aunque este sea el primero
+        'model' => env('OPENROUTER_MODEL'),
         'base_url' => 'https://openrouter.ai/api/v1',
     ],
 
