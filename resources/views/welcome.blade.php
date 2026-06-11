@@ -3,630 +3,893 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LegalWeb - Control inteligente de tus procesos legales</title>
-    <meta name="description" content="Plataforma SaaS para abogados en Colombia. Gestiona casos, importa procesos de la Rama Judicial, recibe alertas inteligentes y dale visibilidad a tus clientes.">
-    <meta property="og:title" content="LegalWeb - Control inteligente de tus procesos legales">
-    <meta property="og:description" content="Sincronizacion automatica con la Rama Judicial. Alertas inteligentes. Asistente IA. Portal del cliente.">
+    <title>LegalWeb · El día que tu proceso cambie, lo sabrás antes que nadie</title>
+    <meta name="description" content="LegalWeb vigila tus procesos en la Rama Judicial y te notifica por correo cada vez que aparece una nueva actuación. 3 meses gratis sin tarjeta de crédito.">
+    <meta property="og:title" content="LegalWeb · Vigilancia judicial automática para abogados">
+    <meta property="og:description" content="Importa tu radicado y LegalWeb vigila la Rama Judicial cada noche. Te avisa por correo apenas aparezca una nueva actuación.">
     <meta property="og:type" content="website">
+    <meta property="og:image" content="https://legalweb.com.co/images/og-cover.png">
     <link rel="icon" href="/images/favicon.ico" type="image/x-icon">
-    <!-- Google Analytics -->
+    {{-- Google Analytics --}}
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-2Q7KJTB5MT"></script>
     <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-2Q7KJTB5MT');</script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/intersect@3.x.x/dist/cdn.min.js"></script>
+
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brand: { DEFAULT: '#1E3A5F', light: '#3A86FF', bg: '#F5F7FA' },
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        display: ['Poppins', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
     <style>
+        :root {
+            --brand-navy: #1E3A5F;
+            --brand-navy-700: #16294a;
+            --brand-blue: #3A86FF;
+            --brand-blue-700: #1d4ed8;
+            --green-50: #ECFDF5;
+            --green-100: #D1FAE5;
+            --green-500: #10B981;
+            --green-600: #059669;
+            --green-700: #047857;
+            --amber-100: #FEF3C7;
+            --amber-500: #F59E0B;
+            --amber-600: #D97706;
+            --red-100: #FEE2E2;
+            --red-500: #EF4444;
+            --red-600: #DC2626;
+            --surface-page: #F5F7FA;
+            --surface-sunken: #F8FAFC;
+            --white: #FFFFFF;
+            --text-body: #334155;
+            --text-muted: #64748B;
+            --text-faint: #94A3B8;
+            --border-default: #E2E8F0;
+            --border-subtle: #EEF2F7;
+            --gray-400: #94A3B8;
+            --gray-900: #0F172A;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+            --radius-2xl: 20px;
+            --radius-full: 9999px;
+            --shadow-xs: 0 1px 2px rgba(15,23,42,.04);
+            --shadow-sm: 0 1px 3px rgba(15,23,42,.06), 0 1px 2px rgba(15,23,42,.04);
+            --shadow-md: 0 4px 10px rgba(15,23,42,.06), 0 2px 4px rgba(15,23,42,.04);
+            --shadow-lg: 0 10px 28px rgba(15,23,42,.08), 0 4px 10px rgba(15,23,42,.05);
+            --shadow-xl: 0 20px 50px rgba(15,23,42,.12), 0 8px 20px rgba(15,23,42,.06);
+            --shadow-blue: 0 8px 18px rgba(58,134,255,.25);
+            --text-sm: 14px;
+            --text-base: 16px;
+            --text-lg: 17.5px;
+            --text-xl: 20px;
+            --text-2xl: 24px;
+            --container: 1180px;
+            --nav-height: 72px;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-display: 'Poppins', 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', 'Consolas', monospace;
+        }
+        * { box-sizing: border-box; }
         html { scroll-behavior: smooth; }
-        @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; } }
-        section[id] { scroll-margin-top: 90px; }
+        @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior: auto; }
+            *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+        }
+        body {
+            margin: 0;
+            font-family: var(--font-sans);
+            color: var(--text-body);
+            background: var(--white);
+            -webkit-font-smoothing: antialiased;
+        }
+        section[id] { scroll-margin-top: 84px; }
+        a { text-decoration: none; color: inherit; }
+        .container { max-width: var(--container); margin: 0 auto; padding: 0 24px; }
 
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-        @keyframes float-slow { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(20px, -30px); } }
-        @keyframes float-slower { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-30px, 20px); } }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes shine { from { background-position: -200% center; } to { background-position: 200% center; } }
-        @keyframes pulse-ring { 0% { transform: scale(0.8); opacity: 1; } 100% { transform: scale(2); opacity: 0; } }
-        .float { animation: float 6s ease-in-out infinite; }
-        .blob { position: absolute; border-radius: 50%; filter: blur(60px); opacity: 0.4; pointer-events: none; }
-        .blob-1 { animation: float-slow 12s ease-in-out infinite; }
-        .blob-2 { animation: float-slower 16s ease-in-out infinite; }
-        .fade-in { animation: fadeInUp 0.8s ease-out forwards; }
-        .fade-in-delay-1 { animation-delay: 0.2s; opacity: 0; }
-        .fade-in-delay-2 { animation-delay: 0.4s; opacity: 0; }
-        .fade-in-delay-3 { animation-delay: 0.6s; opacity: 0; }
-        .gradient-text { background: linear-gradient(135deg, #3A86FF, #1E3A5F); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .hero-gradient { background: linear-gradient(180deg, #F5F7FA 0%, #EBF0FF 50%, #F5F7FA 100%); }
-        .card-hover { transition: transform .35s cubic-bezier(.2,.8,.2,1), box-shadow .35s, border-color .35s; }
-        .card-hover:hover { transform: translateY(-6px); box-shadow: 0 18px 50px rgba(58, 134, 255, 0.18); }
-        .feature-icon { transition: all 0.3s; }
-        .card-hover:hover .feature-icon { transform: scale(1.12) rotate(-3deg); }
+        .lw-gradient-text {
+            background: linear-gradient(135deg, var(--brand-blue) 0%, var(--brand-navy) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+        }
+        .lw-hero-wash {
+            background:
+                radial-gradient(ellipse at 70% 30%, rgba(58,134,255,.10), transparent 55%),
+                linear-gradient(180deg, #FBFCFE 0%, #F1F5FB 100%);
+        }
+        .lw-ping {
+            animation: lwPing 1.8s cubic-bezier(0,0,.2,1) infinite;
+        }
+        @keyframes lwPing {
+            0% { transform: scale(1); opacity: .65; }
+            75%,100% { transform: scale(2.4); opacity: 0; }
+        }
 
-        /* Scroll reveal */
-        .reveal { opacity: 0; transform: translateY(28px); transition: opacity .7s cubic-bezier(.2,.8,.2,1), transform .7s cubic-bezier(.2,.8,.2,1); will-change: transform, opacity; }
-        .reveal.is-visible { opacity: 1; transform: translateY(0); }
-        .reveal-zoom { opacity: 0; transform: scale(.96); transition: opacity .7s ease-out, transform .7s ease-out; }
-        .reveal-zoom.is-visible { opacity: 1; transform: scale(1); }
-        .reveal-stagger > * { opacity: 0; transform: translateY(24px); transition: opacity .6s cubic-bezier(.2,.8,.2,1), transform .6s cubic-bezier(.2,.8,.2,1); }
-        .reveal-stagger.is-visible > *:nth-child(1) { transition-delay: .05s; }
-        .reveal-stagger.is-visible > *:nth-child(2) { transition-delay: .15s; }
-        .reveal-stagger.is-visible > *:nth-child(3) { transition-delay: .25s; }
-        .reveal-stagger.is-visible > *:nth-child(4) { transition-delay: .35s; }
-        .reveal-stagger.is-visible > *:nth-child(5) { transition-delay: .45s; }
-        .reveal-stagger.is-visible > *:nth-child(6) { transition-delay: .55s; }
-        .reveal-stagger.is-visible > * { opacity: 1; transform: translateY(0); }
+        /* Botones */
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+            border-radius: var(--radius-lg); font-weight: 600; font-family: var(--font-sans);
+            cursor: pointer; transition: transform .15s ease, box-shadow .2s ease, background .2s ease;
+            border: 1px solid transparent; text-decoration: none;
+            padding: 12px 22px; font-size: 14.5px;
+        }
+        .btn:hover { transform: translateY(-1px); }
+        .btn-lg { padding: 15px 28px; font-size: 16px; }
+        .btn-sm { padding: 9px 14px; font-size: 13px; }
+        .btn-primary { background: var(--brand-blue); color: #fff; box-shadow: var(--shadow-blue); }
+        .btn-primary:hover { background: var(--brand-blue-700); }
+        .btn-secondary { background: var(--white); color: var(--brand-navy); border-color: var(--border-default); }
+        .btn-secondary:hover { border-color: var(--brand-blue); color: var(--brand-blue); }
+        .btn-success { background: var(--green-600); color: #fff; box-shadow: 0 8px 18px rgba(16,185,129,.22); }
+        .btn-success:hover { background: var(--green-700); }
+        .btn-full { width: 100%; }
 
-        /* Navbar shrink-on-scroll */
-        .nav-shell { transition: padding .3s ease, box-shadow .3s ease, background-color .3s ease; }
-        .nav-shell.scrolled { padding-top: .35rem; padding-bottom: .35rem; box-shadow: 0 6px 20px rgba(15, 23, 42, .06); background-color: rgba(255,255,255,.95); }
+        /* Badge */
+        .badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            font-size: 12px; font-weight: 700; letter-spacing: .03em;
+            padding: 5px 10px; border-radius: var(--radius-full); text-transform: uppercase;
+        }
+        .badge-danger { background: var(--red-100); color: var(--red-600); }
+        .badge-info-solid { background: var(--brand-blue); color: #fff; }
+        .eyebrow {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: #EFF6FF; color: var(--brand-blue-700);
+            font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+            padding: 6px 12px; border-radius: var(--radius-full);
+        }
+        .eyebrow.green { background: var(--green-50); color: var(--green-700); }
 
-        /* Active nav link indicator */
-        .nav-link { position: relative; }
-        .nav-link::after { content: ''; position: absolute; left: 50%; bottom: -6px; transform: translateX(-50%) scaleX(0); width: 24px; height: 2px; background: #3A86FF; border-radius: 2px; transition: transform .3s; transform-origin: center; }
-        .nav-link.active::after, .nav-link:hover::after { transform: translateX(-50%) scaleX(1); }
-        .nav-link.active { color: #3A86FF; }
+        /* Nav */
+        .nav-shell {
+            position: sticky; top: 0; z-index: 50;
+            background: rgba(255,255,255,.85); backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        .nav-shell .row { height: var(--nav-height); display: flex; align-items: center; justify-content: space-between; }
+        .nav-shell .links { display: flex; gap: 28px; }
+        .nav-shell .links a { font-size: var(--text-sm); font-weight: 500; color: var(--text-body); transition: color .2s; }
+        .nav-shell .links a:hover { color: var(--brand-blue); }
+        .nav-shell .signin { font-size: var(--text-sm); font-weight: 500; color: var(--brand-navy); }
+        .nav-shell .signin:hover { color: var(--brand-blue); }
 
-        /* Scroll-to-top */
-        .scroll-top { position: fixed; bottom: 24px; right: 24px; width: 46px; height: 46px; border-radius: 50%; background: #3A86FF; color: white; display: flex; align-items: center; justify-content: center; opacity: 0; transform: translateY(12px); transition: opacity .3s, transform .3s, background-color .2s; z-index: 60; box-shadow: 0 10px 24px rgba(58,134,255,.35); cursor: pointer; border: none; }
+        /* Hero */
+        .hero-grid {
+            display: grid; grid-template-columns: 1.05fr .95fr; gap: 56px; align-items: center;
+            padding: 72px 0 84px;
+        }
+        .hero-grid h1 {
+            font-family: var(--font-display); font-weight: 800;
+            font-size: clamp(2.5rem, 4.5vw, 3.9rem); line-height: 1.05;
+            letter-spacing: -0.02em; color: var(--brand-navy); margin: 0 0 20px;
+        }
+        .hero-grid .lead {
+            font-size: var(--text-lg); color: var(--text-muted); line-height: 1.6;
+            max-width: 520px; margin: 0 0 30px;
+        }
+        .hero-pill {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: var(--white); border: 1px solid #DBEAFE;
+            border-radius: var(--radius-full); padding: 6px 14px;
+            box-shadow: var(--shadow-xs); margin-bottom: 22px;
+            font-size: 13px; font-weight: 600; color: var(--brand-navy);
+        }
+
+        /* Email mockup */
+        .email-mockup {
+            background: var(--white); border-radius: var(--radius-2xl);
+            box-shadow: var(--shadow-xl); border: 1px solid var(--border-subtle);
+            overflow: hidden; width: 100%; max-width: 420px;
+        }
+        .email-head {
+            display: flex; align-items: center; gap: 10px;
+            padding: 14px 18px; border-bottom: 1px solid var(--border-subtle);
+        }
+        .email-head .sender-title {
+            font-size: 13px; font-weight: 700; color: var(--brand-navy);
+        }
+        .email-head .sender-mail { font-size: 11px; color: var(--text-faint); }
+        .email-body { padding: 20px 18px 22px; }
+        .email-body h3 {
+            font-family: var(--font-display); font-size: 19px; font-weight: 700;
+            color: var(--brand-navy); margin: 12px 0 4px; line-height: 1.25;
+        }
+        .email-body p.lead-2 { font-size: 13px; color: var(--text-muted); margin: 0 0 16px; }
+        .email-rows {
+            background: var(--surface-sunken); border-radius: var(--radius-lg);
+            padding: 12px 14px; display: grid; gap: 8px; font-size: 12.5px;
+        }
+        .email-rows .row {
+            display: flex; justify-content: space-between; gap: 12px;
+        }
+        .email-rows .k { color: var(--text-faint); }
+        .email-rows .v { color: var(--brand-navy); font-weight: 600; text-align: right; }
+        .email-rows .v.mono { font-family: var(--font-mono); font-size: 11.5px; }
+
+        .behind-card {
+            position: absolute; top: -26px; right: 4px; width: 240px;
+            background: var(--white); border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-md); border: 1px solid var(--border-subtle);
+            padding: 12px 14px; transform: rotate(3deg); opacity: .96;
+        }
+        .behind-card .head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+        .behind-card .ico {
+            width: 26px; height: 26px; border-radius: 8px;
+            background: var(--green-100); color: var(--green-600);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .behind-card .ttl { font-size: 12px; font-weight: 600; color: var(--brand-navy); }
+        .behind-card .desc { font-size: 11px; color: var(--text-muted); }
+
+        /* Sections shared */
+        section.std { padding: 88px 0; }
+        .section-head { text-align: center; max-width: 680px; margin: 0 auto 52px; }
+        .section-head h2 {
+            font-family: var(--font-display); font-weight: 700;
+            font-size: clamp(1.9rem, 3vw, 2.6rem); line-height: 1.15;
+            color: var(--brand-navy); margin: 14px 0 14px;
+        }
+        .section-head p {
+            font-size: var(--text-lg); color: var(--text-muted); line-height: 1.6; margin: 0;
+        }
+
+        /* Vigilancia flow */
+        .flow-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; position: relative; }
+        .flow-line {
+            position: absolute; top: 36px; left: 12%; right: 12%; height: 2px;
+            background: linear-gradient(to right,
+                var(--brand-blue) 0%, var(--green-500) 33%,
+                var(--amber-500) 66%, var(--red-500) 100%);
+            opacity: .35; z-index: 1;
+        }
+        .step { position: relative; text-align: center; }
+        .step .tile {
+            width: 72px; height: 72px; margin: 0 auto 18px;
+            border-radius: var(--radius-xl); display: flex;
+            align-items: center; justify-content: center; position: relative;
+            z-index: 2; border: 4px solid var(--white);
+        }
+        .step .tile.info { background: #EFF6FF; color: var(--brand-blue); }
+        .step .tile.success { background: var(--green-100); color: var(--green-600); }
+        .step .tile.warning { background: var(--amber-100); color: var(--amber-600); }
+        .step .tile.danger { background: var(--red-100); color: var(--red-500); }
+        .step .num {
+            position: absolute; top: -8px; right: -8px;
+            width: 26px; height: 26px; border-radius: 50%;
+            background: var(--brand-navy); color: #fff;
+            font-size: 11px; font-weight: 700; display: flex;
+            align-items: center; justify-content: center;
+            font-family: var(--font-display);
+        }
+        .step h3 {
+            font-family: var(--font-display); font-size: var(--text-lg);
+            font-weight: 600; color: var(--brand-navy); margin: 0 0 8px;
+        }
+        .step p { font-size: var(--text-sm); color: var(--text-muted); line-height: 1.6; margin: 0; }
+
+        .pills-row {
+            margin-top: 44px; display: flex; justify-content: center;
+            gap: 16px; flex-wrap: wrap; color: var(--text-muted); font-size: var(--text-sm);
+        }
+        .pill {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: var(--surface-sunken); border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-full); padding: 8px 16px; font-weight: 500;
+        }
+        .pill svg { color: var(--brand-blue); }
+
+        /* Features */
+        .feat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+        .feat-card {
+            background: var(--white); border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-xl); padding: 28px;
+            transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+        }
+        .feat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+            border-color: #DBEAFE;
+        }
+        .feat-card .ico {
+            width: 48px; height: 48px; border-radius: var(--radius-lg);
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 18px; transition: transform .25s ease;
+        }
+        .feat-card:hover .ico { transform: scale(1.08); }
+        .feat-card .ico.info { background: #EFF6FF; color: var(--brand-blue); }
+        .feat-card .ico.ai { background: #F3E8FF; color: #7C3AED; }
+        .feat-card .ico.warning { background: var(--amber-100); color: var(--amber-600); }
+        .feat-card .ico.danger { background: var(--red-100); color: var(--red-500); }
+        .feat-card .ico.success { background: var(--green-100); color: var(--green-600); }
+        .feat-card h3 {
+            font-family: var(--font-display); font-size: var(--text-xl);
+            font-weight: 600; color: var(--brand-navy); margin: 0 0 8px;
+        }
+        .feat-card p { font-size: var(--text-sm); color: var(--text-muted); line-height: 1.6; margin: 0; }
+
+        /* Preview */
+        .preview-tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 28px; }
+        .preview-tab {
+            padding: 9px 18px; border-radius: var(--radius-md);
+            font-size: var(--text-sm); font-weight: 600; cursor: pointer;
+            font-family: var(--font-sans); transition: all .2s;
+            border: 1px solid var(--border-default); background: var(--white); color: var(--text-body);
+        }
+        .preview-tab.active {
+            background: var(--brand-blue); color: #fff;
+            border-color: transparent; box-shadow: var(--shadow-blue);
+        }
+        .browser-frame {
+            background: var(--gray-900); border-radius: var(--radius-2xl);
+            padding: 10px; box-shadow: var(--shadow-xl);
+        }
+        .browser-frame .bar { display: flex; align-items: center; gap: 7px; padding: 8px 12px; }
+        .browser-frame .dot { width: 11px; height: 11px; border-radius: 50%; }
+        .browser-frame .dot:nth-child(1) { background: #FF5F57; }
+        .browser-frame .dot:nth-child(2) { background: #FEBC2E; }
+        .browser-frame .dot:nth-child(3) { background: #28C840; }
+        .browser-frame .url {
+            margin-left: 10px; font-size: 12px; color: var(--gray-400);
+            font-family: var(--font-mono);
+        }
+        .browser-frame img { width: 100%; border-radius: var(--radius-lg); display: block; }
+        .preview-desc {
+            text-align: center; color: var(--text-muted);
+            max-width: 560px; margin: 22px auto 0; font-size: var(--text-sm);
+        }
+
+        /* Pricing */
+        .plan-grid {
+            display: flex; flex-wrap: wrap; gap: 24px;
+            justify-content: center; align-items: stretch; margin-bottom: 40px;
+        }
+        .plan { position: relative; flex: 1 1 320px; max-width: 380px; }
+        .plan .recommended {
+            position: absolute; top: -13px; left: 50%; transform: translateX(-50%); z-index: 3;
+        }
+        .plan-card {
+            background: var(--white); border-radius: var(--radius-2xl); padding: 32px;
+            border: 1px solid var(--border-default); box-shadow: var(--shadow-sm);
+            height: 100%; display: flex; flex-direction: column;
+        }
+        .plan-card.featured { border: 2px solid var(--brand-blue); box-shadow: var(--shadow-lg); }
+        .plan-card .price {
+            font-family: var(--font-display); font-size: 3rem;
+            font-weight: 800; line-height: 1;
+        }
+        .plan-card .price.free { color: var(--green-600); }
+        .plan-card .price.paid { color: var(--brand-blue); }
+        .plan-card .price-suffix { font-size: var(--text-base); color: var(--text-muted); font-weight: 600; }
+        .incluye-panel {
+            background: var(--white); border: 1px solid var(--border-default);
+            border-radius: var(--radius-2xl); padding: 32px; box-shadow: var(--shadow-sm);
+        }
+        .incluye-grid {
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px 32px;
+        }
+        .incluye-grid li {
+            display: flex; align-items: flex-start; gap: 10px;
+            font-size: var(--text-sm); color: var(--text-body);
+        }
+        .incluye-grid svg { color: var(--green-600); flex-shrink: 0; margin-top: 2px; }
+
+        /* Trust */
+        .trust-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
+        .trust-grid .item { text-align: center; }
+        .trust-grid .k {
+            font-family: var(--font-display); font-size: var(--text-2xl);
+            font-weight: 800; color: var(--brand-navy); margin-bottom: 6px;
+        }
+        .trust-grid .d { font-size: var(--text-sm); color: var(--text-muted); line-height: 1.5; }
+
+        /* Final CTA */
+        .close-cta {
+            position: relative; overflow: hidden;
+            background: linear-gradient(135deg, var(--brand-navy), var(--brand-navy-700));
+        }
+        .close-cta::before {
+            content: ''; position: absolute; top: -120px; left: 50%; transform: translateX(-50%);
+            width: 460px; height: 460px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(58,134,255,.28), transparent 65%);
+            pointer-events: none;
+        }
+        .close-cta .inner {
+            max-width: 640px; margin: 0 auto; text-align: center; position: relative;
+        }
+        .close-cta h2 {
+            font-family: var(--font-display); font-weight: 700;
+            font-size: clamp(1.9rem, 3vw, 2.6rem); color: #fff; margin: 0 0 16px;
+        }
+        .close-cta p { font-size: var(--text-lg); color: rgba(255,255,255,.72); line-height: 1.6; margin: 0 0 30px; }
+
+        /* Footer */
+        footer.site {
+            background: var(--white); border-top: 1px solid var(--border-subtle);
+            padding: 56px 0 32px;
+        }
+        .foot-grid {
+            display: grid; grid-template-columns: 1.6fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 40px;
+        }
+        .foot-grid h4 {
+            font-size: var(--text-sm); font-weight: 700;
+            color: var(--brand-navy); margin: 0 0 14px;
+        }
+        .foot-grid ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+        .foot-grid a { font-size: var(--text-sm); color: var(--text-muted); transition: color .2s; }
+        .foot-grid a:hover { color: var(--brand-blue); }
+        .foot-bottom {
+            border-top: 1px solid var(--border-subtle); padding-top: 24px;
+            display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+            font-size: 13px; color: var(--text-faint);
+        }
+
+        /* Responsive */
+        @media (max-width: 980px) {
+            .hero-grid { grid-template-columns: 1fr; gap: 36px; padding: 56px 0 64px; }
+            .hero-grid .visual { display: flex; justify-content: center; }
+            .behind-card { display: none; }
+            .flow-grid { grid-template-columns: repeat(2, 1fr); gap: 36px; }
+            .flow-line { display: none; }
+            .feat-grid { grid-template-columns: repeat(2, 1fr); }
+            .trust-grid { grid-template-columns: 1fr; }
+            .foot-grid { grid-template-columns: 1fr 1fr; }
+            .nav-shell .links { display: none; }
+            .incluye-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 640px) {
+            .flow-grid { grid-template-columns: 1fr; }
+            .feat-grid { grid-template-columns: 1fr; }
+            .foot-grid { grid-template-columns: 1fr; }
+            section.std { padding: 64px 0; }
+        }
+
+        /* Scroll to top */
+        .scroll-top {
+            position: fixed; bottom: 24px; right: 24px;
+            width: 44px; height: 44px; border-radius: 50%;
+            background: var(--brand-blue); color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; transform: translateY(12px);
+            transition: opacity .25s ease, transform .25s ease;
+            box-shadow: var(--shadow-blue); cursor: pointer; border: none; z-index: 60;
+        }
         .scroll-top.visible { opacity: 1; transform: translateY(0); }
-        .scroll-top:hover { background: #2563eb; }
-
-        /* Live pulse */
-        .live-dot { position: relative; }
-        .live-dot::before { content: ''; position: absolute; inset: 0; border-radius: 50%; background: rgba(74, 222, 128, .55); animation: pulse-ring 1.8s cubic-bezier(.4,0,.6,1) infinite; }
-
-        /* Shine on CTA */
-        .cta-shine { background: linear-gradient(110deg, #3A86FF 0%, #4fa0ff 35%, #3A86FF 70%); background-size: 200% auto; animation: shine 4s linear infinite; }
-
-        /* Mobile menu */
-        .mobile-menu { transition: transform .3s ease, opacity .3s ease; }
-        .mobile-menu.hidden-menu { transform: translateY(-12px); opacity: 0; pointer-events: none; }
+        .scroll-top:hover { background: var(--brand-blue-700); }
     </style>
 </head>
-<body class="bg-brand-bg font-sans text-gray-700 antialiased">
+<body>
 
-    {{-- Navbar --}}
-    <nav id="main-nav" class="nav-shell bg-white/80 backdrop-blur-md border-b border-gray-100 fixed w-full z-50" x-data="{ open: false }">
-        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-            <a href="/" class="flex items-center">
-                <img src="/images/logo.svg?v=4" alt="LegalWeb" class="h-12 transition-transform duration-300 hover:scale-105">
+    {{-- Sticky Navbar --}}
+    <nav class="nav-shell" id="main-nav">
+        <div class="container row">
+            <a href="/" aria-label="LegalWeb">
+                <img src="/images/logo.svg" alt="LegalWeb" style="height: 38px;">
             </a>
-            <div class="hidden md:flex items-center gap-8 text-sm">
-                <a href="#vista-previa" class="nav-link hover:text-brand-light transition">Vista Previa</a>
-                <a href="#funcionalidades" class="nav-link hover:text-brand-light transition">Funcionalidades</a>
-                <a href="#como-funciona" class="nav-link hover:text-brand-light transition">C&oacute;mo Funciona</a>
-                <a href="#planes" class="nav-link hover:text-brand-light transition">Planes</a>
+            <div class="links">
+                <a href="#vigilancia">Vigilancia judicial</a>
+                <a href="#funcionalidades">Funcionalidades</a>
+                <a href="#vista-previa">La plataforma</a>
+                <a href="#planes">Planes</a>
             </div>
-            <div class="flex items-center gap-3">
-                <a href="/admin/login" class="hidden sm:inline text-sm font-medium text-brand hover:text-brand-light transition">Iniciar Sesi&oacute;n</a>
-                <a href="{{ route('auth.google') }}" class="text-sm font-medium bg-brand-light text-white px-5 py-2.5 rounded-lg hover:bg-blue-600 transition shadow-sm hover:shadow-md hover:-translate-y-0.5 transform">
-                    Comenzar Gratis
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <a href="/admin/login" class="signin" style="display: none;" class="lw-hide-sm">Iniciar sesión</a>
+                <a href="{{ route('auth.google') }}" class="btn btn-primary btn-sm">
+                    <svg width="16" height="16" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="white" fill-opacity=".85"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="white" fill-opacity=".95"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="white" fill-opacity=".75"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="white" fill-opacity=".85"/></svg>
+                    Comenzar gratis
                 </a>
-                <button @click="open = !open" class="md:hidden p-2 -mr-2 text-brand" aria-label="Men&uacute;">
-                    <svg x-show="!open" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-                    <svg x-show="open" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" x-cloak><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L6 6M18 6L18 18M6 6L18 18M18 6L6 18"/></svg>
-                </button>
-            </div>
-        </div>
-        {{-- Mobile menu --}}
-        <div x-show="open" x-transition.opacity class="md:hidden border-t border-gray-100 bg-white" x-cloak>
-            <div class="px-4 py-4 flex flex-col gap-3 text-sm">
-                <a href="#vista-previa" @click="open = false" class="py-2 hover:text-brand-light">Vista Previa</a>
-                <a href="#funcionalidades" @click="open = false" class="py-2 hover:text-brand-light">Funcionalidades</a>
-                <a href="#como-funciona" @click="open = false" class="py-2 hover:text-brand-light">C&oacute;mo Funciona</a>
-                <a href="#planes" @click="open = false" class="py-2 hover:text-brand-light">Planes</a>
-                <a href="/admin/login" @click="open = false" class="py-2 font-medium text-brand">Iniciar Sesi&oacute;n</a>
             </div>
         </div>
     </nav>
 
     {{-- Hero --}}
-    <section class="hero-gradient pt-28 pb-24 px-4 overflow-hidden relative">
-        {{-- Blobs decorativos animados --}}
-        <div class="blob blob-1" style="width: 320px; height: 320px; background: #3A86FF; top: 10%; left: -120px;"></div>
-        <div class="blob blob-2" style="width: 380px; height: 380px; background: #1E3A5F; bottom: -150px; right: -100px; opacity: 0.25;"></div>
-        <div class="blob blob-1" style="width: 220px; height: 220px; background: #93C5FD; top: 40%; right: 10%; opacity: 0.3; animation-delay: -3s;"></div>
-
-        <div class="max-w-6xl mx-auto relative">
-            <div class="text-center">
-                <div class="inline-flex items-center gap-2 bg-white/80 backdrop-blur text-brand-light text-sm font-medium px-4 py-2 rounded-full mb-6 shadow-sm border border-blue-100 fade-in">
-                    <span class="relative flex w-2 h-2">
-                        <span class="absolute inline-flex w-full h-full rounded-full bg-green-400 opacity-60 live-dot"></span>
-                        <span class="relative inline-flex w-2 h-2 rounded-full bg-green-500"></span>
+    <section class="lw-hero-wash" style="border-bottom: 1px solid var(--border-subtle);">
+        <div class="container hero-grid">
+            <div>
+                <div class="hero-pill">
+                    <span style="position: relative; display: inline-flex; width: 8px; height: 8px;">
+                        <span class="lw-ping" style="position: absolute; inset: 0; border-radius: 50%; background: var(--green-500);"></span>
+                        <span style="position: relative; width: 8px; height: 8px; border-radius: 50%; background: var(--green-500);"></span>
                     </span>
                     Conectado con la Rama Judicial de Colombia
                 </div>
-                <h1 class="font-display text-5xl md:text-7xl font-extrabold text-brand leading-tight mb-6 fade-in fade-in-delay-1">
-                    Control inteligente de<br>tus procesos <span class="gradient-text">legales</span>
+                <h1>
+                    El día que tu proceso<br>
+                    cambie, <span class="lw-gradient-text">lo sabrás</span><br>
+                    antes que nadie.
                 </h1>
-                <p class="text-xl md:text-2xl text-gray-500 max-w-3xl mx-auto mb-10 leading-relaxed fade-in fade-in-delay-2">
-                    Importa casos desde la Rama Judicial con un click. Recibe alertas de vencimientos.
-                    Genera documentos con IA. Dale visibilidad a tus clientes.
+                <p class="lead">
+                    LegalWeb vigila tus procesos en la Rama Judicial y, cada vez que aparece una nueva actuación,
+                    te lo notifica por correo. Sin entrar a consultar uno por uno. Sin perder un término.
                 </p>
-                <div class="flex flex-col sm:flex-row gap-4 justify-center mb-8 fade-in fade-in-delay-3">
-                    <a href="{{ route('auth.google') }}" class="cta-shine inline-flex items-center justify-center gap-3 text-white font-semibold px-8 py-4 rounded-xl transition shadow-lg shadow-blue-200 hover:shadow-xl hover:-translate-y-0.5 transform text-lg">
-                        <svg class="w-5 h-5" viewBox="0 0 24 24">
-                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="white" fill-opacity="0.8"/>
-                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="white" fill-opacity="0.9"/>
-                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="white" fill-opacity="0.7"/>
-                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="white" fill-opacity="0.8"/>
-                        </svg>
-                        Comenzar con Google - Gratis
+                <div style="display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 18px;">
+                    <a href="{{ route('auth.google') }}" class="btn btn-primary btn-lg">
+                        <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="white" fill-opacity=".85"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="white" fill-opacity=".95"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="white" fill-opacity=".75"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="white" fill-opacity=".85"/></svg>
+                        Comenzar con Google — Gratis
                     </a>
-                    <a href="#rama-judicial" class="inline-flex items-center justify-center gap-2 bg-white text-brand font-semibold px-8 py-4 rounded-xl hover:bg-gray-50 hover:-translate-y-0.5 transform transition border border-gray-200 text-lg group">
-                        Ver integraci&oacute;n Rama Judicial
-                        <svg class="w-5 h-5 group-hover:translate-y-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    <a href="#vigilancia" class="btn btn-secondary btn-lg">
+                        Ver cómo funciona
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                     </a>
                 </div>
-                <p class="text-sm text-gray-400">3 casos gratis para siempre. Sin tarjeta de cr&eacute;dito. Configuraci&oacute;n en 60 segundos.</p>
+                <p style="font-size: 13px; color: var(--text-faint); display: flex; align-items: center; gap: 8px; margin: 0;">
+                    <svg width="15" height="15" fill="none" stroke="var(--green-600)" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                    3 meses gratis · sin tarjeta · configúralo en 60 segundos
+                </p>
             </div>
 
-            {{-- Stats con contadores animados --}}
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-16 max-w-3xl mx-auto reveal-stagger reveal" data-reveal>
-                <div class="bg-white/80 backdrop-blur rounded-2xl p-5 text-center border border-gray-100 shadow-sm hover:shadow-md transition">
-                    <div class="text-3xl font-display font-bold text-brand-light" data-counter="21">0</div>
-                    <div class="text-xs text-gray-500 mt-1">Flujos procesales</div>
+            <div class="visual" style="position: relative;">
+                <div style="position: absolute; inset: -10% -6%; background: radial-gradient(circle at 70% 30%, rgba(58,134,255,.14), transparent 60%); pointer-events: none;"></div>
+                <div class="behind-card">
+                    <div class="head">
+                        <span class="ico">
+                            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                        </span>
+                        <span class="ttl">Sincronización 3:00 a.m.</span>
+                    </div>
+                    <div class="desc">Revisando 24 procesos en la Rama Judicial…</div>
                 </div>
-                <div class="bg-white/80 backdrop-blur rounded-2xl p-5 text-center border border-gray-100 shadow-sm hover:shadow-md transition">
-                    <div class="text-3xl font-display font-bold text-green-500">24/7</div>
-                    <div class="text-xs text-gray-500 mt-1">Monitoreo autom&aacute;tico</div>
-                </div>
-                <div class="bg-white/80 backdrop-blur rounded-2xl p-5 text-center border border-gray-100 shadow-sm hover:shadow-md transition">
-                    <div class="text-3xl font-display font-bold text-purple-500">IA</div>
-                    <div class="text-xs text-gray-500 mt-1">Asistente jur&iacute;dico</div>
-                </div>
-                <div class="bg-white/80 backdrop-blur rounded-2xl p-5 text-center border border-gray-100 shadow-sm hover:shadow-md transition">
-                    <div class="text-3xl font-display font-bold text-amber-500" data-counter="100" data-suffix="%">0</div>
-                    <div class="text-xs text-gray-500 mt-1">Legislaci&oacute;n colombiana</div>
+
+                <div style="position: relative; z-index: 2; padding-top: 30px;">
+                    <div class="email-mockup">
+                        <div class="email-head">
+                            <img src="/images/logo-icon.svg" alt="" style="width: 30px; height: 30px;">
+                            <div style="flex: 1;">
+                                <div class="sender-title">LegalWeb · Vigilancia judicial</div>
+                                <div class="sender-mail">notificaciones@legalweb.com.co</div>
+                            </div>
+                            <div style="font-size: 11px; color: var(--text-faint);">3:02 a.m.</div>
+                        </div>
+                        <div class="email-body">
+                            <span class="badge badge-danger">
+                                <span style="width: 6px; height: 6px; border-radius: 50%; background: currentColor;"></span>
+                                Nueva actuación detectada
+                            </span>
+                            <h3>Auto admite la demanda</h3>
+                            <p class="lead-2">Apareció una nueva actuación en uno de tus procesos vigilados.</p>
+                            <div class="email-rows">
+                                <div class="row"><span class="k">Radicado</span><span class="v mono">68081 31 03 001 2024 00180 00</span></div>
+                                <div class="row"><span class="k">Despacho</span><span class="v">Juzgado 1º Civil del Circuito</span></div>
+                                <div class="row"><span class="k">Fecha</span><span class="v">14 de marzo de 2026</span></div>
+                                <div class="row"><span class="k">Cliente</span><span class="v">Construcciones Andinas S.A.S.</span></div>
+                            </div>
+                            <a href="{{ route('auth.google') }}" class="btn btn-primary btn-full btn-sm" style="margin-top: 16px;">
+                                Ver actuación en LegalWeb
+                                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    {{-- Vista previa de la plataforma --}}
-    <section id="vista-previa" class="py-20 px-4 bg-white">
-        <div class="max-w-6xl mx-auto">
-            <div class="text-center mb-12 reveal" data-reveal>
-                <h2 class="font-display text-3xl md:text-4xl font-bold text-brand mb-4">Vea la plataforma por dentro</h2>
-                <p class="text-gray-500 max-w-2xl mx-auto">As&iacute; se ve LegalWeb cuando gestiona sus casos. Datos reales importados desde la Rama Judicial.</p>
+    {{-- Vigilancia flow --}}
+    <section id="vigilancia" class="std" style="background: var(--white);">
+        <div class="container">
+            <div class="section-head">
+                <span class="eyebrow green">
+                    <span style="width: 7px; height: 7px; border-radius: 50%; background: var(--green-500);"></span>
+                    Vigilancia judicial automática
+                </span>
+                <h2>Nunca más entres a consultar proceso por proceso</h2>
+                <p>La función que más le importa a un abogado: enterarte de cada movimiento de la Rama Judicial sin levantar un dedo. Así funciona.</p>
+            </div>
+            <div class="flow-grid">
+                <div class="flow-line"></div>
+
+                <div class="step">
+                    <div class="tile info">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                        <span class="num">01</span>
+                    </div>
+                    <h3>Importas el radicado</h3>
+                    <p>Pega el número de radicado y LegalWeb trae todo el expediente desde la Rama Judicial: despacho, juez, sujetos y actuaciones.</p>
+                </div>
+
+                <div class="step">
+                    <div class="tile success">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                        <span class="num">02</span>
+                    </div>
+                    <h3>Vigilancia diaria</h3>
+                    <p>Cada día a las 3:00 a.m. el sistema vuelve a consultar la Rama Judicial por ti, de forma automática.</p>
+                </div>
+
+                <div class="step">
+                    <div class="tile warning">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                        <span class="num">03</span>
+                    </div>
+                    <h3>Detecta la novedad</h3>
+                    <p>Compara y encuentra cualquier actuación nueva en cualquiera de tus procesos vigilados.</p>
+                </div>
+
+                <div class="step">
+                    <div class="tile danger">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                        <span class="num">04</span>
+                    </div>
+                    <h3>Te avisa por correo</h3>
+                    <p>Recibes un correo con la actuación, el despacho y la fecha. Entras directo al caso con un click.</p>
+                </div>
             </div>
 
-            <div x-data="{ active: 0, tabs: [
-                { name: 'Dashboard', img: '/images/screenshots/dashboard.png', desc: 'Vista general con KPIs: casos activos, clientes, actuaciones recientes y alertas de vencimiento.' },
-                { name: 'Casos', img: '/images/screenshots/casos.png', desc: 'Lista de todos sus casos con importacion directa desde la Rama Judicial. Busqueda y filtros.' },
-                { name: 'Detalle del Caso', img: '/images/screenshots/caso-detalle.png', desc: 'Toda la informacion del proceso: datos de Rama Judicial, despacho, juez, sujetos, actuaciones.' },
-                { name: 'Agenda', img: '/images/screenshots/agenda.png', desc: 'Recordatorios y vencimientos con alertas automaticas. Plazos calculados en dias habiles.' },
-                { name: 'Reportes', img: '/images/screenshots/reportes.png', desc: 'Analitica completa: casos por estado, tipo, prioridad y productividad por abogado.' },
-                { name: 'Clientes', img: '/images/screenshots/clientes.png', desc: 'Gestion de clientes con busqueda de procesos en la Rama Judicial por nombre.' }
-            ] }">
-                {{-- Tabs --}}
-                <div class="flex flex-wrap justify-center gap-2 mb-8">
-                    <template x-for="(tab, index) in tabs" :key="index">
-                        <button @click="active = index"
-                            :class="active === index ? 'bg-brand-light text-white shadow-lg shadow-blue-200' : 'bg-white text-gray-600 border border-gray-200 hover:border-brand-light'"
-                            class="px-5 py-2.5 rounded-lg text-sm font-medium transition"
-                            x-text="tab.name">
-                        </button>
-                    </template>
-                </div>
-
-                {{-- Screenshot con descripcion --}}
-                <div class="bg-gray-900 rounded-2xl p-2 shadow-2xl reveal-zoom" data-reveal>
-                    <div class="bg-gray-800 rounded-t-xl px-4 py-2 flex items-center gap-2">
-                        <div class="w-3 h-3 rounded-full bg-red-400"></div>
-                        <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
-                        <div class="w-3 h-3 rounded-full bg-green-400"></div>
-                        <span class="text-gray-400 text-xs ml-2">legalweb.com.co/admin</span>
-                    </div>
-                    <template x-for="(tab, index) in tabs" :key="'img-'+index">
-                        <img x-show="active === index"
-                            x-transition:enter="transition ease-out duration-300"
-                            x-transition:enter-start="opacity-0"
-                            x-transition:enter-end="opacity-100"
-                            :src="tab.img" :alt="tab.name"
-                            class="w-full rounded-b-xl">
-                    </template>
-                </div>
-
-                {{-- Descripcion --}}
-                <div class="mt-6 text-center">
-                    <template x-for="(tab, index) in tabs" :key="'desc-'+index">
-                        <p x-show="active === index" x-transition class="text-gray-500 max-w-xl mx-auto" x-text="tab.desc"></p>
-                    </template>
-                </div>
-
-                {{-- CTA --}}
-                <div class="text-center mt-8">
-                    <a href="{{ route('auth.google') }}" class="inline-flex items-center gap-2 bg-brand-light text-white font-semibold px-6 py-3 rounded-xl hover:bg-blue-600 transition shadow-lg shadow-blue-200">
-                        Probar gratis - Sin tarjeta de credito
-                    </a>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    {{-- Integracion Rama Judicial --}}
-    <section id="rama-judicial" class="py-20 px-4">
-        <div class="max-w-6xl mx-auto">
-            <div class="text-center mb-16 reveal" data-reveal>
-                <div class="inline-flex items-center gap-2 bg-green-50 text-green-700 text-sm font-medium px-4 py-2 rounded-full mb-4">
-                    <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                    Exclusivo en Colombia
-                </div>
-                <h2 class="font-display text-3xl md:text-4xl font-bold text-brand mb-4">Conectado directamente con la Rama Judicial</h2>
-                <p class="text-gray-500 max-w-2xl mx-auto">Importe procesos con el n&uacute;mero de radicado. El sistema trae autom&aacute;ticamente toda la informaci&oacute;n: despacho, juez, sujetos procesales y actuaciones.</p>
-            </div>
-            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 reveal-stagger reveal" data-reveal>
-                <div class="bg-gradient-to-br from-blue-50 to-white rounded-2xl p-6 border border-blue-100 card-hover">
-                    <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-4 feature-icon">
-                        <svg class="w-6 h-6 text-brand-light" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                    </div>
-                    <h3 class="font-semibold text-brand mb-2">Importacion instantanea</h3>
-                    <p class="text-sm text-gray-500">Ingrese el radicado y en 2 segundos tiene todo: despacho, juez, partes y actuaciones.</p>
-                </div>
-                <div class="bg-gradient-to-br from-green-50 to-white rounded-2xl p-6 border border-green-100 card-hover">
-                    <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-4 feature-icon">
-                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                    </div>
-                    <h3 class="font-semibold text-brand mb-2">Sincronizacion diaria</h3>
-                    <p class="text-sm text-gray-500">A las 3 AM se consulta la Rama Judicial automaticamente. Reciba email si hay novedades.</p>
-                </div>
-                <div class="bg-gradient-to-br from-amber-50 to-white rounded-2xl p-6 border border-amber-100 card-hover">
-                    <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center mb-4 feature-icon">
-                        <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    </div>
-                    <h3 class="font-semibold text-brand mb-2">Alertas inteligentes</h3>
-                    <p class="text-sm text-gray-500">Calcula plazos legales en dias habiles (calendario judicial). Auto fija fecha, traslados, sentencias.</p>
-                </div>
-                <div class="bg-gradient-to-br from-purple-50 to-white rounded-2xl p-6 border border-purple-100 card-hover">
-                    <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4 feature-icon">
-                        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
-                    </div>
-                    <h3 class="font-semibold text-brand mb-2">Importacion masiva</h3>
-                    <p class="text-sm text-gray-500">Pegue hasta 20 radicados y se importan todos automaticamente con reporte detallado.</p>
-                </div>
+            <div class="pills-row">
+                <span class="pill">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Plazos en días hábiles (calendario judicial)
+                </span>
+                <span class="pill">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                    21 flujos procesales: CGP · CPT · Ley 906 · CPACA
+                </span>
+                <span class="pill">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    Importación masiva: hasta 20 radicados
+                </span>
             </div>
         </div>
     </section>
 
     {{-- Funcionalidades --}}
-    <section id="funcionalidades" class="py-20 px-4">
-        <div class="max-w-6xl mx-auto">
-            <div class="text-center mb-16 reveal" data-reveal>
-                <h2 class="font-display text-3xl md:text-4xl font-bold text-brand mb-4">Todo lo que necesita para su pr&aacute;ctica legal</h2>
-                <p class="text-gray-500 max-w-xl mx-auto">Herramientas dise&ntilde;adas por y para abogados colombianos</p>
+    <section id="funcionalidades" class="std" style="background: var(--surface-page);">
+        <div class="container">
+            <div class="section-head">
+                <span class="eyebrow">Todo en un solo lugar</span>
+                <h2>Tu práctica legal, ordenada de principio a fin</h2>
+                <p>Herramientas pensadas por y para abogados colombianos.</p>
             </div>
-            <div class="grid md:grid-cols-3 gap-8 reveal-stagger reveal" data-reveal>
-                <div class="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm card-hover">
-                    <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mb-5 feature-icon">
-                        <svg class="w-6 h-6 text-brand-light" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+            <div class="feat-grid">
+                <div class="feat-card">
+                    <div class="ico info">
+                        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                     </div>
-                    <h3 class="font-semibold text-brand text-lg mb-2">Expediente Digital</h3>
-                    <p class="text-gray-500 text-sm leading-relaxed">Centraliza documentos, actuaciones y evidencias. Linea de tiempo, facturacion por caso y flujo procesal integrado.</p>
+                    <h3>Expediente digital</h3>
+                    <p>Documentos, actuaciones y evidencias centralizados. Línea de tiempo del proceso y flujo procesal integrado.</p>
                 </div>
-                <div class="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm card-hover">
-                    <div class="w-12 h-12 bg-yellow-50 rounded-xl flex items-center justify-center mb-5 feature-icon">
-                        <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                <div class="feat-card">
+                    <div class="ico ai">
+                        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
                     </div>
-                    <h3 class="font-semibold text-brand text-lg mb-2">Asistente IA Juridico</h3>
-                    <p class="text-gray-500 text-sm leading-relaxed">Resumen del caso, siguiente paso recomendado y borradores de demandas, tutelas, memoriales y 10 tipos de documentos.</p>
+                    <h3>Asistente IA jurídico</h3>
+                    <p>Resumen del caso, siguiente paso recomendado y borradores de demandas, tutelas y memoriales. Siempre orientativos.</p>
                 </div>
-                <div class="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm card-hover">
-                    <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center mb-5 feature-icon">
-                        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                <div class="feat-card">
+                    <div class="ico warning">
+                        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
                     </div>
-                    <h3 class="font-semibold text-brand text-lg mb-2">Portal del Cliente</h3>
-                    <p class="text-gray-500 text-sm leading-relaxed">Sus clientes consultan el estado de su proceso en tiempo real. Reportes PDF mensuales automaticos opcionales.</p>
+                    <h3>Calculadora de términos</h3>
+                    <p>Calcula vencimientos en días hábiles según el calendario judicial colombiano. Sin errores de conteo.</p>
                 </div>
-                <div class="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm card-hover">
-                    <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center mb-5 feature-icon">
-                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <div class="feat-card">
+                    <div class="ico ai">
+                        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                     </div>
-                    <h3 class="font-semibold text-brand text-lg mb-2">21 Flujos Procesales</h3>
-                    <p class="text-gray-500 text-sm leading-relaxed">Basados en CGP, CPT, Ley 906, CPACA. Plazos en dias habiles con calendario judicial colombiano.</p>
+                    <h3>Portal del cliente</h3>
+                    <p>Tus clientes consultan el estado de su proceso en tiempo real, con un enlace seguro y sin crear cuenta.</p>
                 </div>
-                <div class="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm card-hover">
-                    <div class="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center mb-5 feature-icon">
-                        <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                <div class="feat-card">
+                    <div class="ico danger">
+                        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
                     </div>
-                    <h3 class="font-semibold text-brand text-lg mb-2">Reportes y Analitica</h3>
-                    <p class="text-gray-500 text-sm leading-relaxed">Dashboard con KPIs, analitica de despachos, actividad mensual, reporte PDF descargable y envio automatico al cliente.</p>
+                    <h3>Reportes y analítica</h3>
+                    <p>KPIs por estado, tipo y abogado. Reporte PDF mensual que se envía automáticamente al cliente.</p>
                 </div>
-                <div class="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm card-hover">
-                    <div class="w-12 h-12 bg-brand/5 rounded-xl flex items-center justify-center mb-5 feature-icon">
-                        <svg class="w-6 h-6 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                <div class="feat-card">
+                    <div class="ico success">
+                        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
                     </div>
-                    <h3 class="font-semibold text-brand text-lg mb-2">Facturacion por Caso</h3>
-                    <p class="text-gray-500 text-sm leading-relaxed">Registre horas, gastos y conceptos. Controle que es facturable, que ya se cobro y genere cuentas de cobro.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    {{-- Como funciona --}}
-    <section id="como-funciona" class="py-20 px-4 bg-white">
-        <div class="max-w-6xl mx-auto">
-            <div class="text-center mb-16 reveal" data-reveal>
-                <h2 class="font-display text-3xl md:text-4xl font-bold text-brand mb-4">Comience en 3 pasos</h2>
-                <p class="text-gray-500">Sin instalaciones. Sin complicaciones. Listo en 60 segundos.</p>
-            </div>
-            <div class="grid md:grid-cols-3 gap-12 reveal-stagger reveal" data-reveal>
-                <div class="text-center">
-                    <div class="w-20 h-20 bg-gradient-to-br from-blue-100 to-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-sm">
-                        <span class="text-3xl font-display font-bold gradient-text">1</span>
-                    </div>
-                    <h3 class="font-semibold text-brand text-lg mb-2">Cree su cuenta</h3>
-                    <p class="text-gray-500 text-sm">Registrese con Google en segundos. Cargamos datos de ejemplo para que explore todas las funcionalidades.</p>
-                </div>
-                <div class="text-center">
-                    <div class="w-20 h-20 bg-gradient-to-br from-blue-100 to-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-sm">
-                        <span class="text-3xl font-display font-bold gradient-text">2</span>
-                    </div>
-                    <h3 class="font-semibold text-brand text-lg mb-2">Importe sus procesos</h3>
-                    <p class="text-gray-500 text-sm">Ingrese el radicado de sus casos reales. El sistema importa toda la informacion desde la Rama Judicial.</p>
-                </div>
-                <div class="text-center">
-                    <div class="w-20 h-20 bg-gradient-to-br from-blue-100 to-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-sm">
-                        <span class="text-3xl font-display font-bold gradient-text">3</span>
-                    </div>
-                    <h3 class="font-semibold text-brand text-lg mb-2">Reciba alertas</h3>
-                    <p class="text-gray-500 text-sm">El sistema monitorea sus casos diariamente. Reciba alertas de vencimientos y comparta el portal con sus clientes.</p>
+                    <h3>Facturación por caso</h3>
+                    <p>Registra horas, gastos y conceptos. Controla lo facturable y genera cuentas de cobro.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    {{-- Social proof --}}
-    <section class="py-16 px-4 bg-brand/[0.03]">
-        <div class="max-w-4xl mx-auto">
-            <div class="grid md:grid-cols-3 gap-8 text-center reveal-stagger reveal" data-reveal>
-                <div>
-                    <div class="text-4xl font-display font-bold text-brand mb-2">Ley 1581</div>
-                    <div class="text-sm text-gray-500">Cumplimiento en proteccion de datos personales</div>
+    {{-- Preview --}}
+    <section id="vista-previa" class="std" style="background: var(--white);" x-data="{ active: 0, tabs: [
+        { name: 'Escritorio', img: '/images/screenshots/dashboard.png', desc: 'Vista general con KPIs: casos activos, clientes, actuaciones recientes y alertas de vencimiento.' },
+        { name: 'Detalle del caso', img: '/images/screenshots/caso-detalle.png', desc: 'Datos del proceso y de la Rama Judicial, partes, despacho, juez, actuaciones y accesos al portal.' },
+        { name: 'Agenda', img: '/images/screenshots/agenda.png', desc: 'Recordatorios y vencimientos con prioridad y alertas automáticas en días hábiles.' },
+        { name: 'Reportes', img: '/images/screenshots/reportes.png', desc: 'Analítica de despachos, tipos de actuaciones y actividad mensual de tu práctica.' },
+        { name: 'Casos', img: '/images/screenshots/casos.png', desc: 'Listado completo con búsqueda y filtros. Importación directa desde la Rama Judicial.' },
+        { name: 'Clientes', img: '/images/screenshots/clientes.png', desc: 'Directorio centralizado con búsqueda de procesos en la Rama Judicial por nombre.' }
+    ] }">
+        <div class="container">
+            <div class="section-head">
+                <span class="eyebrow">La plataforma por dentro</span>
+                <h2>Así se ve LegalWeb cada mañana</h2>
+                <p>Datos reales importados desde la Rama Judicial, en una interfaz hecha para trabajar rápido.</p>
+            </div>
+            <div class="preview-tabs">
+                <template x-for="(tab, index) in tabs" :key="index">
+                    <button @click="active = index" :class="active === index ? 'preview-tab active' : 'preview-tab'" x-text="tab.name"></button>
+                </template>
+            </div>
+            <div class="browser-frame">
+                <div class="bar">
+                    <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+                    <span class="url">legalweb.com.co/admin</span>
                 </div>
-                <div>
-                    <div class="text-4xl font-display font-bold text-brand-light mb-2">Art. 74 CP</div>
-                    <div class="text-sm text-gray-500">Secreto profesional garantizado en cada acceso</div>
+                <template x-for="(tab, index) in tabs" :key="'img-'+index">
+                    <img x-show="active === index" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" :src="tab.img" :alt="tab.name">
+                </template>
+            </div>
+            <template x-for="(tab, index) in tabs" :key="'desc-'+index">
+                <p x-show="active === index" x-transition class="preview-desc" x-text="tab.desc"></p>
+            </template>
+        </div>
+    </section>
+
+    {{-- Pricing --}}
+    <section id="planes" class="std" style="background: var(--surface-page);">
+        <div class="container" style="max-width: 980px;">
+            <div class="section-head">
+                <h2>Un precio. Todo incluido.</h2>
+                <p>Prueba LegalWeb completo y gratis por 3 meses. Después, una sola suscripción de <strong>$120.000</strong> COP/mes — sin niveles, sin límites de casos, sin sorpresas.</p>
+            </div>
+
+            <div class="plan-grid">
+                <div class="plan">
+                    <div class="plan-card">
+                        <div class="eyebrow green" style="align-self: flex-start; margin-bottom: 16px;">Prueba gratuita</div>
+                        <h3 style="font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 700; color: var(--brand-navy); margin: 0 0 6px;">Empieza gratis</h3>
+                        <p style="font-size: var(--text-sm); color: var(--text-muted); margin: 0 0 22px; line-height: 1.5;">Todo el producto, sin límites, durante 3 meses.</p>
+                        <div style="margin-bottom: 22px; min-height: 70px;">
+                            <div style="display: flex; align-items: baseline; gap: 8px;">
+                                <span class="price free">$0</span>
+                                <span class="price-suffix">/ 3 meses</span>
+                            </div>
+                            <div style="font-size: var(--text-sm); color: var(--text-faint); margin-top: 8px;">Sin tarjeta de crédito</div>
+                        </div>
+                        <a href="{{ route('auth.google') }}" class="btn btn-success btn-full" style="margin-top: auto;">
+                            <svg width="16" height="16" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="white" fill-opacity=".85"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="white" fill-opacity=".95"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="white" fill-opacity=".75"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="white" fill-opacity=".85"/></svg>
+                            Comenzar gratis
+                        </a>
+                        <div style="font-size: 13px; color: var(--text-faint); text-align: center; margin-top: 12px;">Configúralo en 60 segundos</div>
+                    </div>
                 </div>
-                <div>
-                    <div class="text-4xl font-display font-bold text-green-500 mb-2">CGP</div>
-                    <div class="text-sm text-gray-500">Flujos basados en legislacion vigente</div>
+
+                <div class="plan">
+                    <div class="recommended">
+                        <span class="badge badge-info-solid">Recomendado</span>
+                    </div>
+                    <div class="plan-card featured">
+                        <div class="eyebrow" style="align-self: flex-start; margin-bottom: 16px;">Suscripción</div>
+                        <h3 style="font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 700; color: var(--brand-navy); margin: 0 0 6px;">Profesional</h3>
+                        <p style="font-size: var(--text-sm); color: var(--text-muted); margin: 0 0 22px; line-height: 1.5;">Cuando termine tu prueba, sigue con todo igual.</p>
+                        <div style="margin-bottom: 22px; min-height: 70px;">
+                            <div style="display: flex; align-items: baseline; gap: 8px;">
+                                <span class="price paid">$120.000</span>
+                                <span class="price-suffix">COP / mes</span>
+                            </div>
+                            <div style="font-size: var(--text-sm); color: var(--text-faint); margin-top: 8px;">Una sola suscripción · cancela cuando quieras</div>
+                        </div>
+                        <a href="{{ route('auth.google') }}" class="btn btn-primary btn-full" style="margin-top: auto;">Suscribirme</a>
+                        <div style="font-size: 13px; color: var(--text-faint); text-align: center; margin-top: 12px;">Mismas funciones que la prueba</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="incluye-panel">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                    <svg width="20" height="20" fill="none" stroke="var(--brand-blue)" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                    <h3 style="font-family: var(--font-display); font-size: var(--text-xl); font-weight: 700; color: var(--brand-navy); margin: 0;">Ambos planes incluyen todo</h3>
+                </div>
+                <ul class="incluye-grid" style="list-style: none; padding: 0; margin: 0;">
+                    @foreach([
+                        'Casos y clientes ilimitados',
+                        'Importación y vigilancia de la Rama Judicial',
+                        'Alertas de actuaciones por correo',
+                        'Calculadora de términos en días hábiles',
+                        'Asistente IA jurídico',
+                        'Portal del cliente y reportes PDF',
+                        '21 flujos procesales + facturación por caso',
+                        'Equipo de trabajo con permisos por caso',
+                    ] as $feat)
+                        <li>
+                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                            <span>{{ $feat }}</span>
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+
+            <p style="text-align: center; font-size: var(--text-sm); color: var(--text-faint); margin-top: 28px;">
+                Precio en pesos colombianos. La diferencia entre los planes es solo el tiempo: gratis los primeros 3 meses, luego $120.000/mes.
+            </p>
+        </div>
+    </section>
+
+    {{-- Trust band --}}
+    <section style="padding: 56px 0; background: var(--white); border-top: 1px solid var(--border-subtle); border-bottom: 1px solid var(--border-subtle);">
+        <div class="container" style="max-width: 880px;">
+            <div class="trust-grid">
+                <div class="item">
+                    <div class="k">Ley 1581</div>
+                    <div class="d">Cumplimiento en protección de datos personales</div>
+                </div>
+                <div class="item">
+                    <div class="k">Art. 74 C.P.</div>
+                    <div class="d">Secreto profesional garantizado en cada acceso</div>
+                </div>
+                <div class="item">
+                    <div class="k">CGP · Ley 906</div>
+                    <div class="d">Flujos basados en legislación colombiana vigente</div>
                 </div>
             </div>
         </div>
     </section>
 
-    {{-- Planes --}}
-    <section id="planes" class="py-20 px-4">
-        <div class="max-w-4xl mx-auto">
-            <div class="text-center mb-10 reveal" data-reveal>
-                <h2 class="font-display text-3xl md:text-4xl font-bold text-brand mb-4">Planes que crecen con su firma</h2>
-                <p class="text-gray-500 mb-8">Comience gratis. Escale cuando lo necesite.</p>
+    {{-- Final CTA --}}
+    <section class="std close-cta">
+        <div class="container inner">
+            <img src="/images/logo-square.svg" alt="LegalWeb" style="width: 76px; height: 76px; margin: 0 auto 24px; display: block;">
+            <h2>Deja que la Rama Judicial te avise a ti</h2>
+            <p>Únete a los abogados colombianos que ya gestionan sus procesos con vigilancia automática y alertas por correo.</p>
+            <div style="display: flex; justify-content: center;">
+                <a href="{{ route('auth.google') }}" class="btn btn-primary btn-lg">
+                    <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="white" fill-opacity=".85"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="white" fill-opacity=".95"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="white" fill-opacity=".75"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="white" fill-opacity=".85"/></svg>
+                    Comenzar con Google — Es gratis
+                </a>
             </div>
-
-            <div class="grid md:grid-cols-3 gap-6 reveal-stagger reveal" data-reveal>
-                {{-- Prueba Gratuita --}}
-                <div class="bg-white rounded-2xl p-8 border-2 border-green-300 shadow-lg relative card-hover">
-                    <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-500 text-white text-xs font-semibold px-4 py-1 rounded-full">Comience aqui</div>
-                    <h3 class="font-semibold text-brand text-xl mb-1">Prueba Gratuita</h3>
-                    <p class="text-sm text-gray-500 mb-5">3 meses para explorar todo</p>
-                    <div class="mb-6">
-                        <span class="text-3xl font-display font-bold text-green-500">$0</span>
-                        <span class="text-gray-400 text-sm">/ 3 meses</span>
-                    </div>
-                    <ul class="space-y-3 text-sm text-gray-600 mb-8">
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> <strong>Casos ilimitados</strong></li>
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Importacion Rama Judicial</li>
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Asistente IA completo</li>
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Portal del cliente</li>
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Alertas y vencimientos</li>
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Todas las funcionalidades</li>
-                    </ul>
-                    <a href="{{ route('auth.google') }}" class="block text-center py-3 px-4 rounded-lg bg-green-500 text-white font-medium hover:bg-green-600 transition shadow-lg shadow-green-100">
-                        Comenzar gratis
-                    </a>
-                </div>
-
-                {{-- Pro --}}
-                <div class="bg-white rounded-2xl p-8 border-2 border-brand-light shadow-xl relative card-hover">
-                    <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-brand-light text-white text-xs font-semibold px-4 py-1 rounded-full">Mas popular</div>
-                    <h3 class="font-semibold text-brand text-xl mb-1">Pro</h3>
-                    <p class="text-sm text-gray-500 mb-5">Para practica profesional</p>
-                    <div class="mb-6">
-                        <span class="text-3xl font-display font-bold text-brand">Proximamente</span>
-                    </div>
-                    <ul class="space-y-3 text-sm text-gray-600 mb-8">
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Hasta <strong>20 casos</strong></li>
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> 3 usuarios</li>
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Todo lo de Prueba Gratuita</li>
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Reportes PDF mensuales</li>
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Facturacion por caso</li>
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Sin limite de tiempo</li>
-                    </ul>
-                    <a href="{{ route('auth.google') }}" class="block text-center py-3 px-4 rounded-lg bg-brand-light text-white font-medium hover:bg-blue-600 transition shadow-lg shadow-blue-100">
-                        Probar gratis primero
-                    </a>
-                </div>
-
-                {{-- Firma --}}
-                <div class="bg-white rounded-2xl p-8 border border-gray-200 shadow-sm card-hover">
-                    <h3 class="font-semibold text-brand text-xl mb-1">Firma</h3>
-                    <p class="text-sm text-gray-500 mb-5">Para equipos de abogados</p>
-                    <div class="mb-6">
-                        <span class="text-3xl font-display font-bold text-brand">Proximamente</span>
-                    </div>
-                    <ul class="space-y-3 text-sm text-gray-600 mb-8">
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Hasta <strong>60 casos</strong></li>
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> 10 usuarios</li>
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Todo lo del plan Pro</li>
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Permisos por caso</li>
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Importacion masiva</li>
-                        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Soporte prioritario</li>
-                    </ul>
-                    <a href="{{ route('auth.google') }}" class="block text-center py-3 px-4 rounded-lg border-2 border-brand text-brand font-medium hover:bg-brand hover:text-white transition">
-                        Probar gratis primero
-                    </a>
-                </div>
-            </div>
-            <p class="text-center text-sm text-gray-400 mt-8">Comience con 3 meses gratis sin limite de casos. Sin tarjeta de credito.</p>
-        </div>
-    </section>
-
-    {{-- CTA Final --}}
-    <section class="py-20 px-4 bg-gradient-to-br from-brand to-blue-900 relative overflow-hidden">
-        <div class="blob blob-2" style="width: 400px; height: 400px; background: #3A86FF; top: -150px; left: 50%; transform: translateX(-50%); opacity: 0.18;"></div>
-        <div class="max-w-3xl mx-auto text-center relative reveal" data-reveal>
-            <img src="/images/logo-square.svg?v=4" alt="LegalWeb" class="w-20 h-20 mx-auto mb-6 rounded-xl shadow-lg float">
-            <h2 class="font-display text-3xl md:text-4xl font-bold text-white mb-4">Modernice su practica legal hoy</h2>
-            <p class="text-blue-200 text-lg mb-8 max-w-xl mx-auto">Unase a los abogados colombianos que ya gestionan sus procesos con tecnologia inteligente.</p>
-            <a href="{{ route('auth.google') }}" class="inline-flex items-center gap-3 bg-white text-brand font-semibold px-8 py-4 rounded-xl hover:bg-gray-100 transition text-lg shadow-lg">
-                <svg class="w-5 h-5" viewBox="0 0 24 24">
-                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
-                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                </svg>
-                Comenzar con Google - Es gratis
-            </a>
-            <p class="text-blue-300/60 text-sm mt-4">Sin tarjeta de credito. Configuracion en 60 segundos.</p>
+            <p style="font-size: 13px; color: rgba(255,255,255,.5); margin-top: 16px;">Sin tarjeta de crédito · configuración en 60 segundos</p>
         </div>
     </section>
 
     {{-- Footer --}}
-    <footer class="bg-white border-t border-gray-100 py-12 px-4">
-        <div class="max-w-6xl mx-auto">
-            <div class="grid md:grid-cols-4 gap-8 mb-8">
+    <footer class="site">
+        <div class="container">
+            <div class="foot-grid">
                 <div>
-                    <img src="/images/logo.svg?v=4" alt="LegalWeb" class="h-8 mb-4">
-                    <p class="text-sm text-gray-500">Control inteligente de sus procesos legales. Conectado con la Rama Judicial de Colombia.</p>
+                    <img src="/images/logo.svg" alt="LegalWeb" style="height: 34px; margin-bottom: 14px;">
+                    <p style="font-size: var(--text-sm); color: var(--text-muted); line-height: 1.6; max-width: 280px; margin: 0;">Control inteligente de tus procesos legales. Conectado con la Rama Judicial de Colombia.</p>
                 </div>
                 <div>
-                    <h4 class="font-semibold text-brand text-sm mb-3">Producto</h4>
-                    <ul class="space-y-2 text-sm text-gray-500">
-                        <li><a href="#funcionalidades" class="hover:text-brand-light">Funcionalidades</a></li>
-                        <li><a href="#rama-judicial" class="hover:text-brand-light">Rama Judicial</a></li>
-                        <li><a href="#planes" class="hover:text-brand-light">Planes</a></li>
-                        <li><a href="#como-funciona" class="hover:text-brand-light">Como funciona</a></li>
+                    <h4>Producto</h4>
+                    <ul>
+                        <li><a href="#vigilancia">Vigilancia judicial</a></li>
+                        <li><a href="#funcionalidades">Funcionalidades</a></li>
+                        <li><a href="#vista-previa">La plataforma</a></li>
+                        <li><a href="#planes">Planes</a></li>
                     </ul>
                 </div>
                 <div>
-                    <h4 class="font-semibold text-brand text-sm mb-3">Legal</h4>
-                    <ul class="space-y-2 text-sm text-gray-500">
-                        <li><a href="/portal/terminos" class="hover:text-brand-light">Terminos y Condiciones</a></li>
-                        <li><a href="/portal/privacidad" class="hover:text-brand-light">Politica de Privacidad</a></li>
+                    <h4>Recursos</h4>
+                    <ul>
+                        <li><a href="#vigilancia">Cómo funciona</a></li>
+                        <li><a href="mailto:legalwebco@gmail.com">Centro de ayuda</a></li>
                     </ul>
                 </div>
                 <div>
-                    <h4 class="font-semibold text-brand text-sm mb-3">Contacto</h4>
-                    <ul class="space-y-2 text-sm text-gray-500">
-                        <li>legalwebco@gmail.com</li>
-                        <li>Barrancabermeja, Colombia</li>
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="/portal/terminos">Términos y condiciones</a></li>
+                        <li><a href="/portal/privacidad">Política de privacidad</a></li>
                     </ul>
                 </div>
             </div>
-            <div class="border-t border-gray-100 pt-6 flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
-                <p>&copy; {{ date('Y') }} LegalWeb. Todos los derechos reservados.</p>
-                <p class="mt-2 md:mt-0">Esta plataforma no sustituye el criterio profesional del abogado.</p>
+            <div class="foot-bottom">
+                <span>© {{ date('Y') }} LegalWeb. Hecho en Colombia.</span>
+                <span>legalweb.com.co</span>
             </div>
         </div>
     </footer>
 
-    {{-- Scroll to top button --}}
+    {{-- Scroll to top --}}
     <button id="scroll-top-btn" class="scroll-top" aria-label="Volver arriba">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"/></svg>
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/></svg>
     </button>
 
     <script>
         (function () {
-            // Reveal on scroll
-            const revealEls = document.querySelectorAll('[data-reveal]');
-            if ('IntersectionObserver' in window && revealEls.length) {
-                const io = new IntersectionObserver(function (entries) {
-                    entries.forEach(function (entry) {
-                        if (entry.isIntersecting) {
-                            entry.target.classList.add('is-visible');
-                            io.unobserve(entry.target);
-                        }
-                    });
-                }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
-                revealEls.forEach(function (el) { io.observe(el); });
-            } else {
-                revealEls.forEach(function (el) { el.classList.add('is-visible'); });
-            }
-
-            // Animated counters
-            const counters = document.querySelectorAll('[data-counter]');
-            if ('IntersectionObserver' in window && counters.length) {
-                const co = new IntersectionObserver(function (entries) {
-                    entries.forEach(function (entry) {
-                        if (!entry.isIntersecting) return;
-                        const el = entry.target;
-                        const target = parseInt(el.getAttribute('data-counter'), 10);
-                        const suffix = el.getAttribute('data-suffix') || '';
-                        const duration = 1400;
-                        const start = performance.now();
-                        function tick(now) {
-                            const elapsed = now - start;
-                            const progress = Math.min(elapsed / duration, 1);
-                            const eased = 1 - Math.pow(1 - progress, 3);
-                            el.textContent = Math.round(target * eased) + suffix;
-                            if (progress < 1) requestAnimationFrame(tick);
-                        }
-                        requestAnimationFrame(tick);
-                        co.unobserve(el);
-                    });
-                }, { threshold: 0.5 });
-                counters.forEach(function (el) { co.observe(el); });
-            }
-
-            // Navbar shrink + scroll spy + scroll-top button
-            const nav = document.getElementById('main-nav');
-            const scrollBtn = document.getElementById('scroll-top-btn');
-            const sectionIds = ['vista-previa', 'funcionalidades', 'como-funciona', 'planes'];
-            const sections = sectionIds.map(function (id) { return document.getElementById(id); }).filter(Boolean);
-            const navLinks = document.querySelectorAll('.nav-link');
-
-            function onScroll() {
-                const y = window.scrollY;
-                if (nav) nav.classList.toggle('scrolled', y > 16);
-                if (scrollBtn) scrollBtn.classList.toggle('visible', y > 600);
-
-                // Scroll spy
-                let active = null;
-                const offset = 140;
-                for (const s of sections) {
-                    const rect = s.getBoundingClientRect();
-                    if (rect.top - offset <= 0 && rect.bottom - offset > 0) { active = s.id; break; }
-                }
-                navLinks.forEach(function (link) {
-                    const href = link.getAttribute('href') || '';
-                    link.classList.toggle('active', active && href === '#' + active);
-                });
-            }
-            window.addEventListener('scroll', onScroll, { passive: true });
-            onScroll();
-
-            if (scrollBtn) {
-                scrollBtn.addEventListener('click', function () {
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                });
-            }
+            const btn = document.getElementById('scroll-top-btn');
+            window.addEventListener('scroll', function () {
+                btn.classList.toggle('visible', window.scrollY > 600);
+            }, { passive: true });
+            btn.addEventListener('click', function () {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
         })();
     </script>
 
