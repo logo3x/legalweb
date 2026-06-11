@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\AiUsageLog;
 use App\Models\LegalCase;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -22,25 +23,91 @@ class AIService
         return $this->lastError;
     }
 
-    private function call(string $systemPrompt, string $userMessage, int $maxTokens = 2000): ?string
+    /**
+     * @param  array{action?: string, case?: LegalCase|null, meta?: array}  $context
+     */
+    private function call(string $systemPrompt, string $userMessage, int $maxTokens = 2000, array $context = []): ?string
     {
         $this->lastError = null;
+        $start = microtime(true);
 
         $result = $this->callGemini($systemPrompt, $userMessage, $maxTokens);
 
         if ($result) {
-            $this->lastProvider = 'Gemini';
+            $this->logUsage($result, $context, $start);
 
-            return $this->cleanMarkdown($result);
+            return $this->cleanMarkdown($result['text']);
         }
 
         $result = $this->callOpenRouter($systemPrompt, $userMessage, $maxTokens);
 
         if ($result) {
-            return $this->cleanMarkdown($result);
+            $this->logUsage($result, $context, $start);
+
+            return $this->cleanMarkdown($result['text']);
         }
 
+        $this->logFailure($context, $start);
+
         return null;
+    }
+
+    /**
+     * Persistir un log de uso exitoso de IA. Captura tokens latencia firma usuario y caso.
+     *
+     * @param  array{text:string, provider:string, model:string, usage:array}  $result
+     * @param  array{action?:string, case?:LegalCase|null, meta?:array}  $context
+     */
+    private function logUsage(array $result, array $context, float $startMicro): void
+    {
+        try {
+            $case = $context['case'] ?? null;
+            AiUsageLog::create([
+                'firm_id' => $case?->firm_id ?? auth()->user()?->firm_id,
+                'user_id' => auth()->id(),
+                'legal_case_id' => $case?->id,
+                'action' => $context['action'] ?? 'otro',
+                'provider' => $result['provider'] ?? 'unknown',
+                'model' => $result['model'] ?? null,
+                'prompt_tokens' => (int) ($result['usage']['prompt_tokens'] ?? 0),
+                'completion_tokens' => (int) ($result['usage']['completion_tokens'] ?? 0),
+                'total_tokens' => (int) ($result['usage']['total_tokens'] ?? 0),
+                'latency_ms' => (int) round((microtime(true) - $startMicro) * 1000),
+                'success' => true,
+                'meta' => $context['meta'] ?? null,
+                'created_at' => now(),
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning('AI usage log fallo: '.$e->getMessage());
+        }
+    }
+
+    /**
+     * @param  array{action?:string, case?:LegalCase|null, meta?:array}  $context
+     */
+    private function logFailure(array $context, float $startMicro): void
+    {
+        try {
+            $case = $context['case'] ?? null;
+            AiUsageLog::create([
+                'firm_id' => $case?->firm_id ?? auth()->user()?->firm_id,
+                'user_id' => auth()->id(),
+                'legal_case_id' => $case?->id,
+                'action' => $context['action'] ?? 'otro',
+                'provider' => 'failed',
+                'model' => null,
+                'prompt_tokens' => 0,
+                'completion_tokens' => 0,
+                'total_tokens' => 0,
+                'latency_ms' => (int) round((microtime(true) - $startMicro) * 1000),
+                'success' => false,
+                'error_message' => mb_substr((string) $this->lastError, 0, 800),
+                'meta' => $context['meta'] ?? null,
+                'created_at' => now(),
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning('AI usage failure log fallo: '.$e->getMessage());
+        }
     }
 
     private function cleanMarkdown(string $text): string
@@ -56,7 +123,10 @@ class AIService
         return trim($text);
     }
 
-    private function callGemini(string $systemPrompt, string $userMessage, int $maxTokens): ?string
+    /**
+     * @return array{text:string, provider:string, model:string, usage:array{prompt_tokens:int,completion_tokens:int,total_tokens:int}}|null
+     */
+    private function callGemini(string $systemPrompt, string $userMessage, int $maxTokens): ?array
     {
         $apiKey = config('services.gemini.api_key');
 
@@ -96,7 +166,16 @@ class AIService
                     if ($text) {
                         $this->lastProvider = "Gemini ({$model})";
 
-                        return $text;
+                        return [
+                            'text' => $text,
+                            'provider' => 'Gemini',
+                            'model' => $model,
+                            'usage' => [
+                                'prompt_tokens' => (int) ($response->json('usageMetadata.promptTokenCount') ?? 0),
+                                'completion_tokens' => (int) ($response->json('usageMetadata.candidatesTokenCount') ?? 0),
+                                'total_tokens' => (int) ($response->json('usageMetadata.totalTokenCount') ?? 0),
+                            ],
+                        ];
                     }
                 }
 
@@ -113,7 +192,10 @@ class AIService
         return null;
     }
 
-    private function callOpenRouter(string $systemPrompt, string $userMessage, int $maxTokens): ?string
+    /**
+     * @return array{text:string, provider:string, model:string, usage:array{prompt_tokens:int,completion_tokens:int,total_tokens:int}}|null
+     */
+    private function callOpenRouter(string $systemPrompt, string $userMessage, int $maxTokens): ?array
     {
         $apiKey = config('services.openrouter.api_key');
 
@@ -158,7 +240,16 @@ class AIService
                 if ($response->successful() && $response->json('choices.0.message.content')) {
                     $this->lastProvider = "OpenRouter ({$model})";
 
-                    return $response->json('choices.0.message.content');
+                    return [
+                        'text' => $response->json('choices.0.message.content'),
+                        'provider' => 'OpenRouter',
+                        'model' => $model,
+                        'usage' => [
+                            'prompt_tokens' => (int) ($response->json('usage.prompt_tokens') ?? 0),
+                            'completion_tokens' => (int) ($response->json('usage.completion_tokens') ?? 0),
+                            'total_tokens' => (int) ($response->json('usage.total_tokens') ?? 0),
+                        ],
+                    ];
                 }
 
                 $status = $response->status();
@@ -306,7 +397,10 @@ REGLAS:
 - Esto es un BORRADOR ORIENTATIVO que el abogado debe revisar antes de actuar
 PROMPT;
 
-        return $this->call($systemPrompt, $context);
+        return $this->call($systemPrompt, $context, 2000, [
+            'action' => 'resumen',
+            'case' => $case,
+        ]);
     }
 
     public function suggestNextStep(LegalCase $case): ?string
@@ -362,7 +456,10 @@ REGLAS:
 - Si dudas del numero de articulo, NO lo cites
 PROMPT;
 
-        return $this->call($systemPrompt, $context);
+        return $this->call($systemPrompt, $context, 2000, [
+            'action' => 'siguiente_paso',
+            'case' => $case,
+        ]);
     }
 
     public function draftDocument(LegalCase $case, string $documentType): ?string
@@ -429,7 +526,11 @@ PROHIBIDO:
 - Asegurar resultados ("se ganara", "es seguro que")
 PROMPT;
 
-        return $this->call($systemPrompt, $context, 4000);
+        return $this->call($systemPrompt, $context, 4000, [
+            'action' => 'borrador',
+            'case' => $case,
+            'meta' => ['document_type' => $documentType],
+        ]);
     }
 
     /**

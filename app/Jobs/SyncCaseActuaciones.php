@@ -78,26 +78,47 @@ class SyncCaseActuaciones implements ShouldQueue
 
             $title = $a['tipo'].($a['ciclo'] ? " ({$a['ciclo']})" : '');
 
-            // Dedup robusto: match exacto en (legal_case_id, title, event_date).
-            // whereDate antes fallaba con timezones cuando event_date se guardaba
-            // con offset distinto al de comparacion. firstOrCreate usa el valor
-            // normalizado por startOfDay() y MySQL lo compara como timestamp exacto.
-            $event = CaseEvent::firstOrCreate(
-                [
-                    'legal_case_id' => $this->case->id,
-                    'title' => $title,
-                    'event_date' => $date,
-                ],
-                [
-                    'event_type' => 'actuacion',
-                    'description' => $this->buildEventDescription($a),
-                    'user_id' => $this->case->user_id,
-                ]
-            );
+            // Dedup por DIA (no timestamp exacto): registros viejos pueden tener
+            // hora 17:11/19:56 etc por bug previo de parseDate sin startOfDay.
+            // Comparar por whereDate evita crear duplicados al re-sincronizar
+            // un caso que ya tiene eventos guardados con hora distinta.
+            $existing = CaseEvent::where('legal_case_id', $this->case->id)
+                ->where('title', $title)
+                ->whereDate('event_date', $date->toDateString())
+                ->first();
 
-            if (! $event->wasRecentlyCreated) {
+            $newDescription = $this->buildEventDescription($a);
+
+            if ($existing) {
+                // Si el existente tiene descripcion vieja generica o vacia y
+                // ahora podemos enriquecerla, actualizamos. Tambien normalizamos
+                // event_date a startOfDay para que futuros dedups con firstOrCreate
+                // funcionen exactos.
+                $updates = [];
+                if ($existing->event_date && $existing->event_date->format('H:i:s') !== '00:00:00') {
+                    $updates['event_date'] = $date;
+                }
+                $oldDescGeneric = $existing->description === null
+                    || str_contains($existing->description, 'Sincronizado desde Rama Judicial. Radicado:')
+                    || str_contains($existing->description, 'Sincronizado automaticamente. Radicado:');
+                if ($oldDescGeneric && $newDescription !== '') {
+                    $updates['description'] = $newDescription;
+                }
+                if ($updates) {
+                    $existing->update($updates);
+                }
+
                 continue;
             }
+
+            CaseEvent::create([
+                'legal_case_id' => $this->case->id,
+                'title' => $title,
+                'event_date' => $date,
+                'event_type' => 'actuacion',
+                'description' => $newDescription,
+                'user_id' => $this->case->user_id,
+            ]);
 
             $newCount++;
 
