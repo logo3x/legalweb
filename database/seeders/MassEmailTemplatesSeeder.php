@@ -78,6 +78,62 @@ class MassEmailTemplatesSeeder extends Seeder
                 'subject' => 'Le ayudamos a empezar con LegalWeb?',
                 'body' => "Hola {{name}}, gracias por registrarse en LegalWeb.\n\nNotamos que aun no ha ingresado por primera vez al panel. Sabemos que empezar con una herramienta nueva puede ser intimidante, asi que queremos ofrecerle una mano.\n\nSi quiere, le agendamos una demo personalizada de 15 minutos donde le mostramos como importar su primer caso, configurar el portal del cliente y usar el Asistente IA. Responda este correo con su disponibilidad y coordinamos.\n\nO si prefiere explorar solo, le sugerimos empezar por el tour guiado que aparece la primera vez que ingresa al panel.",
             ],
+
+            // Plantillas para invitar a primer pago (post trial)
+            [
+                'category' => 'retencion',
+                'name' => 'Ultima semana de prueba - convertir',
+                'subject' => 'Le quedan pocos dias de prueba gratuita',
+                'body' => "Hola {{name}}, su prueba gratuita de LegalWeb termina esta semana.\n\nEn estos meses ha podido ver como la plataforma le ahorra horas de consulta en la Rama Judicial, organiza sus recordatorios y le permite compartir el avance con sus clientes sin pelear con WhatsApp.\n\nPara no perder el acceso ni los datos que ya cargo, active su suscripcion Profesional por 120000 COP/mes desde Mi Plan en el panel. Es un solo pago mensual, sin contratos largos, cancela cuando quiera.\n\nSi tiene alguna duda o quiere conversar antes de decidir, responda este correo y le acompano.",
+            ],
+            [
+                'category' => 'retencion',
+                'name' => 'Trial expirado - reactivar',
+                'subject' => 'Su prueba ya termino, pero su informacion sigue aqui',
+                'body' => "Hola {{name}}, su periodo de prueba en LegalWeb termino la semana pasada.\n\nQueremos avisarle que sus casos, clientes y documentos siguen guardados de forma segura. Si activa la suscripcion Profesional puede retomar exactamente donde lo dejo: 120000 COP/mes, sin perder nada.\n\nIngrese a Mi Plan en el panel para reactivar en 60 segundos. Si decide no continuar, en 30 dias mas archivaremos su cuenta y le avisaremos antes.",
+            ],
+
+            // Anuncios de nuevas funcionalidades
+            [
+                'category' => 'novedades',
+                'name' => 'Nueva funcion - busqueda por nombre en Rama Judicial',
+                'subject' => 'Ya puede buscar procesos por nombre, sin tener al cliente registrado',
+                'body' => "Hola {{name}}, en LegalWeb activamos una nueva funcion que muchos abogados nos pidieron: la busqueda de procesos por nombre directamente en la Rama Judicial.\n\nEntre a Clientes en el panel y use el boton Buscar Procesos del encabezado. Escriba el nombre y le mostramos todos los procesos asociados a esa persona, aunque no la tenga registrada en su firma todavia.\n\nUtil para prospectos, contrapartes o para verificar si una persona tiene procesos antes de aceptar un nuevo caso. Pruebelo y nos cuenta que le parece.",
+            ],
+            [
+                'category' => 'novedades',
+                'name' => 'Nueva funcion - alertas de seguridad por login',
+                'subject' => 'Ahora le avisamos cada que alguien entra a su cuenta',
+                'body' => "Hola {{name}}, agregamos una capa adicional de seguridad a su cuenta de LegalWeb: alertas por correo cada que se inicia sesion.\n\nEl correo le llega con la fecha, hora, IP y navegador del acceso, similar a como lo hacen los bancos. Si reconoce el acceso no necesita hacer nada. Si no, le decimos exactamente que hacer para proteger su cuenta.\n\nLa funcion esta activa por defecto. Puede desactivarla desde Mi Firma > Seguridad de la cuenta si la prefiere apagada. Recomendamos mantenerla activa.",
+            ],
+
+            // Marketing referido y comunidad
+            [
+                'category' => 'marketing',
+                'name' => 'Programa de referidos',
+                'subject' => 'Recomiende LegalWeb y obtenga un mes gratis',
+                'body' => "Hola {{name}}, si LegalWeb le ha sido util, queremos pedirle un favor: cuentele a un colega abogado.\n\nPor cada colega que se registre y active la suscripcion Profesional desde su recomendacion, le regalamos un mes gratis a usted. Sin limite. Si recomienda a tres, son tres meses gratis para usted.\n\nResponda este correo con los correos de los colegas que cree que se pueden beneficiar y nosotros les escribimos directamente mencionando que vienen de su parte. O comparta este correo con ellos directamente.",
+            ],
+            [
+                'category' => 'marketing',
+                'name' => 'Plan firma - upgrade equipo',
+                'subject' => 'Su firma esta creciendo? Considere el plan Firma',
+                'body' => "Hola {{name}}, hemos notado que sus colegas tambien estan usando LegalWeb desde su firma. Cuando una firma trabaja en equipo, vale la pena unificar la gestion.\n\nEl plan Firma incluye permisos por caso (cada abogado solo ve sus casos), centralizacion de facturacion por abogado, reportes consolidados y un solo punto de pago.\n\nResponda este correo si quiere mas detalles o agendar una llamada de 15 minutos donde le mostramos como funciona en vivo.",
+            ],
+
+            // Educativo / tips juridicos
+            [
+                'category' => 'general',
+                'name' => 'Tip - como nunca perder un termino procesal',
+                'subject' => 'Tres trucos para nunca volver a perder un termino procesal',
+                'body' => "Hola {{name}}, los terminos procesales son donde un buen abogado pierde casos por descuido y no por talento. Le compartimos tres trucos para nunca perder uno mas:\n\n1. Configure recordatorios con dos dias de anticipacion, no uno. Asi tiene margen si el dia anterior surge una urgencia.\n\n2. Use el calendario judicial colombiano (no el calendario civil). LegalWeb calcula automaticamente los dias habiles excluyendo vacancia y festivos.\n\n3. Sincronice diariamente con la Rama Judicial. Una actuacion que no detecta a tiempo puede generar un termino que ni siquiera sabia que existia.\n\nEn LegalWeb las tres cosas suceden automaticamente. Si todavia hace alguna de las tres a mano, esta perdiendo tiempo.",
+            ],
+            [
+                'category' => 'general',
+                'name' => 'Tip - portal del cliente reduce llamadas',
+                'subject' => 'Como bajar 70% las llamadas de clientes preguntando por su caso',
+                'body' => "Hola {{name}}, una de las cosas mas pesadas de la practica privada es la cantidad de llamadas de clientes preguntando \"como va mi caso\". Aunque sea legitima, drena su tiempo.\n\nDesde LegalWeb genera un enlace unico por caso que comparte con su cliente. El cliente ve en tiempo real:\n\n- Estado actual del proceso y la siguiente etapa\n- Ultimas actuaciones de la Rama Judicial\n- Documentos que necesita aportar\n- Avance del flujo procesal\n\nLos abogados que ya lo usan reportan una caida del 70% en llamadas de seguimiento. Pruebelo desde la vista del caso, opcion Compartir con Cliente.",
+            ],
         ];
 
         foreach ($templates as $tpl) {

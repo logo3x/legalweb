@@ -66,6 +66,11 @@ class SyncCaseActuaciones implements ShouldQueue
 
         $this->case->update($updates);
 
+        // Auto-reparacion: antes de procesar, deduplica las actuaciones que ya
+        // existen para este caso (titulo + fecha del dia). Esto cubre duplicados
+        // creados por versiones previas del sync. Conservamos el id mas bajo.
+        $this->dedupExistingEventsForCase();
+
         // Registrar actuaciones nuevas
         $newCount = 0;
 
@@ -435,6 +440,29 @@ class SyncCaseActuaciones implements ShouldQueue
 
             default => null,
         };
+    }
+
+    /**
+     * Auto-repara duplicados en CaseEvent para este caso: agrupa por (title,
+     * DATE(event_date)), conserva el id mas bajo y elimina el resto. Asi cada
+     * sync deja la tabla limpia antes de agregar nuevos eventos.
+     */
+    private function dedupExistingEventsForCase(): void
+    {
+        $groups = \DB::table('case_events')
+            ->selectRaw('title, DATE(event_date) as event_day, COUNT(*) as cnt, MIN(id) as keep_id')
+            ->where('legal_case_id', $this->case->id)
+            ->groupBy('title', 'event_day')
+            ->having('cnt', '>', 1)
+            ->get();
+
+        foreach ($groups as $g) {
+            CaseEvent::where('legal_case_id', $this->case->id)
+                ->where('title', $g->title)
+                ->whereRaw('DATE(event_date) = ?', [$g->event_day])
+                ->where('id', '!=', $g->keep_id)
+                ->delete();
+        }
     }
 
     private function parseDate(string $date): ?Carbon
