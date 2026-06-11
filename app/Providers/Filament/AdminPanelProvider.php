@@ -43,7 +43,7 @@ class AdminPanelProvider extends PanelProvider
                         '<div style="display:flex;flex-direction:column;align-items:flex-start;gap:.2rem;line-height:1;">'
                         .'<img src="'.e($firm->logo_url).'" alt="'.e($firm->name).'" '
                         .'style="height:3rem;width:auto;max-width:280px;object-fit:contain;display:block;">'
-                        .'<span style="font-family:Inter,sans-serif;font-weight:500;font-size:.65rem;color:#94a3b8;letter-spacing:.02em;display:flex;align-items:center;gap:.2rem;">'
+                        .'<span style="font-family:Inter,sans-serif;font-weight:500;font-size:.7rem;color:#64748B;letter-spacing:.02em;display:flex;align-items:center;gap:.25rem;">'
                         .'powered by'
                         .'<img src="'.asset('images/logo-icon.svg').'" alt="" style="height:.85rem;width:auto;display:inline-block;opacity:.7;">'
                         .'<strong style="font-weight:700;color:#1E3A5F;">LegalWeb</strong>'

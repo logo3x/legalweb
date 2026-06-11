@@ -86,11 +86,8 @@
         .container { max-width: var(--container); margin: 0 auto; padding: 0 24px; }
 
         .lw-gradient-text {
-            background: linear-gradient(135deg, var(--brand-blue) 0%, var(--brand-navy) 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            color: transparent;
+            color: var(--brand-blue);
+            font-weight: 800;
         }
         .lw-hero-wash {
             background:

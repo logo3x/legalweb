@@ -37,45 +37,79 @@ class SubscriptionStatusNotification extends Notification implements ShouldQueue
         $price = '$'.number_format($plan->price_monthly ?? 120000, 0, ',', '.');
         $ends = $this->subscription->ends_at?->format('d/m/Y') ?? '-';
 
-        $mail = (new MailMessage)
-            ->greeting("Dr(a). {$notifiable->name}");
+        $name = $notifiable->name ?? '';
 
-        return match ($this->stage) {
-            self::STAGE_UPCOMING => $mail
-                ->subject('Su suscripcion se renueva pronto - LegalWeb')
-                ->line("Su suscripcion al plan {$plan->name} vence el **{$ends}** ({$price} COP/mes).")
-                ->line('Para que su cuenta siga activa sin interrupciones, realice el pago antes de esa fecha.')
-                ->action('Renovar ahora', url('/admin/planes'))
-                ->line('Si tiene dudas, responda este correo y le ayudamos.'),
-
-            self::STAGE_OVERDUE => $mail
-                ->subject('Su suscripcion vencio - tiene 3 dias de gracia')
-                ->line("Su suscripcion vencio el **{$ends}**. Le dimos 3 dias adicionales para que pueda regularizar el pago sin perder acceso.")
-                ->line("Monto a pagar: **{$price} COP**.")
-                ->action('Pagar ahora', url('/admin/planes'))
-                ->line('Despues de 3 dias sin pago, su cuenta entrara a modo solo-lectura.'),
-
-            self::STAGE_GRACE_ENDING => $mail
-                ->subject('Su cuenta entrara a solo-lectura manana - LegalWeb')
-                ->error()
-                ->line('Su periodo de gracia termina manana.')
-                ->line('Si no realiza el pago, manana su cuenta entrara a modo **solo-lectura**: podra ver sus casos pero no crear ni editar nada.')
-                ->action('Pagar ahora para evitar suspension', url('/admin/planes'))
-                ->line('Los datos siguen seguros. Puede reactivar pagando en cualquier momento.'),
-
-            self::STAGE_SUSPENDED => $mail
-                ->subject('Cuenta en modo solo-lectura por falta de pago')
-                ->error()
-                ->line('Su cuenta entro a modo solo-lectura porque la suscripcion no fue renovada.')
-                ->line('Puede consultar sus casos pero no crear ni editar nuevos registros. La sincronizacion automatica con la Rama Judicial tambien esta pausada.')
-                ->action('Reactivar suscripcion', url('/admin/planes'))
-                ->line('Sus datos estan completos. En 30 dias sin pago archivaremos la cuenta y le avisaremos antes.'),
-
-            default => $mail
-                ->subject('Aviso sobre su suscripcion - LegalWeb')
-                ->line('Hay un cambio en el estado de su suscripcion.')
-                ->action('Revisar Mi Plan', url('/admin/planes')),
+        [$subject, $tone, $eyebrow, $heading, $intro, $lines, $highlight, $actionLabel, $footer] = match ($this->stage) {
+            self::STAGE_UPCOMING => [
+                'Su suscripcion se renueva pronto - LegalWeb',
+                'info',
+                'Renovacion proxima',
+                "Dr(a). {$name}, su suscripcion vence pronto",
+                "Su plan <strong>{$plan->name}</strong> vence el <strong>{$ends}</strong> ({$price} COP/mes).",
+                ['Para que su cuenta siga activa sin interrupciones, realice el pago antes de esa fecha.'],
+                null,
+                'Renovar ahora',
+                'Si tiene dudas, responda este correo y le ayudamos.',
+            ],
+            self::STAGE_OVERDUE => [
+                'Su suscripcion vencio - tiene 3 dias de gracia',
+                'warning',
+                'Pago pendiente',
+                'Su suscripcion vencio',
+                "Vencio el <strong>{$ends}</strong>. Le dimos 3 dias adicionales para que pueda regularizar el pago sin perder acceso.",
+                [],
+                "Monto a pagar: <strong>{$price} COP</strong>.",
+                'Pagar ahora',
+                'Despues de 3 dias sin pago, su cuenta entrara a modo solo-lectura.',
+            ],
+            self::STAGE_GRACE_ENDING => [
+                'Su cuenta entrara a solo-lectura manana - LegalWeb',
+                'danger',
+                'Ultimo aviso',
+                'Manana su cuenta entra a solo-lectura',
+                'Su periodo de gracia termina manana.',
+                ['Si no realiza el pago, manana su cuenta entrara a modo <strong>solo-lectura</strong>: podra ver sus casos pero no crear ni editar nada.'],
+                null,
+                'Pagar ahora para evitar suspension',
+                'Los datos siguen seguros. Puede reactivar pagando en cualquier momento.',
+            ],
+            self::STAGE_SUSPENDED => [
+                'Cuenta en modo solo-lectura por falta de pago',
+                'danger',
+                'Cuenta limitada',
+                'Su cuenta esta en modo solo-lectura',
+                'La suscripcion no fue renovada, asi que entramos en modo solo-lectura.',
+                ['Puede consultar sus casos pero no crear ni editar nuevos registros. La sincronizacion automatica con la Rama Judicial tambien esta pausada.'],
+                null,
+                'Reactivar suscripcion',
+                'Sus datos estan completos. En 30 dias sin pago archivaremos la cuenta y le avisaremos antes.',
+            ],
+            default => [
+                'Aviso sobre su suscripcion - LegalWeb',
+                'info',
+                null,
+                'Aviso sobre su suscripcion',
+                'Hay un cambio en el estado de su suscripcion.',
+                [],
+                null,
+                'Revisar Mi Plan',
+                null,
+            ],
         };
+
+        return (new MailMessage)
+            ->subject($subject)
+            ->view('emails.legalweb-mail', [
+                'tone' => $tone,
+                'eyebrow' => $eyebrow,
+                'heading' => $heading,
+                'intro' => $intro,
+                'lines' => $lines,
+                'highlight' => $highlight,
+                'actionUrl' => url('/admin/planes'),
+                'actionLabel' => $actionLabel,
+                'footerNote' => $footer,
+            ]);
     }
 
     public function toDatabase(object $notifiable): array

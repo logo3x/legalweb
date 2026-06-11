@@ -47,7 +47,7 @@
         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; margin-bottom: 32px;" class="lw-plans-grid">
 
             {{-- Plan gratis --}}
-            <div style="background: #fff; border-radius: 20px; padding: 32px; border: {{ $isOnFree ? '2px solid #10b981' : '1px solid #e5e7eb' }}; position: relative; box-shadow: 0 1px 3px rgba(15,23,42,.06);">
+            <div style="background: #fff; border-radius: 16px; padding: 32px; border: {{ $isOnFree ? '2px solid #10b981' : '1px solid #e5e7eb' }}; position: relative; box-shadow: 0 1px 3px rgba(15,23,42,.06);">
                 @if($isOnFree)
                     <div style="position: absolute; top: -13px; left: 50%; transform: translateX(-50%); background: #10b981; color: #fff; font-size: 11px; font-weight: 700; letter-spacing: .03em; padding: 4px 14px; border-radius: 999px; text-transform: uppercase;">Tu plan actual</div>
                 @endif
@@ -78,7 +78,7 @@
             </div>
 
             {{-- Plan pago --}}
-            <div style="background: #fff; border-radius: 20px; padding: 32px; border: 2px solid #3A86FF; position: relative; box-shadow: 0 10px 28px rgba(58,134,255,.18);">
+            <div style="background: #fff; border-radius: 16px; padding: 32px; border: 1px solid transparent; position: relative; box-shadow: 0 14px 32px rgba(58,134,255,.22), 0 2px 6px rgba(58,134,255,.10); outline: 2px solid #3A86FF; outline-offset: -2px;">
                 <div style="position: absolute; top: -13px; left: 50%; transform: translateX(-50%); background: #3A86FF; color: #fff; font-size: 11px; font-weight: 700; letter-spacing: .03em; padding: 4px 14px; border-radius: 999px; text-transform: uppercase;">Recomendado</div>
 
                 <div style="display: inline-flex; align-items: center; background: #EFF6FF; color: #1d4ed8; font-size: 12px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; padding: 5px 12px; border-radius: 999px; margin-bottom: 16px;">Suscripcion</div>
@@ -98,12 +98,23 @@
                         @csrf
                         <input type="hidden" name="plan_id" value="{{ $paidPlan->id }}">
                         <input type="hidden" name="billing_cycle" value="monthly">
-                        <details style="font-size: 13px; color: #6b7280;">
-                            <summary style="cursor: pointer; user-select: none; padding: 4px 0;">Tengo un codigo de descuento</summary>
-                            <input type="text" name="discount_code" placeholder="Codigo de descuento"
-                                style="margin-top: 8px; width: 100%; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 13px; font-family: 'JetBrains Mono', monospace; text-transform: uppercase;"
+                        <details class="lw-coupon" style="font-size: 13px; color: #475569;">
+                            <summary style="cursor: pointer; user-select: none; padding: 8px 12px; display: inline-flex; align-items: center; gap: 6px; background: #F1F5F9; border-radius: 8px; font-weight: 600; color: #1E3A5F; transition: background .15s ease-out;"
+                                onmouseover="this.style.background='#E2E8F0'" onmouseout="this.style.background='#F1F5F9'">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="transition: transform .2s ease-out;" class="lw-coupon-chevron"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                                <span>Tengo un codigo de descuento</span>
+                            </summary>
+                            <input type="text" name="discount_code" placeholder="EJEMPLO20"
+                                style="margin-top: 10px; width: 100%; padding: 11px 14px; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 14px; font-family: 'JetBrains Mono', monospace; text-transform: uppercase; letter-spacing: .03em; outline: none; transition: border-color .15s ease-out, box-shadow .15s ease-out;"
+                                onfocus="this.style.borderColor='#3A86FF';this.style.boxShadow='0 0 0 3px rgba(58,134,255,.15)'"
+                                onblur="this.style.borderColor='#CBD5E1';this.style.boxShadow='none'"
                                 oninput="this.value = this.value.toUpperCase()">
                         </details>
+                        <style>
+                            .lw-coupon[open] .lw-coupon-chevron { transform: rotate(45deg); }
+                            .lw-coupon summary::-webkit-details-marker { display: none; }
+                            .lw-coupon summary { list-style: none; }
+                        </style>
                         <button type="submit"
                             style="width: 100%; padding: 14px; background: #3A86FF; color: #fff; font-size: 15px; font-weight: 600; border: none; border-radius: 10px; cursor: pointer; box-shadow: 0 8px 18px rgba(58,134,255,.28); transition: background .2s;"
                             onmouseover="this.style.background='#2563eb'" onmouseout="this.style.background='#3A86FF'">
@@ -126,7 +137,7 @@
         </div>
 
         {{-- Lo que incluye --}}
-        <div style="background: #fff; border: 1px solid #e5e7eb; border-radius: 20px; padding: 32px; box-shadow: 0 1px 3px rgba(15,23,42,.06);">
+        <div style="background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 32px; box-shadow: 0 1px 3px rgba(15,23,42,.06);">
             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
                 <svg width="22" height="22" fill="none" stroke="#3A86FF" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
                 <h3 style="font-family: 'Poppins','Inter',sans-serif; font-size: 20px; font-weight: 700; color: #1E3A5F; margin: 0;">Ambos planes incluyen todo</h3>
