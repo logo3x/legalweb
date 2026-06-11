@@ -94,11 +94,22 @@
                 </div>
 
                 @if($paidPlan && $isOnFree)
-                    <a href="{{ route('wompi.checkout') }}?plan_id={{ $paidPlan->id }}&billing_cycle=monthly"
-                       style="display: block; width: 100%; padding: 14px; background: #3A86FF; color: #fff; font-size: 15px; font-weight: 600; border-radius: 10px; text-align: center; text-decoration: none; box-shadow: 0 8px 18px rgba(58,134,255,.28);"
-                       onmouseover="this.style.background='#2563eb'" onmouseout="this.style.background='#3A86FF'">
-                        Suscribirme ahora
-                    </a>
+                    <form method="POST" action="{{ route('wompi.checkout') }}" style="display: flex; flex-direction: column; gap: 8px;">
+                        @csrf
+                        <input type="hidden" name="plan_id" value="{{ $paidPlan->id }}">
+                        <input type="hidden" name="billing_cycle" value="monthly">
+                        <details style="font-size: 13px; color: #6b7280;">
+                            <summary style="cursor: pointer; user-select: none; padding: 4px 0;">Tengo un codigo de descuento</summary>
+                            <input type="text" name="discount_code" placeholder="Codigo de descuento"
+                                style="margin-top: 8px; width: 100%; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 13px; font-family: 'JetBrains Mono', monospace; text-transform: uppercase;"
+                                oninput="this.value = this.value.toUpperCase()">
+                        </details>
+                        <button type="submit"
+                            style="width: 100%; padding: 14px; background: #3A86FF; color: #fff; font-size: 15px; font-weight: 600; border: none; border-radius: 10px; cursor: pointer; box-shadow: 0 8px 18px rgba(58,134,255,.28); transition: background .2s;"
+                            onmouseover="this.style.background='#2563eb'" onmouseout="this.style.background='#3A86FF'">
+                            Suscribirme ahora
+                        </button>
+                    </form>
                 @elseif($paidPlan && $currentPlan?->id === $paidPlan->id)
                     <div style="text-align: center; padding: 14px; background: #EFF6FF; border-radius: 10px; font-size: 14px; font-weight: 600; color: #1d4ed8;">
                         Plan activo

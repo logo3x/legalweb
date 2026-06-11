@@ -1,6 +1,7 @@
 <?php
 
 use App\Console\Commands\CheckDeadlines;
+use App\Console\Commands\CheckSubscriptionGrace;
 use App\Console\Commands\SendMonthlyReports;
 use App\Console\Commands\SyncTybaActuaciones;
 use App\Console\Commands\VerifyPendingPayments;
@@ -17,6 +18,7 @@ use App\Notifications\ReminderDueNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Schema;
 use Symfony\Component\Console\Output\BufferedOutput;
 
 Route::get('/', function () {
@@ -215,6 +217,15 @@ Route::get('/cron/{token}/{task?}', function (string $token, ?string $task = nul
         $command->setOutput(new BufferedOutput);
         $command->handle();
         $results[] = 'monthly-reports: OK';
+    }
+
+    // Tarea: check-subscription-grace (diaria 9am, avisa vencimientos y suspende impagos)
+    if (! $task || $task === 'check-subscription-grace') {
+        $command = new CheckSubscriptionGrace;
+        $command->setLaravel(app());
+        $command->setOutput(new BufferedOutput);
+        $command->handle();
+        $results[] = 'check-subscription-grace: OK';
     }
 
     // Tarea: verify-payments (cada 15 min, verifica pagos pendientes)

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DiscountCode;
+use App\Models\DiscountRedemption;
 use App\Models\Plan;
 use App\Models\Subscription;
 use Illuminate\Http\Request;
@@ -39,6 +41,7 @@ class WompiController extends Controller
         $validated = $request->validate([
             'plan_id' => 'required|exists:plans,id',
             'billing_cycle' => 'required|in:monthly,biannual',
+            'discount_code' => 'nullable|string|max:40',
         ]);
 
         $plan = Plan::findOrFail($validated['plan_id']);
@@ -48,16 +51,34 @@ class WompiController extends Controller
             return redirect('/admin/planes')->with('error', 'Debe configurar su firma primero.');
         }
 
-        $amount = $validated['billing_cycle'] === 'biannual'
+        $originalAmount = $validated['billing_cycle'] === 'biannual'
             ? $plan->price_yearly
             : $plan->price_monthly;
 
-        $amountInCents = $amount * 100;
+        // Validar codigo de descuento si viene
+        $discountCode = null;
+        $discountAmount = 0;
+        if (! empty($validated['discount_code'])) {
+            $code = strtoupper(trim($validated['discount_code']));
+            $discountCode = DiscountCode::where('code', $code)->first();
+
+            if (! $discountCode) {
+                return redirect('/admin/planes')->with('error', 'El codigo de descuento no existe.');
+            }
+            $error = $discountCode->validateForPlan($plan);
+            if ($error) {
+                return redirect('/admin/planes')->with('error', $error);
+            }
+            $discountAmount = $discountCode->calculateDiscount($originalAmount);
+        }
+
+        $finalAmount = max(0, $originalAmount - $discountAmount);
+        $amountInCents = $finalAmount * 100;
         $reference = $this->originPrefix().$firm->id.'-'.$plan->slug.'-'.now()->timestamp;
         $currency = 'COP';
 
         // Crear suscripcion pendiente
-        Subscription::create([
+        $subscription = Subscription::create([
             'firm_id' => $firm->id,
             'plan_id' => $plan->id,
             'billing_cycle' => $validated['billing_cycle'],
@@ -68,6 +89,22 @@ class WompiController extends Controller
                 : now()->addMonth(),
             'wompi_reference' => $reference,
         ]);
+
+        // Registrar el canje del codigo (independientemente del exito del pago).
+        // Si Wompi rechaza, el redemption queda pero el webhook puede revertirlo.
+        if ($discountCode) {
+            DiscountRedemption::create([
+                'discount_code_id' => $discountCode->id,
+                'firm_id' => $firm->id,
+                'user_id' => auth()->id(),
+                'plan_id' => $plan->id,
+                'original_amount' => $originalAmount,
+                'discount_amount' => $discountAmount,
+                'final_amount' => $finalAmount,
+                'redeemed_at' => now(),
+            ]);
+            $discountCode->increment('current_uses');
+        }
 
         // Generar firma de integridad
         $integritySecret = config('services.wompi.integrity_secret');
