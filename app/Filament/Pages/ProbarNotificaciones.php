@@ -111,11 +111,11 @@ class ProbarNotificaciones extends Page
         try {
             match ($key) {
                 'reminder_due' => $this->testReminderDue($user, $case),
-                'tyba_sync' => $user->notify(new TybaSyncNotification($case, 3)),
+                'tyba_sync' => $user->notifyNow(new TybaSyncNotification($case, 3)),
                 'term_deadline' => $this->testTermDeadline($user, $case),
                 'case_updated' => $this->testCaseUpdated($user, $case),
                 'flow_step_completed' => $this->testFlowStepCompleted($user, $case),
-                'portal_access' => $user->notify(new PortalAccessNotification($case, request()->ip() ?? '127.0.0.1')),
+                'portal_access' => $user->notifyNow(new PortalAccessNotification($case, request()->ip() ?? '127.0.0.1')),
                 'client_document_ready' => $this->testClientDocumentReady($user, $case),
                 default => null,
             };
@@ -154,7 +154,7 @@ class ProbarNotificaciones extends Page
             ]);
 
         $reminder->setRelation('legalCase', $case);
-        $user->notify(new ReminderDueNotification($reminder));
+        $user->notifyNow(new ReminderDueNotification($reminder));
     }
 
     private function testTermDeadline($user, LegalCase $case): void
@@ -176,12 +176,12 @@ class ProbarNotificaciones extends Page
                 'remind_at' => now(),
             ]);
             $reminder->setRelation('legalCase', $case);
-            $user->notify(new ReminderDueNotification($reminder));
+            $user->notifyNow(new ReminderDueNotification($reminder));
 
             return;
         }
 
-        $user->notify(new TermDeadlineNotification($case, $progress, 3));
+        $user->notifyNow(new TermDeadlineNotification($case, $progress, 3));
     }
 
     private function testCaseUpdated($user, LegalCase $case): void
@@ -197,7 +197,7 @@ class ProbarNotificaciones extends Page
                 'description' => 'Esta es una actuacion de prueba. El contenido real vendria de la Rama Judicial.',
             ]);
 
-        $user->notify(new CaseUpdatedNotification($case, $event));
+        $user->notifyNow(new CaseUpdatedNotification($case, $event));
     }
 
     private function testFlowStepCompleted($user, LegalCase $case): void
@@ -216,7 +216,7 @@ class ProbarNotificaciones extends Page
             return;
         }
 
-        $user->notify(new FlowStepCompletedNotification($case, $progress, 'Siguiente etapa de ejemplo'));
+        $user->notifyNow(new FlowStepCompletedNotification($case, $progress, 'Siguiente etapa de ejemplo'));
     }
 
     private function testClientDocumentReady($user, LegalCase $case): void
@@ -234,6 +234,6 @@ class ProbarNotificaciones extends Page
             $document->id = 0;
         }
 
-        $user->notify(new ClientDocumentReadyNotification($case, $document, 'uploaded'));
+        $user->notifyNow(new ClientDocumentReadyNotification($case, $document, 'uploaded'));
     }
 }
