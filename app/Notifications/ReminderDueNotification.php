@@ -49,36 +49,40 @@ class ReminderDueNotification extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
-        $type = match ($this->reminder->type) {
-            'audiencia' => 'Audiencia',
-            'vencimiento' => 'Vencimiento de termino',
-            'reunion' => 'Reunion',
-            'tarea' => 'Tarea',
-            default => 'Recordatorio',
+        $this->reminder->loadMissing('legalCase');
+        $case = $this->reminder->legalCase;
+
+        $now = now();
+        $due = $this->reminder->due_date;
+        $diffDays = $due ? max(0, (int) $now->diffInDays($due, false)) : null;
+        $pill = match (true) {
+            $due && $due->isPast() => 'VENCIDO',
+            $diffDays === 0 => 'VENCE HOY',
+            $diffDays === 1 => 'VENCE MA&Ntilde;ANA',
+            $diffDays !== null && $diffDays <= 7 => 'VENCE EN '.$diffDays.' D&Iacute;AS',
+            default => 'RECORDATORIO PR&Oacute;XIMO',
         };
 
-        $mail = (new MailMessage)
-            ->subject("[Recordatorio] {$this->reminder->title}")
-            ->greeting("Dr(a). {$notifiable->name}")
-            ->line('Tiene un recordatorio programado:')
-            ->line("**{$this->reminder->title}**")
-            ->line("Tipo: {$type}")
-            ->line("Fecha limite: {$this->reminder->due_date->format('d/m/Y H:i')}");
+        $ctaUrl = $this->reminder->legal_case_id
+            ? url("/admin/legal-cases/{$this->reminder->legal_case_id}")
+            : url('/admin/reminders');
 
-        if ($this->reminder->description) {
-            $mail->line($this->reminder->description);
-        }
+        $ctaLabel = $this->reminder->legal_case_id ? 'Ver caso' : 'Ver mi agenda';
 
-        if ($this->reminder->legal_case_id) {
-            $mail->action('Ver caso', url("/admin/legal-cases/{$this->reminder->legal_case_id}"));
-        } else {
-            $mail->action('Ver agenda', url('/admin/reminders'));
-        }
-
-        $brand = $notifiable->firm?->emailBrand() ?? [];
-
-        return $mail
-            ->salutation('LegalWeb - Control inteligente de sus procesos legales')
-            ->with($brand);
+        return (new MailMessage)
+            ->subject('[Recordatorio] '.$this->reminder->title)
+            ->view('emails.vencimiento', [
+                'lawyerName' => 'Dr(a). '.($notifiable->name ?? ''),
+                'pillText' => $pill,
+                'headline' => 'Tienes un recordatorio activo en tu agenda',
+                'title' => $this->reminder->title,
+                'dueAt' => $due?->translatedFormat('d \\d\\e F \\d\\e Y · g:i a'),
+                'priorityLabel' => ucfirst($this->reminder->priority ?? 'media'),
+                'caseNumber' => $case?->case_number,
+                'despacho' => $case?->court,
+                'description' => $this->reminder->description,
+                'ctaUrl' => $ctaUrl,
+                'ctaLabel' => $ctaLabel,
+            ]);
     }
 }

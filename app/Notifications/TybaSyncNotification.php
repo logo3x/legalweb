@@ -42,16 +42,22 @@ class TybaSyncNotification extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
+        $this->case->loadMissing(['client', 'caseType', 'events' => fn ($q) => $q->orderByDesc('event_date')->limit(1)]);
+        $latestEvent = $this->case->events->first();
+
         return (new MailMessage)
-            ->subject("Nuevas actuaciones detectadas - {$this->case->case_number}")
-            ->greeting("Dr(a). {$notifiable->name}")
-            ->line("Se detectaron **{$this->newActuaciones} nueva(s) actuacion(es)** en su caso:")
-            ->line("Caso: **{$this->case->title}** ({$this->case->case_number})")
-            ->line('Radicado: '.$this->case->external_case_number)
-            ->line('Fuente: Rama Judicial de Colombia (Tyba)')
-            ->line('Las actuaciones han sido registradas automaticamente en el expediente digital.')
-            ->action('Ver caso', url("/admin/legal-cases/{$this->case->id}"))
-            ->salutation('LegalWeb - Control inteligente de sus procesos legales')
-            ->with($this->case->user?->firm?->emailBrand() ?? []);
+            ->subject("Nueva actuacion detectada - {$this->case->case_number}")
+            ->view('emails.nueva-actuacion', [
+                'lawyerName' => 'Dr(a). '.($notifiable->name ?? ''),
+                'newCount' => $this->newActuaciones,
+                'eventTitle' => $latestEvent?->title ?? 'Nueva actuacion en la Rama Judicial',
+                'eventType' => $latestEvent?->event_type ?? 'actuacion',
+                'eventDate' => $latestEvent?->event_date?->translatedFormat('d M Y'),
+                'radicado' => $this->case->external_case_number ?? $this->case->case_number,
+                'despacho' => $this->case->court ?? '-',
+                'clientName' => $this->case->client?->full_name ?? '-',
+                'caseTitle' => $this->case->case_number.' · '.($this->case->title ?? ''),
+                'caseUrl' => url("/admin/legal-cases/{$this->case->id}"),
+            ]);
     }
 }

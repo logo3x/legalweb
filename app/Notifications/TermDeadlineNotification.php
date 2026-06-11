@@ -46,20 +46,31 @@ class TermDeadlineNotification extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
-        $stepName = $this->progress->flowStep->name;
-        $daysLimit = $this->progress->flowStep->days_limit;
-        $urgency = $this->daysRemaining <= 1 ? 'URGENTE' : 'Atencion';
+        $this->progress->loadMissing('flowStep');
+        $stepName = $this->progress->flowStep->name ?? 'Etapa procesal';
+
+        $pill = match (true) {
+            $this->daysRemaining <= 0 => 'VENCE HOY',
+            $this->daysRemaining === 1 => 'VENCE MA&Ntilde;ANA',
+            default => 'VENCE EN '.$this->daysRemaining.' D&Iacute;AS H&Aacute;BILES',
+        };
+
+        $dueDate = now()->addWeekdays(max(0, $this->daysRemaining));
 
         return (new MailMessage)
-            ->subject("[{$urgency}] Termino por vencer - {$this->case->case_number}")
-            ->greeting("Dr(a). {$notifiable->name}")
-            ->line("El siguiente termino esta proximo a vencer en el caso **{$this->case->title}** ({$this->case->case_number}):")
-            ->line("Etapa: **{$stepName}**")
-            ->line("Plazo: {$daysLimit} dias")
-            ->line("Dias restantes: **{$this->daysRemaining}**")
-            ->action('Ver caso', url("/admin/legal-cases/{$this->case->id}"))
-            ->line('Por favor tome las acciones necesarias para evitar el vencimiento del termino.')
-            ->salutation('LegalWeb - Control inteligente de sus procesos legales')
-            ->with($this->case->user?->firm?->emailBrand() ?? []);
+            ->subject('[Termino procesal] '.$this->case->case_number.' - '.$stepName)
+            ->view('emails.vencimiento', [
+                'lawyerName' => 'Dr(a). '.($notifiable->name ?? ''),
+                'pillText' => $pill,
+                'headline' => 'Un t&eacute;rmino procesal del caso est&aacute; pr&oacute;ximo a vencer',
+                'title' => $stepName,
+                'dueAt' => $dueDate->translatedFormat('d \\d\\e F \\d\\e Y'),
+                'priorityLabel' => $this->daysRemaining <= 1 ? 'Urgente' : 'Alta',
+                'caseNumber' => $this->case->case_number,
+                'despacho' => $this->case->court,
+                'description' => $this->case->title.' · Por favor tome las acciones necesarias para evitar el vencimiento del termino.',
+                'ctaUrl' => url("/admin/legal-cases/{$this->case->id}"),
+                'ctaLabel' => 'Ver caso',
+            ]);
     }
 }
