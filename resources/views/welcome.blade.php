@@ -337,6 +337,7 @@
             text-align: center; color: var(--text-muted);
             max-width: 560px; margin: 22px auto 0; font-size: var(--text-sm);
         }
+        [x-cloak] { display: none !important; }
 
         /* Pricing */
         .plan-grid {
@@ -687,14 +688,17 @@
     </section>
 
     {{-- Preview --}}
-    <section id="vista-previa" class="std" style="background: var(--white);" x-data="{ active: 0, tabs: [
-        { name: 'Escritorio', img: '/images/screenshots/dashboard.png', desc: 'Vista general con KPIs: casos activos, clientes, actuaciones recientes y alertas de vencimiento.' },
-        { name: 'Detalle del caso', img: '/images/screenshots/caso-detalle.png', desc: 'Datos del proceso y de la Rama Judicial, partes, despacho, juez, actuaciones y accesos al portal.' },
-        { name: 'Agenda', img: '/images/screenshots/agenda.png', desc: 'Recordatorios y vencimientos con prioridad y alertas automáticas en días hábiles.' },
-        { name: 'Reportes', img: '/images/screenshots/reportes.png', desc: 'Analítica de despachos, tipos de actuaciones y actividad mensual de tu práctica.' },
-        { name: 'Casos', img: '/images/screenshots/casos.png', desc: 'Listado completo con búsqueda y filtros. Importación directa desde la Rama Judicial.' },
-        { name: 'Clientes', img: '/images/screenshots/clientes.png', desc: 'Directorio centralizado con búsqueda de procesos en la Rama Judicial por nombre.' }
-    ] }">
+    <section id="vista-previa" class="std" style="background: var(--white);" x-data="{
+        active: 0,
+        tabs: [
+            { name: 'Escritorio', img: '/images/screenshots/escritorio.png', desc: 'Vista general con KPIs: casos activos, clientes, actuaciones recientes y alertas de vencimiento.' },
+            { name: 'Detalle del caso', img: '/images/screenshots/detalle-caso.png', desc: 'Datos del proceso y de la Rama Judicial, partes, despacho, juez, actuaciones y accesos al portal.' },
+            { name: 'Agenda', img: '/images/screenshots/agenda.png', desc: 'Recordatorios y vencimientos con prioridad y alertas automáticas en días hábiles.' },
+            { name: 'Reportes', img: '/images/screenshots/reportes.png', desc: 'Analítica de despachos, tipos de actuaciones y actividad mensual de tu práctica.' },
+            { name: 'Flujo de proceso', img: '/images/screenshots/flujo-proceso.png', desc: '21 flujos precargados según la legislación colombiana (CGP, CPT, Ley 906, CPACA), totalmente editables.' },
+            { name: 'Equipo de trabajo', img: '/images/screenshots/equipo.png', desc: 'Invita colaboradores y asigna casos con permisos individuales; tú mantienes el acceso total.' }
+        ]
+    }">
         <div class="container">
             <div class="section-head">
                 <span class="eyebrow">La plataforma por dentro</span>
@@ -702,8 +706,11 @@
                 <p>Datos reales importados desde la Rama Judicial, en una interfaz hecha para trabajar rápido.</p>
             </div>
             <div class="preview-tabs">
-                <template x-for="(tab, index) in tabs" :key="index">
-                    <button @click="active = index" :class="active === index ? 'preview-tab active' : 'preview-tab'" x-text="tab.name"></button>
+                <template x-for="(tab, index) in tabs" :key="'tab-'+index">
+                    <button type="button"
+                        @click="active = index"
+                        :class="{'preview-tab': true, 'active': active === index}"
+                        x-text="tab.name"></button>
                 </template>
             </div>
             <div class="browser-frame">
@@ -712,11 +719,17 @@
                     <span class="url">legalweb.com.co/admin</span>
                 </div>
                 <template x-for="(tab, index) in tabs" :key="'img-'+index">
-                    <img x-show="active === index" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" :src="tab.img" :alt="tab.name">
+                    <img x-cloak x-show="active === index"
+                        x-transition:enter="transition ease-out duration-300"
+                        x-transition:enter-start="opacity-0"
+                        x-transition:enter-end="opacity-100"
+                        :src="tab.img"
+                        :alt="tab.name"
+                        loading="lazy">
                 </template>
             </div>
             <template x-for="(tab, index) in tabs" :key="'desc-'+index">
-                <p x-show="active === index" x-transition class="preview-desc" x-text="tab.desc"></p>
+                <p x-cloak x-show="active === index" x-transition class="preview-desc" x-text="tab.desc"></p>
             </template>
         </div>
     </section>
