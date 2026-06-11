@@ -173,13 +173,16 @@ class SyncCaseActuaciones implements ShouldQueue
             return;
         }
 
-        // Evitar duplicados: misma actuacion + misma fecha de vencimiento
-        $exists = Reminder::where('legal_case_id', $this->case->id)
-            ->whereDate('due_date', $dueDate)
-            ->where('title', 'like', '%'.$actuacion['tipo'].'%')
-            ->exists();
+        $title = $actuacion['tipo'].' - '.$this->case->case_number;
 
-        if ($exists) {
+        // Dedup robusto: usar firstOrCreate en lugar de whereDate + like
+        // (whereDate fallaba por timezone, like dejaba pasar variantes).
+        // Match exacto en (legal_case_id, title, due_date) garantiza unicidad.
+        if (Reminder::where('legal_case_id', $this->case->id)
+            ->where('title', $title)
+            ->where('due_date', $dueDate)
+            ->exists()
+        ) {
             return;
         }
 

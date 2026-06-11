@@ -145,22 +145,46 @@ Route::get('/cron/{token}/{task?}', function (string $token, ?string $task = nul
     }
 
     // Tarea: send-reminders (cada 5 min)
+    // Antes usabamos ventana de "ultima hora" lo que perdia recordatorios
+    // silenciosamente si el cron fallaba un dia. Ahora trackeamos cada envio
+    // con notified_at y mandamos todo lo pendiente cuyo remind_at ya paso.
+    // Tope de 100 por corrida para no saturar SMTP en backfill grande.
     if (! $task || $task === 'send-reminders') {
-        $reminders = Reminder::with('user')
+        // Soporte de catch-up: si la columna notified_at todavia no existe
+        // (migracion pendiente), volvemos al comportamiento anterior.
+        $hasNotifiedAt = Schema::hasColumn('reminders', 'notified_at');
+
+        $query = Reminder::with('user')
             ->where('is_completed', false)
             ->whereNotNull('remind_at')
-            ->where('remind_at', '<=', now())
-            ->where('remind_at', '>=', now()->subHour())
-            ->get();
+            ->where('remind_at', '<=', now());
+
+        if ($hasNotifiedAt) {
+            $query->whereNull('notified_at');
+        } else {
+            $query->where('remind_at', '>=', now()->subHour());
+        }
+
+        $reminders = $query->orderBy('remind_at')->limit(100)->get();
 
         $sent = 0;
+        $failed = 0;
         foreach ($reminders as $reminder) {
-            if ($reminder->user) {
+            if (! $reminder->user) {
+                continue;
+            }
+            try {
                 $reminder->user->notify(new ReminderDueNotification($reminder));
+                if ($hasNotifiedAt) {
+                    $reminder->forceFill(['notified_at' => now()])->saveQuietly();
+                }
                 $sent++;
+            } catch (Throwable $e) {
+                Log::warning('send-reminders fallo: '.$e->getMessage(), ['id' => $reminder->id]);
+                $failed++;
             }
         }
-        $results[] = "send-reminders: {$sent} enviados";
+        $results[] = "send-reminders: {$sent} enviados".($failed > 0 ? ", {$failed} fallidos" : '');
     }
 
     // Procesar jobs pendientes en la cola (max 50 seg)

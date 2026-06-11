@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'remind_at',
     'is_completed',
     'completed_at',
+    'notified_at',
     'priority',
 ])]
 class Reminder extends Model
@@ -32,6 +33,7 @@ class Reminder extends Model
             'due_date' => 'datetime',
             'remind_at' => 'datetime',
             'completed_at' => 'datetime',
+            'notified_at' => 'datetime',
             'is_completed' => 'boolean',
         ];
     }
