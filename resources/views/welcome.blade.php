@@ -453,6 +453,112 @@
         }
         .scroll-top.visible { opacity: 1; transform: translateY(0); }
         .scroll-top:hover { background: var(--brand-blue-700); }
+
+        /* ==========================================================
+           MOTION (impeccable: ease-out-expo, materials reales,
+           reveal sobre default visible, reducedMotion respetado)
+           ========================================================== */
+
+        /* Curve premium */
+        :root {
+            --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+            --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        /* Hero intro: ya visible, sube + fade muy sutil */
+        .lw-hero-pill { animation: lwFadeUp .9s var(--ease-out-expo) both; }
+        .lw-hero-h1   { animation: lwFadeUp .9s .08s var(--ease-out-expo) both; }
+        .lw-hero-lead { animation: lwFadeUp .9s .16s var(--ease-out-expo) both; }
+        .lw-hero-cta  { animation: lwFadeUp .9s .24s var(--ease-out-expo) both; }
+        .lw-hero-trust { animation: lwFadeUp .9s .32s var(--ease-out-expo) both; }
+        .lw-hero-visual { animation: lwFadeUpScale 1.1s .25s var(--ease-out-expo) both; }
+        .lw-hero-badge { animation: lwFloatIn 1.1s .55s var(--ease-out-expo) both; }
+
+        @keyframes lwFadeUp {
+            from { opacity: 0; transform: translate3d(0, 14px, 0); }
+            to   { opacity: 1; transform: translate3d(0, 0, 0); }
+        }
+        @keyframes lwFadeUpScale {
+            from { opacity: 0; transform: translate3d(0, 18px, 0) scale(.985); }
+            to   { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+        }
+        @keyframes lwFloatIn {
+            from { opacity: 0; transform: translate3d(0, -10px, 0) rotate(2deg); }
+            to   { opacity: .96; transform: translate3d(0, 0, 0) rotate(3deg); }
+        }
+
+        /* Reveal on scroll: default visible, IntersectionObserver le da
+           el "from" via .lw-reveal y lo libera con .is-in. Si JS no corre,
+           el contenido queda visible (skill rule: nunca gate visibility) */
+        .lw-reveal { transition: opacity .75s var(--ease-out-expo), transform .9s var(--ease-out-expo); }
+        .lw-reveal.before { opacity: 0; transform: translate3d(0, 24px, 0); }
+        .lw-reveal.before.is-in { opacity: 1; transform: translate3d(0, 0, 0); }
+
+        /* Stagger: el padre marca, cada hijo recibe delay creciente */
+        .lw-stagger > * { transition-delay: 0ms; }
+        .lw-stagger.is-in > *:nth-child(1) { transition-delay: 0ms; }
+        .lw-stagger.is-in > *:nth-child(2) { transition-delay: 80ms; }
+        .lw-stagger.is-in > *:nth-child(3) { transition-delay: 160ms; }
+        .lw-stagger.is-in > *:nth-child(4) { transition-delay: 240ms; }
+        .lw-stagger.is-in > *:nth-child(5) { transition-delay: 320ms; }
+        .lw-stagger.is-in > *:nth-child(6) { transition-delay: 400ms; }
+
+        /* Plan card featured: shimmer sutil de borde + glow al hover */
+        .plan-card.featured {
+            position: relative;
+            transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo);
+        }
+        .plan-card.featured::after {
+            content: ''; position: absolute; inset: -2px;
+            border-radius: inherit; pointer-events: none;
+            background: linear-gradient(135deg, rgba(58,134,255,.0) 30%, rgba(58,134,255,.45) 50%, rgba(58,134,255,.0) 70%);
+            background-size: 250% 250%;
+            mask: linear-gradient(#000, #000) content-box, linear-gradient(#000, #000);
+            mask-composite: exclude;
+            -webkit-mask: linear-gradient(#000, #000) content-box, linear-gradient(#000, #000);
+            -webkit-mask-composite: xor;
+            padding: 2px;
+            opacity: .8;
+            animation: lwShimmer 3.6s linear infinite;
+        }
+        @keyframes lwShimmer {
+            0% { background-position: 200% 50%; }
+            100% { background-position: -100% 50%; }
+        }
+        .plan-card.featured:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 24px 48px rgba(58,134,255,.28), 0 4px 12px rgba(58,134,255,.14);
+        }
+
+        /* Feat cards: hover ya existe, refinamos curve y agregamos icon spring */
+        .feat-card { transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo), border-color .25s ease; }
+        .feat-card:hover { transform: translateY(-4px); }
+        .feat-card .ico { transition: transform .4s var(--ease-out-expo); }
+        .feat-card:hover .ico { transform: scale(1.1) rotate(-3deg); }
+
+        /* Flow steps: tile pulse on hover */
+        .step .tile { transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo); }
+        .step:hover .tile { transform: scale(1.06); box-shadow: 0 8px 20px rgba(15,23,42,.10); }
+
+        /* Buttons premium */
+        .btn { transition: transform .2s var(--ease-out-quart), box-shadow .25s var(--ease-out-quart), background .2s ease; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 14px 28px rgba(58,134,255,.35); }
+        .btn-primary:active { transform: translateY(0); transition-duration: .1s; }
+
+        /* Nav: hide-on-scroll-down, show-on-scroll-up */
+        .nav-shell { transition: transform .35s var(--ease-out-expo), background .25s ease; }
+        .nav-shell.is-hidden { transform: translateY(-100%); }
+
+        /* Email mockup parallax slot */
+        .lw-parallax { will-change: transform; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .lw-hero-pill, .lw-hero-h1, .lw-hero-lead, .lw-hero-cta, .lw-hero-trust,
+            .lw-hero-visual, .lw-hero-badge { animation: none !important; }
+            .lw-reveal.before { opacity: 1 !important; transform: none !important; }
+            .plan-card.featured::after { animation: none !important; }
+            .lw-parallax { transform: none !important; }
+        }
     </style>
 </head>
 <body>
@@ -483,23 +589,23 @@
     <section class="lw-hero-wash" style="border-bottom: 1px solid var(--border-subtle);">
         <div class="container hero-grid">
             <div>
-                <div class="hero-pill">
+                <div class="hero-pill lw-hero-pill">
                     <span style="position: relative; display: inline-flex; width: 8px; height: 8px;">
                         <span class="lw-ping" style="position: absolute; inset: 0; border-radius: 50%; background: var(--green-500);"></span>
                         <span style="position: relative; width: 8px; height: 8px; border-radius: 50%; background: var(--green-500);"></span>
                     </span>
                     Conectado con la Rama Judicial de Colombia
                 </div>
-                <h1>
+                <h1 class="lw-hero-h1">
                     El día que tu proceso<br>
                     cambie, <span class="lw-gradient-text">lo sabrás</span><br>
                     antes que nadie.
                 </h1>
-                <p class="lead">
+                <p class="lead lw-hero-lead">
                     LegalWeb vigila tus procesos en la Rama Judicial y, cada vez que aparece una nueva actuación,
                     te lo notifica por correo. Sin entrar a consultar uno por uno. Sin perder un término.
                 </p>
-                <div style="display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 18px;">
+                <div class="lw-hero-cta" style="display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 18px;">
                     <a href="{{ route('auth.google') }}" class="btn btn-primary btn-lg">
                         <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="white" fill-opacity=".85"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="white" fill-opacity=".95"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="white" fill-opacity=".75"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="white" fill-opacity=".85"/></svg>
                         Comenzar con Google — Gratis
@@ -509,15 +615,15 @@
                         <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                     </a>
                 </div>
-                <p style="font-size: 13px; color: var(--text-faint); display: flex; align-items: center; gap: 8px; margin: 0;">
+                <p class="lw-hero-trust" style="font-size: 13px; color: var(--text-faint); display: flex; align-items: center; gap: 8px; margin: 0;">
                     <svg width="15" height="15" fill="none" stroke="var(--green-600)" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
                     3 meses gratis · sin tarjeta · configúralo en 60 segundos
                 </p>
             </div>
 
-            <div class="visual" style="position: relative;">
+            <div class="visual lw-hero-visual lw-parallax" style="position: relative;">
                 <div style="position: absolute; inset: -10% -6%; background: radial-gradient(circle at 70% 30%, rgba(58,134,255,.14), transparent 60%); pointer-events: none;"></div>
-                <div class="behind-card">
+                <div class="behind-card lw-hero-badge">
                     <div class="head">
                         <span class="ico">
                             <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
@@ -564,7 +670,7 @@
     {{-- Vigilancia flow --}}
     <section id="vigilancia" class="std" style="background: var(--white);">
         <div class="container">
-            <div class="section-head">
+            <div class="section-head lw-reveal before">
                 <span class="eyebrow green">
                     <span style="width: 7px; height: 7px; border-radius: 50%; background: var(--green-500);"></span>
                     Vigilancia judicial automática
@@ -572,7 +678,7 @@
                 <h2>Nunca más entres a consultar proceso por proceso</h2>
                 <p>La función que más le importa a un abogado: enterarte de cada movimiento de la Rama Judicial sin levantar un dedo. Así funciona.</p>
             </div>
-            <div class="flow-grid">
+            <div class="flow-grid lw-reveal before lw-stagger">
                 <div class="flow-line"></div>
 
                 <div class="step">
@@ -632,12 +738,12 @@
     {{-- Funcionalidades --}}
     <section id="funcionalidades" class="std" style="background: var(--surface-page);">
         <div class="container">
-            <div class="section-head">
+            <div class="section-head lw-reveal before">
                 <span class="eyebrow">Todo en un solo lugar</span>
                 <h2>Tu práctica legal, ordenada de principio a fin</h2>
                 <p>Herramientas pensadas por y para abogados colombianos.</p>
             </div>
-            <div class="feat-grid">
+            <div class="feat-grid lw-reveal before lw-stagger">
                 <div class="feat-card">
                     <div class="ico info">
                         <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
@@ -697,7 +803,7 @@
         ]
     }">
         <div class="container">
-            <div class="section-head">
+            <div class="section-head lw-reveal before">
                 <span class="eyebrow">La plataforma por dentro</span>
                 <h2>Así se ve LegalWeb cada mañana</h2>
                 <p>Datos reales importados desde la Rama Judicial, en una interfaz hecha para trabajar rápido.</p>
@@ -734,12 +840,12 @@
     {{-- Pricing --}}
     <section id="planes" class="std" style="background: var(--surface-page);">
         <div class="container" style="max-width: 980px;">
-            <div class="section-head">
+            <div class="section-head lw-reveal before">
                 <h2>Un precio. Todo incluido.</h2>
                 <p>Prueba LegalWeb completo y gratis por 3 meses. Después, una sola suscripción de <strong>$120.000</strong> COP/mes — sin niveles, sin límites de casos, sin sorpresas.</p>
             </div>
 
-            <div class="plan-grid">
+            <div class="plan-grid lw-reveal before lw-stagger">
                 <div class="plan">
                     <div class="plan-card">
                         <div class="eyebrow green" style="align-self: flex-start; margin-bottom: 16px;">Prueba gratuita</div>
@@ -786,7 +892,7 @@
                     <svg width="20" height="20" fill="none" stroke="var(--brand-blue)" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
                     <h3 style="font-family: var(--font-display); font-size: var(--text-xl); font-weight: 700; color: var(--brand-navy); margin: 0;">Ambos planes incluyen todo</h3>
                 </div>
-                <ul class="incluye-grid" style="list-style: none; padding: 0; margin: 0;">
+                <ul class="incluye-grid lw-reveal before lw-stagger" style="list-style: none; padding: 0; margin: 0;">
                     @foreach([
                         'Casos y clientes ilimitados',
                         'Importación y vigilancia de la Rama Judicial',
@@ -814,7 +920,7 @@
     {{-- Trust band --}}
     <section style="padding: 56px 0; background: var(--white); border-top: 1px solid var(--border-subtle); border-bottom: 1px solid var(--border-subtle);">
         <div class="container" style="max-width: 880px;">
-            <div class="trust-grid">
+            <div class="trust-grid lw-reveal before lw-stagger">
                 <div class="item">
                     <div class="k">Ley 1581</div>
                     <div class="d">Cumplimiento en protección de datos personales</div>
@@ -893,13 +999,69 @@
 
     <script>
         (function () {
+            const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+            /* Scroll to top */
             const btn = document.getElementById('scroll-top-btn');
-            window.addEventListener('scroll', function () {
-                btn.classList.toggle('visible', window.scrollY > 600);
-            }, { passive: true });
-            btn.addEventListener('click', function () {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            });
+            if (btn) {
+                window.addEventListener('scroll', function () {
+                    btn.classList.toggle('visible', window.scrollY > 600);
+                }, { passive: true });
+                btn.addEventListener('click', function () {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+            }
+
+            if (reduceMotion) return;
+
+            /* Reveal on scroll via IntersectionObserver */
+            const targets = document.querySelectorAll('.lw-reveal');
+            if ('IntersectionObserver' in window && targets.length) {
+                const io = new IntersectionObserver((entries) => {
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('is-in');
+                            io.unobserve(entry.target);
+                        }
+                    });
+                }, { threshold: 0.15, rootMargin: '0px 0px -8% 0px' });
+                targets.forEach((el) => io.observe(el));
+            } else {
+                targets.forEach((el) => el.classList.add('is-in'));
+            }
+
+            /* Nav hide-on-scroll-down */
+            const nav = document.getElementById('main-nav');
+            if (nav) {
+                let lastY = window.scrollY;
+                let ticking = false;
+                window.addEventListener('scroll', () => {
+                    if (ticking) return;
+                    window.requestAnimationFrame(() => {
+                        const y = window.scrollY;
+                        const goingDown = y > lastY && y > 140;
+                        nav.classList.toggle('is-hidden', goingDown);
+                        lastY = y;
+                        ticking = false;
+                    });
+                    ticking = true;
+                }, { passive: true });
+            }
+
+            /* Parallax muy sutil en el hero visual (solo desktop, no toca layout) */
+            const parallax = document.querySelector('.lw-parallax');
+            if (parallax && window.matchMedia('(min-width: 981px)').matches) {
+                let raf = null;
+                window.addEventListener('scroll', () => {
+                    if (raf) return;
+                    raf = window.requestAnimationFrame(() => {
+                        const y = window.scrollY;
+                        const offset = Math.min(y * 0.08, 40);
+                        parallax.style.transform = `translate3d(0, ${offset}px, 0)`;
+                        raf = null;
+                    });
+                }, { passive: true });
+            }
         })();
     </script>
 
