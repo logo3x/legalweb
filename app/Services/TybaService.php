@@ -137,6 +137,75 @@ class TybaService
     }
 
     /**
+     * Buscar procesos por numero de documento (cedula o NIT) en la Rama Judicial.
+     *
+     * tipoDocumento: 1 = Cedula ciudadania, 2 = Cedula extranjeria,
+     *                3 = NIT, 4 = Pasaporte, 5 = Tarjeta identidad
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function searchByDocument(string $document, int $tipoDocumento = 1): array
+    {
+        $allProcesos = [];
+        $page = 1;
+        $maxPages = 3;
+        $cleanDoc = preg_replace('/[^\d]/', '', $document);
+
+        if ($cleanDoc === '') {
+            return [];
+        }
+
+        do {
+            try {
+                $response = Http::timeout(15)
+                    ->get("{$this->apiBase}/Procesos/Consulta/DocumentoIdentificacion", [
+                        'tipoDocumento' => $tipoDocumento,
+                        'numeroDocumento' => $cleanDoc,
+                        'pagina' => $page,
+                    ]);
+            } catch (\Exception $e) {
+                Log::warning('Tyba API: error busqueda documento', [
+                    'document' => $cleanDoc,
+                    'error' => $e->getMessage(),
+                ]);
+                break;
+            }
+
+            if (! $response->successful()) {
+                break;
+            }
+
+            $data = $response->json();
+            $procesos = $data['procesos'] ?? [];
+
+            foreach ($procesos as $p) {
+                $radicado = $p['llaveProceso'] ?? '';
+                if (isset($allProcesos[$radicado])) {
+                    continue;
+                }
+
+                $sujetos = trim(str_replace(["\r\n", "\t"], ' ', $p['sujetosProcesales'] ?? ''));
+                $sujetos = preg_replace('/\s+/', ' ', $sujetos);
+
+                $allProcesos[$radicado] = [
+                    'radicado' => $radicado,
+                    'despacho' => trim($p['despacho'] ?? ''),
+                    'departamento' => $p['departamento'] ?? '',
+                    'fecha' => $this->formatDate($p['fechaProceso'] ?? ''),
+                    'ultima_actuacion' => $this->formatDate($p['fechaUltimaActuacion'] ?? ''),
+                    'sujetos' => $sujetos,
+                    'es_privado' => $p['esPrivado'] ?? false,
+                ];
+            }
+
+            $totalPages = $data['paginacion']['cantidadPaginas'] ?? 1;
+            $page++;
+        } while ($page <= $totalPages && $page <= $maxPages);
+
+        return array_values($allProcesos);
+    }
+
+    /**
      * Buscar proceso por numero de radicacion.
      *
      * @return array{idProceso: int, idConexion: int, departamento: string, despacho: string, fechaProceso: string, fechaUltimaActuacion: string, esPrivado: bool}|null
