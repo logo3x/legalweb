@@ -459,10 +459,13 @@
            reveal sobre default visible, reducedMotion respetado)
            ========================================================== */
 
-        /* Curve premium */
+        /* Curves premium (Emil Kowalski) */
         :root {
             --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
             --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+            --ease-out-emil: cubic-bezier(0.23, 1, 0.32, 1);   /* la curva de Emil para UI */
+            --ease-ios: cubic-bezier(0.32, 0.72, 0, 1);         /* iOS drawer/sheet */
+            --ease-inout-strong: cubic-bezier(0.77, 0, 0.175, 1);
         }
 
         /* Hero intro: ya visible, sube + fade muy sutil */
@@ -525,25 +528,45 @@
             0% { background-position: 200% 50%; }
             100% { background-position: -100% 50%; }
         }
-        .plan-card.featured:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 24px 48px rgba(58,134,255,.28), 0 4px 12px rgba(58,134,255,.14);
+        @media (hover: hover) and (pointer: fine) {
+            .plan-card.featured:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 24px 48px rgba(58,134,255,.28), 0 4px 12px rgba(58,134,255,.14);
+            }
         }
 
-        /* Feat cards: hover ya existe, refinamos curve y agregamos icon spring */
-        .feat-card { transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo), border-color .25s ease; }
-        .feat-card:hover { transform: translateY(-4px); }
-        .feat-card .ico { transition: transform .4s var(--ease-out-expo); }
-        .feat-card:hover .ico { transform: scale(1.1) rotate(-3deg); }
+        /* Feat cards: hover refinado con curva Emil + gating touch */
+        .feat-card { transition: transform .35s var(--ease-out-emil), box-shadow .35s var(--ease-out-emil), border-color .25s ease; }
+        .feat-card .ico { transition: transform .4s var(--ease-out-emil); }
+        @media (hover: hover) and (pointer: fine) {
+            .feat-card:hover { transform: translateY(-4px); }
+            .feat-card:hover .ico { transform: scale(1.1) rotate(-3deg); }
+        }
 
-        /* Flow steps: tile pulse on hover */
-        .step .tile { transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo); }
-        .step:hover .tile { transform: scale(1.06); box-shadow: 0 8px 20px rgba(15,23,42,.10); }
+        /* Flow steps: tile pulse on hover, sin touch */
+        .step .tile { transition: transform .35s var(--ease-out-emil), box-shadow .35s var(--ease-out-emil); }
+        @media (hover: hover) and (pointer: fine) {
+            .step:hover .tile { transform: scale(1.06); box-shadow: 0 8px 20px rgba(15,23,42,.10); }
+        }
 
-        /* Buttons premium */
-        .btn { transition: transform .2s var(--ease-out-quart), box-shadow .25s var(--ease-out-quart), background .2s ease; }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 14px 28px rgba(58,134,255,.35); }
-        .btn-primary:active { transform: translateY(0); transition-duration: .1s; }
+        /* Buttons premium — Emil: press scale .97, release 200ms ease-out, gate hover en mobile */
+        .btn {
+            transition: transform .2s var(--ease-out-emil),
+                        box-shadow .25s var(--ease-out-emil),
+                        background .2s ease;
+        }
+        /* Press: 120ms con curva Emil. Asimetria: release usa el transition default arriba (200ms) */
+        .btn:active { transform: scale(.97); transition-duration: .12s; }
+
+        /* Hover effects SOLO para input con pointer fino (no touch) */
+        @media (hover: hover) and (pointer: fine) {
+            .btn:hover { transform: translateY(-1px); }
+            .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 14px 28px rgba(58,134,255,.35); }
+            .btn-secondary:hover { border-color: var(--brand-blue); color: var(--brand-blue); transform: translateY(-1px); }
+        }
+        /* En touch el active sigue funcionando, dando feedback consistente */
+        .btn-primary:active { transform: scale(.97); box-shadow: 0 6px 14px rgba(58,134,255,.28); }
+        .btn-secondary:active { transform: scale(.97); }
 
         /* Nav: hide-on-scroll-down, show-on-scroll-up */
         .nav-shell { transition: transform .35s var(--ease-out-expo), background .25s ease; }
