@@ -238,7 +238,11 @@
                 var(--brand-blue) 0%, var(--green-500) 33%,
                 var(--amber-500) 66%, var(--red-500) 100%);
             opacity: .35; z-index: 1;
+            transform-origin: left center;
+            transform: scaleX(0);
+            transition: transform 1.6s var(--ease-out-expo);
         }
+        .lw-reveal.is-in .flow-line { transform: scaleX(1); transition-delay: .25s; }
         .step { position: relative; text-align: center; }
         .step .tile {
             width: 72px; height: 72px; margin: 0 auto 18px;
@@ -468,65 +472,140 @@
             --ease-inout-strong: cubic-bezier(0.77, 0, 0.175, 1);
         }
 
-        /* Hero intro: ya visible, sube + fade muy sutil */
-        .lw-hero-pill { animation: lwFadeUp .9s var(--ease-out-expo) both; }
-        .lw-hero-h1   { animation: lwFadeUp .9s .08s var(--ease-out-expo) both; }
-        .lw-hero-lead { animation: lwFadeUp .9s .16s var(--ease-out-expo) both; }
-        .lw-hero-cta  { animation: lwFadeUp .9s .24s var(--ease-out-expo) both; }
-        .lw-hero-trust { animation: lwFadeUp .9s .32s var(--ease-out-expo) both; }
-        .lw-hero-visual { animation: lwFadeUpScale 1.1s .25s var(--ease-out-expo) both; }
-        .lw-hero-badge { animation: lwFloatIn 1.1s .55s var(--ease-out-expo) both; }
+        /* Hero intro: marketing exception — durations largas, stagger amplio,
+           movimiento mas expresivo (blur, escala mas notoria, rotate cinematico) */
+        .lw-hero-pill   { animation: lwHeroPill   1.2s .00s var(--ease-out-expo) both; }
+        .lw-hero-h1     { animation: lwHeroH1     1.4s .14s var(--ease-out-expo) both; }
+        .lw-hero-lead   { animation: lwHeroLead   1.3s .32s var(--ease-out-expo) both; }
+        .lw-hero-cta    { animation: lwHeroCta    1.3s .50s var(--ease-out-expo) both; }
+        .lw-hero-trust  { animation: lwHeroLead   1.2s .68s var(--ease-out-expo) both; }
+        .lw-hero-visual { animation: lwHeroVisual 1.6s .42s var(--ease-out-expo) both; }
+        .lw-hero-badge  { animation: lwHeroBadge  1.4s .92s var(--ease-out-expo) both; }
 
-        @keyframes lwFadeUp {
-            from { opacity: 0; transform: translate3d(0, 14px, 0); }
+        @keyframes lwHeroPill {
+            from { opacity: 0; transform: translate3d(0, 18px, 0); filter: blur(6px); }
+            60%  { filter: blur(0); }
+            to   { opacity: 1; transform: translate3d(0, 0, 0); filter: blur(0); }
+        }
+        @keyframes lwHeroH1 {
+            from { opacity: 0; transform: translate3d(0, 32px, 0); filter: blur(10px); letter-spacing: -.04em; }
+            55%  { filter: blur(0); }
+            to   { opacity: 1; transform: translate3d(0, 0, 0); filter: blur(0); letter-spacing: -.02em; }
+        }
+        @keyframes lwHeroLead {
+            from { opacity: 0; transform: translate3d(0, 22px, 0); }
             to   { opacity: 1; transform: translate3d(0, 0, 0); }
         }
-        @keyframes lwFadeUpScale {
-            from { opacity: 0; transform: translate3d(0, 18px, 0) scale(.985); }
+        @keyframes lwHeroCta {
+            from { opacity: 0; transform: translate3d(0, 18px, 0) scale(.96); }
             to   { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
         }
-        @keyframes lwFloatIn {
-            from { opacity: 0; transform: translate3d(0, -10px, 0) rotate(2deg); }
-            to   { opacity: .96; transform: translate3d(0, 0, 0) rotate(3deg); }
+        @keyframes lwHeroVisual {
+            from { opacity: 0; transform: translate3d(0, 36px, 0) scale(.94) rotate(-1deg); }
+            to   { opacity: 1; transform: translate3d(0, 0, 0) scale(1) rotate(0deg); }
+        }
+        @keyframes lwHeroBadge {
+            from { opacity: 0; transform: translate3d(-30px, -18px, 0) rotate(-8deg) scale(.85); }
+            70%  { opacity: 1; transform: translate3d(2px, 2px, 0) rotate(4.5deg) scale(1.02); }
+            to   { opacity: .96; transform: translate3d(0, 0, 0) rotate(3deg) scale(1); }
         }
 
-        /* Reveal on scroll: default visible, IntersectionObserver le da
-           el "from" via .lw-reveal y lo libera con .is-in. Si JS no corre,
-           el contenido queda visible (skill rule: nunca gate visibility) */
-        .lw-reveal { transition: opacity .75s var(--ease-out-expo), transform .9s var(--ease-out-expo); }
-        .lw-reveal.before { opacity: 0; transform: translate3d(0, 24px, 0); }
-        .lw-reveal.before.is-in { opacity: 1; transform: translate3d(0, 0, 0); }
+        /* Despues del intro, el visual respira suavemente */
+        .lw-hero-visual { animation-fill-mode: both; }
+        @keyframes lwBreathe {
+            0%, 100% { transform: translate3d(0, 0, 0); }
+            50%      { transform: translate3d(0, -6px, 0); }
+        }
+        .lw-hero-visual.is-settled { animation: lwBreathe 5s ease-in-out infinite; }
 
-        /* Stagger: el padre marca, cada hijo recibe delay creciente */
+        /* Reveal on scroll: marketing — duration 1.1-1.3s, blur-to-sharp, expresivo */
+        .lw-reveal {
+            transition: opacity 1.1s var(--ease-out-expo),
+                        transform 1.2s var(--ease-out-expo),
+                        filter 1.0s var(--ease-out-expo);
+        }
+        .lw-reveal.before {
+            opacity: 0;
+            transform: translate3d(0, 36px, 0);
+            filter: blur(8px);
+        }
+        .lw-reveal.before.is-in {
+            opacity: 1;
+            transform: translate3d(0, 0, 0);
+            filter: blur(0);
+        }
+
+        /* Stagger: marketing — 140ms entre hijos para que se note */
         .lw-stagger > * { transition-delay: 0ms; }
         .lw-stagger.is-in > *:nth-child(1) { transition-delay: 0ms; }
-        .lw-stagger.is-in > *:nth-child(2) { transition-delay: 80ms; }
-        .lw-stagger.is-in > *:nth-child(3) { transition-delay: 160ms; }
-        .lw-stagger.is-in > *:nth-child(4) { transition-delay: 240ms; }
-        .lw-stagger.is-in > *:nth-child(5) { transition-delay: 320ms; }
-        .lw-stagger.is-in > *:nth-child(6) { transition-delay: 400ms; }
+        .lw-stagger.is-in > *:nth-child(2) { transition-delay: 140ms; }
+        .lw-stagger.is-in > *:nth-child(3) { transition-delay: 280ms; }
+        .lw-stagger.is-in > *:nth-child(4) { transition-delay: 420ms; }
+        .lw-stagger.is-in > *:nth-child(5) { transition-delay: 560ms; }
+        .lw-stagger.is-in > *:nth-child(6) { transition-delay: 700ms; }
+        .lw-stagger.is-in > *:nth-child(7) { transition-delay: 840ms; }
+        .lw-stagger.is-in > *:nth-child(8) { transition-delay: 980ms; }
 
-        /* Plan card featured: shimmer sutil de borde + glow al hover */
+        /* Plan card featured: shimmer del borde + halo respirando + tilt sutil */
         .plan-card.featured {
             position: relative;
-            transition: transform .35s var(--ease-out-expo), box-shadow .35s var(--ease-out-expo);
+            transition: transform .45s var(--ease-out-emil), box-shadow .45s var(--ease-out-emil);
+            animation: lwPlanBreathe 4.5s ease-in-out infinite;
+        }
+        @keyframes lwPlanBreathe {
+            0%, 100% { box-shadow: 0 12px 32px rgba(58,134,255,.18), 0 2px 6px rgba(58,134,255,.10); }
+            50%      { box-shadow: 0 22px 48px rgba(58,134,255,.32), 0 4px 12px rgba(58,134,255,.18); }
         }
         .plan-card.featured::after {
             content: ''; position: absolute; inset: -2px;
             border-radius: inherit; pointer-events: none;
-            background: linear-gradient(135deg, rgba(58,134,255,.0) 30%, rgba(58,134,255,.45) 50%, rgba(58,134,255,.0) 70%);
+            background: linear-gradient(135deg, rgba(58,134,255,.0) 25%, rgba(58,134,255,.55) 50%, rgba(58,134,255,.0) 75%);
             background-size: 250% 250%;
             mask: linear-gradient(#000, #000) content-box, linear-gradient(#000, #000);
             mask-composite: exclude;
             -webkit-mask: linear-gradient(#000, #000) content-box, linear-gradient(#000, #000);
             -webkit-mask-composite: xor;
             padding: 2px;
-            opacity: .8;
+            opacity: .85;
             animation: lwShimmer 3.6s linear infinite;
+        }
+        /* Halo radial detras de la tarjeta destacada — pulse lento */
+        .plan-card.featured::before {
+            content: ''; position: absolute; inset: -40px;
+            border-radius: 32px;
+            background: radial-gradient(circle at 50% 50%, rgba(58,134,255,.18), transparent 65%);
+            z-index: -1;
+            animation: lwHaloPulse 4.5s ease-in-out infinite;
+            pointer-events: none;
+        }
+        @keyframes lwHaloPulse {
+            0%, 100% { opacity: .5; transform: scale(.92); }
+            50%      { opacity: 1;  transform: scale(1.04); }
         }
         @keyframes lwShimmer {
             0% { background-position: 200% 50%; }
             100% { background-position: -100% 50%; }
+        }
+
+        /* CTA primary: shimmer barrido periodico (cada 4s) atrae al ojo */
+        .btn-primary {
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-primary::after {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(110deg, transparent 38%, rgba(255,255,255,.32) 50%, transparent 62%);
+            transform: translateX(-110%);
+            pointer-events: none;
+        }
+        .btn-primary.lw-attract::after {
+            animation: lwCtaSweep 4s var(--ease-out-emil) infinite;
+            animation-delay: 1.8s;
+        }
+        @keyframes lwCtaSweep {
+            0%   { transform: translateX(-110%); }
+            55%  { transform: translateX(110%); }
+            100% { transform: translateX(110%); }
         }
         @media (hover: hover) and (pointer: fine) {
             .plan-card.featured:hover {
@@ -1084,6 +1163,54 @@
                         raf = null;
                     });
                 }, { passive: true });
+
+                /* Despues del intro (≈2.2s), el visual entra en "breathing mode" */
+                setTimeout(() => parallax.classList.add('is-settled'), 2200);
+            }
+
+            /* CTA shimmer atractor: arranca despues del intro para no compitir */
+            const cta = document.querySelector('.btn-primary.btn-lg');
+            if (cta) {
+                setTimeout(() => cta.classList.add('lw-attract'), 2600);
+            }
+
+            /* Number ticker en trust-grid (los 3 numeros de credibilidad) */
+            function easeOutExpo(t) { return t === 1 ? 1 : 1 - Math.pow(2, -10 * t); }
+            function parseNum(s) {
+                const m = (s || '').match(/[\d.,]+/);
+                if (!m) return null;
+                return parseInt(m[0].replace(/[^\d]/g, ''), 10) || 0;
+            }
+            document.querySelectorAll('.trust-grid .k').forEach((el) => {
+                const original = el.textContent.trim();
+                const num = parseNum(original);
+                if (!num || num < 2) return;
+                el.dataset.lwOriginal = original;
+                el.dataset.lwTarget = num;
+                el.textContent = original.replace(/[\d.,]+/, '0');
+            });
+            const trust = document.querySelector('.trust-grid');
+            if (trust && 'IntersectionObserver' in window) {
+                const io2 = new IntersectionObserver((entries) => {
+                    entries.forEach((entry) => {
+                        if (!entry.isIntersecting) return;
+                        io2.unobserve(entry.target);
+                        entry.target.querySelectorAll('.k[data-lw-target]').forEach((el, i) => {
+                            const target = parseInt(el.dataset.lwTarget, 10);
+                            const original = el.dataset.lwOriginal;
+                            const start = performance.now();
+                            const duration = 1400 + i * 150;
+                            function frame(now) {
+                                const t = Math.min(1, (now - start) / duration);
+                                const v = Math.round(target * easeOutExpo(t));
+                                el.textContent = original.replace(/[\d.,]+/, v.toLocaleString('es-CO'));
+                                if (t < 1) requestAnimationFrame(frame);
+                            }
+                            requestAnimationFrame(frame);
+                        });
+                    });
+                }, { threshold: 0.4 });
+                io2.observe(trust);
             }
         })();
     </script>
