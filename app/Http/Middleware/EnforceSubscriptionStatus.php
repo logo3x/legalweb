@@ -23,7 +23,7 @@ class EnforceSubscriptionStatus
     {
         $user = $request->user();
 
-        if (! $user || $user->is_super_admin || ! $user->firm_id) {
+        if (! $user || $user->role === 'superadmin' || ! $user->firm_id) {
             return $next($request);
         }
 

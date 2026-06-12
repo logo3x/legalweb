@@ -1,5 +1,12 @@
 <x-filament-panels::page>
 
+    @if(! $this->isReady())
+        <div style="padding: 24px; background: #FEF3C7; border-radius: 12px; border-left: 4px solid #D97706; color: #78350F; font-size: 14px; line-height: 1.6;">
+            <strong>Modulo aun no instalado.</strong> La tabla <code>ai_usage_logs</code> no existe en este servidor.
+            Ejecute <code>php artisan migrate --force</code> para activar el seguimiento de tokens.
+        </div>
+    @endif
+
     @php
         $kpis = $this->getKpis();
         $byFirm = $this->getByFirm();

@@ -8,6 +8,7 @@ use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use UnitEnum;
 
 class UsoIa extends Page
@@ -48,6 +49,11 @@ class UsoIa extends Page
         };
     }
 
+    public function isReady(): bool
+    {
+        return Schema::hasTable('ai_usage_logs');
+    }
+
     private function baseQuery()
     {
         $q = AiUsageLog::query();
@@ -61,6 +67,9 @@ class UsoIa extends Page
 
     public function getKpis(): array
     {
+        if (! $this->isReady()) {
+            return ['total_calls' => 0, 'total_tokens' => 0, 'failed_calls' => 0, 'active_firms' => 0, 'avg_latency_ms' => 0];
+        }
         $base = $this->baseQuery();
 
         return [
@@ -74,6 +83,10 @@ class UsoIa extends Page
 
     public function getByFirm(): array
     {
+        if (! $this->isReady()) {
+            return [];
+        }
+
         return $this->baseQuery()
             ->whereNotNull('firm_id')
             ->select(
@@ -105,6 +118,10 @@ class UsoIa extends Page
 
     public function getByAction(): array
     {
+        if (! $this->isReady()) {
+            return [];
+        }
+
         return $this->baseQuery()
             ->select('action', DB::raw('COUNT(*) as calls'), DB::raw('SUM(total_tokens) as tokens'))
             ->groupBy('action')
@@ -121,6 +138,10 @@ class UsoIa extends Page
 
     public function getByProvider(): array
     {
+        if (! $this->isReady()) {
+            return [];
+        }
+
         return $this->baseQuery()
             ->where('success', true)
             ->select('provider', DB::raw('COUNT(*) as calls'), DB::raw('SUM(total_tokens) as tokens'))
@@ -137,6 +158,9 @@ class UsoIa extends Page
 
     public function getDailySeries(): array
     {
+        if (! $this->isReady()) {
+            return [];
+        }
         $start = $this->getRangeStart() ?? now()->subDays(30);
 
         return AiUsageLog::query()
