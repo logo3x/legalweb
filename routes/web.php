@@ -16,6 +16,7 @@ use App\Models\Reminder;
 use App\Models\User;
 use App\Notifications\ReminderDueNotification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
@@ -226,6 +227,28 @@ Route::get('/cron/{token}/{task?}', function (string $token, ?string $task = nul
         $command->setOutput(new BufferedOutput);
         $command->handle();
         $results[] = 'check-subscription-grace: OK';
+    }
+
+    // Tarea: setup (manual, una vez por deploy). Corre migraciones nuevas + clear caches.
+    // Util cuando solo hay acceso por File Manager / git pull, sin shell/ssh.
+    if ($task === 'setup') {
+        try {
+            Artisan::call('migrate', ['--force' => true]);
+            $migrateOutput = Artisan::output();
+        } catch (Throwable $e) {
+            $migrateOutput = 'ERROR: '.$e->getMessage();
+        }
+        try {
+            Artisan::call('view:clear');
+            Artisan::call('config:clear');
+            Artisan::call('cache:clear');
+            Artisan::call('route:clear');
+            $clearOutput = 'caches limpiados';
+        } catch (Throwable $e) {
+            $clearOutput = 'ERROR clear: '.$e->getMessage();
+        }
+        $results[] = 'setup: migrate => '.trim($migrateOutput);
+        $results[] = 'setup: '.$clearOutput;
     }
 
     // Tarea: verify-payments (cada 15 min, verifica pagos pendientes)
