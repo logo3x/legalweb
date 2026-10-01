@@ -78,9 +78,12 @@ class User extends Authenticatable implements FilamentUser
         return in_array($this->role, ['superadmin', 'admin']);
     }
 
+    /**
+     * Solo entran usuarios que pertenecen a una firma (o el superadmin).
+     */
     public function canAccessPanel(Panel $panel): bool
     {
-        return true;
+        return $this->firm_id !== null || $this->role === 'superadmin';
     }
 
     public function firm(): BelongsTo

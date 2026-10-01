@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Services\GeneratedFileStore;
 use App\Services\ReportService;
 use BackedEnum;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -47,15 +48,11 @@ class Reports extends Page
                         ->setOption('isHtml5ParserEnabled', true);
 
                     $fileName = 'reporte_'.str_replace(' ', '_', strtolower($data['firm']->name)).'_'.now()->format('Y_m_d').'.pdf';
-                    $path = storage_path('app/public/generated/'.$fileName);
-
-                    if (! is_dir(dirname($path))) {
-                        mkdir(dirname($path), 0755, true);
-                    }
+                    $path = app(GeneratedFileStore::class)->pathFor(auth()->user()->firm_id, $fileName);
 
                     $pdf->save($path);
 
-                    $this->js("window.location.href = '".route('download.file', $fileName)."'");
+                    $this->js('window.location.href = '.json_encode(route('download.file', basename($path))));
                 }),
         ];
     }

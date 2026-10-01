@@ -31,7 +31,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
-            ->registration()
+            // Sin registro por formulario: las cuentas se crean con Google (que crea la firma) o por invitacion.
             ->databaseNotifications()
             ->databaseNotificationsPolling('30s')
             ->brandName('LegalWeb')

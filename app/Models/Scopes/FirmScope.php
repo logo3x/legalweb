@@ -13,7 +13,15 @@ class FirmScope implements Scope
     {
         $user = auth()->user();
 
-        if (! $user || ! $user->firm_id) {
+        // Sin sesion (consola, colas, webhooks) no se filtra.
+        if (! $user) {
+            return;
+        }
+
+        // Un usuario autenticado sin firma no debe ver datos de ninguna firma.
+        if (! $user->firm_id) {
+            $builder->whereRaw('1 = 0');
+
             return;
         }
 

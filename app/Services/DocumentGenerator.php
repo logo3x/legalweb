@@ -70,11 +70,7 @@ class DocumentGenerator
         $this->addFooter($section, $firm);
 
         $fileName = 'borrador_'.str_replace(' ', '_', strtolower($documentType)).'_'.$case->case_number.'.docx';
-        $filePath = storage_path('app/public/generated/'.$fileName);
-
-        if (! is_dir(dirname($filePath))) {
-            mkdir(dirname($filePath), 0755, true);
-        }
+        $filePath = app(GeneratedFileStore::class)->pathFor($case->firm_id, $fileName);
 
         $phpWord->save($filePath, 'Word2007');
 

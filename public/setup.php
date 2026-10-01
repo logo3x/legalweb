@@ -877,6 +877,31 @@ try {
         }
     }
 
+    if ($step === 'purge_public_generated') {
+        // Reportes y borradores que quedaron en la carpeta publica antes de moverlos a storage privado.
+        // Los logo-*.png son cache de logos (ya publicos) y se conservan.
+        $files = array_merge(
+            glob(storage_path('app/public/generated/reporte_*')) ?: [],
+            glob(storage_path('app/public/generated/borrador_*')) ?: [],
+        );
+
+        if (($_GET['confirm'] ?? '') !== 'yes') {
+            setup_log(count($files).' archivo(s) de reportes/borradores expuestos en storage/app/public/generated.', count($files) ? 'warning' : 'success');
+            if ($files) {
+                $purgeUrl = '?key='.urlencode($secret).'&step=purge_public_generated&confirm=yes';
+                setup_log("<a href='{$purgeUrl}' style='font-weight:bold;text-decoration:underline;'>Borrarlos ahora</a>", 'raw');
+            }
+        } else {
+            $deleted = 0;
+            foreach ($files as $file) {
+                if (is_file($file) && unlink($file)) {
+                    $deleted++;
+                }
+            }
+            setup_log("{$deleted} archivo(s) borrados.", 'success');
+        }
+    }
+
     if ($step === 'verify_ai_models') {
         Artisan::call('app:verify-ai-models');
         $aiOutput = trim(Artisan::output());
@@ -907,6 +932,7 @@ $stepTitles = [
     'cache' => 'Cache Config',
     'clear' => 'Limpiar Cache',
     'verify_ai_models' => 'Verificar modelos IA',
+    'purge_public_generated' => 'Borrar reportes publicos antiguos',
     'users' => 'Usuarios',
     'superadmin' => 'Superadmin',
     'cleanup_users' => 'Limpiar Usuarios',
@@ -1126,6 +1152,7 @@ $baseUrl = '?key='.urlencode($secret);
             <a href="<?= $baseUrl ?>&step=deadlines" class="<?= $step === 'deadlines' ? 'active' : '' ?>">Deadlines</a>
             <a href="<?= $baseUrl ?>&step=demo_reminders&user_id=" class="<?= $step === 'demo_reminders' ? 'active' : '' ?>">Reminders demo</a>
             <a href="<?= $baseUrl ?>&step=verify_ai_models" class="<?= $step === 'verify_ai_models' ? 'active' : '' ?>">Verificar modelos IA</a>
+            <a href="<?= $baseUrl ?>&step=purge_public_generated" class="<?= $step === 'purge_public_generated' ? 'active' : '' ?>">Borrar reportes publicos</a>
         </nav>
 
         <main class="main">

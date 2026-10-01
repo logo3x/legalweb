@@ -11,6 +11,7 @@ use App\Models\Reminder;
 use App\Models\User;
 use App\Notifications\ReminderDueNotification;
 use App\Services\AIModelRegistry;
+use App\Services\GeneratedFileStore;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
@@ -86,13 +87,15 @@ Route::get('/download/{filename}', function (string $filename) {
         abort(403, 'Tipo de archivo no permitido.');
     }
 
-    $path = storage_path('app/public/generated/'.$filename);
+    // Solo busca en la carpeta privada de la firma del usuario: no se pueden bajar archivos de otra firma.
+    $firmId = auth()->user()->firm_id;
+    $path = $firmId ? app(GeneratedFileStore::class)->find($firmId, $filename) : null;
 
-    if (! file_exists($path)) {
+    if (! $path) {
         abort(404);
     }
 
-    return response()->download($path, $filename);
+    return response()->download($path, $filename)->deleteFileAfterSend();
 })->middleware('auth')->name('download.file');
 
 // Tour completion

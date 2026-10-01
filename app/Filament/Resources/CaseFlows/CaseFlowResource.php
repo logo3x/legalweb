@@ -13,6 +13,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 use UnitEnum;
 
 class CaseFlowResource extends Resource
@@ -28,6 +29,34 @@ class CaseFlowResource extends Resource
     protected static ?string $pluralModelLabel = 'Flujos de Proceso';
 
     protected static ?int $navigationSort = 11;
+
+    /**
+     * Los tipos y flujos procesales son compartidos por todas las firmas: solo el superadmin los modifica.
+     */
+    private static function isSuperadmin(): bool
+    {
+        return auth()->user()?->role === 'superadmin';
+    }
+
+    public static function canCreate(): bool
+    {
+        return static::isSuperadmin();
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return static::isSuperadmin();
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return static::isSuperadmin();
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return static::isSuperadmin();
+    }
 
     public static function form(Schema $schema): Schema
     {

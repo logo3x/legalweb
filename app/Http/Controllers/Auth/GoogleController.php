@@ -41,10 +41,23 @@ class GoogleController extends Controller
         $user = User::where('email', $email)->first();
 
         if ($user) {
-            $user->update([
+            $attributes = [
                 'google_id' => $googleUser->getId(),
                 'avatar' => $googleUser->getAvatar(),
-            ]);
+            ];
+
+            // Google acaba de probar que el correo es de esta persona. Si la cuenta nunca se
+            // verifico, pudo crearla otro con ese correo: se invalida su contrasena.
+            if (! $user->email_verified_at) {
+                $attributes['password'] = bcrypt(str()->random(32));
+                $attributes['email_verified_at'] = now();
+            }
+
+            $user->forceFill($attributes)->save();
+
+            if (! $user->firm_id && $user->role !== 'superadmin') {
+                return $this->createNewFirm($googleUser, $user);
+            }
 
             Auth::login($user, remember: true);
 
@@ -101,7 +114,10 @@ class GoogleController extends Controller
         return redirect('/admin');
     }
 
-    private function createNewFirm($googleUser)
+    /**
+     * Crea la firma del usuario. Si ya existe una cuenta sin firma, la convierte en admin de la nueva.
+     */
+    private function createNewFirm($googleUser, ?User $existingUser = null)
     {
         $firm = Firm::create([
             'name' => 'Mi Firma Legal',
@@ -119,15 +135,21 @@ class GoogleController extends Controller
             ]);
         }
 
-        $user = User::create([
-            'name' => $googleUser->getName(),
-            'email' => strtolower($googleUser->getEmail()),
-            'google_id' => $googleUser->getId(),
-            'avatar' => $googleUser->getAvatar(),
-            'firm_id' => $firm->id,
-            'role' => 'admin',
-            'password' => bcrypt(str()->random(32)),
-        ]);
+        if ($existingUser) {
+            $existingUser->update(['firm_id' => $firm->id, 'role' => 'admin']);
+            $user = $existingUser;
+        } else {
+            $user = User::create([
+                'name' => $googleUser->getName(),
+                'email' => strtolower($googleUser->getEmail()),
+                'google_id' => $googleUser->getId(),
+                'avatar' => $googleUser->getAvatar(),
+                'firm_id' => $firm->id,
+                'role' => 'admin',
+                'password' => bcrypt(str()->random(32)),
+            ]);
+            $user->forceFill(['email_verified_at' => now()])->save();
+        }
 
         app(DemoDataService::class)->seedForFirm($firm, $user);
 

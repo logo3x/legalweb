@@ -7,6 +7,7 @@ use App\Models\LegalCase;
 use App\Models\Reminder;
 use App\Models\TybaSyncLog;
 use App\Notifications\MonthlyReportNotification;
+use App\Services\GeneratedFileStore;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
@@ -84,11 +85,7 @@ class SendMonthlyReports extends Command
             ])->setPaper('letter');
 
             $fileName = "reporte_{$case->case_number}_{$previousMonth->format('Y_m')}.pdf";
-            $path = storage_path("app/public/generated/{$fileName}");
-
-            if (! is_dir(dirname($path))) {
-                mkdir(dirname($path), 0755, true);
-            }
+            $path = app(GeneratedFileStore::class)->pathFor($case->firm_id, $fileName);
 
             $pdf->save($path);
 

@@ -14,6 +14,8 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->append(SecurityHeaders::class);
+        // No existe la ruta "login" de Laravel: el inicio de sesion es el de Filament.
+        $middleware->redirectGuestsTo('/admin/login');
         $middleware->alias([
             'subscription.status' => EnforceSubscriptionStatus::class,
         ]);

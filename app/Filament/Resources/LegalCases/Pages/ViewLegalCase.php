@@ -9,6 +9,7 @@ use App\Models\TybaSyncLog;
 use App\Services\AIModelRegistry;
 use App\Services\AIService;
 use App\Services\DocumentGenerator;
+use App\Services\GeneratedFileStore;
 use App\Services\TybaService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
@@ -127,7 +128,7 @@ class ViewLegalCase extends ViewRecord
 
                         $fileName = basename($filePath);
 
-                        $this->js("window.location.href = '".route('download.file', $fileName)."'");
+                        $this->js('window.location.href = '.json_encode(route('download.file', $fileName)));
 
                         Notification::make()->title('Borrador generado')->body('La descarga iniciara automaticamente.')->success()->send();
                     }),
@@ -178,14 +179,10 @@ class ViewLegalCase extends ViewRecord
                             ])->setPaper('letter');
 
                             $fileName = "reporte_{$case->case_number}_".now()->format('Y_m_d').'.pdf';
-                            $path = storage_path("app/public/generated/{$fileName}");
-
-                            if (! is_dir(dirname($path))) {
-                                mkdir(dirname($path), 0755, true);
-                            }
+                            $path = app(GeneratedFileStore::class)->pathFor($case->firm_id, $fileName);
 
                             $pdf->save($path);
-                            $this->js("window.location.href = '".route('download.file', $fileName)."'");
+                            $this->js('window.location.href = '.json_encode(route('download.file', basename($path))));
                         } catch (\Exception $e) {
                             Notification::make()
                                 ->title('Error al generar reporte')
