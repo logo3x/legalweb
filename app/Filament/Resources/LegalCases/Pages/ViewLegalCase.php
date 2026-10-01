@@ -6,6 +6,7 @@ use App\Filament\Resources\LegalCases\LegalCaseResource;
 use App\Models\CaseEvent;
 use App\Models\Reminder;
 use App\Models\TybaSyncLog;
+use App\Services\AIModelRegistry;
 use App\Services\AIService;
 use App\Services\DocumentGenerator;
 use App\Services\TybaService;
@@ -14,13 +15,17 @@ use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\HtmlString;
 
 class ViewLegalCase extends ViewRecord
 {
@@ -38,22 +43,7 @@ class ViewLegalCase extends ViewRecord
                     ->modalDescription('Borrador orientativo basado en los datos del caso. NO sustituye el criterio profesional. Verifique antes de actuar.')
                     ->modalCancelActionLabel('Cerrar')
                     ->modalSubmitActionLabel('Copiar al portapapeles')
-                    ->form(function () {
-                        $ai = app(AIService::class);
-                        $result = $ai->summarizeCase($this->record);
-                        $provider = $ai->getLastProvider() ?? 'N/A';
-
-                        return [
-                            Textarea::make('ai_result')
-                                ->label('')
-                                ->default($result ?? 'No se pudo generar el resumen. Verifique la configuracion de la IA.')
-                                ->rows(15)
-                                ->readOnly(),
-                            Placeholder::make('provider')
-                                ->label('')
-                                ->content("Generado con {$provider} | ".now()->format('d/m/Y H:i')),
-                        ];
-                    })
+                    ->form(fn (): array => $this->aiResultSchema('summarizeCase', 15, 'No se pudo generar el resumen. Intente con otro modelo.'))
                     ->action(function (array $data) {
                         $this->js("navigator.clipboard.writeText('".addslashes(str_replace(["\r", "\n"], ['\r', '\n'], $data['ai_result']))."')");
                         Notification::make()->title('Texto copiado al portapapeles')->success()->send();
@@ -66,22 +56,7 @@ class ViewLegalCase extends ViewRecord
                     ->modalDescription('Sugerencia basada en la etapa actual y actuaciones del caso. Solo orientativa. Verifique plazos y normativa antes de actuar.')
                     ->modalCancelActionLabel('Cerrar')
                     ->modalSubmitActionLabel('Copiar al portapapeles')
-                    ->form(function () {
-                        $ai = app(AIService::class);
-                        $result = $ai->suggestNextStep($this->record);
-                        $provider = $ai->getLastProvider() ?? 'N/A';
-
-                        return [
-                            Textarea::make('ai_result')
-                                ->label('')
-                                ->default($result ?? 'No se pudo generar la sugerencia.')
-                                ->rows(10)
-                                ->readOnly(),
-                            Placeholder::make('provider')
-                                ->label('')
-                                ->content("Generado con {$provider} | ".now()->format('d/m/Y H:i')),
-                        ];
-                    })
+                    ->form(fn (): array => $this->aiResultSchema('suggestNextStep', 10, 'No se pudo generar la sugerencia. Intente con otro modelo.'))
                     ->action(function (array $data) {
                         $this->js("navigator.clipboard.writeText('".addslashes(str_replace(["\r", "\n"], ['\r', '\n'], $data['ai_result']))."')");
                         Notification::make()->title('Texto copiado al portapapeles')->success()->send();
@@ -106,10 +81,19 @@ class ViewLegalCase extends ViewRecord
                                 'Incidente' => 'Incidente',
                             ])
                             ->required(),
+                        Select::make('ai_model')
+                            ->label('Modelo de IA')
+                            ->options(fn (): array => app(AIModelRegistry::class)->options())
+                            ->default(fn (): ?string => session('ai_model'))
+                            ->placeholder('Automatico (el primero disponible)')
+                            ->helperText($this->aiDataNotice()),
                     ])
                     ->action(function (array $data) {
                         try {
-                            $content = app(AIService::class)->draftDocument($this->record, $data['document_type']);
+                            session(['ai_model' => $data['ai_model'] ?? null]);
+                            $content = app(AIService::class)
+                                ->usingModel($data['ai_model'] ?? null)
+                                ->draftDocument($this->record, $data['document_type']);
                         } catch (\Exception $e) {
                             Log::error('AI draft error: '.$e->getMessage());
                             Notification::make()->title('Error de IA')->body($e->getMessage())->danger()->send();
@@ -120,7 +104,7 @@ class ViewLegalCase extends ViewRecord
                         if (! $content) {
                             Notification::make()
                                 ->title('No se pudo generar el borrador')
-                                ->body('Verifique que GEMINI_API_KEY u OPENROUTER_API_KEY esten configurados en .env. Revise storage/logs/laravel.log para mas detalle.')
+                                ->body('Ningun modelo de IA respondio. Intente con otro modelo en unos minutos o revise storage/logs/laravel.log.')
                                 ->danger()
                                 ->persistent()
                                 ->send();
@@ -443,5 +427,64 @@ class ViewLegalCase extends ViewRecord
     public function hasCombinedRelationManagerTabsWithContent(): bool
     {
         return true;
+    }
+
+    /**
+     * Campos del modal de resultado de IA, con selector de modelo para regenerar.
+     *
+     * @param  'summarizeCase'|'suggestNextStep'  $task
+     * @return array<int, mixed>
+     */
+    private function aiResultSchema(string $task, int $rows, string $failureMessage): array
+    {
+        $generate = function (?string $modelKey) use ($task, $failureMessage): array {
+            $ai = app(AIService::class)->usingModel($modelKey);
+            $result = $ai->{$task}($this->record);
+            $usedKey = $ai->getLastModelKey();
+
+            $meta = 'Generado con '.($ai->getLastProvider() ?? 'N/A').' | '.now()->format('d/m/Y H:i');
+
+            if ($modelKey && $usedKey && $usedKey !== $modelKey) {
+                $meta .= ' (el modelo elegido no respondio, se uso otro disponible)';
+            }
+
+            return ['result' => $result ?? $failureMessage, 'meta' => $meta, 'model' => $usedKey ?? $modelKey];
+        };
+
+        $initial = $generate(session('ai_model'));
+
+        return [
+            Textarea::make('ai_result')
+                ->label('')
+                ->default($initial['result'])
+                ->rows($rows)
+                ->readOnly(),
+            Select::make('ai_model')
+                ->label('Modelo de IA')
+                ->options(fn (): array => app(AIModelRegistry::class)->options())
+                ->default($initial['model'])
+                ->selectablePlaceholder(false)
+                ->live()
+                ->afterStateUpdated(function (?string $state, Set $set) use ($generate): void {
+                    session(['ai_model' => $state]);
+                    $regenerated = $generate($state);
+                    $set('ai_result', $regenerated['result']);
+                    $set('ai_meta', $regenerated['meta']);
+                })
+                ->helperText($this->aiDataNotice()),
+            Hidden::make('ai_meta')
+                ->default($initial['meta']),
+            Placeholder::make('provider')
+                ->label('')
+                ->content(fn (Get $get): string => (string) $get('ai_meta')),
+        ];
+    }
+
+    private function aiDataNotice(): HtmlString
+    {
+        return new HtmlString(
+            '<span class="text-xs text-gray-400">Para generar este contenido, los datos del caso se procesan con un proveedor de IA externo. '
+            .'<a href="'.route('portal.terms').'#ia" target="_blank" class="underline hover:text-gray-600">Mas informacion</a></span>'
+        );
     }
 }

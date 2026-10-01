@@ -22,3 +22,5 @@ Schedule::call(function () {
 })->everyFiveMinutes()->name('send-reminders');
 
 Schedule::command('app:sync-tyba-actuaciones')->dailyAt('03:00');
+
+Schedule::command('app:verify-ai-models')->dailyAt('06:00');

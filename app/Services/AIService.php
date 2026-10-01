@@ -4,18 +4,46 @@ namespace App\Services;
 
 use App\Models\AiUsageLog;
 use App\Models\LegalCase;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class AIService
 {
+    /**
+     * Maximo de modelos no verificados que se prueban cuando todos los verificados fallan.
+     */
+    private const MAX_RECOVERY_ATTEMPTS = 3;
+
     private ?string $lastProvider = null;
 
     private ?string $lastError = null;
 
+    private ?string $lastModelKey = null;
+
+    private ?string $preferredModelKey = null;
+
+    public function __construct(
+        private AIProviderClient $client,
+        private AIModelRegistry $registry,
+    ) {}
+
     public function getLastProvider(): ?string
     {
         return $this->lastProvider;
+    }
+
+    public function getLastModelKey(): ?string
+    {
+        return $this->lastModelKey;
+    }
+
+    /**
+     * Indica el modelo que se intentara primero (clave "proveedor:modelo").
+     */
+    public function usingModel(?string $modelKey): static
+    {
+        $this->preferredModelKey = $modelKey;
+
+        return $this;
     }
 
     public function getLastError(): ?string
@@ -30,36 +58,62 @@ class AIService
     {
         $this->lastError = null;
         $start = microtime(true);
+        $tried = [];
 
-        $result = $this->callGemini($systemPrompt, $userMessage, $maxTokens);
+        foreach ($this->registry->attemptOrder($this->preferredModelKey) as $key) {
+            $tried[] = $key;
 
-        if ($result) {
-            $this->logUsage($result, $context, $start);
-
-            return $this->cleanMarkdown($result['text']);
+            if ($result = $this->attempt($key, $systemPrompt, $userMessage, $maxTokens, $context, $start)) {
+                return $result;
+            }
         }
 
-        $result = $this->callOpenRouter($systemPrompt, $userMessage, $maxTokens);
-
-        if ($result) {
-            $this->logUsage($result, $context, $start);
-
-            return $this->cleanMarkdown($result['text']);
+        // Todos los verificados fallaron: el proveedor pudo haber cambiado su catalogo.
+        foreach ($this->registry->untriedCandidates($tried, self::MAX_RECOVERY_ATTEMPTS) as $key => $label) {
+            if ($result = $this->attempt($key, $systemPrompt, $userMessage, $maxTokens, $context, $start, $label)) {
+                return $result;
+            }
         }
 
+        Log::error('AI: ningun modelo respondio', ['tried' => $tried, 'lastError' => $this->lastError]);
         $this->logFailure($context, $start);
 
         return null;
     }
 
     /**
-     * Persistir un log de uso exitoso de IA. Captura tokens latencia firma usuario y caso.
-     *
-     * @param  array{text:string, provider:string, model:string, usage:array}  $result
-     * @param  array{action?:string, case?:LegalCase|null, meta?:array}  $context
+     * @param  array{action?: string, case?: LegalCase|null, meta?: array}  $context
      */
-    private function logUsage(array $result, array $context, float $startMicro): void
+    private function attempt(string $key, string $systemPrompt, string $userMessage, int $maxTokens, array $context, float $start, ?string $label = null): ?string
     {
+        $response = $this->client->complete($key, $systemPrompt, $userMessage, $maxTokens);
+        $succeeded = filled($response['content']);
+
+        $this->registry->recordResult($key, $succeeded, $response['status'], $label);
+
+        if (! $succeeded) {
+            $this->lastError = $response['error'] ?? "{$key}: respuesta vacia";
+
+            return null;
+        }
+
+        $this->lastModelKey = $key;
+        $this->lastProvider = $label ?? $this->registry->labelFor($key);
+        $this->logUsage($key, $response['usage'], $context, $start);
+
+        return $this->cleanMarkdown($response['content']);
+    }
+
+    /**
+     * Persistir un log de uso exitoso de IA. Captura tokens, latencia, firma, usuario y caso.
+     *
+     * @param  array{prompt_tokens: int, completion_tokens: int, total_tokens: int}  $usage
+     * @param  array{action?: string, case?: LegalCase|null, meta?: array}  $context
+     */
+    private function logUsage(string $key, array $usage, array $context, float $startMicro): void
+    {
+        [$provider, $model] = AIProviderClient::parseKey($key);
+
         try {
             $case = $context['case'] ?? null;
             AiUsageLog::create([
@@ -67,11 +121,11 @@ class AIService
                 'user_id' => auth()->id(),
                 'legal_case_id' => $case?->id,
                 'action' => $context['action'] ?? 'otro',
-                'provider' => $result['provider'] ?? 'unknown',
-                'model' => $result['model'] ?? null,
-                'prompt_tokens' => (int) ($result['usage']['prompt_tokens'] ?? 0),
-                'completion_tokens' => (int) ($result['usage']['completion_tokens'] ?? 0),
-                'total_tokens' => (int) ($result['usage']['total_tokens'] ?? 0),
+                'provider' => $provider === AIProviderClient::GEMINI ? 'Gemini' : 'OpenRouter',
+                'model' => $model,
+                'prompt_tokens' => $usage['prompt_tokens'],
+                'completion_tokens' => $usage['completion_tokens'],
+                'total_tokens' => $usage['total_tokens'],
                 'latency_ms' => (int) round((microtime(true) - $startMicro) * 1000),
                 'success' => true,
                 'meta' => $context['meta'] ?? null,
@@ -83,7 +137,7 @@ class AIService
     }
 
     /**
-     * @param  array{action?:string, case?:LegalCase|null, meta?:array}  $context
+     * @param  array{action?: string, case?: LegalCase|null, meta?: array}  $context
      */
     private function logFailure(array $context, float $startMicro): void
     {
@@ -124,155 +178,12 @@ class AIService
     }
 
     /**
-     * @return array{text:string, provider:string, model:string, usage:array{prompt_tokens:int,completion_tokens:int,total_tokens:int}}|null
-     */
-    private function callGemini(string $systemPrompt, string $userMessage, int $maxTokens): ?array
-    {
-        $apiKey = config('services.gemini.api_key');
-
-        if (! $apiKey) {
-            $this->lastError = 'Gemini sin API key configurada.';
-
-            return null;
-        }
-
-        // Modelos gratis 2026 - el primero falla? probamos el siguiente
-        $models = array_filter([
-            config('services.gemini.model'),
-            'gemini-flash-latest',
-            'gemini-2.5-flash',
-            'gemini-1.5-flash',
-        ]);
-        $models = array_unique($models);
-        $baseUrl = config('services.gemini.base_url');
-
-        foreach ($models as $model) {
-            try {
-                $response = Http::timeout(45)->post("{$baseUrl}/models/{$model}:generateContent?key={$apiKey}", [
-                    'system_instruction' => [
-                        'parts' => [['text' => $systemPrompt]],
-                    ],
-                    'contents' => [
-                        ['parts' => [['text' => $userMessage]]],
-                    ],
-                    'generationConfig' => [
-                        'maxOutputTokens' => $maxTokens,
-                        'temperature' => 0.3,
-                    ],
-                ]);
-
-                if ($response->successful()) {
-                    $text = $response->json('candidates.0.content.parts.0.text');
-                    if ($text) {
-                        $this->lastProvider = "Gemini ({$model})";
-
-                        return [
-                            'text' => $text,
-                            'provider' => 'Gemini',
-                            'model' => $model,
-                            'usage' => [
-                                'prompt_tokens' => (int) ($response->json('usageMetadata.promptTokenCount') ?? 0),
-                                'completion_tokens' => (int) ($response->json('usageMetadata.candidatesTokenCount') ?? 0),
-                                'total_tokens' => (int) ($response->json('usageMetadata.totalTokenCount') ?? 0),
-                            ],
-                        ];
-                    }
-                }
-
-                $status = $response->status();
-                $errMsg = $response->json('error.message') ?? 'sin detalle';
-                Log::info("Gemini {$model} fallo", ['status' => $status, 'error' => $errMsg]);
-                $this->lastError = "Gemini {$model}: HTTP {$status} - {$errMsg}";
-            } catch (\Exception $e) {
-                Log::info("Gemini {$model} excepcion: ".$e->getMessage());
-                $this->lastError = "Gemini {$model}: ".$e->getMessage();
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * @return array{text:string, provider:string, model:string, usage:array{prompt_tokens:int,completion_tokens:int,total_tokens:int}}|null
-     */
-    private function callOpenRouter(string $systemPrompt, string $userMessage, int $maxTokens): ?array
-    {
-        $apiKey = config('services.openrouter.api_key');
-
-        if (! $apiKey) {
-            if (! $this->lastError) {
-                $this->lastError = 'OpenRouter sin API key configurada.';
-            }
-
-            return null;
-        }
-
-        // Lista actualizada de modelos free en 2026 — el orden importa, los primeros
-        // suelen tener mejores cuotas. Si todos fallan por rate-limit, agregar uno paid.
-        $models = array_filter([
-            config('services.openrouter.model'),
-            'z-ai/glm-4.5-air:free',
-            'deepseek/deepseek-chat-v3.1:free',
-            'meta-llama/llama-3.3-70b-instruct:free',
-            'google/gemini-2.0-flash-exp:free',
-            'qwen/qwen-2.5-72b-instruct:free',
-            'mistralai/mistral-small-3.2-24b-instruct:free',
-            'nvidia/nemotron-nano-9b-v2:free',
-        ]);
-        $models = array_unique($models);
-
-        foreach ($models as $model) {
-            try {
-                $response = Http::timeout(60)->withHeaders([
-                    'Authorization' => 'Bearer '.$apiKey,
-                    'HTTP-Referer' => config('app.url'),
-                    'X-Title' => 'LegalWeb',
-                ])->post(config('services.openrouter.base_url').'/chat/completions', [
-                    'model' => $model,
-                    'messages' => [
-                        ['role' => 'system', 'content' => $systemPrompt],
-                        ['role' => 'user', 'content' => $userMessage],
-                    ],
-                    'max_tokens' => $maxTokens,
-                    'temperature' => 0.3,
-                ]);
-
-                if ($response->successful() && $response->json('choices.0.message.content')) {
-                    $this->lastProvider = "OpenRouter ({$model})";
-
-                    return [
-                        'text' => $response->json('choices.0.message.content'),
-                        'provider' => 'OpenRouter',
-                        'model' => $model,
-                        'usage' => [
-                            'prompt_tokens' => (int) ($response->json('usage.prompt_tokens') ?? 0),
-                            'completion_tokens' => (int) ($response->json('usage.completion_tokens') ?? 0),
-                            'total_tokens' => (int) ($response->json('usage.total_tokens') ?? 0),
-                        ],
-                    ];
-                }
-
-                $status = $response->status();
-                $errMsg = $response->json('error.message') ?? 'sin detalle';
-                Log::info("OpenRouter {$model} fallo", ['status' => $status, 'error' => $errMsg]);
-                $this->lastError = "OpenRouter {$model}: HTTP {$status} - {$errMsg}";
-            } catch (\Exception $e) {
-                Log::info("OpenRouter {$model} excepcion: ".$e->getMessage());
-                $this->lastError = "OpenRouter {$model}: ".$e->getMessage();
-
-                continue;
-            }
-        }
-
-        Log::error('OpenRouter: todos los modelos free fallaron', ['lastError' => $this->lastError]);
-
-        return null;
-    }
-
-    /**
      * Construir el contexto completo de un caso incluyendo datos de Tyba.
+     *
+     * Los datos de identificacion y contacto del cliente solo se envian cuando el
+     * documento los necesita (borradores), para minimizar lo que sale al proveedor.
      */
-    private function buildCaseContext(LegalCase $case): string
+    private function buildCaseContext(LegalCase $case, bool $includeClientContactData = false): string
     {
         $tyba = $case->tyba_data ?? [];
 
@@ -306,11 +217,14 @@ class AIService
         // Cliente
         $context .= "\nDATOS DEL CLIENTE:\n"
             ."- Nombre: {$case->client->full_name}\n"
-            ."- Documento: {$case->client->document_type} {$case->client->document_number}\n"
-            .'- Direccion: '.($case->client->address ?? 'No registrada')."\n"
-            .'- Ciudad: '.($case->client->city ?? 'No registrada')."\n"
-            .'- Telefono: '.($case->client->phone ?? 'No registrado')."\n"
-            .'- Email: '.($case->client->email ?? 'No registrado')."\n";
+            .'- Ciudad: '.($case->client->city ?? 'No registrada')."\n";
+
+        if ($includeClientContactData) {
+            $context .= "- Documento: {$case->client->document_type} {$case->client->document_number}\n"
+                .'- Direccion: '.($case->client->address ?? 'No registrada')."\n"
+                .'- Telefono: '.($case->client->phone ?? 'No registrado')."\n"
+                .'- Email: '.($case->client->email ?? 'No registrado')."\n";
+        }
 
         // Abogado y firma
         $firm = $case->user->firm;
@@ -332,7 +246,7 @@ class AIService
 
     public function summarizeCase(LegalCase $case): ?string
     {
-        $case->load(['client', 'caseType', 'user', 'user.firm', 'events', 'flowProgress.flowStep']);
+        $case->loadMissing(['client', 'caseType', 'user', 'user.firm', 'events', 'flowProgress.flowStep']);
 
         $events = $case->events->sortByDesc('event_date')->take(15)->map(
             fn ($e) => "- [{$e->event_date->format('d/m/Y')}] {$e->event_type}: {$e->title}".($e->description ? " - {$e->description}" : '')
@@ -397,15 +311,12 @@ REGLAS:
 - Esto es un BORRADOR ORIENTATIVO que el abogado debe revisar antes de actuar
 PROMPT;
 
-        return $this->call($systemPrompt, $context, 2000, [
-            'action' => 'resumen',
-            'case' => $case,
-        ]);
+        return $this->call($systemPrompt, $context, 2000, ['action' => 'resumen', 'case' => $case]);
     }
 
     public function suggestNextStep(LegalCase $case): ?string
     {
-        $case->load(['client', 'caseType', 'user', 'events', 'flowProgress.flowStep']);
+        $case->loadMissing(['client', 'caseType', 'user', 'events', 'flowProgress.flowStep']);
 
         $events = $case->events->sortByDesc('event_date')->take(10)->map(
             fn ($e) => "- [{$e->event_date->format('d/m/Y')}] {$e->event_type}: {$e->title}"
@@ -456,15 +367,12 @@ REGLAS:
 - Si dudas del numero de articulo, NO lo cites
 PROMPT;
 
-        return $this->call($systemPrompt, $context, 2000, [
-            'action' => 'siguiente_paso',
-            'case' => $case,
-        ]);
+        return $this->call($systemPrompt, $context, 2000, ['action' => 'siguiente_paso', 'case' => $case]);
     }
 
     public function draftDocument(LegalCase $case, string $documentType): ?string
     {
-        $case->load(['client', 'caseType', 'user', 'user.firm', 'events', 'flowProgress.flowStep']);
+        $case->loadMissing(['client', 'caseType', 'user', 'user.firm', 'events', 'flowProgress.flowStep']);
 
         $lastEvents = $case->events->sortByDesc('event_date')->take(10)->map(
             fn ($e) => "- [{$e->event_date->format('d/m/Y')}] {$e->event_type}: {$e->title}".($e->description ? " ({$e->description})" : '')
@@ -474,7 +382,7 @@ PROMPT;
             ->sortBy('flowStep.order')
             ->firstWhere('status', 'en_progreso');
 
-        $context = $this->buildCaseContext($case);
+        $context = $this->buildCaseContext($case, includeClientContactData: true);
         $context .= "\nACTUACIONES RECIENTES:\n{$lastEvents}\n";
         $context .= "\nETAPA PROCESAL ACTUAL: ".($currentStep ? $currentStep->flowStep->name : 'No definida')."\n";
         $context .= "\nTIPO DE DOCUMENTO A GENERAR: {$documentType}\n";
@@ -526,11 +434,7 @@ PROHIBIDO:
 - Asegurar resultados ("se ganara", "es seguro que")
 PROMPT;
 
-        return $this->call($systemPrompt, $context, 4000, [
-            'action' => 'borrador',
-            'case' => $case,
-            'meta' => ['document_type' => $documentType],
-        ]);
+        return $this->call($systemPrompt, $context, 4000, ['action' => 'borrador', 'case' => $case, 'meta' => ['document_type' => $documentType]]);
     }
 
     /**

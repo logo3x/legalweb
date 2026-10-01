@@ -125,6 +125,7 @@
         <p>LegalWeb podra realizar:</p>
         <ul>
             <li><strong>Transmision nacional:</strong> a proveedores de servicios tecnologicos (hosting, correo electronico) que actuan como Encargados del Tratamiento, con quienes se suscriben contratos de transmision de datos conforme al Art. 25 del Decreto 1377 de 2013.</li>
+            <li><strong>Proveedores de inteligencia artificial:</strong> cuando el abogado usa voluntariamente el Asistente IA, la informacion del caso necesaria para la tarea se transmite a Google LLC (Gemini) y/o a OpenRouter, Inc. y a los proveedores de modelos que esta enruta, ubicados principalmente en Estados Unidos, quienes actuan como Encargados del Tratamiento. Los datos de identificacion y contacto del cliente solo se envian cuando se solicita un borrador de documento que los requiere.</li>
             <li><strong>Transferencia internacional:</strong> unicamente a paises que cuenten con niveles adecuados de proteccion de datos conforme a la certificacion de la SIC, o bajo las excepciones previstas en el Art. 26 de la Ley 1581 de 2012.</li>
         </ul>
 
