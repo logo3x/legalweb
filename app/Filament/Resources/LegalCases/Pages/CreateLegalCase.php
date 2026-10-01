@@ -4,10 +4,8 @@ namespace App\Filament\Resources\LegalCases\Pages;
 
 use App\Filament\Resources\LegalCases\LegalCaseResource;
 use App\Models\CaseFlowProgress;
-use App\Models\Document;
 use App\Models\FlowStep;
 use Filament\Resources\Pages\CreateRecord;
-use Illuminate\Support\Facades\Storage;
 
 class CreateLegalCase extends CreateRecord
 {
@@ -16,7 +14,6 @@ class CreateLegalCase extends CreateRecord
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $data['firm_id'] = auth()->user()->firm_id;
-        unset($data['initial_documents'], $data['initial_documents_names']);
 
         return $data;
     }
@@ -24,7 +21,6 @@ class CreateLegalCase extends CreateRecord
     protected function afterCreate(): void
     {
         $this->generateFlowProgress();
-        $this->saveInitialDocuments();
     }
 
     private function generateFlowProgress(): void
@@ -44,26 +40,6 @@ class CreateLegalCase extends CreateRecord
                 'legal_case_id' => $record->id,
                 'flow_step_id' => $step->id,
                 'status' => 'pendiente',
-            ]);
-        }
-    }
-
-    private function saveInitialDocuments(): void
-    {
-        $files = $this->data['initial_documents'] ?? [];
-        $originalNames = $this->data['initial_documents_names'] ?? [];
-
-        foreach ($files as $filePath) {
-            $extension = pathinfo($filePath, PATHINFO_EXTENSION);
-            $size = Storage::disk('local')->exists($filePath) ? Storage::disk('local')->size($filePath) : null;
-
-            Document::create([
-                'legal_case_id' => $this->record->id,
-                'name' => $originalNames[$filePath] ?? basename($filePath),
-                'file_path' => $filePath,
-                'file_type' => $extension,
-                'file_size' => $size,
-                'uploaded_by' => auth()->id(),
             ]);
         }
     }
