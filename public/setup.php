@@ -14,19 +14,21 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 
-$secret = 'legalweb-setup-2026';
-if (($_GET['key'] ?? '') !== $secret) {
-    exit('No autorizado');
-}
-
-$step = $_GET['step'] ?? 'info';
-
 // Boot Laravel
 define('LARAVEL_START', microtime(true));
 require __DIR__.'/../vendor/autoload.php';
 $app = require_once __DIR__.'/../bootstrap/app.php';
 $kernel = $app->make(Kernel::class);
 $kernel->bootstrap();
+
+// La clave vive solo en el .env del servidor (SETUP_KEY). Sin ella, el panel queda bloqueado.
+$secret = (string) config('app.setup_key');
+if (strlen($secret) < 20 || ! hash_equals($secret, (string) ($_GET['key'] ?? ''))) {
+    http_response_code(403);
+    exit('No autorizado');
+}
+
+$step = $_GET['step'] ?? 'info';
 
 // Capture output
 ob_start();
@@ -875,21 +877,12 @@ try {
         }
     }
 
-    if ($step === 'fresh') {
-        if (($_GET['confirm'] ?? '') !== 'yes') {
-            setup_log('ADVERTENCIA: Esta accion eliminara TODOS los datos de la base de datos y los recreara con datos de ejemplo.', 'error');
-            setup_log('Se perderan: todos los casos, clientes, actuaciones, documentos, facturacion y configuracion.', 'error');
-            setup_log('Esta accion es IRREVERSIBLE.', 'error');
-            $freshUrl = $baseUrl.'&step=fresh&confirm=yes';
-            setup_log("<a href='{$freshUrl}' style='color:#dc2626;font-weight:bold;text-decoration:underline;'>CONFIRMAR: Si, borrar todo y recrear</a>", 'raw');
-        } else {
-            Artisan::call('migrate:fresh', ['--seed' => true, '--force' => true]);
-            setup_log('Fresh migrate + seed completado', 'success');
-            $freshOutput = trim(Artisan::output());
-            foreach (explode("\n", $freshOutput) as $line) {
-                if (trim($line)) {
-                    setup_log(trim($line), 'muted');
-                }
+    if ($step === 'verify_ai_models') {
+        Artisan::call('app:verify-ai-models');
+        $aiOutput = trim(Artisan::output());
+        foreach (explode("\n", $aiOutput) as $line) {
+            if (trim($line)) {
+                setup_log(trim($line), str_contains($line, 'Ningun') ? 'error' : 'muted');
             }
         }
     }
@@ -913,7 +906,7 @@ $stepTitles = [
     'mail_test' => 'Test de Correo',
     'cache' => 'Cache Config',
     'clear' => 'Limpiar Cache',
-    'fresh' => 'Fresh Migrate + Seed',
+    'verify_ai_models' => 'Verificar modelos IA',
     'users' => 'Usuarios',
     'superadmin' => 'Superadmin',
     'cleanup_users' => 'Limpiar Usuarios',
@@ -925,7 +918,7 @@ $stepTitles = [
     'dedup_actuaciones' => 'Limpiar actuaciones duplicadas',
 ];
 
-$baseUrl = "?key={$secret}";
+$baseUrl = '?key='.urlencode($secret);
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -1132,7 +1125,7 @@ $baseUrl = "?key={$secret}";
             <a href="<?= $baseUrl ?>&step=logs" class="<?= $step === 'logs' ? 'active' : '' ?>">Logs</a>
             <a href="<?= $baseUrl ?>&step=deadlines" class="<?= $step === 'deadlines' ? 'active' : '' ?>">Deadlines</a>
             <a href="<?= $baseUrl ?>&step=demo_reminders&user_id=" class="<?= $step === 'demo_reminders' ? 'active' : '' ?>">Reminders demo</a>
-            <a href="<?= $baseUrl ?>&step=fresh" class="danger <?= $step === 'fresh' ? 'active' : '' ?>">Fresh (peligro)</a>
+            <a href="<?= $baseUrl ?>&step=verify_ai_models" class="<?= $step === 'verify_ai_models' ? 'active' : '' ?>">Verificar modelos IA</a>
         </nav>
 
         <main class="main">

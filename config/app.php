@@ -67,7 +67,10 @@ return [
 
     'timezone' => 'America/Bogota',
 
-    'cron_token' => env('CRON_TOKEN', 'legalweb-cron-2026'),
+    // Secretos de /cron/{token} y public/setup.php. Sin valor en el .env, ambos quedan bloqueados.
+    'cron_token' => env('CRON_TOKEN'),
+
+    'setup_key' => env('SETUP_KEY'),
 
     /*
     |--------------------------------------------------------------------------

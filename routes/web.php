@@ -1,10 +1,5 @@
 <?php
 
-use App\Console\Commands\CheckDeadlines;
-use App\Console\Commands\CheckSubscriptionGrace;
-use App\Console\Commands\SendMonthlyReports;
-use App\Console\Commands\SyncTybaActuaciones;
-use App\Console\Commands\VerifyPendingPayments;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\PortalController;
 use App\Http\Controllers\WompiController;
@@ -15,12 +10,12 @@ use App\Models\MassEmailCampaign;
 use App\Models\Reminder;
 use App\Models\User;
 use App\Notifications\ReminderDueNotification;
+use App\Services\AIModelRegistry;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
-use Symfony\Component\Console\Output\BufferedOutput;
 
 Route::get('/', function () {
     return view('welcome');
@@ -123,7 +118,9 @@ Route::post('/wompi/webhook', [WompiController::class, 'webhook'])->middleware('
 
 // Cron alternativo via HTTP (para hostings sin proc_open)
 Route::get('/cron/{token}/{task?}', function (string $token, ?string $task = null) {
-    if ($token !== config('app.cron_token')) {
+    $cronToken = (string) config('app.cron_token');
+
+    if (strlen($cronToken) < 20 || ! hash_equals($cronToken, $token)) {
         abort(403);
     }
 
@@ -131,19 +128,13 @@ Route::get('/cron/{token}/{task?}', function (string $token, ?string $task = nul
 
     // Tarea: sync-tyba (diaria 3am)
     if (! $task || $task === 'sync-tyba') {
-        $command = new SyncTybaActuaciones;
-        $command->setLaravel(app());
-        $command->setOutput(new BufferedOutput);
-        $command->handle();
+        Artisan::call('app:sync-tyba-actuaciones');
         $results[] = 'sync-tyba: OK';
     }
 
     // Tarea: check-deadlines (diaria 8am)
     if (! $task || $task === 'check-deadlines') {
-        $command = new CheckDeadlines;
-        $command->setLaravel(app());
-        $command->setOutput(new BufferedOutput);
-        $command->handle();
+        Artisan::call('app:check-deadlines');
         $results[] = 'check-deadlines: OK';
     }
 
@@ -213,19 +204,13 @@ Route::get('/cron/{token}/{task?}', function (string $token, ?string $task = nul
 
     // Tarea: monthly-reports (dia 1 de cada mes a las 7am)
     if ($task === 'monthly-reports') {
-        $command = new SendMonthlyReports;
-        $command->setLaravel(app());
-        $command->setOutput(new BufferedOutput);
-        $command->handle();
+        Artisan::call('app:send-monthly-reports');
         $results[] = 'monthly-reports: OK';
     }
 
     // Tarea: check-subscription-grace (diaria 9am, avisa vencimientos y suspende impagos)
     if (! $task || $task === 'check-subscription-grace') {
-        $command = new CheckSubscriptionGrace;
-        $command->setLaravel(app());
-        $command->setOutput(new BufferedOutput);
-        $command->handle();
+        Artisan::call('app:check-subscription-grace');
         $results[] = 'check-subscription-grace: OK';
     }
 
@@ -253,11 +238,14 @@ Route::get('/cron/{token}/{task?}', function (string $token, ?string $task = nul
 
     // Tarea: verify-payments (cada 15 min, verifica pagos pendientes)
     if ($task === 'verify-payments') {
-        $command = new VerifyPendingPayments;
-        $command->setLaravel(app());
-        $command->setOutput(new BufferedOutput);
-        $command->handle();
+        Artisan::call('app:verify-pending-payments');
         $results[] = 'verify-payments: OK';
+    }
+
+    // Tarea: verify-ai-models (diaria, prueba los modelos de IA disponibles)
+    if ($task === 'verify-ai-models') {
+        Artisan::call('app:verify-ai-models');
+        $results[] = 'verify-ai-models: '.count(app(AIModelRegistry::class)->verifiedModels()).' modelo(s) disponibles';
     }
 
     // Tarea: mass-emails (cada 5 min, despacha campañas programadas que llegaron a su hora)
