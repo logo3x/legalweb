@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\LegalCases\RelationManagers;
 
+use App\Filament\Resources\LegalCases\RelationManagers\Concerns\ChecksCasePermissions;
 use App\Notifications\FlowStepCompletedNotification;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Textarea;
@@ -14,6 +15,16 @@ use Filament\Tables\Table;
 
 class FlowProgressRelationManager extends RelationManager
 {
+    use ChecksCasePermissions;
+
+    protected static function casePermissionFor(string $action): ?string
+    {
+        return match ($action) {
+            'viewAny', 'view' => 'flow.view',
+            default => 'flow.manage',
+        };
+    }
+
     protected static string $relationship = 'flowProgress';
 
     protected static ?string $title = 'Flujo de Proceso';
@@ -79,6 +90,7 @@ class FlowProgressRelationManager extends RelationManager
             ->paginated(false)
             ->recordActions([
                 Action::make('completar')
+                    ->authorize(fn (): bool => $this->canOnCase('update'))
                     ->label('Completar')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
@@ -129,6 +141,7 @@ class FlowProgressRelationManager extends RelationManager
                     ->modalHeading('Completar paso')
                     ->modalDescription(fn ($record) => "¿Marcar \"{$record->flowStep->name}\" como completado?"),
                 Action::make('en_progreso')
+                    ->authorize(fn (): bool => $this->canOnCase('update'))
                     ->label('Iniciar')
                     ->icon('heroicon-o-play')
                     ->color('warning')
@@ -137,6 +150,7 @@ class FlowProgressRelationManager extends RelationManager
                     })
                     ->visible(fn ($record) => $record->status === 'pendiente'),
                 Action::make('omitir')
+                    ->authorize(fn (): bool => $this->canOnCase('update'))
                     ->label('Omitir')
                     ->icon('heroicon-o-x-mark')
                     ->color('danger')

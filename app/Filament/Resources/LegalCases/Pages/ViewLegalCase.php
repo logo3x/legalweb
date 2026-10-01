@@ -37,6 +37,7 @@ class ViewLegalCase extends ViewRecord
         return [
             ActionGroup::make([
                 Action::make('ai_summary')
+                    ->authorize(fn (): bool => $this->userCanOnCase('ai.use'))
                     ->label('Resumen del Caso')
                     ->icon('heroicon-o-document-text')
                     ->modalWidth('2xl')
@@ -50,6 +51,7 @@ class ViewLegalCase extends ViewRecord
                         Notification::make()->title('Texto copiado al portapapeles')->success()->send();
                     }),
                 Action::make('ai_next_step')
+                    ->authorize(fn (): bool => $this->userCanOnCase('ai.use'))
                     ->label('Sugerir Siguiente Paso')
                     ->icon('heroicon-o-light-bulb')
                     ->modalWidth('2xl')
@@ -63,6 +65,7 @@ class ViewLegalCase extends ViewRecord
                         Notification::make()->title('Texto copiado al portapapeles')->success()->send();
                     }),
                 Action::make('ai_draft')
+                    ->authorize(fn (): bool => $this->userCanOnCase('ai.use'))
                     ->label('Generar Borrador Word')
                     ->icon('heroicon-o-pencil-square')
                     ->modalDescription('Genera un borrador inicial en Word con placeholders <<<COMPLETAR>>> donde falten datos. Usted debe revisar, completar, verificar normas citadas y firmar antes de presentar. La IA puede equivocarse - usted es responsable del documento final.')
@@ -192,6 +195,7 @@ class ViewLegalCase extends ViewRecord
                         }
                     }),
                 Action::make('sync_tyba')
+                    ->authorize(fn (): bool => $this->userCanOnCase('events.create'))
                     ->label('Sincronizar Rama Judicial')
                     ->icon('heroicon-o-arrow-path')
                     ->visible(fn () => (bool) $this->record->external_case_number)
@@ -332,6 +336,7 @@ class ViewLegalCase extends ViewRecord
                 ->button(),
             ActionGroup::make([
                 Action::make('compartir')
+                    ->authorize(fn (): bool => $this->userCanOnCase('portal.share'))
                     ->label('Compartir con Cliente')
                     ->icon('heroicon-o-share')
                     ->modalWidth('lg')
@@ -371,6 +376,7 @@ class ViewLegalCase extends ViewRecord
                         Notification::make()->title('Enlace copiado al portapapeles')->success()->send();
                     }),
                 Action::make('toggle_portal')
+                    ->authorize(fn (): bool => $this->userCanOnCase('portal.share'))
                     ->label(fn () => $this->record->portal_enabled ? 'Desactivar Portal' : 'Activar Portal')
                     ->icon(fn () => $this->record->portal_enabled ? 'heroicon-o-eye-slash' : 'heroicon-o-eye')
                     ->color(fn () => $this->record->portal_enabled ? 'danger' : 'success')
@@ -392,6 +398,7 @@ class ViewLegalCase extends ViewRecord
                         Notification::make()->title("Portal {$status}")->success()->send();
                     }),
                 Action::make('toggle_auto_report')
+                    ->authorize(fn (): bool => $this->userCanOnCase('case.edit'))
                     ->label(fn () => $this->record->auto_report_enabled ? 'Desactivar Reporte Mensual' : 'Activar Reporte Mensual')
                     ->icon(fn () => $this->record->auto_report_enabled ? 'heroicon-o-envelope-open' : 'heroicon-o-envelope')
                     ->color(fn () => $this->record->auto_report_enabled ? 'danger' : 'success')
@@ -434,6 +441,11 @@ class ViewLegalCase extends ViewRecord
      */
     private function aiResultSchema(string $task, int $rows, string $failureMessage): array
     {
+        // Nunca enviar datos del caso al proveedor si el usuario no puede usar la IA en este caso.
+        if (! $this->userCanOnCase('ai.use')) {
+            return [];
+        }
+
         $generate = function (?string $modelKey) use ($task, $failureMessage): array {
             $ai = app(AIService::class)->usingModel($modelKey);
             $result = $ai->{$task}($this->record);
@@ -483,5 +495,13 @@ class ViewLegalCase extends ViewRecord
             '<span class="text-xs text-gray-400">Para generar este contenido, los datos del caso se procesan con un proveedor de IA externo. '
             .'<a href="'.route('portal.terms').'#ia" target="_blank" class="underline hover:text-gray-600">Mas informacion</a></span>'
         );
+    }
+
+    /**
+     * Permiso por caso del usuario (los administradores de la firma siempre lo tienen).
+     */
+    private function userCanOnCase(string $permission): bool
+    {
+        return (bool) auth()->user()?->hasCasePermission($this->record->getKey(), $permission);
     }
 }

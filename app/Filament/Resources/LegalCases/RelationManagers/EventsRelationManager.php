@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\LegalCases\RelationManagers;
 
+use App\Filament\Resources\LegalCases\RelationManagers\Concerns\ChecksCasePermissions;
 use App\Notifications\CaseUpdatedNotification;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
@@ -22,6 +23,17 @@ use Filament\Tables\Table;
 
 class EventsRelationManager extends RelationManager
 {
+    use ChecksCasePermissions;
+
+    protected static function casePermissionFor(string $action): ?string
+    {
+        return match ($action) {
+            'viewAny', 'view' => 'events.view',
+            'create' => 'events.create',
+            default => 'events.edit',
+        };
+    }
+
     protected static string $relationship = 'events';
 
     protected static ?string $title = 'Actuaciones';

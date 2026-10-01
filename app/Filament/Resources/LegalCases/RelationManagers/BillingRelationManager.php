@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\LegalCases\RelationManagers;
 
+use App\Filament\Resources\LegalCases\RelationManagers\Concerns\ChecksCasePermissions;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -19,6 +20,16 @@ use Filament\Tables\Table;
 
 class BillingRelationManager extends RelationManager
 {
+    use ChecksCasePermissions;
+
+    protected static function casePermissionFor(string $action): ?string
+    {
+        return match ($action) {
+            'viewAny', 'view' => 'case.view',
+            default => 'case.edit',
+        };
+    }
+
     protected static string $relationship = 'billingEntries';
 
     protected static ?string $title = 'Facturacion';

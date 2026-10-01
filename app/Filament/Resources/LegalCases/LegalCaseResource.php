@@ -23,7 +23,9 @@ use Filament\Schemas\Schema;
 use Filament\Support\Enums\TextSize;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Auth\Access\Response;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class LegalCaseResource extends Resource
@@ -233,5 +235,18 @@ class LegalCaseResource extends Resource
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ]);
+    }
+
+    /**
+     * Colaboradores: solo editan los casos donde tienen el permiso "Editar caso".
+     * Filament usa esta respuesta para canEdit(), el boton Editar y la pagina de edicion.
+     */
+    public static function getEditAuthorizationResponse(Model $record): Response
+    {
+        if (! auth()->user()?->hasCasePermission($record->getKey(), 'case.edit')) {
+            return Response::deny('No tiene permiso para editar este caso.');
+        }
+
+        return parent::getEditAuthorizationResponse($record);
     }
 }

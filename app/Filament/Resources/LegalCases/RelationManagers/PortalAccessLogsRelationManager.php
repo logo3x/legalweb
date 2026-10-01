@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\LegalCases\RelationManagers;
 
+use App\Filament\Resources\LegalCases\RelationManagers\Concerns\ChecksCasePermissions;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
@@ -9,6 +10,16 @@ use Filament\Tables\Table;
 
 class PortalAccessLogsRelationManager extends RelationManager
 {
+    use ChecksCasePermissions;
+
+    protected static function casePermissionFor(string $action): ?string
+    {
+        return match ($action) {
+            'viewAny', 'view' => 'portal.share',
+            default => 'portal.share',
+        };
+    }
+
     protected static string $relationship = 'portalAccessLogs';
 
     protected static ?string $title = 'Accesos al Portal';

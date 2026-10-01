@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\LegalCases\RelationManagers;
 
+use App\Filament\Resources\LegalCases\RelationManagers\Concerns\ChecksCasePermissions;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
@@ -9,6 +10,16 @@ use Filament\Tables\Table;
 
 class TybaSyncLogsRelationManager extends RelationManager
 {
+    use ChecksCasePermissions;
+
+    protected static function casePermissionFor(string $action): ?string
+    {
+        return match ($action) {
+            'viewAny', 'view' => 'events.view',
+            default => 'events.edit',
+        };
+    }
+
     protected static string $relationship = 'tybaSyncLogs';
 
     protected static ?string $title = 'Historial de Sincronizacion';

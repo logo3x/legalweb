@@ -11,6 +11,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'plan_id',
     'billing_cycle',
     'amount_in_cents',
+    'discount_code_id',
+    'original_amount',
+    'discount_amount',
     'status',
     'starts_at',
     'ends_at',
@@ -40,6 +43,11 @@ class Subscription extends Model
     public function plan(): BelongsTo
     {
         return $this->belongsTo(Plan::class);
+    }
+
+    public function discountCode(): BelongsTo
+    {
+        return $this->belongsTo(DiscountCode::class);
     }
 
     public function isActive(): bool

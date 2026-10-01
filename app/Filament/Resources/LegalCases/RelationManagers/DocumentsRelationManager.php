@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\LegalCases\RelationManagers;
 
+use App\Filament\Resources\LegalCases\RelationManagers\Concerns\ChecksCasePermissions;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
@@ -21,6 +22,16 @@ use Filament\Tables\Table;
 
 class DocumentsRelationManager extends RelationManager
 {
+    use ChecksCasePermissions;
+
+    protected static function casePermissionFor(string $action): ?string
+    {
+        return match ($action) {
+            'viewAny', 'view' => 'documents.view',
+            default => 'documents.upload',
+        };
+    }
+
     protected static string $relationship = 'documents';
 
     protected static ?string $title = 'Documentos';

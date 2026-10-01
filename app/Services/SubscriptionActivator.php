@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Models\DiscountCode;
+use App\Models\DiscountRedemption;
 use App\Models\Subscription;
 use Illuminate\Support\Facades\Log;
 
@@ -64,8 +66,35 @@ class SubscriptionActivator
             'wompi_metadata' => $transaction,
         ]);
 
+        $this->redeemDiscount($subscription, $transaction);
+
         Log::info('Wompi: suscripcion activada', ['reference' => $reference]);
 
         return true;
+    }
+
+    /**
+     * El uso del codigo de descuento se cuenta solo cuando el pago fue aprobado.
+     *
+     * @param  array<string, mixed>  $transaction
+     */
+    private function redeemDiscount(Subscription $subscription, array $transaction): void
+    {
+        if (! $subscription->discount_code_id) {
+            return;
+        }
+
+        DiscountRedemption::create([
+            'discount_code_id' => $subscription->discount_code_id,
+            'firm_id' => $subscription->firm_id,
+            'plan_id' => $subscription->plan_id,
+            'original_amount' => (int) $subscription->original_amount,
+            'discount_amount' => (int) $subscription->discount_amount,
+            'final_amount' => intdiv((int) $subscription->amount_in_cents, 100),
+            'wompi_transaction_id' => $transaction['id'] ?? null,
+            'redeemed_at' => now(),
+        ]);
+
+        DiscountCode::whereKey($subscription->discount_code_id)->increment('current_uses');
     }
 }

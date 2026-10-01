@@ -3,13 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\DiscountCode;
-use App\Models\DiscountRedemption;
 use App\Models\Plan;
 use App\Models\Subscription;
 use App\Services\SubscriptionActivator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class WompiController extends Controller
 {
@@ -75,15 +75,19 @@ class WompiController extends Controller
 
         $finalAmount = max(0, $originalAmount - $discountAmount);
         $amountInCents = $finalAmount * 100;
-        $reference = $this->originPrefix().$firm->id.'-'.$plan->slug.'-'.now()->timestamp;
+        // Sufijo aleatorio: dos checkouts en el mismo segundo (doble clic) no deben compartir referencia.
+        $reference = $this->originPrefix().$firm->id.'-'.$plan->slug.'-'.now()->timestamp.'-'.Str::lower(Str::random(6));
         $currency = 'COP';
 
         // Crear suscripcion pendiente
-        $subscription = Subscription::create([
+        Subscription::create([
             'firm_id' => $firm->id,
             'plan_id' => $plan->id,
             'billing_cycle' => $validated['billing_cycle'],
             'amount_in_cents' => $amountInCents,
+            'discount_code_id' => $discountCode?->id,
+            'original_amount' => $discountCode ? $originalAmount : null,
+            'discount_amount' => $discountCode ? $discountAmount : null,
             'status' => 'pending',
             'starts_at' => now(),
             'ends_at' => $validated['billing_cycle'] === 'biannual'
@@ -92,21 +96,8 @@ class WompiController extends Controller
             'wompi_reference' => $reference,
         ]);
 
-        // Registrar el canje del codigo (independientemente del exito del pago).
-        // Si Wompi rechaza, el redemption queda pero el webhook puede revertirlo.
-        if ($discountCode) {
-            DiscountRedemption::create([
-                'discount_code_id' => $discountCode->id,
-                'firm_id' => $firm->id,
-                'user_id' => auth()->id(),
-                'plan_id' => $plan->id,
-                'original_amount' => $originalAmount,
-                'discount_amount' => $discountAmount,
-                'final_amount' => $finalAmount,
-                'redeemed_at' => now(),
-            ]);
-            $discountCode->increment('current_uses');
-        }
+        // El canje del codigo se registra en SubscriptionActivator cuando el pago se aprueba,
+        // para que abrir el checkout sin pagar no consuma usos del codigo.
 
         // Generar firma de integridad
         $integritySecret = config('services.wompi.integrity_secret');

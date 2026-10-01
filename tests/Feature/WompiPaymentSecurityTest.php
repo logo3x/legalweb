@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\DiscountCode;
+use App\Models\DiscountRedemption;
 use App\Models\Firm;
 use App\Models\Plan;
 use App\Models\Subscription;
@@ -140,6 +142,49 @@ class WompiPaymentSecurityTest extends TestCase
 
         $this->assertSame('active', $subscription->fresh()->status);
         $this->assertSame('expired', $previous->fresh()->status);
+    }
+
+    public function test_checkout_does_not_accept_get_requests(): void
+    {
+        $user = User::factory()->create(['firm_id' => Firm::factory()->create()->id, 'role' => 'admin']);
+
+        $this->actingAs($user)->get('/wompi/checkout?plan_id=1&billing_cycle=monthly')->assertMethodNotAllowed();
+    }
+
+    public function test_discount_code_is_only_consumed_when_payment_is_approved(): void
+    {
+        $firm = Firm::factory()->create();
+        $plan = Plan::create(['name' => 'Pro', 'slug' => 'pro', 'price_monthly' => 50000, 'price_yearly' => 250000]);
+        $user = User::factory()->create(['firm_id' => $firm->id, 'role' => 'admin']);
+        $code = DiscountCode::create(['code' => 'LANZAMIENTO', 'type' => DiscountCode::TYPE_PERCENT, 'amount' => 20, 'max_uses' => 1, 'current_uses' => 0, 'is_active' => true]);
+
+        // Abrir el checkout varias veces sin pagar no gasta el codigo.
+        foreach (range(1, 3) as $attempt) {
+            $this->actingAs($user)
+                ->post(route('wompi.checkout'), ['plan_id' => $plan->id, 'billing_cycle' => 'monthly', 'discount_code' => 'LANZAMIENTO'])
+                ->assertRedirect();
+        }
+
+        $this->assertSame(0, $code->fresh()->current_uses);
+        $this->assertSame(0, DiscountRedemption::count());
+
+        $subscription = Subscription::where('firm_id', $firm->id)->latest('id')->first();
+        $this->assertSame(4000000, $subscription->amount_in_cents);
+
+        $this->postJson(route('wompi.webhook'), $this->event([
+            'reference' => $subscription->wompi_reference,
+            'amount_in_cents' => 4000000,
+        ]))->assertOk();
+
+        $this->assertSame('active', $subscription->fresh()->status);
+        $this->assertSame(1, $code->fresh()->current_uses);
+        $this->assertDatabaseHas('discount_redemptions', [
+            'discount_code_id' => $code->id,
+            'firm_id' => $firm->id,
+            'original_amount' => 50000,
+            'discount_amount' => 10000,
+            'final_amount' => 40000,
+        ]);
     }
 
     public function test_checkout_stores_expected_amount(): void

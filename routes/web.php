@@ -60,21 +60,28 @@ Route::post('/admin/team/assign-cases/{user}', function (User $user, Request $re
         abort(403);
     }
 
-    $cases = $request->input('cases', []);
+    $cases = (array) $request->input('cases', []);
+
+    // Solo casos de la firma del administrador y permisos de la lista conocida.
+    $firmCaseIds = LegalCase::where('firm_id', $authUser->firm_id)
+        ->whereIn('id', array_keys($cases))
+        ->pluck('id')
+        ->all();
+    $validPermissions = array_keys(CasePermission::CASE_PERMISSIONS);
 
     // Eliminar permisos anteriores
     CasePermission::where('user_id', $user->id)->delete();
 
     // Crear nuevos permisos
     foreach ($cases as $caseId => $data) {
-        if (! isset($data['enabled'])) {
+        if (! isset($data['enabled']) || ! in_array((int) $caseId, $firmCaseIds, true)) {
             continue;
         }
 
         CasePermission::create([
             'user_id' => $user->id,
-            'legal_case_id' => $caseId,
-            'permissions' => $data['permissions'] ?? [],
+            'legal_case_id' => (int) $caseId,
+            'permissions' => array_values(array_intersect((array) ($data['permissions'] ?? []), $validPermissions)),
             'assigned_by' => $authUser->id,
         ]);
     }
@@ -136,7 +143,7 @@ Route::post('/admin/tour/reset', function () {
 
 // Wompi Payments
 Route::middleware('auth')->group(function () {
-    Route::match(['get', 'post'], '/wompi/checkout', [WompiController::class, 'checkout'])->name('wompi.checkout');
+    Route::post('/wompi/checkout', [WompiController::class, 'checkout'])->name('wompi.checkout');
     Route::get('/wompi/callback', [WompiController::class, 'callback'])->name('wompi.callback');
 });
 Route::post('/wompi/webhook', [WompiController::class, 'webhook'])->middleware('throttle:60,1')->name('wompi.webhook');
