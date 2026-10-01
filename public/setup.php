@@ -2,6 +2,7 @@
 
 use App\Models\CaseType;
 use App\Models\Client;
+use App\Models\Document;
 use App\Models\Firm;
 use App\Models\LegalCase;
 use App\Models\Reminder;
@@ -13,6 +14,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 // Boot Laravel
 define('LARAVEL_START', microtime(true));
@@ -902,6 +905,51 @@ try {
         }
     }
 
+    if ($step === 'migrate_documents') {
+        // Mueve los documentos subidos antes al disco privado (storage/app/private/documents/{firma}/)
+        // con nombre aleatorio. Los archivos de storage/app/public/documents sin registro se borran.
+        $public = Storage::disk('public');
+        $local = Storage::disk('local');
+        $confirm = ($_GET['confirm'] ?? '') === 'yes';
+        $allowedExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'jpg', 'jpeg', 'png'];
+
+        $documents = Document::query()
+            ->whereNotNull('file_path')
+            ->where('file_path', 'like', 'documents/%')
+            ->get()
+            ->filter(fn ($document) => $public->exists($document->file_path));
+
+        $linkedPaths = $documents->pluck('file_path')->all();
+        $orphans = array_values(array_diff($public->allFiles('documents'), $linkedPaths));
+
+        if (! $confirm) {
+            setup_log($documents->count().' documento(s) en la carpeta publica para mover a privada.', $documents->count() ? 'warning' : 'success');
+            setup_log(count($orphans).' archivo(s) huerfano(s) en la carpeta publica (sin registro) para borrar.', count($orphans) ? 'warning' : 'success');
+            if ($documents->count() || $orphans) {
+                $migrateUrl = '?key='.urlencode($secret).'&step=migrate_documents&confirm=yes';
+                setup_log("<a href='{$migrateUrl}' style='font-weight:bold;text-decoration:underline;'>Mover y limpiar ahora</a>", 'raw');
+            }
+        } else {
+            $moved = 0;
+            foreach ($documents as $document) {
+                $firmId = LegalCase::withoutGlobalScopes()->whereKey($document->legal_case_id)->value('firm_id') ?? 'sin-firma';
+                $extension = strtolower(pathinfo($document->file_path, PATHINFO_EXTENSION));
+                $extension = in_array($extension, $allowedExtensions, true) ? $extension : 'bin';
+                $oldPath = $document->file_path;
+                $newPath = "documents/{$firmId}/".Str::ulid().'.'.$extension;
+
+                if ($local->put($newPath, $public->get($oldPath))) {
+                    $document->update(['file_path' => $newPath]);
+                    $public->delete($oldPath);
+                    $moved++;
+                }
+            }
+            $public->delete($orphans);
+            setup_log("{$moved} documento(s) movidos a storage privado.", 'success');
+            setup_log(count($orphans).' archivo(s) huerfano(s) borrados.', 'success');
+        }
+    }
+
     if ($step === 'verify_ai_models') {
         Artisan::call('app:verify-ai-models');
         $aiOutput = trim(Artisan::output());
@@ -933,6 +981,7 @@ $stepTitles = [
     'clear' => 'Limpiar Cache',
     'verify_ai_models' => 'Verificar modelos IA',
     'purge_public_generated' => 'Borrar reportes publicos antiguos',
+    'migrate_documents' => 'Mover documentos a storage privado',
     'users' => 'Usuarios',
     'superadmin' => 'Superadmin',
     'cleanup_users' => 'Limpiar Usuarios',
@@ -1153,6 +1202,7 @@ $baseUrl = '?key='.urlencode($secret);
             <a href="<?= $baseUrl ?>&step=demo_reminders&user_id=" class="<?= $step === 'demo_reminders' ? 'active' : '' ?>">Reminders demo</a>
             <a href="<?= $baseUrl ?>&step=verify_ai_models" class="<?= $step === 'verify_ai_models' ? 'active' : '' ?>">Verificar modelos IA</a>
             <a href="<?= $baseUrl ?>&step=purge_public_generated" class="<?= $step === 'purge_public_generated' ? 'active' : '' ?>">Borrar reportes publicos</a>
+            <a href="<?= $baseUrl ?>&step=migrate_documents" class="<?= $step === 'migrate_documents' ? 'active' : '' ?>">Mover documentos a privado</a>
         </nav>
 
         <main class="main">

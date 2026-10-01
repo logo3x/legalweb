@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\LegalCases\RelationManagers;
 
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
@@ -99,6 +100,7 @@ class DocumentsRelationManager extends RelationManager
                 TextInput::make('external_url')
                     ->label('Enlace al archivo')
                     ->url()
+                    ->rule('url:http,https')
                     ->placeholder('https://drive.google.com/... o https://1drv.ms/...')
                     ->columnSpanFull()
                     ->helperText('Guarde el archivo en su Google Drive, OneDrive, Dropbox o similar y pegue el enlace aqui. La plataforma no almacena documentos para proteger la privacidad y confidencialidad de su informacion.'),
@@ -236,6 +238,11 @@ class DocumentsRelationManager extends RelationManager
                     }),
             ])
             ->recordActions([
+                Action::make('download_file')
+                    ->label('Descargar')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->visible(fn ($record): bool => filled($record->file_path))
+                    ->url(fn ($record): string => route('documents.file', $record)),
                 EditAction::make(),
                 DeleteAction::make(),
             ])

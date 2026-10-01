@@ -31,13 +31,16 @@ return new class extends Migration
             'has_portal' => true,
         ]);
 
-        // Actualizar trial de subscripciones existentes a 3 meses desde su inicio
-        DB::table('subscriptions')
-            ->whereNotNull('trial_ends_at')
-            ->whereRaw('trial_ends_at > NOW()')
-            ->update([
-                'trial_ends_at' => DB::raw('DATE_ADD(starts_at, INTERVAL 3 MONTH)'),
-            ]);
+        // Actualizar trial de subscripciones existentes a 3 meses desde su inicio.
+        // SQL especifico de MySQL; en la BD de pruebas (SQLite) no hay datos que actualizar.
+        if (DB::getDriverName() === 'mysql') {
+            DB::table('subscriptions')
+                ->whereNotNull('trial_ends_at')
+                ->whereRaw('trial_ends_at > NOW()')
+                ->update([
+                    'trial_ends_at' => DB::raw('DATE_ADD(starts_at, INTERVAL 3 MONTH)'),
+                ]);
+        }
     }
 
     public function down(): void

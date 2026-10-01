@@ -1,0 +1,18 @@
+# Archivos subidos por usuarios servidos en /storage (logos de firmas).
+# Nunca se ejecuta ni se interpreta nada aqui: solo se sirven como recursos estaticos.
+
+Options -Indexes
+
+<FilesMatch "\.(?i:php\d?|phtml|phar|cgi|pl|py|sh)$">
+    Require all denied
+</FilesMatch>
+
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    # Si alguien abre un archivo directamente, no puede ejecutar scripts en el dominio.
+    Header always set Content-Security-Policy "default-src 'none'; img-src 'self' data:; style-src 'unsafe-inline'; sandbox"
+
+    <FilesMatch "\.(?i:svgz?|html?|xhtml|xml|js)$">
+        Header always set Content-Disposition "attachment"
+    </FilesMatch>
+</IfModule>

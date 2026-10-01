@@ -5,7 +5,9 @@ use App\Http\Controllers\PortalController;
 use App\Http\Controllers\WompiController;
 use App\Jobs\SendMassEmailCampaign;
 use App\Models\CasePermission;
+use App\Models\Document;
 use App\Models\FirmInvitation;
+use App\Models\LegalCase;
 use App\Models\MassEmailCampaign;
 use App\Models\Reminder;
 use App\Models\User;
@@ -17,6 +19,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 
 Route::get('/', function () {
     return view('welcome');
@@ -97,6 +100,25 @@ Route::get('/download/{filename}', function (string $filename) {
 
     return response()->download($path, $filename)->deleteFileAfterSend();
 })->middleware('auth')->name('download.file');
+
+// Descarga de documentos subidos al caso. El caso se busca con FirmScope (firma y casos asignados),
+// asi que solo lo descarga quien puede ver el caso. Siempre como adjunto, nunca se muestra en linea.
+Route::get('/documents/{document}/file', function (Document $document) {
+    if (! $document->file_path || ! LegalCase::find($document->legal_case_id)) {
+        abort(404);
+    }
+
+    $fileName = $document->name ?: basename($document->file_path);
+
+    // Los documentos antiguos (antes de moverlos a storage privado) siguen en el disco publico.
+    foreach (['local', 'public'] as $disk) {
+        if (Storage::disk($disk)->exists($document->file_path)) {
+            return Storage::disk($disk)->download($document->file_path, $fileName);
+        }
+    }
+
+    abort(404);
+})->middleware('auth')->name('documents.file');
 
 // Tour completion
 Route::post('/admin/tour/complete', function () {

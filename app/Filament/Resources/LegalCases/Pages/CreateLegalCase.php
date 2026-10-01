@@ -16,7 +16,7 @@ class CreateLegalCase extends CreateRecord
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $data['firm_id'] = auth()->user()->firm_id;
-        unset($data['initial_documents']);
+        unset($data['initial_documents'], $data['initial_documents_names']);
 
         return $data;
     }
@@ -51,15 +51,15 @@ class CreateLegalCase extends CreateRecord
     private function saveInitialDocuments(): void
     {
         $files = $this->data['initial_documents'] ?? [];
+        $originalNames = $this->data['initial_documents_names'] ?? [];
 
         foreach ($files as $filePath) {
-            $fileName = basename($filePath);
-            $extension = pathinfo($fileName, PATHINFO_EXTENSION);
-            $size = Storage::disk('public')->exists($filePath) ? Storage::disk('public')->size($filePath) : null;
+            $extension = pathinfo($filePath, PATHINFO_EXTENSION);
+            $size = Storage::disk('local')->exists($filePath) ? Storage::disk('local')->size($filePath) : null;
 
             Document::create([
                 'legal_case_id' => $this->record->id,
-                'name' => $fileName,
+                'name' => $originalNames[$filePath] ?? basename($filePath),
                 'file_path' => $filePath,
                 'file_type' => $extension,
                 'file_size' => $size,

@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Subscription;
+use App\Services\SubscriptionActivator;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
@@ -49,20 +50,12 @@ class VerifyPendingPayments extends Command
                 $status = $tx['status'] ?? 'PENDING';
 
                 if ($status === 'APPROVED') {
-                    Subscription::where('firm_id', $sub->firm_id)
-                        ->where('id', '!=', $sub->id)
-                        ->where('status', 'active')
-                        ->update(['status' => 'expired']);
-
-                    $sub->update([
-                        'status' => 'active',
-                        'wompi_subscription_id' => $tx['id'] ?? null,
-                        'wompi_metadata' => $tx,
-                    ]);
-
-                    Log::info('Pago verificado via polling', ['reference' => $sub->wompi_reference]);
-                    $this->info("Activada: {$sub->wompi_reference}");
-                    $verified++;
+                    if (app(SubscriptionActivator::class)->activate($sub, $tx)) {
+                        $this->info("Activada: {$sub->wompi_reference}");
+                        $verified++;
+                    } else {
+                        $this->warn("No activada (monto o datos no coinciden): {$sub->wompi_reference}");
+                    }
                 } elseif (in_array($status, ['DECLINED', 'ERROR', 'VOIDED'])) {
                     $sub->update(['status' => 'canceled']);
                     $this->warn("Cancelada: {$sub->wompi_reference}");

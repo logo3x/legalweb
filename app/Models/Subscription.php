@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'firm_id',
     'plan_id',
     'billing_cycle',
+    'amount_in_cents',
     'status',
     'starts_at',
     'ends_at',
@@ -23,6 +24,7 @@ class Subscription extends Model
     protected function casts(): array
     {
         return [
+            'amount_in_cents' => 'integer',
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
             'trial_ends_at' => 'datetime',

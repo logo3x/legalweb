@@ -47,7 +47,7 @@ return new class extends Migration
         // 4. Indice UNICO a nivel BD para que sea imposible insertar duplicados
         //    de (caso, titulo, dia). Usa nombre corto por limite MySQL.
         $indexName = 'ce_case_title_day_uniq';
-        $exists = collect(DB::select('SHOW INDEX FROM case_events WHERE Key_name = ?', [$indexName]))->isNotEmpty();
+        $exists = Schema::hasIndex('case_events', $indexName);
         if (! $exists) {
             Schema::table('case_events', function (Blueprint $table) use ($indexName) {
                 $table->unique(['legal_case_id', 'title', 'event_day'], $indexName);
@@ -62,7 +62,7 @@ return new class extends Migration
         }
 
         $indexName = 'ce_case_title_day_uniq';
-        $exists = collect(DB::select('SHOW INDEX FROM case_events WHERE Key_name = ?', [$indexName]))->isNotEmpty();
+        $exists = Schema::hasIndex('case_events', $indexName);
         if ($exists) {
             Schema::table('case_events', function (Blueprint $table) use ($indexName) {
                 $table->dropUnique($indexName);

@@ -90,6 +90,7 @@ class DocumentForm
                 TextInput::make('external_url')
                     ->label('Enlace al archivo')
                     ->url()
+                    ->rule('url:http,https')
                     ->placeholder('https://drive.google.com/...')
                     ->columnSpanFull()
                     ->helperText('Guarde el archivo en Drive, OneDrive o Dropbox y pegue el enlace aqui.'),

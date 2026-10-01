@@ -6,6 +6,7 @@ use App\Models\DiscountCode;
 use App\Models\DiscountRedemption;
 use App\Models\Plan;
 use App\Models\Subscription;
+use App\Services\SubscriptionActivator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -82,6 +83,7 @@ class WompiController extends Controller
             'firm_id' => $firm->id,
             'plan_id' => $plan->id,
             'billing_cycle' => $validated['billing_cycle'],
+            'amount_in_cents' => $amountInCents,
             'status' => 'pending',
             'starts_at' => now(),
             'ends_at' => $validated['billing_cycle'] === 'biannual'
@@ -148,19 +150,7 @@ class WompiController extends Controller
             if ($status === 'APPROVED' && str_starts_with($reference, $this->originPrefix())) {
                 $subscription = Subscription::where('wompi_reference', $reference)->first();
 
-                if ($subscription) {
-                    // Desactivar suscripciones anteriores
-                    Subscription::where('firm_id', $subscription->firm_id)
-                        ->where('id', '!=', $subscription->id)
-                        ->where('status', 'active')
-                        ->update(['status' => 'expired']);
-
-                    $subscription->update([
-                        'status' => 'active',
-                        'wompi_subscription_id' => $transactionId,
-                        'wompi_metadata' => $transaction,
-                    ]);
-
+                if ($subscription && ($subscription->status === 'active' || app(SubscriptionActivator::class)->activate($subscription, $transaction))) {
                     return redirect('/admin')->with('success', 'Pago aprobado. Su plan ha sido activado.');
                 }
             }
@@ -207,8 +197,18 @@ class WompiController extends Controller
             return response()->json(['status' => 'missing_signature'], 401);
         }
 
-        $values = collect($properties)->map(fn ($prop) => data_get($request->json(), "data.transaction.{$prop}"))->implode('');
-        $expectedSignature = hash('sha256', $values.$timestamp.config('services.wompi.events_secret'));
+        // Sin secreto, cualquiera podria calcular una firma valida.
+        $eventsSecret = (string) config('services.wompi.events_secret');
+
+        if ($eventsSecret === '') {
+            Log::error('Wompi webhook: WOMPI_EVENTS_SECRET no configurado, se rechaza el evento', ['reference' => $reference]);
+
+            return response()->json(['status' => 'not_configured'], 503);
+        }
+
+        // Las propiedades vienen relativas a "data" (p. ej. "transaction.id" => data.transaction.id).
+        $values = collect($properties)->map(fn ($prop) => data_get($request->json('data'), $prop))->implode('');
+        $expectedSignature = hash('sha256', $values.$timestamp.$eventsSecret);
 
         if (! hash_equals($expectedSignature, $signature)) {
             Log::warning('Wompi webhook: firma invalida', ['reference' => $reference]);
@@ -223,18 +223,7 @@ class WompiController extends Controller
             $subscription = Subscription::where('wompi_reference', $reference)->first();
 
             if ($subscription) {
-                Subscription::where('firm_id', $subscription->firm_id)
-                    ->where('id', '!=', $subscription->id)
-                    ->where('status', 'active')
-                    ->update(['status' => 'expired']);
-
-                $subscription->update([
-                    'status' => 'active',
-                    'wompi_subscription_id' => $data['id'] ?? null,
-                    'wompi_metadata' => $data,
-                ]);
-
-                Log::info('Wompi webhook: suscripcion activada', ['reference' => $reference]);
+                app(SubscriptionActivator::class)->activate($subscription, $data);
             }
         }
 

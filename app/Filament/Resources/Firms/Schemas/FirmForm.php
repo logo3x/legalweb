@@ -88,9 +88,9 @@ class FirmForm
                             ->imageResizeTargetWidth('800')
                             ->imageResizeTargetHeight('400')
                             ->maxSize(2048)
-                            ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'])
+                            ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/webp'])
                             ->helperText(new HtmlString(
-                                'PNG transparente, SVG, JPG o WebP &middot; horizontal (600&times;200) o cuadrado (400&times;400) &middot; max 2 MB &middot; recorte cerca del contenido.'
+                                'PNG transparente, JPG o WebP &middot; horizontal (600&times;200) o cuadrado (400&times;400) &middot; max 2 MB &middot; recorte cerca del contenido.'
                             )),
                         Toggle::make('onboarding_completed')
                             ->label('Onboarding completado'),

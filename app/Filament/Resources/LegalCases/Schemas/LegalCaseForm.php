@@ -10,6 +10,8 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Str;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class LegalCaseForm
 {
@@ -126,9 +128,15 @@ class LegalCaseForm
                         FileUpload::make('initial_documents')
                             ->label('Archivos')
                             ->multiple()
-                            ->disk('public')
-                            ->directory('documents')
-                            ->preserveFilenames()
+                            // Disco privado por firma y nombre aleatorio con la extension segun el contenido real:
+                            // los documentos no quedan accesibles por URL publica ni se pisan entre firmas.
+                            ->disk('local')
+                            ->visibility('private')
+                            ->directory(fn (): string => 'documents/'.auth()->user()->firm_id)
+                            ->getUploadedFileNameForStorageUsing(
+                                fn (TemporaryUploadedFile $file): string => Str::ulid().'.'.($file->guessExtension() ?: 'bin')
+                            )
+                            ->storeFileNamesIn('initial_documents_names')
                             ->acceptedFileTypes(['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'image/jpeg', 'image/png'])
                             ->maxSize(10240)
                             ->downloadable()

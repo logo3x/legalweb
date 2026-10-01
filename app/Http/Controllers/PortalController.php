@@ -156,7 +156,7 @@ class PortalController extends Controller
     public function documentLink(Request $request, string $token, int $documentId)
     {
         $request->validate([
-            'external_url' => 'required|url|max:500',
+            'external_url' => 'required|url:http,https|max:500',
         ], [
             'external_url.required' => 'Debe ingresar un enlace.',
             'external_url.url' => 'El enlace no es valido. Debe comenzar con https://',

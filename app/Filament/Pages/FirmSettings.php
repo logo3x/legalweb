@@ -85,11 +85,11 @@ class FirmSettings extends Page
                                     ->imageResizeTargetWidth('800')
                                     ->imageResizeTargetHeight('400')
                                     ->maxSize(2048)
-                                    ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'])
+                                    ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/webp'])
                                     ->helperText(new HtmlString(
                                         '<div style="font-size:12px;line-height:1.5;color:#475569;">'
                                         .'<strong style="color:#1E3A5F;">Recomendaciones:</strong><br>'
-                                        .'&bull; <strong>Formato:</strong> PNG con fondo transparente (ideal), SVG, JPG o WebP.<br>'
+                                        .'&bull; <strong>Formato:</strong> PNG con fondo transparente (ideal), JPG o WebP.<br>'
                                         .'&bull; <strong>Proporcion:</strong> horizontal (ej. 600&times;200 px) o cuadrada (400&times;400 px).<br>'
                                         .'&bull; <strong>Resolucion minima:</strong> 400 px en su lado mas largo.<br>'
                                         .'&bull; <strong>Tamano maximo:</strong> 2 MB.<br>'
