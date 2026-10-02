@@ -139,7 +139,11 @@
   <table class="lw-container" width="600" cellpadding="0" cellspacing="0" role="presentation" style="max-width:600px;margin-top:18px;">
     <tr><td align="center" style="padding:0 24px;">
       <p style="margin:0;font-size:11.5px;color:#94A3B8;line-height:1.55;">
-        Recibes este correo porque eres usuario de {{ $appName }}.<br>
+        Recibes este correo porque eres usuario de {{ $appName }}.
+        @if (! empty($unsubscribeUrl))
+          <a href="{{ $unsubscribeUrl }}" style="color:#94A3B8;text-decoration:underline;">Cancelar suscripcion</a>
+        @endif
+        <br>
         &copy; {{ $year }} {{ $appName }} &middot; Hecho en Colombia.
       </p>
     </td></tr>

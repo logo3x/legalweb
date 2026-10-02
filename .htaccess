@@ -1,3 +1,10 @@
+Options -Indexes
+
+# Defensa extra: si la redireccion a public/ fallara, estos archivos nunca se sirven.
+<FilesMatch "(^\.env|^\.git|\.log$|\.sql$|\.zip$|\.bak$|^composer\.(json|lock)$|^package(-lock)?\.json$|^artisan$|^phpunit\.xml$)">
+    Require all denied
+</FilesMatch>
+
 <IfModule mod_rewrite.c>
     RewriteEngine On
 

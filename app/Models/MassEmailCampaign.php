@@ -63,7 +63,8 @@ class MassEmailCampaign extends Model
 
     public function resolveRecipients(): Collection
     {
-        $query = User::query()->whereNotNull('email');
+        // Nunca a quien pidio la baja de campanas.
+        $query = User::query()->whereNotNull('email')->whereNull('mass_email_opt_out_at');
 
         switch ($this->audience_type) {
             case 'by_plan':

@@ -52,6 +52,7 @@ class User extends Authenticatable implements FilamentUser
             'terms_accepted_at' => 'datetime',
             'tour_completed_at' => 'datetime',
             'last_login_at' => 'datetime',
+            'mass_email_opt_out_at' => 'datetime',
             'security_email_enabled' => 'boolean',
         ];
     }

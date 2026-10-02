@@ -42,7 +42,7 @@ return [
     ],
 
     'notifications' => [
-        'new_firm_emails' => env('NEW_FIRM_EMAILS', 'lgoviedo17@hotmail.com'),
+        'new_firm_emails' => env('NEW_FIRM_EMAILS', ''),
     ],
 
     'wompi' => [

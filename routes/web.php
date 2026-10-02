@@ -127,6 +127,15 @@ Route::get('/documents/{document}/file', function (Document $document) {
     abort(404);
 })->middleware('auth')->name('documents.file');
 
+// Baja de campanas masivas (Ley 1581): enlace firmado incluido en cada correo masivo.
+Route::get('/correos/baja/{user}', function (User $user) {
+    if (! $user->mass_email_opt_out_at) {
+        $user->forceFill(['mass_email_opt_out_at' => now()])->save();
+    }
+
+    return view('mass-email-unsubscribed', ['email' => $user->email]);
+})->middleware(['signed', 'throttle:20,1'])->name('mass-email.unsubscribe');
+
 // Tour completion
 Route::post('/admin/tour/complete', function () {
     auth()->user()?->update(['tour_completed_at' => now()]);

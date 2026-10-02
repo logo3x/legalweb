@@ -1179,7 +1179,7 @@ $baseUrl = '?key='.urlencode($secret);
             <a href="<?= $baseUrl ?>&step=cleanup_duplicate_reminders" class="<?= $step === 'cleanup_duplicate_reminders' ? 'active' : '' ?>">Limpiar recordatorios duplicados</a>
             <a href="<?= $baseUrl ?>&step=storage" class="<?= $step === 'storage' ? 'active' : '' ?>">Storage Link</a>
             <a href="<?= $baseUrl ?>&step=trim_logos" class="<?= $step === 'trim_logos' ? 'active' : '' ?>">Recortar logos firmas</a>
-            <a href="<?= $baseUrl ?>&step=mail_test&to=lgoviedo17@hotmail.com" class="<?= $step === 'mail_test' ? 'active' : '' ?>">Test Correo</a>
+            <a href="<?= $baseUrl ?>&step=mail_test&to=<?= urlencode((string) config('mail.from.address')) ?>" class="<?= $step === 'mail_test' ? 'active' : '' ?>">Test Correo</a>
 
             <div class="group-title">Cache</div>
             <a href="<?= $baseUrl ?>&step=cache" class="<?= $step === 'cache' ? 'active' : '' ?>">Cachear</a>
