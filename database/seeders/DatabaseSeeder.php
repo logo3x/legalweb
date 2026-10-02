@@ -24,6 +24,13 @@ class DatabaseSeeder extends Seeder
 
     public function run(): void
     {
+        // Crea cuentas de demostracion con contrasena conocida: nunca en produccion.
+        if (app()->isProduction()) {
+            $this->command?->error('DatabaseSeeder crea cuentas de demostracion y no se ejecuta en produccion.');
+
+            return;
+        }
+
         // Planes de suscripción
         $freePlan = Plan::create([
             'name' => 'Gratuito',
