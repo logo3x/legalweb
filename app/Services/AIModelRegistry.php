@@ -117,10 +117,23 @@ class AIModelRegistry
     public function refresh(): array
     {
         $verified = [];
+        $verifiedPerProvider = [];
         $previous = collect($this->verifiedModels())->keyBy('key');
 
         foreach ($this->discoverCandidates() as $key => $label) {
+            [$provider] = AIProviderClient::parseKey($key);
+
+            // Se prueban candidatos hasta reunir max_candidates que respondan por proveedor
+            // (con data_collection=deny muchos gratuitos se descartan).
+            if (($verifiedPerProvider[$provider] ?? 0) >= $this->maxCandidates($provider)) {
+                continue;
+            }
+
             $response = $this->client->complete($key, 'Eres un asistente de prueba.', 'Responde solo con la palabra OK.', 200, 30);
+
+            if (filled($response['content']) || ($previous->has($key) && ! in_array($response['status'], self::GONE_STATUSES, true))) {
+                $verifiedPerProvider[$provider] = ($verifiedPerProvider[$provider] ?? 0) + 1;
+            }
 
             if (filled($response['content'])) {
                 $verified[] = ['key' => $key, 'label' => $label, 'verified_at' => now()->toDateTimeString()];
@@ -146,6 +159,19 @@ class AIModelRegistry
     public function discoverCandidates(): array
     {
         return $this->discoverGeminiModels() + $this->discoverOpenRouterModels();
+    }
+
+    private function maxCandidates(string $provider): int
+    {
+        return (int) config("services.{$provider}.max_candidates", $provider === AIProviderClient::GEMINI ? 3 : 5);
+    }
+
+    /**
+     * Cuantos candidatos se consultan como maximo por proveedor (el triple de los que se guardan).
+     */
+    private function probeBudget(string $provider): int
+    {
+        return $this->maxCandidates($provider) * 3;
     }
 
     /**
@@ -193,7 +219,7 @@ class AIModelRegistry
 
         $ordered += array_reverse($catalog, true);
 
-        return collect(array_slice($ordered, 0, (int) config('services.gemini.max_candidates', 3), true))
+        return collect(array_slice($ordered, 0, $this->probeBudget(AIProviderClient::GEMINI), true))
             ->mapWithKeys(fn (string $label, string $id) => [AIProviderClient::makeKey(AIProviderClient::GEMINI, $id) => "{$label} (Gemini)"])
             ->all();
     }
@@ -235,7 +261,7 @@ class AIModelRegistry
             $catalog = [$configured => $catalog[$configured] ?? $configured] + $catalog;
         }
 
-        return collect(array_slice($catalog, 0, (int) config('services.openrouter.max_candidates', 5), true))
+        return collect(array_slice($catalog, 0, $this->probeBudget(AIProviderClient::OPENROUTER), true))
             ->mapWithKeys(fn (string $label, string $id) => [AIProviderClient::makeKey(AIProviderClient::OPENROUTER, $id) => "{$label} (OpenRouter)"])
             ->all();
     }

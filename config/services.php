@@ -71,7 +71,7 @@ return [
         'base_url' => 'https://openrouter.ai/api/v1',
         'max_candidates' => (int) env('OPENROUTER_MAX_CANDIDATES', 5),
         // "deny" solo enruta a proveedores que no almacenan ni entrenan con los datos enviados.
-        'data_collection' => env('OPENROUTER_DATA_COLLECTION', 'allow'),
+        'data_collection' => env('OPENROUTER_DATA_COLLECTION', 'deny'),
     ],
 
 ];

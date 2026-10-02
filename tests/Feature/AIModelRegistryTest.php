@@ -110,6 +110,34 @@ class AIModelRegistryTest extends TestCase
         Http::assertNotSent(fn (Request $request) => str_contains($request->url(), 'gemini-3.8-flash-tts'));
     }
 
+    public function test_refresh_keeps_probing_until_enough_models_respond(): void
+    {
+        config(['services.gemini.api_key' => null, 'services.openrouter.max_candidates' => 1]);
+
+        // El primero no tiene proveedor que cumpla la politica de datos (404), el segundo si.
+        $this->fakeProviders([
+            'openrouter:acme/good-model:free' => 404,
+            'openrouter:acme/other-model:free' => 200,
+        ]);
+
+        $verified = app(AIModelRegistry::class)->refresh();
+
+        $this->assertSame(['openrouter:acme/other-model:free'], array_column($verified, 'key'));
+    }
+
+    public function test_refresh_stops_probing_once_enough_models_respond(): void
+    {
+        config(['services.gemini.api_key' => null, 'services.openrouter.max_candidates' => 1]);
+        $this->fakeProviders([
+            'openrouter:acme/good-model:free' => 200,
+            'openrouter:acme/other-model:free' => 200,
+        ]);
+
+        app(AIModelRegistry::class)->refresh();
+
+        Http::assertNotSent(fn (Request $request) => str_contains((string) $request->body(), 'acme/other-model:free'));
+    }
+
     public function test_refresh_keeps_previous_list_when_nothing_responds(): void
     {
         Cache::forever(AIModelRegistry::CACHE_KEY, [
