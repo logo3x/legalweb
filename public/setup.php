@@ -906,6 +906,16 @@ try {
         }
     }
 
+    if ($step === 'generate_secrets') {
+        // Solo muestra valores aleatorios para copiarlos al .env; no guarda ni registra nada.
+        setup_log('Valores nuevos (cada recarga genera otros). Copielos al .env y luego use "Limpiar".', 'warning');
+        setup_log('SETUP_KEY='.bin2hex(random_bytes(24)), 'success');
+        setup_log('CRON_TOKEN='.bin2hex(random_bytes(24)), 'success');
+        setup_log('APP_KEY=base64:'.base64_encode(random_bytes(32)), 'success');
+        setup_log('Al cambiar APP_KEY, ponga la clave anterior en APP_PREVIOUS_KEYS=base64:... para no cerrar las sesiones abiertas.', 'muted');
+        setup_log('Al cambiar SETUP_KEY, esta pagina solo abrira con la clave nueva. Al cambiar CRON_TOKEN, actualice las 9 tareas cron.', 'muted');
+    }
+
     if ($step === 'migrate_documents') {
         // Mueve los documentos subidos antes al disco privado (storage/app/private/documents/{firma}/)
         // con nombre aleatorio. Los archivos de storage/app/public/documents sin registro se borran.
@@ -983,6 +993,7 @@ $stepTitles = [
     'verify_ai_models' => 'Verificar modelos IA',
     'purge_public_generated' => 'Borrar reportes publicos antiguos',
     'migrate_documents' => 'Mover documentos a storage privado',
+    'generate_secrets' => 'Generar claves nuevas',
     'users' => 'Usuarios',
     'superadmin' => 'Superadmin',
     'cleanup_users' => 'Limpiar Usuarios',
@@ -1204,6 +1215,7 @@ $baseUrl = '?key='.urlencode($secret);
             <a href="<?= $baseUrl ?>&step=verify_ai_models" class="<?= $step === 'verify_ai_models' ? 'active' : '' ?>">Verificar modelos IA</a>
             <a href="<?= $baseUrl ?>&step=purge_public_generated" class="<?= $step === 'purge_public_generated' ? 'active' : '' ?>">Borrar reportes publicos</a>
             <a href="<?= $baseUrl ?>&step=migrate_documents" class="<?= $step === 'migrate_documents' ? 'active' : '' ?>">Mover documentos a privado</a>
+            <a href="<?= $baseUrl ?>&step=generate_secrets" class="<?= $step === 'generate_secrets' ? 'active' : '' ?>">Generar claves nuevas</a>
         </nav>
 
         <main class="main">
