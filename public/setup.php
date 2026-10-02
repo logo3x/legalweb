@@ -47,6 +47,7 @@ function setup_log(string $msg, string $type = 'info'): void
 try {
     if ($step === 'info') {
         setup_log('PHP: '.PHP_VERSION);
+        setup_log('PHP max_execution_time: '.ini_get('max_execution_time').' s');
         setup_log('Laravel: '.app()->version());
         setup_log('ENV: '.app()->environment());
         setup_log('APP_URL: '.config('app.url'));

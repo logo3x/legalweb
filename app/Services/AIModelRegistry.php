@@ -116,9 +116,13 @@ class AIModelRegistry
      */
     public function refresh(): array
     {
+        // En hosting compartido PHP suele cortar a los 30-60 s; se pide mas tiempo si se permite.
+        @set_time_limit(300);
+
         $verified = [];
         $verifiedPerProvider = [];
         $previous = collect($this->verifiedModels())->keyBy('key');
+        $probed = [];
 
         foreach ($this->discoverCandidates() as $key => $label) {
             [$provider] = AIProviderClient::parseKey($key);
@@ -129,17 +133,25 @@ class AIModelRegistry
                 continue;
             }
 
-            $response = $this->client->complete($key, 'Eres un asistente de prueba.', 'Responde solo con la palabra OK.', 200, 30);
-
-            if (filled($response['content']) || ($previous->has($key) && ! in_array($response['status'], self::GONE_STATUSES, true))) {
-                $verifiedPerProvider[$provider] = ($verifiedPerProvider[$provider] ?? 0) + 1;
-            }
+            $probed[] = $key;
+            $response = $this->client->complete($key, 'Eres un asistente de prueba.', 'Responde solo con la palabra OK.', 200, 15);
 
             if (filled($response['content'])) {
                 $verified[] = ['key' => $key, 'label' => $label, 'verified_at' => now()->toDateTimeString()];
+                $verifiedPerProvider[$provider] = ($verifiedPerProvider[$provider] ?? 0) + 1;
             } elseif ($previous->has($key) && ! in_array($response['status'], self::GONE_STATUSES, true)) {
                 // Fallo transitorio (saturacion, limite de uso): se conserva la verificacion anterior.
                 $verified[] = $previous->get($key);
+                $verifiedPerProvider[$provider] = ($verifiedPerProvider[$provider] ?? 0) + 1;
+            }
+
+            // Avance guardado tras cada prueba: si el hosting corta la ejecucion, no se pierde lo verificado
+            // y se conservan los modelos anteriores que aun no se alcanzaron a probar.
+            if ($verified) {
+                Cache::forever(self::CACHE_KEY, array_values(array_merge(
+                    $verified,
+                    $previous->except($probed)->all(),
+                )));
             }
         }
 
@@ -158,7 +170,26 @@ class AIModelRegistry
      */
     public function discoverCandidates(): array
     {
-        return $this->discoverGeminiModels() + $this->discoverOpenRouterModels();
+        $openRouter = $this->discoverOpenRouterModels();
+        $gemini = $this->discoverGeminiModels();
+
+        // Se alternan proveedores (OpenRouter primero) para que ninguno quede sin probar si la
+        // ejecucion se corta, y para que el orden automatico de uso empiece por OpenRouter:
+        // con data_collection=deny no entrena con los datos, a diferencia del plan gratuito de Gemini.
+        $candidates = [];
+        $openRouterKeys = array_keys($openRouter);
+        $geminiKeys = array_keys($gemini);
+
+        for ($i = 0; $i < max(count($openRouterKeys), count($geminiKeys)); $i++) {
+            if (isset($openRouterKeys[$i])) {
+                $candidates[$openRouterKeys[$i]] = $openRouter[$openRouterKeys[$i]];
+            }
+            if (isset($geminiKeys[$i])) {
+                $candidates[$geminiKeys[$i]] = $gemini[$geminiKeys[$i]];
+            }
+        }
+
+        return $candidates;
     }
 
     private function maxCandidates(string $provider): int

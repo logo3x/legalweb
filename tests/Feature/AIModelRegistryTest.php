@@ -99,8 +99,9 @@ class AIModelRegistryTest extends TestCase
 
         $verified = app(AIModelRegistry::class)->refresh();
 
+        // OpenRouter va primero (con deny no entrena con los datos); los proveedores se alternan.
         $this->assertSame(
-            ['gemini:gemini-flash-latest', 'openrouter:acme/good-model:free'],
+            ['openrouter:acme/good-model:free', 'gemini:gemini-flash-latest'],
             array_column($verified, 'key'),
         );
         $this->assertSame('Good Model (OpenRouter)', app(AIModelRegistry::class)->options()['openrouter:acme/good-model:free']);
@@ -136,6 +137,43 @@ class AIModelRegistryTest extends TestCase
         app(AIModelRegistry::class)->refresh();
 
         Http::assertNotSent(fn (Request $request) => str_contains((string) $request->body(), 'acme/other-model:free'));
+    }
+
+    public function test_refresh_saves_progress_after_each_probe(): void
+    {
+        Cache::forever(AIModelRegistry::CACHE_KEY, [
+            ['key' => 'openrouter:acme/other-model:free', 'label' => 'Other Model', 'verified_at' => '2026-09-30 06:00:00'],
+        ]);
+
+        // Simula que el hosting corta la ejecucion en la segunda prueba.
+        $calls = 0;
+        Http::fake(function (Request $request) use (&$calls) {
+            if (str_contains($request->url(), '/models')) {
+                return str_contains($request->url(), 'generativelanguage')
+                    ? Http::response(['models' => [['name' => 'models/gemini-flash-latest', 'displayName' => 'Gemini Flash Latest', 'supportedGenerationMethods' => ['generateContent']]]])
+                    : Http::response(['data' => [
+                        ['id' => 'acme/good-model:free', 'name' => 'Good Model', 'context_length' => 128000],
+                        ['id' => 'acme/other-model:free', 'name' => 'Other Model', 'context_length' => 128000],
+                    ]]);
+            }
+
+            if (++$calls === 2) {
+                throw new \Error('Maximum execution time exceeded');
+            }
+
+            return Http::response(['choices' => [['message' => ['content' => 'OK']]]]);
+        });
+
+        try {
+            app(AIModelRegistry::class)->refresh();
+        } catch (\Error) {
+            // La ejecucion se corto a mitad de la verificacion.
+        }
+
+        $keys = array_column(app(AIModelRegistry::class)->verifiedModels(), 'key');
+
+        $this->assertContains('openrouter:acme/good-model:free', $keys);
+        $this->assertContains('openrouter:acme/other-model:free', $keys, 'Los modelos anteriores aun no probados se conservan');
     }
 
     public function test_refresh_keeps_previous_list_when_nothing_responds(): void
