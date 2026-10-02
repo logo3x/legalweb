@@ -13,9 +13,10 @@ class DemoSeederProductionTest extends TestCase
 
     public function test_demo_accounts_are_never_created_in_production(): void
     {
-        $this->app->detectEnvironment(fn (): string => 'production');
+        $this->app['env'] = 'production';
 
-        $this->seed(DatabaseSeeder::class);
+        // Igual que el boton Seed de setup.php.
+        $this->artisan('db:seed', ['--class' => DatabaseSeeder::class, '--force' => true]);
 
         $this->assertFalse(User::where('email', 'admin@legalweb.co')->exists());
         $this->assertSame(0, User::count());
