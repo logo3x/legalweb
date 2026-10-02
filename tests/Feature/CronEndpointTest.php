@@ -52,7 +52,7 @@ class CronEndpointTest extends TestCase
             '*/models' => Http::response(['data' => [
                 ['id' => 'acme/good-model:free', 'name' => 'Good Model', 'context_length' => 128000],
             ]]),
-            '*/chat/completions' => Http::response(['choices' => [['message' => ['content' => 'OK']]]]),
+            '*/chat/completions' => Http::response(['choices' => [['message' => ['content' => 'La tutela protege derechos fundamentales de forma inmediata.']]]]),
         ]);
 
         $this->get('/cron/'.self::TOKEN.'/verify-ai-models')

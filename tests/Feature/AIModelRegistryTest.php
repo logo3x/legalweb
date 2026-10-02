@@ -65,7 +65,7 @@ class AIModelRegistryTest extends TestCase
                 preg_match('#/models/([^:]+):generateContent#', $url, $matches);
                 $status = $chatStatuses['gemini:'.$matches[1]] ?? 404;
 
-                return Http::response($status === 200 ? ['candidates' => [['content' => ['parts' => [['text' => 'OK']]]]]] : [], $status);
+                return Http::response($status === 200 ? ['candidates' => [['content' => ['parts' => [['text' => 'La tutela protege derechos fundamentales de forma inmediata.']]]]]] : [], $status);
             }
 
             if (str_ends_with($url, '/models')) {
@@ -139,6 +139,54 @@ class AIModelRegistryTest extends TestCase
         Http::assertNotSent(fn (Request $request) => str_contains((string) $request->body(), 'acme/other-model:free'));
     }
 
+    public function test_gemini_goes_first_when_it_is_the_preferred_provider(): void
+    {
+        config(['services.ai.preferred_provider' => 'gemini']);
+        $this->fakeProviders([
+            'gemini:gemini-flash-latest' => 200,
+            'openrouter:acme/good-model:free' => 200,
+        ]);
+
+        $verified = app(AIModelRegistry::class)->refresh();
+
+        $this->assertSame('gemini:gemini-flash-latest', $verified[0]['key']);
+        $this->assertSame('gemini:gemini-flash-latest', app(AIModelRegistry::class)->attemptOrder()[0]);
+    }
+
+    public function test_models_that_reason_without_answering_are_discarded(): void
+    {
+        config(['services.gemini.api_key' => null]);
+        Cache::forever(AIModelRegistry::CACHE_KEY, [
+            ['key' => 'openrouter:acme/good-model:free', 'label' => 'Good Model', 'verified_at' => '2026-09-30 06:00:00'],
+        ]);
+
+        // Responde 200 pero sin contenido: agoto los tokens "pensando" (finish_reason = length).
+        Http::fake([
+            '*/models' => Http::response(['data' => [['id' => 'acme/good-model:free', 'name' => 'Good Model', 'context_length' => 128000]]]),
+            '*/chat/completions' => Http::response(['choices' => [['message' => ['content' => null], 'finish_reason' => 'length']]]),
+        ]);
+
+        $registry = app(AIModelRegistry::class);
+
+        $this->assertSame([], $registry->refresh(), 'No pasa la verificacion');
+
+        $registry->recordResult('openrouter:acme/good-model:free', false, 200);
+        $this->assertSame([], $registry->verifiedModels(), 'Una llamada real sin respuesta lo retira de la lista');
+    }
+
+    public function test_invalid_api_key_does_not_empty_the_model_list(): void
+    {
+        $registry = app(AIModelRegistry::class);
+        Cache::forever(AIModelRegistry::CACHE_KEY, [
+            ['key' => 'openrouter:a:free', 'label' => 'A', 'verified_at' => ''],
+        ]);
+
+        $registry->recordResult('openrouter:a:free', false, 401);
+        $registry->recordResult('openrouter:a:free', false, 503);
+
+        $this->assertCount(1, $registry->verifiedModels());
+    }
+
     public function test_refresh_saves_progress_after_each_probe(): void
     {
         Cache::forever(AIModelRegistry::CACHE_KEY, [
@@ -161,7 +209,7 @@ class AIModelRegistryTest extends TestCase
                 throw new \Error('Maximum execution time exceeded');
             }
 
-            return Http::response(['choices' => [['message' => ['content' => 'OK']]]]);
+            return Http::response(['choices' => [['message' => ['content' => 'La tutela protege derechos fundamentales de forma inmediata.']]]]);
         });
 
         try {

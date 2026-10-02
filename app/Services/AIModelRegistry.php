@@ -18,10 +18,14 @@ class AIModelRegistry
     public const CACHE_KEY = 'ai.verified_models';
 
     /**
-     * Estados HTTP que indican que el modelo ya no existe o no acepta la solicitud.
-     * Los 429/5xx son transitorios y no sacan al modelo de la lista.
+     * Prueba con una pregunta real y margen de tokens similar al de la app: algunos modelos
+     * gratuitos "razonan" hasta agotar los tokens y nunca entregan respuesta.
      */
-    private const GONE_STATUSES = [400, 404, 410];
+    private const PROBE_PROMPT = 'En Colombia, si un juzgado inadmite una demanda civil, indica en una frase el plazo para subsanarla y la norma del Codigo General del Proceso.';
+
+    private const PROBE_MAX_TOKENS = 1000;
+
+    private const PROBE_MIN_ANSWER_LENGTH = 30;
 
     private const EXCLUDED_PATTERN = '/tts|image|audio|live|embed|safety|guard|code|vision-only/i';
 
@@ -92,7 +96,7 @@ class AIModelRegistry
             Cache::forever(self::CACHE_KEY, $models);
         }
 
-        if (! $succeeded && $exists && in_array($status, self::GONE_STATUSES, true)) {
+        if (! $succeeded && $exists && ! $this->isTransientFailure($status)) {
             Cache::forever(self::CACHE_KEY, array_values(array_filter($models, fn (array $model) => $model['key'] !== $key)));
             Log::warning("AI: modelo {$key} retirado de la lista de verificados (HTTP {$status})");
         }
@@ -134,12 +138,12 @@ class AIModelRegistry
             }
 
             $probed[] = $key;
-            $response = $this->client->complete($key, 'Eres un asistente de prueba.', 'Responde solo con la palabra OK.', 200, 15);
+            $response = $this->client->complete($key, 'Eres un abogado colombiano.', self::PROBE_PROMPT, self::PROBE_MAX_TOKENS, 25);
 
-            if (filled($response['content'])) {
+            if (mb_strlen(trim((string) $response['content'])) >= self::PROBE_MIN_ANSWER_LENGTH) {
                 $verified[] = ['key' => $key, 'label' => $label, 'verified_at' => now()->toDateTimeString()];
                 $verifiedPerProvider[$provider] = ($verifiedPerProvider[$provider] ?? 0) + 1;
-            } elseif ($previous->has($key) && ! in_array($response['status'], self::GONE_STATUSES, true)) {
+            } elseif ($previous->has($key) && $this->isTransientFailure($response['status'])) {
                 // Fallo transitorio (saturacion, limite de uso): se conserva la verificacion anterior.
                 $verified[] = $previous->get($key);
                 $verifiedPerProvider[$provider] = ($verifiedPerProvider[$provider] ?? 0) + 1;
@@ -170,26 +174,36 @@ class AIModelRegistry
      */
     public function discoverCandidates(): array
     {
-        $openRouter = $this->discoverOpenRouterModels();
-        $gemini = $this->discoverGeminiModels();
+        // Se alternan proveedores para que ninguno quede sin probar si la ejecucion se corta.
+        // El preferido va primero y por eso tambien encabeza el orden automatico de uso:
+        // OpenRouter con data_collection=deny no entrena con los datos; Gemini gratuito si puede,
+        // pero suele responder mejor en derecho colombiano (AI_PREFERRED_PROVIDER).
+        $lists = config('services.ai.preferred_provider') === AIProviderClient::GEMINI
+            ? [$this->discoverGeminiModels(), $this->discoverOpenRouterModels()]
+            : [$this->discoverOpenRouterModels(), $this->discoverGeminiModels()];
 
-        // Se alternan proveedores (OpenRouter primero) para que ninguno quede sin probar si la
-        // ejecucion se corta, y para que el orden automatico de uso empiece por OpenRouter:
-        // con data_collection=deny no entrena con los datos, a diferencia del plan gratuito de Gemini.
         $candidates = [];
-        $openRouterKeys = array_keys($openRouter);
-        $geminiKeys = array_keys($gemini);
+        $keys = array_map('array_keys', $lists);
 
-        for ($i = 0; $i < max(count($openRouterKeys), count($geminiKeys)); $i++) {
-            if (isset($openRouterKeys[$i])) {
-                $candidates[$openRouterKeys[$i]] = $openRouter[$openRouterKeys[$i]];
-            }
-            if (isset($geminiKeys[$i])) {
-                $candidates[$geminiKeys[$i]] = $gemini[$geminiKeys[$i]];
+        for ($i = 0; $i < max(count($keys[0]), count($keys[1])); $i++) {
+            foreach ([0, 1] as $list) {
+                if (isset($keys[$list][$i])) {
+                    $candidates[$keys[$list][$i]] = $lists[$list][$keys[$list][$i]];
+                }
             }
         }
 
         return $candidates;
+    }
+
+    /**
+     * Puede volver a funcionar: sin respuesta HTTP, clave/credito de la cuenta (401/402), timeout,
+     * saturacion o limite de uso (429) y errores del proveedor (5xx).
+     * No es transitorio: un 200 sin respuesta (agoto los tokens razonando), 400, 403, 404 o 410.
+     */
+    private function isTransientFailure(?int $status): bool
+    {
+        return $status === null || in_array($status, [401, 402, 408, 429], true) || $status >= 500;
     }
 
     private function maxCandidates(string $provider): int

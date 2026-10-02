@@ -65,6 +65,11 @@ return [
         'max_candidates' => (int) env('GEMINI_MAX_CANDIDATES', 3),
     ],
 
+    'ai' => [
+        // Proveedor que se intenta primero: "openrouter" (privacidad) o "gemini" (calidad, plan gratuito puede entrenar).
+        'preferred_provider' => env('AI_PREFERRED_PROVIDER', 'openrouter'),
+    ],
+
     'openrouter' => [
         'api_key' => env('OPENROUTER_API_KEY'),
         'model' => env('OPENROUTER_MODEL'),
