@@ -17,16 +17,30 @@ use App\Models\Subscription;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
+/**
+ * DATOS DE EJEMPLO para desarrollo local y demostraciones.
+ *
+ * Crea una firma ficticia ("Firma de Ejemplo (Demo)"), tres usuarios de demostracion,
+ * clientes y casos marcados con is_demo (la app los muestra como "Ejemplo"), flujos
+ * procesales, actuaciones y recordatorios. Ningun dato corresponde a personas reales y
+ * los correos usan example.com, dominio reservado que no entrega correo a nadie.
+ *
+ * Nunca se ejecuta en produccion.
+ */
 class DatabaseSeeder extends Seeder
 {
+    public const DEMO_FIRM_NAME = 'Firma de Ejemplo (Demo)';
+
     use WithoutModelEvents;
 
     public function run(): void
     {
-        // Crea cuentas de demostracion con contrasena conocida: nunca en produccion.
+        // Crea cuentas de demostracion: nunca en produccion.
         if (app()->isProduction()) {
-            $this->command?->error('DatabaseSeeder crea cuentas de demostracion y no se ejecuta en produccion.');
+            $this->command?->error('DatabaseSeeder solo crea DATOS DE EJEMPLO (firma, usuarios y casos ficticios) y no se ejecuta en produccion.');
 
             return;
         }
@@ -74,17 +88,17 @@ class DatabaseSeeder extends Seeder
             'sort_order' => 3,
         ]);
 
-        // Firma demo
+        // Firma de ejemplo (ficticia)
         $firm = Firm::create([
-            'name' => 'Rodríguez & López Abogados',
-            'nit' => '901234567-1',
-            'legal_name' => 'Rodríguez & López Abogados S.A.S.',
-            'email' => 'contacto@rodriguezlopez.co',
+            'name' => self::DEMO_FIRM_NAME,
+            'nit' => '900000000-0',
+            'legal_name' => 'Firma de Ejemplo S.A.S. (datos ficticios)',
+            'email' => 'firma.demo@example.com',
             'phone' => '6017654321',
             'address' => 'Calle 72 #10-07 Oficina 301',
             'city' => 'Bogotá',
             'department' => 'Cundinamarca',
-            'description' => 'Firma especializada en derecho civil, laboral y de familia',
+            'description' => 'Firma ficticia con datos de ejemplo para conocer la plataforma.',
             'onboarding_completed' => true,
         ]);
 
@@ -96,23 +110,29 @@ class DatabaseSeeder extends Seeder
             'trial_ends_at' => now()->addDays(30),
         ]);
 
+        // Contrasena aleatoria por ejecucion (se muestra al final), nunca una fija.
+        $demoPassword = Str::password(16, symbols: false);
+
         $admin = User::factory()->create([
-            'name' => 'Admin LegalWeb',
-            'email' => 'admin@legalweb.co',
+            'name' => 'Administrador (Demo)',
+            'email' => 'admin.demo@example.com',
+            'password' => Hash::make($demoPassword),
             'firm_id' => $firm->id,
             'role' => 'admin',
         ]);
 
         $lawyer = User::factory()->create([
-            'name' => 'Carlos Rodríguez',
-            'email' => 'carlos@legalweb.co',
+            'name' => 'Abogado Uno (Demo)',
+            'email' => 'abogado1.demo@example.com',
+            'password' => Hash::make($demoPassword),
             'firm_id' => $firm->id,
             'role' => 'abogado',
         ]);
 
         $lawyer2 = User::factory()->create([
-            'name' => 'María López',
-            'email' => 'maria@legalweb.co',
+            'name' => 'Abogada Dos (Demo)',
+            'email' => 'abogado2.demo@example.com',
+            'password' => Hash::make($demoPassword),
             'firm_id' => $firm->id,
             'role' => 'abogado',
         ]);
@@ -484,6 +504,11 @@ class DatabaseSeeder extends Seeder
             'due_date' => now()->addDays(2)->setHour(17)->setMinute(0),
             'remind_at' => now()->addDay()->setHour(8)->setMinute(0),
         ]);
+
+        $this->command?->warn('DATOS DE EJEMPLO creados (todo es ficticio, marcado como "Ejemplo" en la app):');
+        $this->command?->line('  Firma: '.self::DEMO_FIRM_NAME);
+        $this->command?->line('  Usuarios: admin.demo@example.com (admin), abogado1.demo@example.com, abogado2.demo@example.com');
+        $this->command?->line('  Contrasena de los tres: '.$demoPassword);
     }
 
     private function createFlow(CaseType $caseType, string $name, string $description, array $steps): CaseFlow
