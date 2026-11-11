@@ -19,6 +19,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Schema as DbSchema;
 use Illuminate\Support\HtmlString;
 use UnitEnum;
@@ -78,6 +79,7 @@ class FirmSettings extends Page
             ->statePath('data')
             ->components([
                 Grid::make(3)
+                    ->visible(fn (): bool => (bool) auth()->user()?->isAdmin())
                     ->schema([
                         Section::make('Logo')
                             ->description('Aparecera en el panel, correos y portal del cliente.')
@@ -124,6 +126,7 @@ class FirmSettings extends Page
                             ]),
                     ]),
                 Section::make('Datos adicionales')
+                    ->visible(fn (): bool => (bool) auth()->user()?->isAdmin())
                     ->description('Esta informacion es opcional. Puede completarla despues.')
                     ->collapsible()
                     ->collapsed(fn () => auth()->user()->firm?->onboarding_completed ?? false)
@@ -235,6 +238,14 @@ class FirmSettings extends Page
             }
         }
 
+        // Solo los administradores cambian los datos de la firma (nombre, correo, logo...),
+        // que aparecen en el portal y en los correos a los clientes.
+        if (! auth()->user()->isAdmin()) {
+            Notification::make()->title('Preferencias guardadas')->success()->send();
+
+            return;
+        }
+
         $firm->update(array_merge($data, ['onboarding_completed' => true]));
 
         if ($wasOnboarding) {
@@ -297,6 +308,20 @@ class FirmSettings extends Page
                 ->modalDescription(fn (): string => 'Se enviara un WhatsApp de prueba a '.auth()->user()->whatsapp_phone.'. Si no tiene plantilla aprobada, el mensaje solo llega si usted escribio al numero de LegalWeb en las ultimas 24 horas.')
                 ->action(function (WhatsAppService $whatsApp): void {
                     $user = auth()->user();
+
+                    // Cada mensaje cuesta en Twilio: maximo 3 pruebas por hora por usuario.
+                    $limiterKey = 'whatsapp-test:'.$user->id;
+                    if (RateLimiter::tooManyAttempts($limiterKey, 3)) {
+                        Notification::make()
+                            ->title('Demasiadas pruebas')
+                            ->body('Puede volver a probar en '.ceil(RateLimiter::availableIn($limiterKey) / 60).' minuto(s).')
+                            ->warning()
+                            ->send();
+
+                        return;
+                    }
+                    RateLimiter::hit($limiterKey, 3600);
+
                     $sent = $whatsApp->sendTemplate(
                         $user->whatsapp_phone,
                         'reminder.due.lawyer',

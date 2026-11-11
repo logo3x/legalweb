@@ -116,6 +116,8 @@ Route::get('/documents/{document}/file', function (Document $document) {
         abort(404);
     }
 
+    abort_unless(auth()->user()->hasCasePermission((int) $document->legal_case_id, 'documents.view'), 403);
+
     $fileName = $document->name ?: basename($document->file_path);
 
     // Los documentos antiguos (antes de moverlos a storage privado) siguen en el disco publico.

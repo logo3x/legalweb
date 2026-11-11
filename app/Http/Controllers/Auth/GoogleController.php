@@ -38,6 +38,11 @@ class GoogleController extends Controller
             return redirect('/admin');
         }
 
+        // Emparejar por correo (cuentas existentes e invitaciones) solo si Google lo verifico.
+        if (($googleUser->user['email_verified'] ?? $googleUser->user['verified_email'] ?? false) !== true) {
+            return redirect('/admin/login')->with('error', 'Su correo de Google no esta verificado. Verifiquelo en su cuenta de Google e intente de nuevo.');
+        }
+
         // Usuario existente con email
         $user = User::where('email', $email)->first();
 

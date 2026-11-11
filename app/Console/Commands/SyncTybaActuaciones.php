@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Jobs\SyncCaseActuaciones;
 use App\Models\LegalCase;
+use App\Models\Scopes\FirmScope;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
@@ -15,7 +16,7 @@ class SyncTybaActuaciones extends Command
     public function handle(): void
     {
         // Obtener casos activos con radicado que no se han sincronizado en 24h
-        $cases = LegalCase::withoutGlobalScopes()
+        $cases = LegalCase::withoutGlobalScope(FirmScope::class)
             ->whereNotNull('external_case_number')
             ->where('external_case_number', '!=', '')
             ->whereIn('status', ['abierto', 'en_progreso', 'en_espera'])

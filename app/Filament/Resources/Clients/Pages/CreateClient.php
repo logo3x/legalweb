@@ -13,6 +13,9 @@ class CreateClient extends CreateRecord
     {
         $data['firm_id'] = auth()->user()->firm_id;
 
+        // Sin abogado asignado, queda a cargo de quien lo crea (asi un colaborador sigue viendolo).
+        $data['user_id'] ??= auth()->id();
+
         return $data;
     }
 }

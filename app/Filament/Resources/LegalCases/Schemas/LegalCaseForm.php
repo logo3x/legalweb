@@ -28,7 +28,9 @@ class LegalCaseForm
                         TextInput::make('external_case_number')
                             ->label('Radicado Judicial')
                             ->hintIcon('heroicon-o-question-mark-circle', tooltip: 'Numero de radicado asignado por el despacho judicial. Dejelo vacio si aun no ha sido radicado.')
-                            ->maxLength(50),
+                            ->maxLength(50)
+                            ->regex('/^[0-9\- ]*$/')
+                            ->validationMessages(['regex' => 'El radicado solo puede tener numeros, guiones y espacios.']),
                         TextInput::make('title')
                             ->label('Título')
                             ->hintIcon('heroicon-o-question-mark-circle', tooltip: 'Nombre descriptivo del caso. Ej: "Demanda laboral contra Empresa XYZ".')

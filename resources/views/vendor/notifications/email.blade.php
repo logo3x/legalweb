@@ -92,7 +92,7 @@
                             {{-- Lineas introductorias --}}
                             @foreach($introLines as $line)
                                 <p style="margin:0 0 14px 0;font-size:15px;line-height:1.65;color:#374151;">
-                                    {!! Illuminate\Mail\Markdown::parse($line) !!}
+                                    {{ \App\Notifications\SafeMailMarkdown::render($line) }}
                                 </p>
                             @endforeach
 
@@ -112,7 +112,7 @@
                             {{-- Lineas de cierre --}}
                             @foreach($outroLines as $line)
                                 <p style="margin:0 0 14px 0;font-size:15px;line-height:1.65;color:#374151;">
-                                    {!! Illuminate\Mail\Markdown::parse($line) !!}
+                                    {{ \App\Notifications\SafeMailMarkdown::render($line) }}
                                 </p>
                             @endforeach
 
@@ -120,7 +120,7 @@
                             <div style="margin-top:28px;padding-top:20px;border-top:1px solid #e5e7eb;">
                                 @if(! empty($salutation))
                                     <p style="margin:0;font-size:14px;color:#6b7280;line-height:1.6;">
-                                        {!! Illuminate\Mail\Markdown::parse($salutation) !!}
+                                        {{ \App\Notifications\SafeMailMarkdown::render($salutation) }}
                                     </p>
                                 @else
                                     <p style="margin:0;font-size:14px;color:#6b7280;line-height:1.6;">

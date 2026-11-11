@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\CaseEvent;
 use App\Models\LegalCase;
 use App\Models\Reminder;
+use App\Models\Scopes\FirmScope;
 use App\Models\TybaSyncLog;
 use App\Notifications\MonthlyReportNotification;
 use App\Services\GeneratedFileStore;
@@ -25,7 +26,7 @@ class SendMonthlyReports extends Command
         $periodo = $previousMonth->translatedFormat('F Y');
 
         // Obtener casos con reporte automatico habilitado
-        $cases = LegalCase::withoutGlobalScopes()
+        $cases = LegalCase::withoutGlobalScope(FirmScope::class)
             ->with(['client', 'user', 'user.firm', 'caseType', 'flowProgress.flowStep'])
             ->where('auto_report_enabled', true)
             ->whereIn('status', ['abierto', 'en_progreso', 'en_espera'])

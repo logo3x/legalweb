@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Documents;
 
+use App\Filament\Resources\Concerns\ScopesToCasePermissions;
 use App\Filament\Resources\Documents\Pages\CreateDocument;
 use App\Filament\Resources\Documents\Pages\EditDocument;
 use App\Filament\Resources\Documents\Pages\ListDocuments;
@@ -20,13 +21,14 @@ class DocumentResource extends Resource
 {
     protected static ?string $model = Document::class;
 
-    public static function getEloquentQuery(): Builder
+    use ScopesToCasePermissions;
+
+    /**
+     * @return array{view: string, create: string, edit: string}
+     */
+    protected static function casePermissions(): array
     {
-        $query = parent::getEloquentQuery();
-
-        $query->whereHas('legalCase', fn (Builder $q) => $q->where('firm_id', auth()->user()->firm_id));
-
-        return $query;
+        return ['view' => 'documents.view', 'create' => 'documents.upload', 'edit' => 'documents.upload'];
     }
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentText;

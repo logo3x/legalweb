@@ -6,6 +6,7 @@ use App\Models\CasePermission;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Scope;
+use Illuminate\Support\Facades\DB;
 
 class FirmScope implements Scope
 {
@@ -34,10 +35,32 @@ class FirmScope implements Scope
             $builder->where($table.'.firm_id', $user->firm_id);
         }
 
-        // Colaboradores (no admin): solo ven casos asignados
-        if ($table === 'legal_cases' && ! $user->isAdmin()) {
-            $allowedCaseIds = CasePermission::where('user_id', $user->id)->pluck('legal_case_id');
-            $builder->whereIn($table.'.id', $allowedCaseIds);
+        if ($user->isAdmin() || ! in_array($table, ['clients', 'legal_cases', 'reminders'])) {
+            return;
+        }
+
+        // Colaboradores (no admin): solo lo relacionado con sus casos asignados.
+        $allowedCaseIds = CasePermission::where('user_id', $user->id)->pluck('legal_case_id');
+
+        if ($table === 'legal_cases') {
+            $builder->whereIn('legal_cases.id', $allowedCaseIds);
+        }
+
+        // Clientes de sus casos asignados o que tiene asignados como abogado (incluye los que crea).
+        if ($table === 'clients') {
+            $builder->where(fn (Builder $q) => $q
+                ->where('clients.user_id', $user->id)
+                ->orWhereIn('clients.id', DB::table('legal_cases')
+                    ->whereIn('id', $allowedCaseIds)
+                    ->whereNotNull('client_id')
+                    ->select('client_id')));
+        }
+
+        // Recordatorios propios o de sus casos asignados.
+        if ($table === 'reminders') {
+            $builder->where(fn (Builder $q) => $q
+                ->where('reminders.user_id', $user->id)
+                ->orWhereIn('reminders.legal_case_id', $allowedCaseIds));
         }
     }
 }

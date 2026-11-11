@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Client;
 use App\Models\Firm;
 use App\Models\LegalCase;
+use App\Models\Scopes\FirmScope;
 use App\Notifications\NewProcessesFoundNotification;
 use App\Services\N8nWebhook;
 use App\Services\TybaService;
@@ -19,7 +20,7 @@ class MonitorClientProcesses extends Command
     public function handle(TybaService $tyba): int
     {
         // Los menos revisados primero: si hay muchos clientes, se reparten entre noches.
-        $clients = Client::withoutGlobalScopes()
+        $clients = Client::withoutGlobalScope(FirmScope::class)
             ->with(['user'])
             ->where('process_monitoring_enabled', true)
             ->where('is_demo', false)

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\CaseEvents\Schemas;
 
+use App\Filament\Resources\CaseEvents\CaseEventResource;
 use App\Models\LegalCase;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
@@ -21,7 +22,12 @@ class CaseEventForm
                     ->required()
                     ->searchable()
                     ->preload()
-                    ->options(fn () => LegalCase::where('firm_id', auth()->user()->firm_id)
+                    ->options(fn ($record) => LegalCase::where('firm_id', auth()->user()->firm_id)
+                        ->when(
+                            CaseEventResource::caseIdsWithPermission('events.create'),
+                            fn ($q, array $ids) => $q->where(fn ($w) => $w->whereIn('id', $ids)->orWhere('id', $record?->legal_case_id)),
+                        )
+                        ->when(CaseEventResource::caseIdsWithPermission('events.create') === [], fn ($q) => $q->where('id', $record?->legal_case_id ?? 0))
                         ->orderByDesc('id')
                         ->limit(50)
                         ->get()

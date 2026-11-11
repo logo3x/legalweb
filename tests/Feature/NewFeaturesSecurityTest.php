@@ -127,7 +127,7 @@ class NewFeaturesSecurityTest extends TestCase
             'campos' => [['campo' => 'Despacho', 'antes' => self::XSS, 'despues' => self::XSS]],
         ]])->render();
 
-        $this->assertStringNotContainsString('<script>', $html);
+        $this->assertStringNotContainsString('<script', $html);
         $this->assertStringContainsString('&lt;script&gt;', $html);
     }
 
@@ -138,7 +138,7 @@ class NewFeaturesSecurityTest extends TestCase
 
         $html = (string) $mail->render();
 
-        $this->assertStringNotContainsString('<script>', $html);
+        $this->assertStringNotContainsString('<script', $html);
     }
 
     public function test_new_processes_email_escapes_court_names(): void
@@ -148,7 +148,7 @@ class NewFeaturesSecurityTest extends TestCase
 
         $html = (string) $mail->render();
 
-        $this->assertStringNotContainsString('<script>', $html);
+        $this->assertStringNotContainsString('<script', $html);
     }
 
     public function test_n8n_case_events_do_not_include_client_personal_data(): void

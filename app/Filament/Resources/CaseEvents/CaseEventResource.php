@@ -7,25 +7,26 @@ use App\Filament\Resources\CaseEvents\Pages\EditCaseEvent;
 use App\Filament\Resources\CaseEvents\Pages\ListCaseEvents;
 use App\Filament\Resources\CaseEvents\Schemas\CaseEventForm;
 use App\Filament\Resources\CaseEvents\Tables\CaseEventsTable;
+use App\Filament\Resources\Concerns\ScopesToCasePermissions;
 use App\Models\CaseEvent;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 
 class CaseEventResource extends Resource
 {
     protected static ?string $model = CaseEvent::class;
 
-    public static function getEloquentQuery(): Builder
+    use ScopesToCasePermissions;
+
+    /**
+     * @return array{view: string, create: string, edit: string}
+     */
+    protected static function casePermissions(): array
     {
-        $query = parent::getEloquentQuery();
-
-        $query->whereHas('legalCase', fn (Builder $q) => $q->where('firm_id', auth()->user()->firm_id));
-
-        return $query;
+        return ['view' => 'events.view', 'create' => 'events.create', 'edit' => 'events.edit'];
     }
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendarDays;

@@ -31,7 +31,15 @@ if (strlen($secret) < 20 || ! hash_equals($secret, (string) ($_GET['key'] ?? '')
     exit('No autorizado');
 }
 
-$step = $_GET['step'] ?? 'info';
+// El panel no usa JavaScript: se bloquea cualquier script inyectado y no se filtra
+// la URL (que lleva la clave) a otros sitios.
+header("Content-Security-Policy: default-src 'self'; script-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; form-action 'self'; frame-ancestors 'none'; base-uri 'none'");
+header('Referrer-Policy: no-referrer');
+header('X-Frame-Options: DENY');
+header('X-Content-Type-Options: nosniff');
+header('Cache-Control: no-store');
+
+$step = (string) ($_GET['step'] ?? 'info');
 
 // Capture output
 ob_start();
@@ -105,9 +113,15 @@ try {
     }
 
     if ($step === 'key') {
-        Artisan::call('key:generate', ['--force' => true]);
-        setup_log('App key generada correctamente', 'success');
-        setup_log(trim(Artisan::output()), 'muted');
+        // Regenerar una clave existente sin guardar la anterior cierra todas las
+        // sesiones y deja ilegibles los datos cifrados: para eso esta "Rotar claves".
+        if (filled(config('app.key'))) {
+            setup_log('Ya existe una APP_KEY. Para cambiarla use "Rotar claves (escribe el .env)", que conserva la anterior en APP_PREVIOUS_KEYS.', 'warning');
+        } else {
+            Artisan::call('key:generate', ['--force' => true]);
+            setup_log('App key generada correctamente', 'success');
+            setup_log(trim(Artisan::output()), 'muted');
+        }
     }
 
     if ($step === 'rotate_keys') {
@@ -145,7 +159,7 @@ try {
             $oldAppKey = (string) config('app.key');
             $previousKeys = array_filter(array_merge(
                 [$oldAppKey],
-                array_map('trim', explode(',', (string) env('APP_PREVIOUS_KEYS', '')))
+                array_map('trim', (array) config('app.previous_keys', []))
             ));
 
             $newAppKey = 'base64:'.base64_encode(random_bytes(32));
@@ -788,7 +802,7 @@ try {
                 ->each(function ($c) use ($baseUrl) {
                     $url = $baseUrl.'&step=tyba_raw&case_id='.$c->id;
                     setup_log(
-                        "<a href='{$url}' style='color:#3A86FF;text-decoration:none;'>#{$c->id} {$c->case_number}</a> | Radicado: {$c->external_case_number}",
+                        '<a href="'.htmlspecialchars($url).'" style="color:#3A86FF;text-decoration:none;">#'.(int) $c->id.' '.htmlspecialchars((string) $c->case_number).'</a> | Radicado: '.htmlspecialchars((string) $c->external_case_number),
                         'raw'
                     );
                 });
@@ -1285,7 +1299,7 @@ $baseUrl = '?key='.urlencode($secret);
         </nav>
 
         <main class="main">
-            <h2 class="page-title"><?= $stepTitles[$step] ?? ucfirst($step) ?></h2>
+            <h2 class="page-title"><?= htmlspecialchars($stepTitles[$step] ?? ucfirst($step)) ?></h2>
 
             <div class="card">
                 <div class="card-body">

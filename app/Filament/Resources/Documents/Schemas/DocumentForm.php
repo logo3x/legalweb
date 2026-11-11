@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Documents\Schemas;
 
+use App\Filament\Resources\Documents\DocumentResource;
 use App\Models\LegalCase;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -20,7 +21,12 @@ class DocumentForm
                     ->required()
                     ->searchable()
                     ->preload()
-                    ->options(fn () => LegalCase::where('firm_id', auth()->user()->firm_id)
+                    ->options(fn ($record) => LegalCase::where('firm_id', auth()->user()->firm_id)
+                        ->when(
+                            DocumentResource::caseIdsWithPermission('documents.upload'),
+                            fn ($q, array $ids) => $q->where(fn ($w) => $w->whereIn('id', $ids)->orWhere('id', $record?->legal_case_id)),
+                        )
+                        ->when(DocumentResource::caseIdsWithPermission('documents.upload') === [], fn ($q) => $q->where('id', $record?->legal_case_id ?? 0))
                         ->orderByDesc('id')
                         ->limit(50)
                         ->get()
