@@ -82,6 +82,85 @@
         </div>
     </div>
 
+    @if(session('doc_success'))
+        <div style="background: #dcfce7; border: 1px solid #86efac; border-radius: 12px; padding: 12px 16px; margin-bottom: 20px; font-size: 13px; color: #166534; font-weight: 500;">
+            {{ session('doc_success') }}
+        </div>
+    @endif
+
+    {{-- Documentos pendientes del cliente (DESTACADO) --}}
+    @php
+        $pendingClient = $case->documents->where('responsible', 'cliente')->whereIn('status', ['pendiente', 'solicitado', 'en_tramite']);
+    @endphp
+
+    @if($pendingClient->isNotEmpty())
+        <div style="background: linear-gradient(135deg, #fef3c7, #fffbeb); border: 2px solid #f59e0b; border-radius: 16px; padding: 24px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                <div style="width: 44px; height: 44px; background: #f59e0b; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <svg style="width: 24px; height: 24px; color: #fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                </div>
+                <div>
+                    <h2 style="font-size: 17px; font-weight: 700; color: #78350f; margin: 0;">Documentos que debe aportar</h2>
+                    <p style="font-size: 12px; color: #92400e; margin: 2px 0 0 0;">{{ $pendingClient->count() }} documento(s) pendiente(s) de su parte</p>
+                </div>
+            </div>
+
+            @foreach($pendingClient as $doc)
+                <div style="background: #fff; border: 1px solid #fde68a; border-radius: 12px; padding: 14px; margin-bottom: 10px;">
+                    <div style="display: flex; align-items: start; gap: 12px; margin-bottom: 10px;">
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="font-size: 14px; font-weight: 600; color: #1f2937; margin-bottom: 4px;">
+                                {{ $doc->name }}
+                                @if($doc->status === 'en_tramite')
+                                    <span style="display: inline-block; margin-left: 6px; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; background: #dcfce7; color: #166534;">Ya aviso que lo tiene listo</span>
+                                @endif
+                            </div>
+                            @if($doc->description)
+                                <p style="font-size: 12px; color: #6b7280; margin: 4px 0;">{{ $doc->description }}</p>
+                            @endif
+                            <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 6px; font-size: 11px; color: #9ca3af;">
+                                @if($doc->entity)
+                                    <span><strong style="color: #6b7280;">Donde conseguirlo:</strong> {{ $doc->entity }}</span>
+                                @endif
+                                @if($doc->due_date)
+                                    <span style="color: {{ $doc->due_date->isPast() ? '#dc2626' : '#9ca3af' }};">
+                                        <strong style="color: {{ $doc->due_date->isPast() ? '#dc2626' : '#6b7280' }};">Antes de:</strong> {{ $doc->due_date->format('d/m/Y') }}
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Acciones del cliente --}}
+                    <div style="padding-top: 10px; border-top: 1px solid #fef3c7;">
+                        <form action="{{ route('portal.document.link', ['token' => $portalToken, 'document' => $doc->id]) }}" method="POST" style="margin: 0; display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+                            @csrf
+                            <input type="url" name="external_url" placeholder="Pegue aqui el enlace de Drive, OneDrive, etc."
+                                style="flex: 1; min-width: 200px; padding: 8px 12px; border: 1px solid #fde68a; border-radius: 8px; font-size: 12px;">
+                            <button type="submit" style="background: #3A86FF; color: #fff; padding: 8px 14px; border: none; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                                <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244"/></svg>
+                                Enviar enlace
+                            </button>
+                        </form>
+                        @if($doc->status !== 'en_tramite')
+                        <form action="{{ route('portal.document.ready', ['token' => $portalToken, 'document' => $doc->id]) }}" method="POST" style="margin: 8px 0 0 0;">
+                            @csrf
+                            <button type="submit" style="background: transparent; color: #16a34a; padding: 4px 0; border: none; font-size: 11px; font-weight: 600; cursor: pointer; text-decoration: underline; display: flex; align-items: center; gap: 4px;">
+                                <svg style="width: 12px; height: 12px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                O solo avisar que lo tengo listo (sin enviar archivo)
+                            </button>
+                        </form>
+                        @endif
+                    </div>
+                </div>
+            @endforeach
+
+            <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #fde68a; font-size: 11px; color: #92400e; line-height: 1.5;">
+                <strong>Como enviar el archivo:</strong> Sube el archivo a Google Drive, OneDrive o WhatsApp Web, copia el enlace y pegalo arriba. Asegurese de configurar el enlace para que su abogado pueda verlo. Si prefiere, puede solo avisar que tiene el documento listo.
+            </div>
+        </div>
+    @endif
+
     {{-- Tarjetas resumen --}}
     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px;">
         {{-- Datos del cliente --}}
@@ -231,78 +310,6 @@
                     </div>
                 </div>
             @endforeach
-        </div>
-    @endif
-
-    {{-- Documentos pendientes del cliente (DESTACADO) --}}
-    @php
-        $pendingClient = $case->documents->where('responsible', 'cliente')->whereIn('status', ['pendiente', 'solicitado', 'en_tramite']);
-    @endphp
-
-    @if($pendingClient->isNotEmpty())
-        <div style="background: linear-gradient(135deg, #fef3c7, #fffbeb); border: 2px solid #f59e0b; border-radius: 16px; padding: 24px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);">
-            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
-                <div style="width: 44px; height: 44px; background: #f59e0b; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                    <svg style="width: 24px; height: 24px; color: #fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                </div>
-                <div>
-                    <h2 style="font-size: 17px; font-weight: 700; color: #78350f; margin: 0;">Documentos que debe aportar</h2>
-                    <p style="font-size: 12px; color: #92400e; margin: 2px 0 0 0;">{{ $pendingClient->count() }} documento(s) pendiente(s) de su parte</p>
-                </div>
-            </div>
-
-            @if(session('doc_success'))
-                <div style="background: #dcfce7; border: 1px solid #86efac; border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; font-size: 13px; color: #166534;">
-                    {{ session('doc_success') }}
-                </div>
-            @endif
-
-            @foreach($pendingClient as $doc)
-                <div style="background: #fff; border: 1px solid #fde68a; border-radius: 12px; padding: 14px; margin-bottom: 10px;">
-                    <div style="display: flex; align-items: start; gap: 12px; margin-bottom: 10px;">
-                        <div style="flex: 1; min-width: 0;">
-                            <div style="font-size: 14px; font-weight: 600; color: #1f2937; margin-bottom: 4px;">{{ $doc->name }}</div>
-                            @if($doc->description)
-                                <p style="font-size: 12px; color: #6b7280; margin: 4px 0;">{{ $doc->description }}</p>
-                            @endif
-                            <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 6px; font-size: 11px; color: #9ca3af;">
-                                @if($doc->entity)
-                                    <span><strong style="color: #6b7280;">Donde conseguirlo:</strong> {{ $doc->entity }}</span>
-                                @endif
-                                @if($doc->due_date)
-                                    <span style="color: {{ $doc->due_date->isPast() ? '#dc2626' : '#9ca3af' }};">
-                                        <strong style="color: {{ $doc->due_date->isPast() ? '#dc2626' : '#6b7280' }};">Antes de:</strong> {{ $doc->due_date->format('d/m/Y') }}
-                                    </span>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- Acciones del cliente --}}
-                    <div style="padding-top: 10px; border-top: 1px solid #fef3c7;">
-                        <form action="{{ route('portal.document.link', ['token' => $portalToken, 'document' => $doc->id]) }}" method="POST" style="margin: 0; display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
-                            @csrf
-                            <input type="url" name="external_url" placeholder="Pegue aqui el enlace de Drive, OneDrive, etc."
-                                style="flex: 1; min-width: 200px; padding: 8px 12px; border: 1px solid #fde68a; border-radius: 8px; font-size: 12px;">
-                            <button type="submit" style="background: #3A86FF; color: #fff; padding: 8px 14px; border: none; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px;">
-                                <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244"/></svg>
-                                Enviar enlace
-                            </button>
-                        </form>
-                        <form action="{{ route('portal.document.ready', ['token' => $portalToken, 'document' => $doc->id]) }}" method="POST" style="margin: 8px 0 0 0;">
-                            @csrf
-                            <button type="submit" style="background: transparent; color: #16a34a; padding: 4px 0; border: none; font-size: 11px; font-weight: 600; cursor: pointer; text-decoration: underline; display: flex; align-items: center; gap: 4px;">
-                                <svg style="width: 12px; height: 12px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                                O solo avisar que lo tengo listo (sin enviar archivo)
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            @endforeach
-
-            <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #fde68a; font-size: 11px; color: #92400e; line-height: 1.5;">
-                <strong>Como enviar el archivo:</strong> Sube el archivo a Google Drive, OneDrive o WhatsApp Web, copia el enlace y pegalo arriba. Asegurese de configurar el enlace para que su abogado pueda verlo. Si prefiere, puede solo avisar que tiene el documento listo.
-            </div>
         </div>
     @endif
 

@@ -79,4 +79,20 @@ return [
         'data_collection' => env('OPENROUTER_DATA_COLLECTION', 'deny'),
     ],
 
+    'twilio' => [
+        'sid' => env('TWILIO_SID'),
+        'auth_token' => env('TWILIO_AUTH_TOKEN'),
+        'whatsapp_from' => env('TWILIO_WHATSAPP_FROM'),
+
+        // Content SIDs (HX...) aprobados por Meta. Las claves llevan puntos,
+        // asi que se leen con config('services.twilio.templates')[$key].
+        'templates' => [
+            'reminder.due.lawyer' => env('TWILIO_TPL_REMINDER_DUE_LAWYER'),
+            'deadline.lawyer' => env('TWILIO_TPL_DEADLINE_LAWYER'),
+            'tyba.new_event.lawyer' => env('TWILIO_TPL_TYBA_NEW_EVENT_LAWYER'),
+            'document.received.lawyer' => env('TWILIO_TPL_DOCUMENT_RECEIVED_LAWYER'),
+            'portal.access.lawyer' => env('TWILIO_TPL_PORTAL_ACCESS_LAWYER'),
+        ],
+    ],
+
 ];

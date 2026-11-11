@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\LegalCases\RelationManagers;
 
 use App\Filament\Resources\LegalCases\RelationManagers\Concerns\ChecksCasePermissions;
+use App\Models\TybaSyncLog;
+use Filament\Actions\Action;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
@@ -53,7 +55,7 @@ class TybaSyncLogsRelationManager extends RelationManager
                         default => 'gray',
                     })
                     ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'ok' => 'Nuevas actuaciones',
+                        'ok' => 'Con novedades',
                         'error' => 'Error',
                         'sin_cambios' => 'Sin cambios',
                         default => $state,
@@ -74,6 +76,17 @@ class TybaSyncLogsRelationManager extends RelationManager
                         'automatico' => 'gray',
                         default => 'gray',
                     }),
+            ])
+            ->recordActions([
+                Action::make('ver_cambios')
+                    ->label('Ver cambios')
+                    ->icon('heroicon-o-arrows-right-left')
+                    ->color('info')
+                    ->visible(fn (TybaSyncLog $record): bool => ! empty($record->cambios))
+                    ->modalHeading(fn (TybaSyncLog $record): string => 'Cambios detectados el '.$record->created_at->format('d/m/Y H:i'))
+                    ->modalContent(fn (TybaSyncLog $record) => view('filament.modals.sync-changes', ['cambios' => $record->cambios]))
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Cerrar'),
             ])
             ->defaultSort('created_at', 'desc')
             ->paginated([10]);

@@ -4,6 +4,8 @@ namespace App\Notifications;
 
 use App\Models\CaseFlowProgress;
 use App\Models\LegalCase;
+use App\Notifications\Concerns\SendsWhatsApp;
+use App\Notifications\Messages\WhatsAppMessage;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification as FilamentNotification;
 use Illuminate\Bus\Queueable;
@@ -13,7 +15,7 @@ use Illuminate\Notifications\Notification;
 
 class TermDeadlineNotification extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, SendsWhatsApp;
 
     public function __construct(
         public LegalCase $case,
@@ -23,7 +25,7 @@ class TermDeadlineNotification extends Notification implements ShouldQueue
 
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return $this->withWhatsApp(['mail', 'database'], $notifiable);
     }
 
     public function toDatabase(object $notifiable): array
@@ -72,5 +74,17 @@ class TermDeadlineNotification extends Notification implements ShouldQueue
                 'ctaUrl' => url("/admin/legal-cases/{$this->case->id}"),
                 'ctaLabel' => 'Ver caso',
             ]);
+    }
+
+    public function toWhatsApp(object $notifiable): WhatsAppMessage
+    {
+        $url = url("/admin/legal-cases/{$this->case->id}");
+        $detail = "{$this->case->case_number} - {$this->progress->flowStep->name}";
+
+        return new WhatsAppMessage(
+            template: 'deadline.lawyer',
+            variables: [1 => $notifiable->name, 2 => $detail, 3 => (string) $this->daysRemaining, 4 => $url],
+            fallbackText: "LegalWeb - Termino por vencer en {$this->daysRemaining} dia(s): {$detail}. Ver: {$url}",
+        );
     }
 }

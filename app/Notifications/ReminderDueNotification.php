@@ -3,6 +3,8 @@
 namespace App\Notifications;
 
 use App\Models\Reminder;
+use App\Notifications\Concerns\SendsWhatsApp;
+use App\Notifications\Messages\WhatsAppMessage;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification as FilamentNotification;
 use Illuminate\Bus\Queueable;
@@ -12,13 +14,13 @@ use Illuminate\Notifications\Notification;
 
 class ReminderDueNotification extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, SendsWhatsApp;
 
     public function __construct(public Reminder $reminder) {}
 
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return $this->withWhatsApp(['mail', 'database'], $notifiable);
     }
 
     public function toDatabase(object $notifiable): array
@@ -84,5 +86,19 @@ class ReminderDueNotification extends Notification implements ShouldQueue
                 'ctaUrl' => $ctaUrl,
                 'ctaLabel' => $ctaLabel,
             ]);
+    }
+
+    public function toWhatsApp(object $notifiable): WhatsAppMessage
+    {
+        $url = $this->reminder->legal_case_id
+            ? url("/admin/legal-cases/{$this->reminder->legal_case_id}")
+            : url('/admin/reminders');
+        $dueDate = $this->reminder->due_date->format('d/m/Y H:i');
+
+        return new WhatsAppMessage(
+            template: 'reminder.due.lawyer',
+            variables: [1 => $notifiable->name, 2 => $this->reminder->title, 3 => $dueDate, 4 => $url],
+            fallbackText: "LegalWeb - Recordatorio: {$this->reminder->title}. Vence: {$dueDate}. Ver: {$url}",
+        );
     }
 }

@@ -14,6 +14,7 @@ class TybaSyncLog extends Model
         'status',
         'nuevas_actuaciones',
         'mensaje',
+        'cambios',
         'origen',
     ];
 
@@ -21,6 +22,7 @@ class TybaSyncLog extends Model
     {
         return [
             'created_at' => 'datetime',
+            'cambios' => 'array',
         ];
     }
 

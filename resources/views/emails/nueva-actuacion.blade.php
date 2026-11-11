@@ -68,6 +68,19 @@
               <td width="50%" style="padding:7px 0;vertical-align:top;"><div style="color:#94A3B8;font-size:12px;margin-bottom:2px;">Caso</div><div style="color:#1E3A5F;font-weight:600;">{{ $caseTitle ?? '-' }}</div></td>
             </tr>
           </table>
+
+          @if(! empty($fieldChanges))
+            <div style="margin-top:16px;padding-top:14px;border-top:1px solid #E2E8F0;">
+              <div style="color:#1E3A5F;font-size:13px;font-weight:700;margin-bottom:8px;">Datos del proceso que cambiaron</div>
+              @foreach($fieldChanges as $change)
+                <div style="font-size:13px;color:#334155;padding:4px 0;">
+                  <strong>{{ $change['campo'] }}:</strong>
+                  <span style="color:#B91C1C;text-decoration:line-through;">{{ $change['antes'] }}</span>
+                  &rarr; <span style="color:#15803D;font-weight:600;">{{ $change['despues'] }}</span>
+                </div>
+              @endforeach
+            </div>
+          @endif
         </td></tr>
       </table>
 

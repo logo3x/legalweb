@@ -8,11 +8,11 @@ use App\Models\Reminder;
 use App\Models\TybaSyncLog;
 use App\Services\AIModelRegistry;
 use App\Services\AIService;
+use App\Services\CaseSyncService;
 use App\Services\DocumentGenerator;
 use App\Services\GeneratedFileStore;
-use App\Services\TybaService;
+use App\Services\WhatsAppService;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\EditAction;
@@ -204,130 +204,31 @@ class ViewLegalCase extends ViewRecord
                     ->modalDescription(fn () => "Se consultara el radicado {$this->record->external_case_number} en la API de la Rama Judicial para actualizar datos del proceso y registrar nuevas actuaciones.")
                     ->modalSubmitActionLabel('Sincronizar')
                     ->action(function () {
-                        $tyba = app(TybaService::class);
-                        $info = $tyba->extractProcessInfo($this->record->external_case_number);
+                        $log = app(CaseSyncService::class)->sync($this->record, 'manual', notify: false);
+                        $this->record->refresh();
 
-                        if (! $info) {
-                            TybaSyncLog::create([
-                                'legal_case_id' => $this->record->id,
-                                'status' => 'error',
-                                'mensaje' => 'No se pudo consultar el radicado',
-                                'origen' => 'manual',
-                            ]);
-
+                        if ($log->status === 'error') {
                             Notification::make()
                                 ->title('No se pudo consultar')
-                                ->body('Verifique que el radicado sea correcto.')
+                                ->body('Verifique que el radicado sea correcto o intente mas tarde.')
                                 ->danger()
                                 ->send();
 
                             return;
                         }
 
-                        // Actualizar datos del caso
-                        $updates = [
-                            'last_tyba_sync' => now(),
-                            'tyba_data' => collect($info)->except(['sujetos', 'actuaciones'])->toArray(),
-                        ];
+                        $detalleCampos = collect($log->cambios['campos'] ?? [])
+                            ->map(fn (array $c): string => "{$c['campo']}: {$c['antes']} → {$c['despues']}")
+                            ->join('. ');
 
-                        if (! empty($info['despacho'])) {
-                            $updates['court'] = $info['despacho'];
-                        }
-                        if (! empty($info['ponente'])) {
-                            $updates['judge'] = mb_convert_case(mb_strtolower($info['ponente']), MB_CASE_TITLE, 'UTF-8');
-                        }
+                        $hasNews = $log->status === 'ok';
 
-                        // Actualizar contraparte si no tiene
-                        if (empty($this->record->opposing_party) && ! empty($info['sujetos'])) {
-                            $demandados = collect($info['sujetos'])
-                                ->filter(fn ($s) => str_contains(strtolower($s['rol']), 'demandado'))
-                                ->pluck('nombre')->unique()->join(', ');
-                            if ($demandados) {
-                                $updates['opposing_party'] = $demandados;
-                            }
-                        }
-
-                        // Actualizar descripcion con sujetos actualizados
-                        $description = "Importado desde Rama Judicial\n";
-                        $description .= "Tipo: {$info['tipo_proceso']}\nClase: {$info['clase_proceso']}\n";
-                        $description .= "Departamento: {$info['departamento']}\n";
-                        $description .= "Despacho: {$info['despacho']}\n";
-                        if (! empty($info['ponente'])) {
-                            $description .= "Ponente: {$info['ponente']}\n";
-                        }
-                        if (! empty($info['sujetos'])) {
-                            $description .= "\nSujetos procesales:\n";
-                            foreach ($info['sujetos'] as $s) {
-                                $description .= "- {$s['rol']}: {$s['nombre']}\n";
-                            }
-                        }
-                        $updates['description'] = $description;
-
-                        $this->record->update($updates);
-
-                        // Registrar actuaciones nuevas
-                        $newCount = 0;
-                        foreach ($info['actuaciones'] as $a) {
-                            $date = null;
-                            foreach (['d/m/Y', 'Y-m-d'] as $fmt) {
-                                try {
-                                    $date = Carbon::createFromFormat($fmt, trim($a['fecha']));
-
-                                    break;
-                                } catch (\Exception) {
-                                }
-                            }
-
-                            if (! $date) {
-                                continue;
-                            }
-
-                            $title = $a['tipo'].($a['ciclo'] ? " ({$a['ciclo']})" : '');
-
-                            $exists = CaseEvent::where('legal_case_id', $this->record->id)
-                                ->where('event_date', $date)
-                                ->where('title', $title)
-                                ->exists();
-
-                            if (! $exists) {
-                                CaseEvent::create([
-                                    'legal_case_id' => $this->record->id,
-                                    'title' => $title,
-                                    'event_date' => $date,
-                                    'event_type' => 'actuacion',
-                                    'description' => ($a['anotacion'] ?: 'Sincronizado desde Rama Judicial.').' Radicado: '.$this->record->external_case_number,
-                                    'user_id' => auth()->id(),
-                                ]);
-                                $newCount++;
-                            }
-                        }
-
-                        $totalActuaciones = count($info['actuaciones']);
-
-                        TybaSyncLog::create([
-                            'legal_case_id' => $this->record->id,
-                            'status' => $newCount > 0 ? 'ok' : 'sin_cambios',
-                            'nuevas_actuaciones' => $newCount,
-                            'mensaje' => $newCount > 0
-                                ? "{$newCount} nueva(s) actuacion(es) de {$totalActuaciones} totales"
-                                : "Sin novedades. {$totalActuaciones} actuaciones verificadas",
-                            'origen' => 'manual',
-                        ]);
-
-                        if ($newCount > 0) {
-                            Notification::make()
-                                ->title('Sincronizacion exitosa')
-                                ->body("Datos del caso actualizados. Se encontraron {$totalActuaciones} actuaciones, {$newCount} nueva(s) registradas.")
-                                ->success()
-                                ->persistent()
-                                ->send();
-                        } else {
-                            Notification::make()
-                                ->title('Caso actualizado')
-                                ->body("Datos del proceso actualizados. Las {$totalActuaciones} actuaciones ya estaban registradas.")
-                                ->info()
-                                ->send();
-                        }
+                        Notification::make()
+                            ->title($hasNews ? 'Sincronizacion con novedades' : 'Caso actualizado')
+                            ->body($log->mensaje.($detalleCampos ? '. '.$detalleCampos : '').($hasNews ? '. Vea el detalle en "Historial de Sincronizacion".' : ''))
+                            ->status($hasNews ? 'success' : 'info')
+                            ->persistent($hasNews)
+                            ->send();
                     }),
             ])
                 ->label('Acciones')
@@ -368,6 +269,9 @@ class ViewLegalCase extends ViewRecord
                                 ->label('Enlace del portal')
                                 ->default($url)
                                 ->readOnly(),
+                            Placeholder::make('share_buttons')
+                                ->label('Enviar directamente')
+                                ->content(fn (): HtmlString => $this->portalShareButtons($url)),
                         ];
                     })
                     ->action(function () {
@@ -426,6 +330,32 @@ class ViewLegalCase extends ViewRecord
             EditAction::make()
                 ->label('Editar'),
         ];
+    }
+
+    /**
+     * Botones para enviar el enlace del portal por WhatsApp o correo.
+     */
+    private function portalShareButtons(string $url): HtmlString
+    {
+        $client = $this->record->client;
+        $firmName = $this->record->user?->firm?->name ?? 'su abogado';
+        $message = "Hola {$client?->full_name}, puede consultar el estado de su caso {$this->record->case_number} en este enlace seguro de {$firmName}: {$url}";
+
+        $phone = WhatsAppService::normalizePhone($client?->phone);
+        $whatsAppUrl = 'https://wa.me/'.($phone ? ltrim($phone, '+') : '').'?text='.rawurlencode($message);
+
+        $buttonStyle = 'display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;color:#fff;margin-right:8px;';
+
+        $html = '<a href="'.e($whatsAppUrl).'" target="_blank" rel="noopener" style="'.$buttonStyle.'background:#16a34a;">WhatsApp'.($phone ? '' : ' (elegir contacto)').'</a>';
+
+        if ($client?->email) {
+            $mailto = 'mailto:'.rawurlencode($client->email)
+                .'?subject='.rawurlencode("Portal de su caso {$this->record->case_number}")
+                .'&body='.rawurlencode($message);
+            $html .= '<a href="'.e($mailto).'" style="'.$buttonStyle.'background:#3A86FF;">Correo</a>';
+        }
+
+        return new HtmlString($html);
     }
 
     public function hasCombinedRelationManagerTabsWithContent(): bool

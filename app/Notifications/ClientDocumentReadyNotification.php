@@ -4,6 +4,8 @@ namespace App\Notifications;
 
 use App\Models\Document;
 use App\Models\LegalCase;
+use App\Notifications\Concerns\SendsWhatsApp;
+use App\Notifications\Messages\WhatsAppMessage;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification as FilamentNotification;
 use Illuminate\Bus\Queueable;
@@ -13,7 +15,7 @@ use Illuminate\Notifications\Notification;
 
 class ClientDocumentReadyNotification extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, SendsWhatsApp;
 
     public function __construct(
         public LegalCase $case,
@@ -23,7 +25,7 @@ class ClientDocumentReadyNotification extends Notification implements ShouldQueu
 
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return $this->withWhatsApp(['mail', 'database'], $notifiable);
     }
 
     public function toDatabase(object $notifiable): array
@@ -68,5 +70,18 @@ class ClientDocumentReadyNotification extends Notification implements ShouldQueu
             ->action('Ver caso', url("/admin/legal-cases/{$this->case->id}"))
             ->salutation('LegalWeb - Control inteligente de sus procesos legales')
             ->with($this->case->user?->firm?->emailBrand() ?? []);
+    }
+
+    public function toWhatsApp(object $notifiable): WhatsAppMessage
+    {
+        $url = url("/admin/legal-cases/{$this->case->id}");
+        $client = $this->case->client->full_name;
+        $verb = $this->action === 'uploaded' ? 'envio el enlace de' : 'tiene listo';
+
+        return new WhatsAppMessage(
+            template: 'document.received.lawyer',
+            variables: [1 => $notifiable->name, 2 => $client, 3 => $this->document->name, 4 => $url],
+            fallbackText: "LegalWeb - Su cliente {$client} {$verb} '{$this->document->name}' (caso {$this->case->case_number}). Ver: {$url}",
+        );
     }
 }

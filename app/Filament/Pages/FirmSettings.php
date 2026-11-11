@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Models\LegalAcceptance;
+use App\Services\WhatsAppService;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Checkbox;
@@ -15,6 +16,7 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Facades\Schema as DbSchema;
@@ -62,6 +64,11 @@ class FirmSettings extends Page
             'security_email_enabled' => DbSchema::hasColumn('users', 'security_email_enabled')
                 ? (auth()->user()->getAttribute('security_email_enabled') ?? true)
                 : true,
+            'whatsapp_enabled' => DbSchema::hasColumn('users', 'whatsapp_enabled')
+                && (bool) auth()->user()->getAttribute('whatsapp_enabled'),
+            'whatsapp_phone' => DbSchema::hasColumn('users', 'whatsapp_phone')
+                ? auth()->user()->getAttribute('whatsapp_phone')
+                : null,
         ]);
     }
 
@@ -156,6 +163,31 @@ class FirmSettings extends Page
                             ->live(),
                     ]),
 
+                Section::make('Notificaciones por WhatsApp')
+                    ->description('Reciba en su celular las alertas importantes: vencimientos, nuevas actuaciones de la Rama Judicial, documentos del cliente y accesos al portal.')
+                    ->visible(fn () => DbSchema::hasColumn('users', 'whatsapp_enabled'))
+                    ->schema([
+                        Placeholder::make('whatsapp_status')
+                            ->label('')
+                            ->content(fn (): HtmlString => app(WhatsAppService::class)->isConfigured()
+                                ? new HtmlString('<span style="color:#15803d;font-weight:600;">El servicio de WhatsApp esta activo en la plataforma.</span>')
+                                : new HtmlString('<span style="color:#92400e;font-weight:600;">El servicio de WhatsApp aun no esta activo en la plataforma. Puede dejar su numero configurado y empezara a recibir mensajes cuando se active.</span>')),
+                        Toggle::make('whatsapp_enabled')
+                            ->label('Recibir notificaciones por WhatsApp')
+                            ->live(),
+                        TextInput::make('whatsapp_phone')
+                            ->label('Celular de WhatsApp')
+                            ->tel()
+                            ->placeholder('Ej: 3001234567')
+                            ->helperText('Numero colombiano de 10 digitos o internacional con indicativo (+57...).')
+                            ->required(fn (Get $get): bool => (bool) $get('whatsapp_enabled'))
+                            ->rule(fn () => function (string $attribute, mixed $value, \Closure $fail): void {
+                                if (filled($value) && ! WhatsAppService::normalizePhone($value)) {
+                                    $fail('El numero de celular no es valido.');
+                                }
+                            }),
+                    ]),
+
                 Section::make('Terminos y Condiciones')
                     ->schema([
                         Placeholder::make('terms_info')
@@ -188,6 +220,11 @@ class FirmSettings extends Page
         if (array_key_exists('security_email_enabled', $data)) {
             $userFields['security_email_enabled'] = (bool) $data['security_email_enabled'];
             unset($data['security_email_enabled']);
+        }
+        if (array_key_exists('whatsapp_enabled', $data)) {
+            $userFields['whatsapp_enabled'] = (bool) $data['whatsapp_enabled'];
+            $userFields['whatsapp_phone'] = WhatsAppService::normalizePhone($data['whatsapp_phone'] ?? null);
+            unset($data['whatsapp_enabled'], $data['whatsapp_phone']);
         }
         if (! empty($userFields)) {
             try {
@@ -250,6 +287,29 @@ class FirmSettings extends Page
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('test_whatsapp')
+                ->label('Probar WhatsApp')
+                ->icon('heroicon-o-chat-bubble-left-ellipsis')
+                ->color('success')
+                ->visible(fn (): bool => app(WhatsAppService::class)->isConfigured() && filled(auth()->user()->whatsapp_phone))
+                ->requiresConfirmation()
+                ->modalHeading('Enviar mensaje de prueba')
+                ->modalDescription(fn (): string => 'Se enviara un WhatsApp de prueba a '.auth()->user()->whatsapp_phone.'. Si no tiene plantilla aprobada, el mensaje solo llega si usted escribio al numero de LegalWeb en las ultimas 24 horas.')
+                ->action(function (WhatsAppService $whatsApp): void {
+                    $user = auth()->user();
+                    $sent = $whatsApp->sendTemplate(
+                        $user->whatsapp_phone,
+                        'reminder.due.lawyer',
+                        [1 => $user->name, 2 => 'Mensaje de prueba', 3 => now()->format('d/m/Y H:i'), 4 => url('/admin')],
+                        "LegalWeb - Hola {$user->name}, este es un mensaje de prueba. Sus notificaciones por WhatsApp estan funcionando.",
+                    );
+
+                    Notification::make()
+                        ->title($sent ? 'Mensaje enviado' : 'No se pudo enviar')
+                        ->body($sent ? 'Revise su WhatsApp.' : 'Twilio rechazo el mensaje. El detalle quedo en el log del sistema.')
+                        ->status($sent ? 'success' : 'danger')
+                        ->send();
+                }),
             Action::make('replay_tour')
                 ->label('Volver a ver tour')
                 ->icon('heroicon-o-academic-cap')

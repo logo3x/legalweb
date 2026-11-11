@@ -110,6 +110,68 @@ try {
         setup_log(trim(Artisan::output()), 'muted');
     }
 
+    if ($step === 'rotate_keys') {
+        $envPath = base_path('.env');
+        $selfUrl = '?key='.urlencode($secret).'&step=rotate_keys';
+
+        if (! is_writable($envPath)) {
+            setup_log('El archivo .env no tiene permisos de escritura. Cambie los permisos desde el Administrador de archivos de cPanel.', 'error');
+        } elseif (($_POST['confirm'] ?? '') !== 'ROTAR') {
+            setup_log('Este paso genera claves internas nuevas y las guarda en el .env:', 'info');
+            setup_log('- APP_KEY: la clave anterior queda en APP_PREVIOUS_KEYS, asi nadie pierde la sesion ni se pierden datos cifrados.', 'muted');
+            setup_log('- SETUP_KEY: la clave de este panel. El enlace actual dejara de funcionar y se le mostrara el nuevo.', 'muted');
+            setup_log('- CRON_TOKEN: despues debe actualizar las URLs de los Cron Jobs en cPanel con el token nuevo.', 'muted');
+            setup_log('Antes de escribir se guarda una copia del .env (.env.backup-FECHA).', 'muted');
+            setup_log('Las claves de servicios externos (Wompi, Google, base de datos, correo, IA, 2Captcha, Browserless, Twilio) se cambian en el panel de cada proveedor y luego se pegan en el .env.', 'info');
+            setup_log('<form method="POST" action="'.htmlspecialchars($selfUrl).'" style="margin-top:12px;">'
+                .'<label style="display:block;margin-bottom:6px;">Escriba ROTAR para confirmar:</label>'
+                .'<input name="confirm" autocomplete="off" style="padding:8px;border:1px solid #cbd5e1;border-radius:6px;margin-right:8px;">'
+                .'<button type="submit" style="padding:8px 16px;background:#dc2626;color:#fff;border:none;border-radius:6px;cursor:pointer;">Generar claves nuevas</button>'
+                .'</form>', 'raw');
+        } else {
+            $env = file_get_contents($envPath);
+            $backupPath = $envPath.'.backup-'.date('Ymd-His');
+            file_put_contents($backupPath, $env);
+
+            $setEnv = function (string $content, string $name, string $value): string {
+                $line = $name.'='.$value;
+                $pattern = '/^'.preg_quote($name, '/').'=.*$/m';
+
+                return preg_match($pattern, $content)
+                    ? preg_replace_callback($pattern, fn () => $line, $content)
+                    : rtrim($content)."\n".$line."\n";
+            };
+
+            $oldAppKey = (string) config('app.key');
+            $previousKeys = array_filter(array_merge(
+                [$oldAppKey],
+                array_map('trim', explode(',', (string) env('APP_PREVIOUS_KEYS', '')))
+            ));
+
+            $newAppKey = 'base64:'.base64_encode(random_bytes(32));
+            $newSetupKey = bin2hex(random_bytes(24));
+            $newCronToken = bin2hex(random_bytes(24));
+
+            $env = $setEnv($env, 'APP_KEY', $newAppKey);
+            $env = $setEnv($env, 'APP_PREVIOUS_KEYS', implode(',', array_slice(array_unique($previousKeys), 0, 3)));
+            $env = $setEnv($env, 'SETUP_KEY', $newSetupKey);
+            $env = $setEnv($env, 'CRON_TOKEN', $newCronToken);
+
+            file_put_contents($envPath, $env);
+            Artisan::call('config:clear');
+
+            $appUrl = rtrim((string) config('app.url'), '/');
+            $newPanelUrl = $appUrl.'/setup.php?key='.$newSetupKey;
+
+            setup_log('Claves internas rotadas. Copia de seguridad: '.basename($backupPath), 'success');
+            setup_log('GUARDE este nuevo enlace del panel (el anterior ya no funciona):', 'info');
+            setup_log('<a href="'.htmlspecialchars($newPanelUrl).'" style="word-break:break-all;">'.htmlspecialchars($newPanelUrl).'</a>', 'raw');
+            setup_log('Actualice cada Cron Job en cPanel reemplazando el token viejo por el nuevo. Formato:', 'info');
+            setup_log(htmlspecialchars('curl -s '.$appUrl.'/cron/'.$newCronToken.'/{tarea}'), 'muted');
+            setup_log('Cuando confirme que todo funciona, borre la copia '.basename($backupPath).' desde el Administrador de archivos.', 'muted');
+        }
+    }
+
     if ($step === 'migrate_status') {
         Artisan::call('migrate:status');
         $output = trim(Artisan::output());
@@ -983,6 +1045,7 @@ $stepTitles = [
     'info' => 'Estado del sistema',
     'composer' => 'Composer Install',
     'key' => 'Generar App Key',
+    'rotate_keys' => 'Rotar claves internas (automatico)',
     'migrate' => 'Migraciones',
     'seed' => 'Seeders',
     'storage' => 'Storage Link',
@@ -1216,6 +1279,7 @@ $baseUrl = '?key='.urlencode($secret);
             <a href="<?= $baseUrl ?>&step=purge_public_generated" class="<?= $step === 'purge_public_generated' ? 'active' : '' ?>">Borrar reportes publicos</a>
             <a href="<?= $baseUrl ?>&step=migrate_documents" class="<?= $step === 'migrate_documents' ? 'active' : '' ?>">Mover documentos a privado</a>
             <a href="<?= $baseUrl ?>&step=generate_secrets" class="<?= $step === 'generate_secrets' ? 'active' : '' ?>">Generar claves nuevas</a>
+            <a href="<?= $baseUrl ?>&step=rotate_keys" class="<?= $step === 'rotate_keys' ? 'active' : '' ?>">Rotar claves (escribe el .env)</a>
         </nav>
 
         <main class="main">

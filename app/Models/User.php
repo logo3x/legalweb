@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'firm_id', 'role', 'google_id', 'avatar', 'terms_accepted_at', 'terms_ip', 'tour_completed_at', 'last_login_at', 'login_count', 'security_email_enabled'])]
+#[Fillable(['name', 'email', 'password', 'firm_id', 'role', 'google_id', 'avatar', 'terms_accepted_at', 'terms_ip', 'tour_completed_at', 'last_login_at', 'login_count', 'security_email_enabled', 'whatsapp_phone', 'whatsapp_enabled'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements FilamentUser
 {
@@ -54,6 +54,7 @@ class User extends Authenticatable implements FilamentUser
             'last_login_at' => 'datetime',
             'mass_email_opt_out_at' => 'datetime',
             'security_email_enabled' => 'boolean',
+            'whatsapp_enabled' => 'boolean',
         ];
     }
 
@@ -85,6 +86,14 @@ class User extends Authenticatable implements FilamentUser
     public function canAccessPanel(Panel $panel): bool
     {
         return $this->firm_id !== null || $this->role === 'superadmin';
+    }
+
+    /**
+     * Numero al que el canal de WhatsApp envia las notificaciones.
+     */
+    public function routeNotificationForWhatsapp(): ?string
+    {
+        return $this->whatsapp_enabled ? $this->whatsapp_phone : null;
     }
 
     public function firm(): BelongsTo
