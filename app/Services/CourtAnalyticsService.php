@@ -20,6 +20,7 @@ class CourtAnalyticsService
     public const STALE_DAYS = 60;
 
     /**
+     * @param  array<int, int>|null  $onlyCaseIds  Limita a estos casos (colaboradores que no son administradores).
      * @return array{
      *     courts: array<int, array{court: string, total_cases: int, active_cases: int, total_events: int, avg_days_between_events: float|null, avg_days_since_last_event: float|null, avg_closed_duration_days: float|null, stale_cases: int}>,
      *     totals: array{courts: int, cases: int, events: int, stale_cases: int},
@@ -27,10 +28,11 @@ class CourtAnalyticsService
      *     fastest: array<string, mixed>|null,
      * }
      */
-    public function forFirm(int $firmId): array
+    public function forFirm(int $firmId, ?array $onlyCaseIds = null): array
     {
         $cases = LegalCase::withoutGlobalScopes()
             ->where('firm_id', $firmId)
+            ->when($onlyCaseIds !== null, fn ($q) => $q->whereIn('id', $onlyCaseIds))
             ->whereNull('deleted_at')
             ->whereNotNull('court')
             ->where('court', '!=', '')

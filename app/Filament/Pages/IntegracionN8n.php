@@ -79,6 +79,8 @@ class IntegracionN8n extends Page
 
     public function retry(int $deliveryId): void
     {
+        abort_unless(static::canAccess(), 403);
+
         $delivery = WebhookDelivery::find($deliveryId);
 
         if (! $delivery) {
@@ -96,6 +98,7 @@ class IntegracionN8n extends Page
                 ->label('Enviar evento de prueba')
                 ->icon('heroicon-o-paper-airplane')
                 ->disabled(fn (): bool => ! $this->isReady() || ! app(N8nWebhook::class)->isConfigured())
+                ->authorize(fn (): bool => static::canAccess())
                 ->action(function (): void {
                     $delivery = app(N8nWebhook::class)->dispatch('test.ping', [
                         'message' => 'Prueba de conexion desde LegalWeb',

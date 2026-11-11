@@ -22,6 +22,14 @@ class Reports extends Page
 
     protected static ?int $navigationSort = 6;
 
+    /**
+     * El reporte resume toda la firma; los colaboradores solo deben ver sus casos asignados.
+     */
+    public static function canAccess(): bool
+    {
+        return (bool) auth()->user()?->isAdmin();
+    }
+
     public function getReportData(): array
     {
         $firm = auth()->user()->firm;

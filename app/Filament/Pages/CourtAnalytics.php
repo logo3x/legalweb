@@ -26,8 +26,15 @@ class CourtAnalytics extends Page
      */
     public function getAnalytics(): array
     {
-        $firmId = auth()->user()?->firm_id;
+        $user = auth()->user();
 
-        return $firmId ? app(CourtAnalyticsService::class)->forFirm($firmId) : [];
+        if (! $user?->firm_id) {
+            return [];
+        }
+
+        // Igual que FirmScope: los colaboradores solo ven estadisticas de sus casos asignados.
+        $onlyCaseIds = $user->isAdmin() ? null : $user->accessibleCaseIds();
+
+        return app(CourtAnalyticsService::class)->forFirm($user->firm_id, $onlyCaseIds);
     }
 }
