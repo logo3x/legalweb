@@ -178,6 +178,10 @@ Route::get('/cron/{token}/{task?}', function (string $token, ?string $task = nul
     if (! $task || $task === 'sync-tyba') {
         Artisan::call('app:sync-tyba-actuaciones');
         $results[] = 'sync-tyba: OK';
+
+        // Vigilancia de clientes por documento: corre con la sincronizacion nocturna.
+        Artisan::call('app:monitor-client-processes');
+        $results[] = 'monitor-clients: OK';
     }
 
     // Tarea: check-deadlines (diaria 8am)

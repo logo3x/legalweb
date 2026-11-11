@@ -5,7 +5,7 @@
 @section('content')
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 prose prose-gray max-w-none">
         <h1>Politica de Privacidad y Tratamiento de Datos Personales</h1>
-        <p class="text-sm text-gray-500">Ultima actualizacion: {{ date('d/m/Y') }}</p>
+        <p class="text-sm text-gray-500">Ultima actualizacion: 10 de noviembre de 2026</p>
 
         <p>En cumplimiento de la <strong>Ley Estatutaria 1581 de 2012</strong> "Por la cual se dictan disposiciones generales para la proteccion de datos personales", el <strong>Decreto 1377 de 2013</strong> (compilado en el Decreto 1074 de 2015) y demas normatividad concordante, LegalWeb establece la siguiente politica de tratamiento de datos personales.</p>
 
@@ -59,7 +59,9 @@
         <ul>
             <li>Prestacion del servicio de gestion de casos juridicos</li>
             <li>Permitir el acceso del cliente al portal de seguimiento de su caso</li>
-            <li>Envio de notificaciones relacionadas con el avance del caso</li>
+            <li>Envio de notificaciones relacionadas con el avance del caso, por correo electronico y, si el abogado lo activa, por WhatsApp</li>
+            <li>Consulta de sistemas publicos de informacion judicial (Rama Judicial y SAMAI del Consejo de Estado) para importar y actualizar procesos</li>
+            <li>Vigilancia de procesos judiciales nuevos del cliente por su numero de documento, unicamente cuando el abogado la activa para ese cliente</li>
             <li>Generacion de reportes y estadisticas de uso (datos anonimizados)</li>
             <li>Cumplimiento de obligaciones legales y requerimientos judiciales</li>
             <li>Garantizar la seguridad y trazabilidad del sistema</li>
@@ -126,6 +128,9 @@
         <ul>
             <li><strong>Transmision nacional:</strong> a proveedores de servicios tecnologicos (hosting, correo electronico) que actuan como Encargados del Tratamiento, con quienes se suscriben contratos de transmision de datos conforme al Art. 25 del Decreto 1377 de 2013.</li>
             <li><strong>Proveedores de inteligencia artificial:</strong> cuando el abogado usa voluntariamente el Asistente IA, la informacion del caso necesaria para la tarea se transmite a Google LLC (Gemini) y/o a OpenRouter, Inc. y a los proveedores de modelos que esta enruta, ubicados principalmente en Estados Unidos, quienes actuan como Encargados del Tratamiento. Los datos de identificacion y contacto del cliente solo se envian cuando se solicita un borrador de documento que los requiere.</li>
+            <li><strong>Mensajeria por WhatsApp:</strong> cuando el abogado activa las notificaciones por WhatsApp, su numero de celular, su nombre y el contenido minimo del aviso (numero o titulo del caso, fecha del vencimiento, nombre del cliente cuando el aviso lo requiere) se transmiten a Twilio Inc. y a WhatsApp (Meta Platforms, Inc.), ubicados en Estados Unidos, quienes actuan como Encargados del Tratamiento para entregar el mensaje.</li>
+            <li><strong>Automatizaciones del servicio:</strong> LegalWeb puede enviar eventos de uso de la Plataforma (registro de firmas, pagos, estado del plan, creacion o novedades de casos) a una herramienta de automatizacion bajo su control, para comunicaciones de servicio y soporte. Estos eventos incluyen datos de contacto del abogado y de la firma e identificadores de los casos, pero no datos de identificacion ni de contacto de los clientes finales.</li>
+            <li><strong>Consulta en fuentes publicas:</strong> para importar, sincronizar y vigilar procesos, la Plataforma consulta los sistemas publicos de la Rama Judicial y del Consejo de Estado (SAMAI) usando el numero de radicado, el nombre de la parte o, si el abogado activa la vigilancia, el numero de documento del cliente. Estas entidades son responsables de la informacion que publican.</li>
             <li><strong>Transferencia internacional:</strong> unicamente a paises que cuenten con niveles adecuados de proteccion de datos conforme a la certificacion de la SIC, o bajo las excepciones previstas en el Art. 26 de la Ley 1581 de 2012.</li>
         </ul>
 

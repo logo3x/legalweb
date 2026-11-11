@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Clients\Schemas;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
 
 class ClientForm
@@ -52,6 +53,10 @@ class ClientForm
                     ->maxLength(100),
                 Textarea::make('notes')
                     ->label('Notas')
+                    ->columnSpanFull(),
+                Toggle::make('process_monitoring_enabled')
+                    ->label('Vigilar procesos nuevos de este cliente')
+                    ->helperText('Cada noche buscamos el documento en la Rama Judicial y le avisamos si aparece en un proceso que aun no esta en LegalWeb.')
                     ->columnSpanFull(),
                 Select::make('user_id')
                     ->label('Abogado Asignado')

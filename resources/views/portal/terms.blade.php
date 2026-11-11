@@ -5,7 +5,7 @@
 @section('content')
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 prose prose-gray max-w-none">
         <h1>Terminos y Condiciones de Uso</h1>
-        <p class="text-sm text-gray-500">Ultima actualizacion: 01 de octubre de 2026 | Version 3.1</p>
+        <p class="text-sm text-gray-500">Ultima actualizacion: 10 de noviembre de 2026 | Version 3.2</p>
 
         <h2>1. Objeto y Naturaleza del Servicio</h2>
         <p>LegalWeb (en adelante "la Plataforma") es una herramienta tecnologica de gestion juridica de tipo Software como Servicio (SaaS) que permite a abogados y firmas de abogados administrar casos, documentos, actuaciones, flujos procesales y comunicaciones con sus clientes.</p>
@@ -100,7 +100,9 @@
         <ul>
             <li>LegalWeb actua como <strong>intermediario tecnologico</strong> que facilita el acceso a informacion publica. No es fuente primaria de la informacion judicial.</li>
             <li>La informacion proviene directamente de los sistemas de la Rama Judicial y puede contener <strong>errores, omisiones o retrasos</strong> en la actualizacion.</li>
-            <li>LegalWeb <strong>no garantiza</strong> la exactitud, completitud, oportunidad ni vigencia de los datos consultados de la Rama Judicial.</li>
+            <li>LegalWeb <strong>no garantiza</strong> la exactitud, completitud, oportunidad ni vigencia de los datos consultados de la Rama Judicial, de SAMAI (Consejo de Estado) o de cualquier otra fuente publica.</li>
+            <li>De SAMAI solo se obtienen los datos generales del proceso; las actuaciones deben verificarse directamente en SAMAI. La vigilancia por documento puede omitir procesos reservados o no publicados, o traer homonimos: el abogado debe confirmar cada resultado.</li>
+            <li>Los avisos por correo, WhatsApp o en la Plataforma son una ayuda: no reemplazan la revision directa de los expedientes ni el control de terminos a cargo del abogado.</li>
             <li>Los plazos y vencimientos calculados son <strong>estimaciones</strong> basadas en el calendario judicial y las normas procesales vigentes. NO sustituyen la obligacion del abogado de verificar los plazos directamente en el expediente.</li>
             <li>La sincronizacion automatica de actuaciones es una <strong>herramienta complementaria</strong>. La falta de sincronizacion, retrasos o errores en la misma NO eximen al abogado de su deber de seguimiento procesal.</li>
             <li>LegalWeb <strong>no es responsable</strong> por la indisponibilidad del servicio de la Rama Judicial ni por cambios en su API o estructura de datos.</li>

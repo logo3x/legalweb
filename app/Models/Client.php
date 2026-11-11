@@ -26,6 +26,9 @@ use Illuminate\Notifications\Notifiable;
     'user_id',
     'firm_id',
     'is_demo',
+    'process_monitoring_enabled',
+    'process_monitoring_last_at',
+    'process_monitoring_known',
 ])]
 #[ScopedBy(FirmScope::class)]
 class Client extends Model
@@ -37,6 +40,9 @@ class Client extends Model
     {
         return [
             'is_demo' => 'boolean',
+            'process_monitoring_enabled' => 'boolean',
+            'process_monitoring_last_at' => 'datetime',
+            'process_monitoring_known' => 'array',
         ];
     }
 
@@ -48,6 +54,20 @@ class Client extends Model
     public function legalCases(): HasMany
     {
         return $this->hasMany(LegalCase::class);
+    }
+
+    /**
+     * Codigo de tipo de documento que usa la consulta de la Rama Judicial.
+     */
+    public function ramaDocumentTypeCode(): int
+    {
+        return match ($this->document_type) {
+            'CE' => 2,
+            'NIT' => 3,
+            'PP' => 4,
+            'TI' => 5,
+            default => 1,
+        };
     }
 
     public function getFullNameAttribute(): string

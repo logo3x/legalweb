@@ -34,6 +34,7 @@ class N8nWebhook
         'case.judicial_update' => 'La Rama Judicial trajo actuaciones nuevas o cambios del proceso',
         'portal.accepted' => 'Un cliente acepto los terminos y entro al portal',
         'document.client_ready' => 'Un cliente envio o aviso que tiene listo un documento',
+        'client.new_processes' => 'La vigilancia por documento encontro procesos nuevos de un cliente',
         'test.ping' => 'Mensaje de prueba enviado desde el panel',
     ];
 

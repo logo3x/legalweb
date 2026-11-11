@@ -92,6 +92,7 @@ return [
             'tyba.new_event.lawyer' => env('TWILIO_TPL_TYBA_NEW_EVENT_LAWYER'),
             'document.received.lawyer' => env('TWILIO_TPL_DOCUMENT_RECEIVED_LAWYER'),
             'portal.access.lawyer' => env('TWILIO_TPL_PORTAL_ACCESS_LAWYER'),
+            'client.new_processes.lawyer' => env('TWILIO_TPL_CLIENT_NEW_PROCESSES_LAWYER'),
         ],
     ],
 
