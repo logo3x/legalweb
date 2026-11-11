@@ -11,6 +11,7 @@ use App\Services\AIService;
 use App\Services\CaseSyncService;
 use App\Services\DocumentGenerator;
 use App\Services\GeneratedFileStore;
+use App\Services\SamaiService;
 use App\Services\WhatsAppService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Filament\Actions\Action;
@@ -196,12 +197,14 @@ class ViewLegalCase extends ViewRecord
                     }),
                 Action::make('sync_tyba')
                     ->authorize(fn (): bool => $this->userCanOnCase('events.create'))
-                    ->label('Sincronizar Rama Judicial')
+                    ->label(fn (): string => $this->record->isSamai() ? 'Sincronizar SAMAI' : 'Sincronizar Rama Judicial')
                     ->icon('heroicon-o-arrow-path')
                     ->visible(fn () => (bool) $this->record->external_case_number)
                     ->requiresConfirmation()
-                    ->modalHeading('Sincronizar con Rama Judicial')
-                    ->modalDescription(fn () => "Se consultara el radicado {$this->record->external_case_number} en la API de la Rama Judicial para actualizar datos del proceso y registrar nuevas actuaciones.")
+                    ->modalHeading(fn (): string => 'Sincronizar con '.$this->record->judicialSourceLabel())
+                    ->modalDescription(fn () => $this->record->isSamai()
+                        ? "Se consultara el radicado {$this->record->external_case_number} en SAMAI para detectar cambios de ponente, partes o estado. Las actuaciones se revisan en SAMAI."
+                        : "Se consultara el radicado {$this->record->external_case_number} en la API de la Rama Judicial para actualizar datos del proceso y registrar nuevas actuaciones.")
                     ->modalSubmitActionLabel('Sincronizar')
                     ->action(function () {
                         $log = app(CaseSyncService::class)->sync($this->record, 'manual', notify: false);
@@ -230,6 +233,27 @@ class ViewLegalCase extends ViewRecord
                             ->persistent($hasNews)
                             ->send();
                     }),
+                Action::make('open_official_source')
+                    ->label(fn (): string => $this->record->isSamai() ? 'Ver actuaciones en SAMAI' : 'Abrir consulta de la Rama Judicial')
+                    ->icon('heroicon-o-arrow-top-right-on-square')
+                    ->visible(fn (): bool => (bool) $this->record->external_case_number)
+                    ->url(fn (): string => $this->record->isSamai()
+                        ? ($this->record->tyba_data['url'] ?? SamaiService::BASE_URL.'/Vistas/Casos/procesos.aspx')
+                        : 'https://consultaprocesos.ramajudicial.gov.co/Procesos/NumeroRadicacion')
+                    ->openUrlInNewTab(),
+                Action::make('open_corte_constitucional')
+                    ->label('Buscar tutela en la Corte Constitucional')
+                    ->icon('heroicon-o-arrow-top-right-on-square')
+                    ->visible(fn (): bool => (bool) $this->record->external_case_number)
+                    ->url(fn (): string => 'https://www.corteconstitucional.gov.co/secretaria/consulta-y-tramite-de-procesos/tutela/buscador/expediente/'
+                        .'2015-01-01/'.now()->toDateString().'/'.rawurlencode((string) $this->record->external_case_number).'/0/0')
+                    ->openUrlInNewTab(),
+                Action::make('open_siugj')
+                    ->label('Consultar en SIUGJ (laboral)')
+                    ->icon('heroicon-o-arrow-top-right-on-square')
+                    ->visible(fn (): bool => (bool) $this->record->external_case_number && ! $this->record->isSamai())
+                    ->url('https://siugj.ramajudicial.gov.co/principalPortal/consultarProceso.php')
+                    ->openUrlInNewTab(),
             ])
                 ->label('Acciones')
                 ->icon('heroicon-o-bolt')

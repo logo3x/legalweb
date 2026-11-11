@@ -9,6 +9,7 @@ use App\Models\Client;
 use App\Models\ImportLog;
 use App\Models\LegalCase;
 use App\Models\User;
+use App\Services\SamaiService;
 use App\Services\TybaService;
 use Carbon\Carbon;
 use Filament\Actions\Action;
@@ -30,12 +31,12 @@ class ListLegalCases extends ListRecords
     {
         return [
             Action::make('import_tyba')
-                ->label('Importar desde Tyba')
+                ->label('Importar proceso')
                 ->icon('heroicon-o-arrow-down-tray')
                 ->color('info')
                 ->modalWidth('xl')
                 ->modalHeading('Importar Proceso desde Rama Judicial')
-                ->modalDescription('Ingrese el radicado judicial. El sistema importara automaticamente toda la informacion del proceso, sujetos y actuaciones.')
+                ->modalDescription('Ingrese el radicado judicial. Se busca primero en la Rama Judicial (con actuaciones) y, si no esta, en SAMAI para procesos contencioso-administrativos.')
                 ->modalSubmitActionLabel('Importar Proceso')
                 ->form([
                     TextInput::make('radicado')
@@ -146,7 +147,7 @@ class ListLegalCases extends ListRecords
                             $results[] = [
                                 'radicado' => $radicado,
                                 'status' => 'no_encontrado',
-                                'msg' => 'No se encontro en la Rama Judicial. No se creo caso.',
+                                'msg' => 'No se encontro en la Rama Judicial ni en SAMAI. No se creo caso.',
                                 'case_number' => null,
                             ];
                         } else {
@@ -245,9 +246,9 @@ class ListLegalCases extends ListRecords
             // Timeout u otro error de conexion
         }
 
-        // Si no se encontro en Rama Judicial, no crear caso
+        // Si no esta en la Rama Judicial, se intenta en SAMAI (jurisdiccion contencioso-administrativa)
         if (! $info || empty($info['despacho'])) {
-            return ['error' => null, 'detail' => null, 'imported' => false, 'message' => null, 'case' => null];
+            return $this->importFromSamai($radicado, $clientId, $userId);
         }
 
         // Construir datos con info de Tyba
@@ -286,17 +287,7 @@ class ListLegalCases extends ListRecords
             }
         }
 
-        // Generar case_number unico
-        $year = now()->format('Y');
-        $lastCase = LegalCase::withoutGlobalScopes()
-            ->where('case_number', 'like', "LW-%-{$year}")
-            ->orderByRaw('CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(case_number, "-", 2), "-", -1) AS UNSIGNED) DESC')
-            ->first();
-        $nextNum = 1;
-        if ($lastCase && preg_match('/LW-(\d+)-/', $lastCase->case_number, $m)) {
-            $nextNum = ((int) $m[1]) + 1;
-        }
-        $caseNumber = sprintf('LW-%04d-%s', $nextNum, $year);
+        $caseNumber = $this->nextCaseNumber();
 
         try {
             $case = LegalCase::create([
@@ -352,5 +343,84 @@ class ListLegalCases extends ListRecords
         $msg = "Caso {$caseNumber} importado con ".count($info['sujetos'])." sujetos y {$actuacionesCount} actuaciones.";
 
         return ['error' => null, 'detail' => null, 'imported' => true, 'message' => $msg, 'case' => $case];
+    }
+
+    /**
+     * Importa un proceso de SAMAI. SAMAI solo expone los datos generales del
+     * proceso: las actuaciones se consultan en el enlace de SAMAI.
+     *
+     * @return array{error: ?string, detail: ?string, imported: bool, message: ?string, case: ?LegalCase}
+     */
+    private function importFromSamai(string $radicado, int $clientId, int $userId): array
+    {
+        $notFound = ['error' => null, 'detail' => null, 'imported' => false, 'message' => null, 'case' => null];
+
+        try {
+            $item = app(SamaiService::class)->findByRadicado($radicado);
+        } catch (\Throwable) {
+            return $notFound;
+        }
+
+        if (! $item) {
+            return $notFound;
+        }
+
+        $parties = trim(mb_substr($item['demandante'], 0, 40).' vs '.mb_substr($item['demandado'], 0, 40), ' vs');
+        $title = ($item['clase'] !== '' ? mb_convert_case(mb_strtolower($item['clase']), MB_CASE_TITLE, 'UTF-8') : 'Proceso Administrativo')
+            .($parties !== '' ? ' - '.$parties : ' - '.$radicado);
+
+        $description = "Importado desde SAMAI (Consejo de Estado)\n"
+            ."Clase: {$item['clase']}\n"
+            ."Corporacion: {$item['corporacion_nombre']}\n"
+            ."Despacho: {$item['despacho']}\n"
+            ."Ponente: {$item['ponente']}\n"
+            ."Asunto: {$item['asunto']}\n"
+            ."Demandante: {$item['demandante']}\n"
+            ."Demandado: {$item['demandado']}\n"
+            ."Estado: {$item['vigente']}\n\n"
+            ."Actuaciones: {$item['url']}";
+
+        try {
+            $case = LegalCase::create([
+                'firm_id' => auth()->user()->firm_id,
+                'case_number' => $this->nextCaseNumber(),
+                'external_case_number' => $radicado,
+                'judicial_source' => LegalCase::SOURCE_SAMAI,
+                'title' => mb_substr($title, 0, 250),
+                'description' => $description,
+                'case_type_id' => CaseType::firstOrCreate(['name' => 'Administrativo'])->id,
+                'client_id' => $clientId,
+                'user_id' => $userId,
+                'status' => $item['vigente'] === 'Archivado' ? 'archivado' : 'abierto',
+                'priority' => 'media',
+                'court' => trim($item['despacho'].($item['corporacion_nombre'] ? ' - '.$item['corporacion_nombre'] : ''), ' -'),
+                'judge' => $item['ponente'] !== '' ? mb_convert_case(mb_strtolower($item['ponente']), MB_CASE_TITLE, 'UTF-8') : null,
+                'opposing_party' => $item['demandado'] ?: $item['demandante'],
+                'started_at' => $item['fecha_ingreso'] ?: null,
+                'last_tyba_sync' => now(),
+                'tyba_data' => $item,
+            ]);
+        } catch (QueryException) {
+            return ['error' => 'Error al crear caso', 'detail' => 'No se pudo crear el caso.', 'imported' => false, 'message' => null, 'case' => null];
+        }
+
+        return [
+            'error' => null,
+            'detail' => null,
+            'imported' => true,
+            'message' => "Caso {$case->case_number} importado desde SAMAI ({$item['corporacion_nombre']}). Las actuaciones se consultan con el boton \"Ver en SAMAI\" del caso.",
+            'case' => $case,
+        ];
+    }
+
+    private function nextCaseNumber(): string
+    {
+        $year = now()->format('Y');
+        $numbers = LegalCase::withoutGlobalScopes()
+            ->where('case_number', 'like', "LW-%-{$year}")
+            ->pluck('case_number')
+            ->map(fn (string $number): int => preg_match('/^LW-(\d+)-/', $number, $m) ? (int) $m[1] : 0);
+
+        return sprintf('LW-%04d-%s', ($numbers->max() ?? 0) + 1, $year);
     }
 }

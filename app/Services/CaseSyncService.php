@@ -44,10 +44,28 @@ class CaseSyncService
         'noviembre' => 11, 'diciembre' => 12,
     ];
 
-    public function __construct(public TybaService $tyba) {}
+    /**
+     * Campos de SAMAI que se comparan entre sincronizaciones.
+     *
+     * @var array<string, string>
+     */
+    public const SAMAI_TRACKED_FIELDS = [
+        'despacho' => 'Despacho',
+        'ponente' => 'Ponente',
+        'clase' => 'Clase de proceso',
+        'vigente' => 'Estado en SAMAI',
+        'demandante' => 'Demandante',
+        'demandado' => 'Demandado',
+    ];
+
+    public function __construct(public TybaService $tyba, public SamaiService $samai) {}
 
     public function sync(LegalCase $case, string $origen = 'automatico', bool $notify = true): TybaSyncLog
     {
+        if ($case->isSamai()) {
+            return $this->syncSamai($case, $origen, $notify);
+        }
+
         $radicado = (string) $case->external_case_number;
         $info = $radicado !== '' ? $this->tyba->extractProcessInfo($radicado) : null;
 
@@ -171,6 +189,103 @@ class CaseSyncService
 
         if ($notify && $hasChanges && $case->user) {
             $case->user->notify(new TybaSyncNotification($case, $newCount, $log->cambios ?? []));
+        }
+
+        return $log;
+    }
+
+    /**
+     * Sincroniza un caso de SAMAI. SAMAI solo expone los datos generales del
+     * proceso (el detalle con actuaciones tiene captcha), asi que se comparan
+     * esos datos y se registra una actuacion cuando el proceso se archiva o
+     * vuelve a estar vigente.
+     */
+    public function syncSamai(LegalCase $case, string $origen = 'automatico', bool $notify = true): TybaSyncLog
+    {
+        $item = $this->samai->findByRadicado((string) $case->external_case_number);
+
+        if (! $item) {
+            Log::warning('SAMAI sync: consulta fallida', ['case' => $case->id]);
+            $case->update(['last_tyba_sync' => now()]);
+
+            return TybaSyncLog::create([
+                'legal_case_id' => $case->id,
+                'status' => 'error',
+                'mensaje' => 'No se pudo consultar el radicado en SAMAI',
+                'origen' => $origen,
+            ]);
+        }
+
+        $previous = $case->tyba_data;
+        $fieldChanges = [];
+
+        if (! empty($previous)) {
+            foreach (self::SAMAI_TRACKED_FIELDS as $key => $label) {
+                $before = trim((string) ($previous[$key] ?? ''));
+                $after = trim((string) ($item[$key] ?? ''));
+
+                if ($before !== '' && $after !== '' && mb_strtolower($before) !== mb_strtolower($after)) {
+                    $fieldChanges[] = ['campo' => $label, 'antes' => $before, 'despues' => $after];
+                }
+            }
+        }
+
+        $updates = ['last_tyba_sync' => now(), 'tyba_data' => $item];
+
+        if ($item['despacho'] !== '') {
+            $updates['court'] = $item['despacho'].($item['corporacion_nombre'] ? ' - '.$item['corporacion_nombre'] : '');
+        }
+        if ($item['ponente'] !== '') {
+            $updates['judge'] = mb_convert_case(mb_strtolower($item['ponente']), MB_CASE_TITLE, 'UTF-8');
+        }
+
+        $case->update($updates);
+
+        $newEvents = [];
+        $statusChange = collect($fieldChanges)->firstWhere('campo', self::SAMAI_TRACKED_FIELDS['vigente']);
+
+        if ($statusChange) {
+            $title = $statusChange['despues'] === 'Archivado' ? 'Proceso archivado en SAMAI' : 'Proceso nuevamente vigente en SAMAI';
+
+            CaseEvent::firstOrCreate(
+                ['legal_case_id' => $case->id, 'title' => $title, 'event_day' => now()->toDateString()],
+                [
+                    'event_date' => now()->startOfDay(),
+                    'event_type' => 'actuacion',
+                    'description' => "SAMAI reporta el proceso como {$statusChange['despues']}. Revise las actuaciones en: {$item['url']}",
+                    'user_id' => $case->user_id,
+                ],
+            );
+
+            $newEvents[] = ['fecha' => now()->format('d/m/Y'), 'tipo' => $title, 'anotacion' => ''];
+        }
+
+        $hasChanges = $fieldChanges !== [];
+
+        $log = TybaSyncLog::create([
+            'legal_case_id' => $case->id,
+            'status' => $hasChanges ? 'ok' : 'sin_cambios',
+            'nuevas_actuaciones' => count($newEvents),
+            'mensaje' => $hasChanges
+                ? count($fieldChanges).' dato(s) del proceso cambiaron en SAMAI'
+                : 'Sin novedades en SAMAI',
+            'cambios' => $hasChanges ? ['actuaciones' => $newEvents, 'campos' => $fieldChanges] : null,
+            'origen' => $origen,
+        ]);
+
+        if ($hasChanges && ! $case->is_demo) {
+            app(N8nWebhook::class)->dispatch('case.judicial_update', [
+                'firm' => N8nWebhook::firmData(Firm::find($case->firm_id)),
+                'case' => N8nWebhook::caseData($case),
+                'source' => LegalCase::SOURCE_SAMAI,
+                'origin' => $origen,
+                'new_actuaciones' => $newEvents,
+                'field_changes' => $fieldChanges,
+            ], $case->firm_id);
+        }
+
+        if ($notify && $hasChanges && $case->user) {
+            $case->user->notify(new TybaSyncNotification($case, count($newEvents), $log->cambios ?? []));
         }
 
         return $log;

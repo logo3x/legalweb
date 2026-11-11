@@ -6,10 +6,11 @@
             <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
         </div>
         <div style="flex: 1; min-width: 0;">
-            <h3 style="margin: 0 0 4px; font-size: 17px; font-weight: 700; color: #1E3A5F;">Encuentra procesos en la Rama Judicial</h3>
+            <h3 style="margin: 0 0 4px; font-size: 17px; font-weight: 700; color: #1E3A5F;">Encuentra procesos en la Rama Judicial y en SAMAI</h3>
             <p style="margin: 0; font-size: 13.5px; color: #475569; line-height: 1.55;">
                 Busca por <strong>nombre del cliente</strong>, <strong>cedula / NIT</strong> o <strong>numero de radicado</strong>.
                 Importa el proceso completo con un click — actuaciones, sujetos, despacho y vigilancia automatica activada.
+                Para procesos <strong>contencioso-administrativos</strong> elige la fuente SAMAI (Consejo de Estado, tribunales y juzgados administrativos).
             </p>
         </div>
     </div>
@@ -19,7 +20,7 @@
 
         <div style="margin-top: 18px; display: flex; gap: 10px; flex-wrap: wrap;">
             <x-filament::button type="submit" icon="heroicon-o-magnifying-glass" size="lg">
-                Buscar en la Rama
+                Buscar
             </x-filament::button>
             <x-filament::button color="gray" tag="a" href="{{ url('/admin') }}">
                 Volver al dashboard
@@ -99,6 +100,12 @@
                                 @endif
                             </div>
                             <div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 6px; align-items: flex-end;">
+                                @if(! empty($p['estado']))
+                                    <span style="padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; {{ $p['estado'] === 'Vigente' ? 'background:#DBEAFE;color:#1E40AF;' : 'background:#F1F5F9;color:#475569;' }}">{{ $p['estado'] }}</span>
+                                @endif
+                                @if(! empty($p['url']))
+                                    <a href="{{ $p['url'] }}" target="_blank" rel="noopener" style="font-size: 12px; font-weight: 600; color: #3A86FF; text-decoration: underline;">Ver en SAMAI</a>
+                                @endif
                                 @if(! $yaImportado)
                                     <button
                                         type="button"

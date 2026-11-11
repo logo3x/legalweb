@@ -17,6 +17,7 @@ use Illuminate\Support\Str;
 #[Fillable([
     'case_number',
     'external_case_number',
+    'judicial_source',
     'title',
     'description',
     'case_type_id',
@@ -82,6 +83,23 @@ class LegalCase extends Model
                 'previous_status' => $case->getOriginal('status'),
             ], $case->firm_id);
         });
+    }
+
+    public const SOURCE_RAMA = 'rama';
+
+    public const SOURCE_SAMAI = 'samai';
+
+    public function isSamai(): bool
+    {
+        return $this->judicial_source === self::SOURCE_SAMAI;
+    }
+
+    /**
+     * Nombre de la fuente oficial del proceso para mostrar en la interfaz.
+     */
+    public function judicialSourceLabel(): string
+    {
+        return $this->isSamai() ? 'SAMAI (Consejo de Estado)' : 'Rama Judicial';
     }
 
     public function generatePortalToken(): string

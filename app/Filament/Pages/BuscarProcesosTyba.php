@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Models\LegalCase;
+use App\Services\SamaiService;
 use App\Services\TybaService;
 use BackedEnum;
 use Filament\Forms\Components\Select;
@@ -24,11 +25,11 @@ class BuscarProcesosTyba extends Page implements HasForms
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMagnifyingGlass;
 
-    protected static ?string $navigationLabel = 'Buscar en Rama Judicial';
+    protected static ?string $navigationLabel = 'Buscar procesos';
 
     protected static string|UnitEnum|null $navigationGroup = 'Casos';
 
-    protected static ?string $title = 'Importar casos desde la Rama Judicial';
+    protected static ?string $title = 'Buscar procesos en Rama Judicial y SAMAI';
 
     protected static ?int $navigationSort = 5;
 
@@ -37,6 +38,8 @@ class BuscarProcesosTyba extends Page implements HasForms
     public ?string $searchedTerm = null;
 
     public string $searchedMode = 'nombre';
+
+    public string $searchedSource = 'rama';
 
     public array $procesos = [];
 
@@ -54,6 +57,9 @@ class BuscarProcesosTyba extends Page implements HasForms
         $tipoDoc = request()->query('tipo_documento');
 
         $initial = [
+            'fuente' => 'rama',
+            'corporacion' => '',
+            'tipo_parte' => '',
             'modo' => 'nombre',
             'nombre' => '',
             'radicado' => '',
@@ -87,13 +93,31 @@ class BuscarProcesosTyba extends Page implements HasForms
         return $schema
             ->statePath('data')
             ->components([
+                Select::make('fuente')
+                    ->label('Fuente')
+                    ->options([
+                        'rama' => 'Rama Judicial (civil, laboral, penal, familia...)',
+                        'samai' => 'SAMAI - Consejo de Estado (contencioso administrativo)',
+                    ])
+                    ->default('rama')
+                    ->native(false)
+                    ->live()
+                    ->afterStateUpdated(function ($state, $set, $get): void {
+                        if ($state === 'samai' && $get('modo') === 'documento') {
+                            $set('modo', 'nombre');
+                        }
+                    })
+                    ->columnSpanFull(),
+
                 Select::make('modo')
                     ->label('Buscar por')
-                    ->options([
-                        'nombre' => 'Nombre / Razon social',
-                        'radicado' => 'Numero de radicado',
-                        'documento' => 'Cedula o NIT',
-                    ])
+                    ->options(fn ($get): array => $get('fuente') === 'samai'
+                        ? ['nombre' => 'Nombre de la parte', 'radicado' => 'Numero de radicado']
+                        : [
+                            'nombre' => 'Nombre / Razon social',
+                            'radicado' => 'Numero de radicado',
+                            'documento' => 'Cedula o NIT',
+                        ])
                     ->default('nombre')
                     ->native(false)
                     ->live()
@@ -106,6 +130,27 @@ class BuscarProcesosTyba extends Page implements HasForms
                     ->minLength(3)
                     ->maxLength(150)
                     ->visible(fn ($get) => $get('modo') === 'nombre')
+                    ->columnSpanFull(),
+
+                Grid::make(2)
+                    ->components([
+                        Select::make('corporacion')
+                            ->label('Corporacion o juzgado')
+                            ->options(fn (): array => app(SamaiService::class)->corporations())
+                            ->searchable()
+                            ->required(fn ($get): bool => $get('fuente') === 'samai' && $get('modo') === 'nombre')
+                            ->helperText('SAMAI exige elegir donde buscar.'),
+                        Select::make('tipo_parte')
+                            ->label('Rol de la parte')
+                            ->options([
+                                '' => 'Cualquiera',
+                                'demandante' => 'Demandante o titular',
+                                'demandado' => 'Demandado',
+                                'apoderado' => 'Apoderado',
+                            ])
+                            ->native(false),
+                    ])
+                    ->visible(fn ($get) => $get('fuente') === 'samai' && $get('modo') === 'nombre')
                     ->columnSpanFull(),
 
                 TextInput::make('radicado')
@@ -150,7 +195,63 @@ class BuscarProcesosTyba extends Page implements HasForms
         $modo = $data['modo'] ?? 'nombre';
         $term = trim((string) ($data[$modo] ?? ''));
         $tipo = (int) ($data['tipo_documento'] ?? 1);
+
+        if (($data['fuente'] ?? 'rama') === 'samai') {
+            $this->ejecutarBusquedaSamai($modo, $term, (string) ($data['corporacion'] ?? ''), (string) ($data['tipo_parte'] ?? ''));
+
+            return;
+        }
+
         $this->ejecutarBusqueda($modo, $term, $tipo);
+    }
+
+    protected function ejecutarBusquedaSamai(string $modo, string $term, string $corporacion, string $tipoParte): void
+    {
+        $this->errorMessage = null;
+        $this->procesos = [];
+
+        if ($term === '') {
+            return;
+        }
+
+        $this->searchedTerm = $term;
+        $this->searchedMode = $modo;
+        $this->searchedSource = 'samai';
+        $this->hasSearched = true;
+
+        try {
+            $samai = app(SamaiService::class);
+            $items = $modo === 'radicado'
+                ? array_filter([$samai->findByRadicado($term)])
+                : $samai->searchByParty($term, $corporacion, $tipoParte);
+
+            $this->procesos = collect($items)->map(fn (array $item): array => [
+                'radicado' => $item['radicado'],
+                'despacho' => trim($item['despacho'].' - '.$item['corporacion_nombre'], ' -'),
+                'departamento' => $item['clase'],
+                'fecha' => $item['fecha_ingreso'],
+                'ultima_actuacion' => '',
+                'sujetos' => trim('Demandante: '.$item['demandante'].' | Demandado: '.$item['demandado']),
+                'es_privado' => $item['es_privado'],
+                'estado' => $item['vigente'],
+                'url' => $item['url'],
+                'fuente' => 'samai',
+            ])->values()->all();
+        } catch (\Throwable $e) {
+            $this->errorMessage = 'No pudimos conectar con SAMAI. Intente en unos minutos.';
+            Log::warning('BuscarProcesosTyba: error SAMAI', ['error' => $e->getMessage(), 'modo' => $modo]);
+        }
+
+        $this->loadExistingRadicados();
+    }
+
+    protected function loadExistingRadicados(): void
+    {
+        $this->existingRadicados = LegalCase::withoutGlobalScopes()
+            ->where('firm_id', auth()->user()->firm_id)
+            ->whereNotNull('external_case_number')
+            ->pluck('external_case_number')
+            ->toArray();
     }
 
     protected function ejecutarBusqueda(string $modo, string $term, int $tipoDocumento = 1): void
@@ -163,6 +264,7 @@ class BuscarProcesosTyba extends Page implements HasForms
         }
 
         $service = app(TybaService::class);
+        $this->searchedSource = 'rama';
         $this->searchedTerm = $term;
         $this->searchedMode = $modo;
         $this->hasSearched = true;
@@ -201,10 +303,6 @@ class BuscarProcesosTyba extends Page implements HasForms
             Log::warning('BuscarProcesosTyba: error', ['error' => $e->getMessage(), 'modo' => $modo]);
         }
 
-        $this->existingRadicados = LegalCase::withoutGlobalScopes()
-            ->where('firm_id', auth()->user()->firm_id)
-            ->whereNotNull('external_case_number')
-            ->pluck('external_case_number')
-            ->toArray();
+        $this->loadExistingRadicados();
     }
 }
