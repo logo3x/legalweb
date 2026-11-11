@@ -3,6 +3,8 @@
 namespace App\Notifications;
 
 use App\Models\LegalCase;
+use App\Notifications\Concerns\SendsWhatsApp;
+use App\Notifications\Messages\WhatsAppMessage;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -10,7 +12,7 @@ use Illuminate\Notifications\Notification;
 
 class MonthlyReportNotification extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, SendsWhatsApp;
 
     public function __construct(
         public LegalCase $case,
@@ -20,7 +22,30 @@ class MonthlyReportNotification extends Notification implements ShouldQueue
 
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        if ($this->case->is_demo) {
+            return ['mail'];
+        }
+
+        return $this->withWhatsApp(['mail'], $notifiable);
+    }
+
+    /**
+     * Aviso corto por WhatsApp: el PDF solo viaja por correo.
+     */
+    public function toWhatsApp(object $notifiable): WhatsAppMessage
+    {
+        $sender = $this->case->senderName();
+
+        return new WhatsAppMessage(
+            template: 'monthly.report.customer',
+            variables: [
+                1 => $notifiable->full_name,
+                2 => $this->case->case_number,
+                3 => $this->periodo,
+                4 => $sender,
+            ],
+            fallbackText: "{$sender} - Estimado(a) {$notifiable->full_name}, el reporte mensual de su caso {$this->case->case_number} correspondiente a {$this->periodo} ya esta disponible. Lo enviamos a su correo electronico.",
+        );
     }
 
     public function toMail(object $notifiable): MailMessage

@@ -8,7 +8,12 @@ use App\Services\WhatsAppService;
 trait SendsWhatsApp
 {
     /**
-     * Agrega el canal de WhatsApp cuando el usuario lo activo y Twilio esta configurado.
+     * Agrega el canal de WhatsApp cuando el destinatario lo autorizo, tiene un
+     * numero al que enviar y Twilio esta configurado.
+     *
+     * El numero sale de routeNotificationForWhatsapp() del destinatario: en
+     * User es whatsapp_phone y en Client es phone. Los registros de ejemplo
+     * (is_demo) nunca reciben WhatsApp.
      *
      * @param  array<int, string>  $channels
      * @return array<int, string>
@@ -16,7 +21,9 @@ trait SendsWhatsApp
     protected function withWhatsApp(array $channels, object $notifiable): array
     {
         if (($notifiable->whatsapp_enabled ?? false)
-            && filled($notifiable->whatsapp_phone ?? null)
+            && ! ($notifiable->is_demo ?? false)
+            && method_exists($notifiable, 'routeNotificationFor')
+            && filled($notifiable->routeNotificationFor('whatsapp', $this))
             && app(WhatsAppService::class)->isConfigured()) {
             $channels[] = WhatsAppChannel::class;
         }

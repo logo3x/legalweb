@@ -6,6 +6,7 @@ use App\Filament\Resources\LegalCases\LegalCaseResource;
 use App\Models\CaseEvent;
 use App\Models\Reminder;
 use App\Models\TybaSyncLog;
+use App\Notifications\PortalSharedNotification;
 use App\Services\AIModelRegistry;
 use App\Services\AIService;
 use App\Services\CaseSyncService;
@@ -298,6 +299,15 @@ class ViewLegalCase extends ViewRecord
                                 ->content(fn (): HtmlString => $this->portalShareButtons($url)),
                         ];
                     })
+                    ->extraModalFooterActions(fn (): array => [
+                        Action::make('send_portal_whatsapp')
+                            ->authorize(fn (): bool => $this->userCanOnCase('portal.share'))
+                            ->label('Enviar al cliente por WhatsApp')
+                            ->icon('heroicon-o-chat-bubble-left-right')
+                            ->color('success')
+                            ->visible(fn (): bool => $this->canSendPortalByWhatsApp())
+                            ->action(fn () => $this->sendPortalByWhatsApp()),
+                    ])
                     ->action(function () {
                         $url = route('portal.show', $this->record->portal_token);
                         $this->js("navigator.clipboard.writeText('".$url."')");
@@ -354,6 +364,66 @@ class ViewLegalCase extends ViewRecord
             EditAction::make()
                 ->label('Editar'),
         ];
+    }
+
+    /**
+     * El envio automatico por WhatsApp requiere la autorizacion del cliente,
+     * Twilio configurado y que el caso no sea de ejemplo.
+     */
+    private function canSendPortalByWhatsApp(): bool
+    {
+        $client = $this->record->client;
+
+        return $client
+            && ! $this->record->is_demo
+            && filled($client->routeNotificationForWhatsapp())
+            && app(WhatsAppService::class)->isConfigured();
+    }
+
+    /**
+     * Envia el enlace del portal al WhatsApp del cliente y avisa al abogado si funciono.
+     */
+    private function sendPortalByWhatsApp(): void
+    {
+        $record = $this->record;
+        $client = $record->client;
+
+        if (! $this->canSendPortalByWhatsApp()) {
+            Notification::make()
+                ->title('No se puede enviar por WhatsApp')
+                ->body('El cliente debe autorizar los avisos por WhatsApp y tener un telefono registrado.')
+                ->danger()
+                ->send();
+
+            return;
+        }
+
+        $record->generatePortalToken();
+        $notification = new PortalSharedNotification($record);
+        $message = $notification->toWhatsApp($client);
+
+        $sent = app(WhatsAppService::class)->sendTemplate(
+            (string) $client->routeNotificationForWhatsapp(),
+            $message->template,
+            $message->variables,
+            $message->fallbackText,
+        );
+
+        if ($sent) {
+            Notification::make()
+                ->title('Enlace enviado por WhatsApp')
+                ->body("Se envio el enlace del portal a {$client->full_name}.")
+                ->success()
+                ->send();
+
+            return;
+        }
+
+        Notification::make()
+            ->title('No se pudo enviar el WhatsApp')
+            ->body('Verifique el telefono del cliente o la configuracion de Twilio e intente de nuevo. Tambien puede usar el boton de WhatsApp del modal.')
+            ->danger()
+            ->send();
     }
 
     /**

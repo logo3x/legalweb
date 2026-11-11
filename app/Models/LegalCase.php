@@ -116,6 +116,24 @@ class LegalCase extends Model
         return $this->portal_token;
     }
 
+    /**
+     * Enlace del portal del cliente, solo si el portal esta habilitado y tiene token.
+     */
+    public function portalUrl(): ?string
+    {
+        return $this->portal_enabled && $this->portal_token
+            ? route('portal.show', $this->portal_token)
+            : null;
+    }
+
+    /**
+     * Nombre con el que se firman los avisos al cliente: la firma o, si no hay, el abogado.
+     */
+    public function senderName(): string
+    {
+        return $this->user?->firm?->name ?? $this->user?->name ?? 'su abogado';
+    }
+
     public function caseType(): BelongsTo
     {
         return $this->belongsTo(CaseType::class);

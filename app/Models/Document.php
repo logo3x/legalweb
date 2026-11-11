@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Notifications\DocumentRequestedNotification;
 use Database\Factories\DocumentFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -39,8 +40,58 @@ class Document extends Model
         return [
             'due_date' => 'date',
             'received_at' => 'date',
+            'client_notified_at' => 'datetime',
             'estimated_cost' => 'decimal:2',
         ];
+    }
+
+    /**
+     * Estados en los que el documento esta a la espera de que el cliente lo aporte.
+     */
+    public const CLIENT_REQUEST_STATUSES = ['pendiente', 'solicitado'];
+
+    protected static function booted(): void
+    {
+        static::saved(function (Document $document): void {
+            $document->notifyClientIfRequested();
+        });
+    }
+
+    /**
+     * Avisa al cliente (una sola vez por documento) que debe aportar este documento.
+     */
+    public function notifyClientIfRequested(): void
+    {
+        if ($this->client_notified_at
+            || $this->responsible !== 'cliente'
+            || ! in_array($this->status, self::CLIENT_REQUEST_STATUSES, true)) {
+            return;
+        }
+
+        $case = LegalCase::withoutGlobalScopes()->with('user.firm')->find($this->legal_case_id);
+
+        if (! $case || $case->is_demo) {
+            return;
+        }
+
+        $client = Client::withoutGlobalScopes()->find($case->client_id);
+
+        if (! $client) {
+            return;
+        }
+
+        $notification = new DocumentRequestedNotification($case, $this);
+
+        // Sin canal disponible (sin autorizacion, sin telefono o sin Twilio) no se marca,
+        // para poder avisar si el cliente autoriza mas adelante.
+        if ($notification->via($client) === []) {
+            return;
+        }
+
+        $this->client_notified_at = now();
+        $this->saveQuietly();
+
+        $client->notify($notification);
     }
 
     public function legalCase(): BelongsTo

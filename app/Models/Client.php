@@ -20,6 +20,7 @@ use Illuminate\Notifications\Notifiable;
     'last_name',
     'email',
     'phone',
+    'whatsapp_enabled',
     'address',
     'city',
     'notes',
@@ -40,10 +41,35 @@ class Client extends Model
     {
         return [
             'is_demo' => 'boolean',
+            'whatsapp_enabled' => 'boolean',
+            'whatsapp_consent_at' => 'datetime',
             'process_monitoring_enabled' => 'boolean',
             'process_monitoring_last_at' => 'datetime',
             'process_monitoring_known' => 'array',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        // Constancia de la autorizacion para avisos por WhatsApp (Ley 1581 de 2012).
+        static::saving(function (Client $client): void {
+            if ($client->isDirty('whatsapp_enabled')) {
+                $client->whatsapp_consent_at = $client->whatsapp_enabled ? now() : null;
+            }
+        });
+    }
+
+    /**
+     * Numero al que el canal de WhatsApp envia los avisos: solo con autorizacion
+     * del cliente y nunca para clientes de ejemplo.
+     */
+    public function routeNotificationForWhatsapp(): ?string
+    {
+        if (! $this->whatsapp_enabled || $this->is_demo || blank($this->phone)) {
+            return null;
+        }
+
+        return $this->phone;
     }
 
     public function user(): BelongsTo

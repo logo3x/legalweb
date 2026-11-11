@@ -93,6 +93,14 @@ return [
             'document.received.lawyer' => env('TWILIO_TPL_DOCUMENT_RECEIVED_LAWYER'),
             'portal.access.lawyer' => env('TWILIO_TPL_PORTAL_ACCESS_LAWYER'),
             'client.new_processes.lawyer' => env('TWILIO_TPL_CLIENT_NEW_PROCESSES_LAWYER'),
+
+            // Avisos al cliente final (requieren su autorizacion en la ficha del cliente).
+            // {{1}} cliente, {{2}} documento, {{3}} firma o abogado, {{4}} enlace del portal.
+            'document.requested.customer' => env('TWILIO_TPL_DOCUMENT_REQUESTED_CUSTOMER'),
+            // {{1}} cliente, {{2}} numero del caso, {{3}} firma o abogado, {{4}} enlace del portal.
+            'portal.shared.customer' => env('TWILIO_TPL_PORTAL_SHARED_CUSTOMER'),
+            // {{1}} cliente, {{2}} numero del caso, {{3}} periodo, {{4}} firma o abogado.
+            'monthly.report.customer' => env('TWILIO_TPL_MONTHLY_REPORT_CUSTOMER'),
         ],
     ],
 

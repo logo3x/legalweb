@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Clients\Schemas;
 
+use App\Models\Client;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -53,6 +54,14 @@ class ClientForm
                     ->maxLength(100),
                 Textarea::make('notes')
                     ->label('Notas')
+                    ->columnSpanFull(),
+                Toggle::make('whatsapp_enabled')
+                    ->label('El cliente autorizó recibir avisos por WhatsApp')
+                    ->helperText(fn (?Client $record): string => 'Active esta opción solo si el cliente le dio su autorización (Ley 1581 de 2012). '
+                        .'Los avisos (documentos solicitados, enlace del portal, reporte mensual) se envían al teléfono del cliente.'
+                        .($record?->whatsapp_enabled && $record->whatsapp_consent_at
+                            ? ' Autorización registrada el '.$record->whatsapp_consent_at->format('d/m/Y H:i').'.'
+                            : ''))
                     ->columnSpanFull(),
                 Toggle::make('process_monitoring_enabled')
                     ->label('Vigilar procesos nuevos de este cliente')
