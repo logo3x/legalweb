@@ -95,4 +95,15 @@ return [
         ],
     ],
 
+    'n8n' => [
+        // URL del Webhook de n8n que recibe todos los eventos de LegalWeb.
+        'webhook_url' => env('N8N_WEBHOOK_URL'),
+        // Secreto para firmar cada envio (cabecera X-LegalWeb-Signature, HMAC-SHA256).
+        'webhook_secret' => env('N8N_WEBHOOK_SECRET'),
+        // Eventos a enviar separados por coma, o * para todos.
+        'events' => env('N8N_EVENTS', '*'),
+        // Token con el que n8n consulta datos de LegalWeb (cabecera Authorization: Bearer ...).
+        'api_token' => env('N8N_API_TOKEN'),
+    ],
+
 ];

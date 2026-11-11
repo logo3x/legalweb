@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Scopes\FirmScope;
+use App\Services\N8nWebhook;
 use Database\Factories\LegalCaseFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
@@ -54,6 +55,33 @@ class LegalCase extends Model
             'last_tyba_sync' => 'datetime',
             'tyba_data' => 'array',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::created(function (LegalCase $case): void {
+            if ($case->is_demo) {
+                return;
+            }
+
+            app(N8nWebhook::class)->dispatch('case.created', [
+                'firm' => N8nWebhook::firmData(Firm::find($case->firm_id)),
+                'case' => N8nWebhook::caseData($case),
+                'lawyer' => ['id' => $case->user_id, 'name' => $case->user?->name],
+            ], $case->firm_id);
+        });
+
+        static::updated(function (LegalCase $case): void {
+            if ($case->is_demo || ! $case->wasChanged('status')) {
+                return;
+            }
+
+            app(N8nWebhook::class)->dispatch('case.status_changed', [
+                'firm' => N8nWebhook::firmData(Firm::find($case->firm_id)),
+                'case' => N8nWebhook::caseData($case),
+                'previous_status' => $case->getOriginal('status'),
+            ], $case->firm_id);
+        });
     }
 
     public function generatePortalToken(): string

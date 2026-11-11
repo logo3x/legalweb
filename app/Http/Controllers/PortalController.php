@@ -8,6 +8,7 @@ use App\Models\LegalCase;
 use App\Models\PortalAccessLog;
 use App\Notifications\ClientDocumentReadyNotification;
 use App\Notifications\PortalAccessNotification;
+use App\Services\N8nWebhook;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -93,6 +94,11 @@ class PortalController extends Controller
 
         session()->put("portal_accepted_{$case->id}", true);
 
+        app(N8nWebhook::class)->dispatch('portal.accepted', [
+            'firm' => N8nWebhook::firmData($case->user?->firm),
+            'case' => N8nWebhook::caseData($case),
+        ], $case->firm_id);
+
         return redirect()->route('portal.show', $token);
     }
 
@@ -146,6 +152,8 @@ class PortalController extends Controller
             }
         }
 
+        $this->notifyN8nDocument($case, $document, 'ready');
+
         return redirect()->route('portal.show', $token)
             ->with('doc_success', 'Avisamos a su abogado que tiene listo "'.$document->name.'". Pronto se contactara con usted.');
     }
@@ -196,7 +204,18 @@ class PortalController extends Controller
             }
         }
 
+        $this->notifyN8nDocument($case, $document, 'link');
+
         return redirect()->route('portal.show', $token)
             ->with('doc_success', 'Enlace de "'.$document->name.'" enviado correctamente. Su abogado fue notificado.');
+    }
+
+    private function notifyN8nDocument(LegalCase $case, Document $document, string $action): void
+    {
+        app(N8nWebhook::class)->dispatch('document.client_ready', [
+            'firm' => N8nWebhook::firmData($case->user?->firm),
+            'case' => N8nWebhook::caseData($case),
+            'document' => ['id' => $document->id, 'name' => $document->name, 'action' => $action],
+        ], $case->firm_id);
     }
 }

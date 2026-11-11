@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Subscription;
 use App\Notifications\SubscriptionStatusNotification;
+use App\Services\N8nWebhook;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
@@ -72,6 +73,14 @@ class CheckSubscriptionGrace extends Command
             $sub->warning_stage = $stage;
             $sub->last_warning_sent_at = $now;
             $sub->save();
+
+            app(N8nWebhook::class)->dispatch('subscription.stage_changed', [
+                'firm' => N8nWebhook::firmData($sub->firm),
+                'stage' => $stage,
+                'plan' => $sub->plan?->name,
+                'ends_at' => $sub->ends_at?->toDateString(),
+                'owner' => ['name' => $owner->name, 'email' => $owner->email],
+            ], $sub->firm_id);
 
             match ($stage) {
                 SubscriptionStatusNotification::STAGE_UPCOMING => $upcoming++,

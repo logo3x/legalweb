@@ -973,6 +973,8 @@ try {
         setup_log('Valores nuevos (cada recarga genera otros). Copielos al .env y luego use "Limpiar".', 'warning');
         setup_log('SETUP_KEY='.bin2hex(random_bytes(24)), 'success');
         setup_log('CRON_TOKEN='.bin2hex(random_bytes(24)), 'success');
+        setup_log('N8N_WEBHOOK_SECRET='.bin2hex(random_bytes(24)), 'success');
+        setup_log('N8N_API_TOKEN='.bin2hex(random_bytes(24)), 'success');
         setup_log('APP_KEY=base64:'.base64_encode(random_bytes(32)), 'success');
         setup_log('Al cambiar APP_KEY, ponga la clave anterior en APP_PREVIOUS_KEYS=base64:... para no cerrar las sesiones abiertas.', 'muted');
         setup_log('Al cambiar SETUP_KEY, esta pagina solo abrira con la clave nueva. Al cambiar CRON_TOKEN, actualice las 9 tareas cron.', 'muted');

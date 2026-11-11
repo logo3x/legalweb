@@ -68,6 +68,16 @@ class SubscriptionActivator
 
         $this->redeemDiscount($subscription, $transaction);
 
+        $subscription->loadMissing(['firm', 'plan']);
+        app(N8nWebhook::class)->dispatch('subscription.activated', [
+            'firm' => N8nWebhook::firmData($subscription->firm),
+            'plan' => $subscription->plan?->name,
+            'amount_cop' => intdiv((int) $subscription->amount_in_cents, 100),
+            'discount_cop' => (int) $subscription->discount_amount,
+            'ends_at' => $subscription->ends_at?->toDateString(),
+            'reference' => $subscription->wompi_reference,
+        ], $subscription->firm_id);
+
         Log::info('Wompi: suscripcion activada', ['reference' => $reference]);
 
         return true;

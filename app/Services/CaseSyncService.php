@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\CaseEvent;
+use App\Models\Firm;
 use App\Models\LegalCase;
 use App\Models\Reminder;
 use App\Models\TybaSyncLog;
@@ -157,6 +158,16 @@ class CaseSyncService
             'nuevas' => $newCount,
             'campos' => count($fieldChanges),
         ]);
+
+        if ($hasChanges && ! $case->is_demo) {
+            app(N8nWebhook::class)->dispatch('case.judicial_update', [
+                'firm' => N8nWebhook::firmData(Firm::find($case->firm_id)),
+                'case' => N8nWebhook::caseData($case),
+                'origin' => $origen,
+                'new_actuaciones' => $newEvents,
+                'field_changes' => $fieldChanges,
+            ], $case->firm_id);
+        }
 
         if ($notify && $hasChanges && $case->user) {
             $case->user->notify(new TybaSyncNotification($case, $newCount, $log->cambios ?? []));

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\GoogleController;
+use App\Http\Controllers\N8nController;
 use App\Http\Controllers\PortalController;
 use App\Http\Controllers\WompiController;
 use App\Jobs\SendMassEmailCampaign;
@@ -157,6 +158,12 @@ Route::middleware('auth')->group(function () {
 });
 Route::post('/wompi/webhook', [WompiController::class, 'webhook'])->middleware('throttle:60,1')->name('wompi.webhook');
 
+// API de lectura para n8n (token Bearer en N8N_API_TOKEN)
+Route::prefix('n8n')->name('n8n.')->middleware('throttle:30,1')->group(function () {
+    Route::get('/estado', [N8nController::class, 'status'])->name('status');
+    Route::get('/firmas', [N8nController::class, 'firms'])->name('firms');
+});
+
 // Cron alternativo via HTTP (para hostings sin proc_open)
 Route::get('/cron/{token}/{task?}', function (string $token, ?string $task = null) {
     $cronToken = (string) config('app.cron_token');
@@ -233,10 +240,20 @@ Route::get('/cron/{token}/{task?}', function (string $token, ?string $task = nul
             }
             try {
                 $job->fire();
-                $job->delete();
+                if (! $job->isDeletedOrReleased()) {
+                    $job->delete();
+                }
                 $processed++;
-            } catch (Exception $e) {
-                $job->fail($e);
+            } catch (Throwable $e) {
+                // Respeta $tries y backoff() del job: reintenta mas tarde en vez de fallar al primer error.
+                $maxTries = (int) ($job->maxTries() ?? 1);
+                if ($job->hasFailed() || $job->attempts() >= max(1, $maxTries)) {
+                    $job->fail($e);
+                } else {
+                    $backoff = array_map('intval', explode(',', (string) ($job->backoff() ?? '0')));
+                    $delay = $backoff[min(max($job->attempts() - 1, 0), count($backoff) - 1)];
+                    $job->release($delay);
+                }
                 Log::error('Cron queue error: '.$e->getMessage());
             }
         }

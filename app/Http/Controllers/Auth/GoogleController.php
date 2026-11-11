@@ -11,6 +11,7 @@ use App\Models\Subscription;
 use App\Models\User;
 use App\Notifications\NewFirmRegistered;
 use App\Services\DemoDataService;
+use App\Services\N8nWebhook;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
@@ -109,6 +110,11 @@ class GoogleController extends Controller
             'accepted_at' => now(),
         ]);
 
+        app(N8nWebhook::class)->dispatch('member.joined', [
+            'firm' => N8nWebhook::firmData($user->firm),
+            'member' => ['id' => $user->id, 'name' => $user->name, 'email' => $user->email, 'role' => $user->role],
+        ], $user->firm_id);
+
         Auth::login($user, remember: true);
 
         return redirect('/admin');
@@ -155,6 +161,12 @@ class GoogleController extends Controller
 
         // Notificar a superadmins y emails configurados
         $this->notifyNewFirmRegistered($firm, $user);
+
+        app(N8nWebhook::class)->dispatch('firm.registered', [
+            'firm' => N8nWebhook::firmData($firm),
+            'admin' => ['id' => $user->id, 'name' => $user->name, 'email' => $user->email],
+            'trial_ends_at' => now()->addMonths(3)->toDateString(),
+        ], $firm->id);
 
         Auth::login($user, remember: true);
 
