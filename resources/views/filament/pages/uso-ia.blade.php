@@ -44,7 +44,14 @@
                 Última búsqueda de modelos: {{ $lastRefresh ? \Illuminate\Support\Carbon::parse($lastRefresh)->diffForHumans() : 'nunca' }}
             </span>
         </div>
+        @if($this->openRouterAllowsTraining())
+            <div style="padding: 12px 16px; background: #FEF2F2; border-left: 4px solid #DC2626; border-radius: 8px; color: #7F1D1D; font-size: 13px; margin-bottom: 14px;">
+                <strong>OpenRouter puede enviar los datos a proveedores que entrenan.</strong>
+                Ponga <code>OPENROUTER_DATA_COLLECTION=deny</code> en el .env del servidor y use "Limpiar" en setup.php.
+            </div>
+        @endif
         <p style="font-size: 13px; color: #6b7280; margin: 0 0 16px;">
+            Los datos personales de los casos se ocultan antes de enviarlos a cualquier modelo. Primero se usan los que no entrenan con los datos.
             Se actualiza solo con cada uso real de la IA y con una prueba automática a los modelos sin uso reciente.
             Si ninguno responde, LegalWeb busca modelos nuevos y le avisa en la campana de notificaciones.
         </p>
@@ -60,6 +67,7 @@
                         <tr style="background: #f9fafb;">
                             <th style="text-align: left; padding: 10px 12px; font-weight: 600; color: #6b7280; border-bottom: 1px solid #e5e7eb;">#</th>
                             <th style="text-align: left; padding: 10px 12px; font-weight: 600; color: #6b7280; border-bottom: 1px solid #e5e7eb;">Modelo</th>
+                            <th style="text-align: left; padding: 10px 12px; font-weight: 600; color: #6b7280; border-bottom: 1px solid #e5e7eb;">Privacidad</th>
                             <th style="text-align: left; padding: 10px 12px; font-weight: 600; color: #6b7280; border-bottom: 1px solid #e5e7eb;">Estado</th>
                             <th style="text-align: right; padding: 10px 12px; font-weight: 600; color: #6b7280; border-bottom: 1px solid #e5e7eb;">Respuesta</th>
                             <th style="text-align: left; padding: 10px 12px; font-weight: 600; color: #6b7280; border-bottom: 1px solid #e5e7eb;">Última comprobación</th>
@@ -75,6 +83,13 @@
                                     {{ $model['label'] }}
                                     @if($model['error'])
                                         <div style="font-size: 11px; color: #b91c1c; font-weight: 400; margin-top: 2px; max-width: 420px;">{{ \Illuminate\Support\Str::limit($model['error'], 140) }}</div>
+                                    @endif
+                                </td>
+                                <td style="padding: 10px 12px;">
+                                    @if($model['trains'])
+                                        <span style="display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; color: #92400E; background: #FEF3C7;" title="El proveedor puede usar lo que recibe para mejorar sus modelos; solo recibe el texto con los datos personales ocultos.">Puede entrenar · respaldo</span>
+                                    @else
+                                        <span style="display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; color: #065F46; background: #D1FAE5;">No entrena</span>
                                     @endif
                                 </td>
                                 <td style="padding: 10px 12px;">

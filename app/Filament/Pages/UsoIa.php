@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Models\AiUsageLog;
 use App\Services\AIModelHealth;
 use App\Services\AIModelRegistry;
+use App\Services\AIProviderClient;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
@@ -47,6 +48,14 @@ class UsoIa extends Page
     public function getModelHealth(): array
     {
         return app(AIModelHealth::class)->report();
+    }
+
+    /**
+     * OpenRouter configurado pero sin data_collection=deny: puede enrutar a proveedores que entrenan.
+     */
+    public function openRouterAllowsTraining(): bool
+    {
+        return filled(config('services.openrouter.api_key')) && AIProviderClient::mayTrainOnData(AIProviderClient::OPENROUTER);
     }
 
     public function getLastModelsRefresh(): ?string

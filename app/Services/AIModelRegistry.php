@@ -74,13 +74,33 @@ class AIModelRegistry
      */
     public function attemptOrder(?string $preferredKey = null): array
     {
-        $keys = array_keys($this->options());
+        // Primero los modelos de proveedores que no entrenan con los datos (orden estable).
+        $keys = collect(array_keys($this->options()))
+            ->sortBy(fn (string $key, int $index): array => [AIProviderClient::mayTrainOnData(AIProviderClient::parseKey($key)[0]) ? 1 : 0, $index])
+            ->values()
+            ->all();
 
         if ($preferredKey) {
             array_unshift($keys, $preferredKey);
         }
 
         return array_values(array_unique($keys));
+    }
+
+    /**
+     * Opciones del selector de modelos indicando cuales no entrenan con los datos.
+     *
+     * @return array<string, string>
+     */
+    public function labeledOptions(): array
+    {
+        $options = [];
+
+        foreach ($this->attemptOrder() as $key) {
+            $options[$key] = $this->options()[$key].(AIProviderClient::mayTrainOnData(AIProviderClient::parseKey($key)[0]) ? '' : ' · no entrena con sus datos');
+        }
+
+        return $options;
     }
 
     public function labelFor(string $key): string

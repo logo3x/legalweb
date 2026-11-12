@@ -5,7 +5,7 @@
 @section('content')
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 prose prose-gray max-w-none">
         <h1>Terminos y Condiciones de Uso</h1>
-        <p class="text-sm text-gray-500">Ultima actualizacion: 10 de noviembre de 2026 | Version 3.2</p>
+        <p class="text-sm text-gray-500">Ultima actualizacion: 12 de noviembre de 2026 | Version 3.3</p>
 
         <h2>1. Objeto y Naturaleza del Servicio</h2>
         <p>LegalWeb (en adelante "la Plataforma") es una herramienta tecnologica de gestion juridica de tipo Software como Servicio (SaaS) que permite a abogados y firmas de abogados administrar casos, documentos, actuaciones, flujos procesales y comunicaciones con sus clientes.</p>
@@ -56,7 +56,7 @@
             <li>LegalWeb <strong>NO garantiza</strong> la exactitud, vigencia ni aplicabilidad de los contenidos generados por IA.</li>
             <li>El uso de contenidos generados por IA <strong>sin la debida revision profesional</strong> es responsabilidad exclusiva del abogado.</li>
             <li>El uso del Asistente IA es <strong>opcional</strong>. Solo se envia informacion a un proveedor de IA cuando el Usuario solicita expresamente un resumen, una sugerencia o un borrador.</li>
-            <li>Se envia unicamente la informacion del caso necesaria para la tarea solicitada. Los datos de identificacion y contacto del cliente (documento, direccion, telefono, correo) solo se incluyen cuando el Usuario solicita un borrador de documento que los requiere.</li>
+            <li>Se envia unicamente la informacion del caso necesaria para la tarea solicitada. Antes de enviar la informacion, LegalWeb reemplaza los datos personales (nombre, documento, telefono, correo y direccion del cliente, nombres de las partes y datos del abogado) por marcadores como [CLIENTE] y los vuelve a poner en la respuesta dentro de LegalWeb, de modo que el proveedor de IA no recibe esos datos. Los datos publicos del proceso (radicado, despacho y funcionario judicial) si se envian. Se usan primero los proveedores que no utilizan la informacion para entrenar modelos; algunos servicios gratuitos de respaldo pueden usar el contenido que reciben para mejorar sus productos, por lo que solo reciben el texto con los datos personales ocultos.</li>
             <li>Los proveedores de IA (actualmente Google, mediante Gemini, NVIDIA, mediante NVIDIA API Catalog, y los modelos disponibles a traves de OpenRouter) actuan como <strong>Encargados del Tratamiento</strong>, se ubican principalmente en Estados Unidos y procesan la informacion por canales cifrados, conforme a sus propias politicas de privacidad y condiciones de servicio, las cuales pueden incluir la conservacion temporal de la informacion.</li>
             <li>El abogado, en su calidad de Responsable del Tratamiento de los datos de sus clientes y obligado al <strong>secreto profesional</strong> (Ley 1123 de 2007), decide en cada caso si utiliza el Asistente IA. Al usarlo, declara contar con la autorizacion de sus clientes para este tratamiento y autoriza a LegalWeb a transmitir dicha informacion a los proveedores de IA.</li>
             <li>Se recomienda no registrar en la descripcion del caso datos sensibles que no sean necesarios (por ejemplo, de salud o de menores de edad).</li>

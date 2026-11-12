@@ -100,7 +100,7 @@ class AIModelHealth
     /**
      * Filas para la pantalla de Uso de IA, en el orden en que la app intenta los modelos.
      *
-     * @return list<array{key: string, label: string, state: string, status: ?int, error: ?string, latency_ms: ?int, checked_at: ?Carbon, source: ?string, failures: int, position: int}>
+     * @return list<array{key: string, label: string, state: string, status: ?int, error: ?string, latency_ms: ?int, checked_at: ?Carbon, source: ?string, failures: int, position: int, trains: bool}>
      */
     public function report(): array
     {
@@ -108,8 +108,10 @@ class AIModelHealth
         $rows = [];
         $position = 1;
 
-        foreach ($this->registry->options() as $key => $label) {
-            $rows[] = $this->row($key, $label, $health[$key] ?? null, $position++, false);
+        $options = $this->registry->options();
+
+        foreach ($this->registry->attemptOrder() as $key) {
+            $rows[] = $this->row($key, $options[$key], $health[$key] ?? null, $position++, false);
         }
 
         // Modelos que fallaron de forma definitiva y salieron de la lista: se muestran para tener contexto.
@@ -212,7 +214,7 @@ class AIModelHealth
 
     /**
      * @param  HealthEntry|null  $entry
-     * @return array{key: string, label: string, state: string, status: ?int, error: ?string, latency_ms: ?int, checked_at: ?Carbon, source: ?string, failures: int, position: int}
+     * @return array{key: string, label: string, state: string, status: ?int, error: ?string, latency_ms: ?int, checked_at: ?Carbon, source: ?string, failures: int, position: int, trains: bool}
      */
     private function row(string $key, string $label, ?array $entry, int $position, bool $retired): array
     {
@@ -232,6 +234,7 @@ class AIModelHealth
             'source' => $entry['source'] ?? null,
             'failures' => (int) ($entry['failures'] ?? 0),
             'position' => $position,
+            'trains' => AIProviderClient::mayTrainOnData(AIProviderClient::parseKey($key)[0]),
         ];
     }
 }

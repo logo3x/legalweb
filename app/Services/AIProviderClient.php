@@ -47,6 +47,21 @@ class AIProviderClient
         return "{$provider}:{$model}";
     }
 
+    /**
+     * Si el proveedor puede usar lo que se le envia para entrenar o mejorar sus modelos.
+     *
+     * - Gemini gratuito: si (condiciones de los servicios no pagos de Google).
+     * - NVIDIA (prueba): no esta claro en sus condiciones; se trata como que si.
+     * - OpenRouter: no, solo con data_collection=deny (enruta a proveedores que no guardan ni entrenan).
+     */
+    public static function mayTrainOnData(string $provider): bool
+    {
+        return match ($provider) {
+            self::OPENROUTER => config('services.openrouter.data_collection') !== 'deny',
+            default => true,
+        };
+    }
+
     public function isConfigured(string $provider): bool
     {
         return filled(config("services.{$provider}.api_key"));

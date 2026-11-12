@@ -61,6 +61,26 @@ class AIService
         $start = microtime(true);
         $tried = [];
 
+        // Los datos personales del caso nunca salen hacia el proveedor: se ocultan y se restauran en la respuesta.
+        $pseudonymizer = ($context['case'] ?? null) instanceof LegalCase ? AIPseudonymizer::forCase($context['case']) : null;
+
+        if ($pseudonymizer) {
+            $systemPrompt = $pseudonymizer->mask($systemPrompt).AIPseudonymizer::instructions();
+            $userMessage = $pseudonymizer->mask($userMessage);
+        }
+
+        $result = $this->tryModels($systemPrompt, $userMessage, $maxTokens, $context, $start, $tried);
+
+        return $result !== null && $pseudonymizer ? $pseudonymizer->restore($result) : $result;
+    }
+
+    /**
+     * @param  array{action?: string, case?: LegalCase|null, meta?: array}  $context
+     * @param  list<string>  $tried
+     */
+    private function tryModels(string $systemPrompt, string $userMessage, int $maxTokens, array $context, float $start, array &$tried): ?string
+    {
+
         foreach ($this->registry->attemptOrder($this->preferredModelKey) as $key) {
             $tried[] = $key;
 

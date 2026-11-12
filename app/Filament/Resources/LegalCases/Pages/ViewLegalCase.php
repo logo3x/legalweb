@@ -92,7 +92,7 @@ class ViewLegalCase extends ViewRecord
                             ->required(),
                         Select::make('ai_model')
                             ->label('Modelo de IA')
-                            ->options(fn (): array => app(AIModelRegistry::class)->options())
+                            ->options(fn (): array => app(AIModelRegistry::class)->labeledOptions())
                             ->default(fn (): ?string => session('ai_model'))
                             ->placeholder('Automatico (el primero disponible)')
                             ->helperText($this->aiDataNotice()),
@@ -518,7 +518,7 @@ class ViewLegalCase extends ViewRecord
                 ->readOnly(),
             Select::make('ai_model')
                 ->label('Modelo de IA')
-                ->options(fn (): array => app(AIModelRegistry::class)->options())
+                ->options(fn (): array => app(AIModelRegistry::class)->labeledOptions())
                 ->default($initial['model'])
                 ->selectablePlaceholder(false)
                 ->live()
@@ -540,7 +540,7 @@ class ViewLegalCase extends ViewRecord
     private function aiDataNotice(): HtmlString
     {
         return new HtmlString(
-            '<span class="text-xs text-gray-400">Para generar este contenido, los datos del caso se procesan con un proveedor de IA externo. '
+            '<span class="text-xs text-gray-400">Los datos personales (cliente, partes, documentos y contacto) se ocultan antes de enviar el caso al proveedor de IA y se restauran en el resultado. '
             .'<a href="'.route('portal.terms').'#ia" target="_blank" class="underline hover:text-gray-600">Mas informacion</a></span>'
         );
     }

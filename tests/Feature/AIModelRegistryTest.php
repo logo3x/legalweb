@@ -307,7 +307,7 @@ class AIModelRegistryTest extends TestCase
         $this->assertNull(app(AIService::class)->summarizeCase($this->makeCase()));
     }
 
-    public function test_summary_does_not_send_client_contact_data_but_draft_does(): void
+    public function test_client_contact_data_never_reaches_the_provider(): void
     {
         Cache::forever(AIModelRegistry::CACHE_KEY, [
             ['key' => 'openrouter:acme/good-model:free', 'label' => 'Good Model', 'verified_at' => ''],
@@ -323,7 +323,9 @@ class AIModelRegistryTest extends TestCase
 
         app(AIService::class)->draftDocument($case, 'Memorial');
 
-        Http::assertSent(fn (Request $request) => str_contains((string) $request->body(), $client->email));
+        // El borrador necesita los datos de contacto: viajan como marcadores y se restauran localmente.
+        Http::assertSent(fn (Request $request) => str_contains((string) $request->body(), '[CLIENTE_CORREO]'));
+        Http::assertNotSent(fn (Request $request) => str_contains((string) $request->body(), $client->email));
     }
 
     public function test_data_collection_deny_is_sent_to_openrouter_when_configured(): void
