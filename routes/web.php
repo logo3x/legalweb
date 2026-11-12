@@ -288,6 +288,8 @@ Route::get('/cron/{token}/{task?}', function (string $token, ?string $task = nul
     // Tarea: check-subscription-grace (diaria 9am, avisa vencimientos y suspende impagos)
     if (! $task || $task === 'check-subscription-grace') {
         Artisan::call('app:check-subscription-grace');
+        // Aviso 30 y 3 dias antes de que apliquen los limites del plan Gratuito.
+        Artisan::call('app:notify-plan-limits');
         $results[] = 'check-subscription-grace: OK';
     }
 

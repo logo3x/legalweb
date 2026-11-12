@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\FirmPlan;
 use Database\Factories\FirmFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -47,6 +48,8 @@ class Firm extends Model
             'onboarding_completed' => 'boolean',
             'tracking_tags' => 'array',
             'last_admin_review_at' => 'datetime',
+            'plan_limits_notice_at' => 'datetime',
+            'plan_limits_final_notice_at' => 'datetime',
         ];
     }
 
@@ -138,51 +141,24 @@ class Firm extends Model
         return $this->clients()->where('is_demo', false)->count();
     }
 
-    public function canCreateCase(): bool
+    /**
+     * Limites y funciones que permite el plan vigente de la firma.
+     */
+    public function planLimits(): FirmPlan
     {
-        $subscription = $this->activeSubscription;
-        $limit = $subscription ? $subscription->plan->max_cases : 5;
-
-        if ($limit === 0) {
-            return true;
-        }
-
-        return $this->realCasesCount() < $limit;
+        return new FirmPlan($this);
     }
 
-    public function canCreateClient(): bool
+    public function canCreateCase(): bool
     {
-        $subscription = $this->activeSubscription;
-        $limit = $subscription ? $subscription->plan->max_cases : 5;
-
-        if ($limit === 0) {
-            return true;
-        }
-
-        return $this->realClientsCount() < $limit;
+        return $this->planLimits()->canAddActiveCase();
     }
 
     public function casesRemaining(): int|string
     {
-        $subscription = $this->activeSubscription;
-        $limit = $subscription ? $subscription->plan->max_cases : 5;
+        $limits = $this->planLimits();
+        $max = $limits->maxActiveCases();
 
-        if ($limit === 0) {
-            return 'Ilimitados';
-        }
-
-        return max(0, $limit - $this->realCasesCount());
-    }
-
-    public function clientsRemaining(): int|string
-    {
-        $subscription = $this->activeSubscription;
-        $limit = $subscription ? $subscription->plan->max_cases : 5;
-
-        if ($limit === 0) {
-            return 'Ilimitados';
-        }
-
-        return max(0, $limit - $this->realClientsCount());
+        return $max === null ? 'Ilimitados' : max(0, $max - $limits->activeCasesCount());
     }
 }

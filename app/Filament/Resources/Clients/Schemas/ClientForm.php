@@ -28,6 +28,7 @@ class ClientForm
                     ->columnSpanFull(),
                 Toggle::make('whatsapp_enabled')
                     ->label('El cliente autorizó recibir avisos por WhatsApp')
+                    ->hint(fn (): ?string => auth()->user()?->firm?->planLimits()->hasWhatsApp() === false ? 'Incluido en los planes Profesional y Firma' : null)
                     ->helperText(fn (?Client $record): string => 'Active esta opción solo si el cliente le dio su autorización (Ley 1581 de 2012). '
                         .'Los avisos (documentos solicitados, enlace del portal, reporte mensual) se envían al teléfono del cliente.'
                         .($record?->whatsapp_enabled && $record->whatsapp_consent_at
@@ -36,7 +37,10 @@ class ClientForm
                     ->columnSpanFull(),
                 Toggle::make('process_monitoring_enabled')
                     ->label('Vigilar procesos nuevos de este cliente')
-                    ->helperText('Cada noche buscamos el documento en la Rama Judicial y le avisamos si aparece en un proceso que aun no esta en LegalWeb.')
+                    ->disabled(fn (): bool => ! self::firmHasMonitoring())
+                    ->helperText(fn (): string => self::firmHasMonitoring()
+                        ? 'Cada noche buscamos el documento en la Rama Judicial y le avisamos si aparece en un proceso que aun no esta en LegalWeb.'
+                        : 'La vigilancia de clientes esta incluida en los planes Profesional y Firma. Mejore su plan en "Mi Plan".')
                     ->columnSpanFull(),
                 Select::make('user_id')
                     ->label('Abogado Asignado')
@@ -44,6 +48,13 @@ class ClientForm
                     ->searchable()
                     ->preload(),
             ]);
+    }
+
+    private static function firmHasMonitoring(): bool
+    {
+        $firm = auth()->user()?->firm;
+
+        return ! $firm || $firm->planLimits()->hasClientMonitoring();
     }
 
     /**

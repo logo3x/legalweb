@@ -45,28 +45,32 @@ class DatabaseSeeder extends Seeder
             return;
         }
 
-        // Planes de suscripción
+        // Planes de suscripcion (limites aprobados el 12 de noviembre de 2026).
         $freePlan = Plan::create([
             'name' => 'Gratuito',
             'slug' => 'gratuito',
-            'description' => '3 meses de prueba con todas las funcionalidades',
+            'description' => '3 meses de prueba con todo incluido; despues, plan gratuito con limites',
             'price_monthly' => 0,
             'price_yearly' => 0,
-            'max_cases' => 0,
+            'max_cases' => 5,
             'max_users' => 1,
             'max_storage_mb' => 500,
+            'ai_monthly_limit' => 10,
             'has_portal' => true,
             'has_notifications' => true,
+            'has_whatsapp' => false,
+            'has_client_monitoring' => false,
+            'sync_every_days' => 7,
             'sort_order' => 1,
         ]);
 
         Plan::create([
-            'name' => 'Pro',
+            'name' => 'Profesional',
             'slug' => 'pro',
-            'description' => 'Para abogados con práctica activa',
-            'price_monthly' => 39900,
-            'price_yearly' => 199000,
-            'max_cases' => 20,
+            'description' => 'Para abogados independientes y equipos pequenos.',
+            'price_monthly' => 120000,
+            'price_yearly' => 600000,
+            'max_cases' => 0,
             'max_users' => 3,
             'max_storage_mb' => 1024,
             'has_portal' => true,
@@ -77,10 +81,10 @@ class DatabaseSeeder extends Seeder
         Plan::create([
             'name' => 'Firma',
             'slug' => 'firma',
-            'description' => 'Para firmas con varios abogados',
-            'price_monthly' => 69900,
-            'price_yearly' => 349000,
-            'max_cases' => 60,
+            'description' => 'Para firmas con equipo: hasta 10 usuarios.',
+            'price_monthly' => 250000,
+            'price_yearly' => 1250000,
+            'max_cases' => 0,
             'max_users' => 10,
             'max_storage_mb' => 5120,
             'has_portal' => true,

@@ -129,7 +129,7 @@ class UserResource extends Resource
                         TextEntry::make('firm')
                             ->label('Casos Usados')
                             ->formatStateUsing(fn ($record) => $record->firm
-                                ? $record->firm->realCasesCount().' / '.($record->firm->activeSubscription?->plan?->max_cases ?? 3)
+                                ? $record->firm->planLimits()->activeCasesCount().' activos / '.($record->firm->planLimits()->maxActiveCases() ?? 'ilimitados').' ('.$record->firm->planLimits()->label().')'
                                 : '-'),
                         TextEntry::make('firm.clients_count')
                             ->label('Clientes')

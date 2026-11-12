@@ -3,8 +3,11 @@
 namespace App\Models;
 
 use App\Models\Scopes\FirmScope;
+use App\Services\FirmPlan;
 use App\Services\N8nWebhook;
 use Database\Factories\LegalCaseFactory;
+use Filament\Notifications\Notification as FilamentNotification;
+use Filament\Support\Exceptions\Halt;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -60,6 +63,31 @@ class LegalCase extends Model
 
     protected static function booted(): void
     {
+        // Limite de casos activos del plan (plan Gratuito despues de la prueba).
+        // Solo para acciones de usuarios: cron, colas y comandos no se bloquean.
+        static::saving(function (LegalCase $case): void {
+            $user = auth()->user();
+
+            if (! $user || $user->role === 'superadmin' || $case->is_demo || ! $case->firm_id || ! $case->becomesActive()) {
+                return;
+            }
+
+            $firm = $case->relationLoaded('firm') ? $case->firm : Firm::find($case->firm_id);
+
+            if (! $firm || $firm->planLimits()->canAddActiveCase()) {
+                return;
+            }
+
+            FilamentNotification::make()
+                ->title('Alcanzo el limite de casos activos')
+                ->body(FirmPlan::upgradeMessage('El plan Gratuito permite '.$firm->planLimits()->maxActiveCases().' casos activos. Puede cerrar o archivar un caso, o'))
+                ->warning()
+                ->persistent()
+                ->send();
+
+            throw new Halt;
+        });
+
         static::created(function (LegalCase $case): void {
             if ($case->is_demo) {
                 return;
@@ -83,6 +111,20 @@ class LegalCase extends Model
                 'previous_status' => $case->getOriginal('status'),
             ], $case->firm_id);
         });
+    }
+
+    /**
+     * El guardado deja el caso en un estado activo que antes no tenia (nuevo o reabierto).
+     */
+    public function becomesActive(): bool
+    {
+        $isActive = in_array($this->status ?? 'abierto', FirmPlan::ACTIVE_STATUSES, true);
+
+        if (! $this->exists) {
+            return $isActive;
+        }
+
+        return $isActive && $this->isDirty('status') && ! in_array($this->getOriginal('status'), FirmPlan::ACTIVE_STATUSES, true);
     }
 
     public const SOURCE_RAMA = 'rama';

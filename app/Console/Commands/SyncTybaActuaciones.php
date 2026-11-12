@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Jobs\SyncCaseActuaciones;
+use App\Models\Firm;
 use App\Models\LegalCase;
 use App\Models\Scopes\FirmScope;
 use Illuminate\Console\Attributes\Description;
@@ -30,7 +31,16 @@ class SyncTybaActuaciones extends Command
 
         $dispatched = 0;
 
+        $syncEveryDays = [];
+
         foreach ($cases as $case) {
+            // Plan Gratuito: sincronizacion automatica semanal.
+            $syncEveryDays[$case->firm_id] ??= Firm::find($case->firm_id)?->planLimits()->syncEveryDays() ?? 1;
+
+            if ($syncEveryDays[$case->firm_id] > 1 && $case->last_tyba_sync && $case->last_tyba_sync->gt(now()->subDays($syncEveryDays[$case->firm_id]))) {
+                continue;
+            }
+
             // Delay de 5 segundos entre cada consulta para no saturar la API
             SyncCaseActuaciones::dispatch($case)->delay(now()->addSeconds($dispatched * 5));
             $dispatched++;

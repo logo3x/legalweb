@@ -34,6 +34,15 @@ class MonitorClientProcesses extends Command
         $alerts = 0;
 
         foreach ($clients as $client) {
+            // El plan Gratuito (despues de la prueba) no incluye la vigilancia de clientes.
+            $firm = Firm::find($client->firm_id);
+
+            if ($firm && ! $firm->planLimits()->hasClientMonitoring()) {
+                $client->forceFill(['process_monitoring_last_at' => now()])->saveQuietly();
+
+                continue;
+            }
+
             $found = $tyba->searchByDocument((string) $client->document_number, $client->ramaDocumentTypeCode());
 
             $imported = LegalCase::withoutGlobalScopes()

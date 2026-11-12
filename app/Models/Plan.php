@@ -18,6 +18,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'max_storage_mb',
     'has_portal',
     'has_notifications',
+    'ai_monthly_limit',
+    'has_whatsapp',
+    'has_client_monitoring',
+    'sync_every_days',
     'is_active',
     'sort_order',
 ])]
@@ -28,6 +32,10 @@ class Plan extends Model
         return [
             'has_portal' => 'boolean',
             'has_notifications' => 'boolean',
+            'has_whatsapp' => 'boolean',
+            'has_client_monitoring' => 'boolean',
+            'ai_monthly_limit' => 'integer',
+            'sync_every_days' => 'integer',
             'is_active' => 'boolean',
         ];
     }

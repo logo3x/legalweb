@@ -11,6 +11,7 @@ use App\Services\AIModelRegistry;
 use App\Services\AIService;
 use App\Services\CaseSyncService;
 use App\Services\DocumentGenerator;
+use App\Services\FirmPlan;
 use App\Services\GeneratedFileStore;
 use App\Services\SamaiService;
 use App\Services\UsageLimiter;
@@ -97,7 +98,7 @@ class ViewLegalCase extends ViewRecord
                             ->helperText($this->aiDataNotice()),
                     ])
                     ->action(function (array $data) {
-                        if (! UsageLimiter::attempt('ai')) {
+                        if (! $this->aiAllowed()) {
                             return;
                         }
 
@@ -390,6 +391,7 @@ class ViewLegalCase extends ViewRecord
 
         return $client
             && ! $this->record->is_demo
+            && (bool) auth()->user()->firm?->planLimits()->hasWhatsApp()
             && filled($client->routeNotificationForWhatsapp())
             && app(WhatsAppService::class)->isConfigured();
     }
@@ -489,8 +491,8 @@ class ViewLegalCase extends ViewRecord
         }
 
         $generate = function (?string $modelKey) use ($task, $failureMessage): array {
-            if (! UsageLimiter::attempt('ai')) {
-                return ['result' => 'Alcanzo el limite de consultas de IA por hora. Intente de nuevo mas tarde.', 'meta' => '', 'model' => $modelKey];
+            if (! $this->aiAllowed()) {
+                return ['result' => 'Alcanzo el limite de consultas de IA. Revise "Mi Plan" o intente de nuevo mas tarde.', 'meta' => '', 'model' => $modelKey];
             }
 
             $ai = app(AIService::class)->usingModel($modelKey);
@@ -541,6 +543,27 @@ class ViewLegalCase extends ViewRecord
             '<span class="text-xs text-gray-400">Para generar este contenido, los datos del caso se procesan con un proveedor de IA externo. '
             .'<a href="'.route('portal.terms').'#ia" target="_blank" class="underline hover:text-gray-600">Mas informacion</a></span>'
         );
+    }
+
+    /**
+     * Cupo de IA del plan (Gratuito: consultas al mes) y limite de frecuencia por usuario.
+     */
+    private function aiAllowed(): bool
+    {
+        $limits = auth()->user()->firm?->planLimits();
+
+        if ($limits && ! $limits->canUseAi()) {
+            Notification::make()
+                ->title('Uso las consultas de IA de este mes')
+                ->body(FirmPlan::upgradeMessage('El plan Gratuito incluye '.$limits->aiMonthlyLimit().' consultas de IA al mes.'))
+                ->warning()
+                ->persistent()
+                ->send();
+
+            return false;
+        }
+
+        return UsageLimiter::attempt('ai');
     }
 
     /**

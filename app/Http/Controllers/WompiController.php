@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class WompiController extends Controller
 {
@@ -40,7 +41,8 @@ class WompiController extends Controller
     public function checkout(Request $request)
     {
         $validated = $request->validate([
-            'plan_id' => 'required|exists:plans,id',
+            // Solo planes de pago activos: no se puede pagar un plan inactivo con un precio viejo.
+            'plan_id' => ['required', Rule::exists('plans', 'id')->where('is_active', true)->where(fn ($query) => $query->where('price_monthly', '>', 0))],
             'billing_cycle' => 'required|in:monthly,biannual',
             'discount_code' => 'nullable|string|max:40',
         ]);

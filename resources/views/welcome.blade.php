@@ -345,7 +345,7 @@
             display: flex; flex-wrap: wrap; gap: 24px;
             justify-content: center; align-items: stretch; margin-bottom: 40px;
         }
-        .plan { position: relative; flex: 1 1 320px; max-width: 380px; }
+        .plan { position: relative; flex: 1 1 290px; max-width: 360px; }
         .plan .recommended {
             position: absolute; top: -13px; left: 50%; transform: translateX(-50%); z-index: 3;
         }
@@ -941,10 +941,10 @@
 
     {{-- Pricing --}}
     <section id="planes" class="std" style="background: var(--surface-page);">
-        <div class="container" style="max-width: 980px;">
+        <div class="container" style="max-width: 1140px;">
             <div class="section-head lw-reveal before">
-                <h2>Un precio. Todo incluido.</h2>
-                <p>Prueba LegalWeb completo y gratis por 3 meses. Después, una sola suscripción de <strong>$120.000</strong> COP/mes — sin niveles, sin límites de casos, sin sorpresas.</p>
+                <h2>3 meses gratis con todo incluido.</h2>
+                <p>Después siga gratis con el plan Gratuito (hasta 5 casos activos) o pase a <strong>Profesional</strong> por $120.000 COP/mes con casos ilimitados. Sus datos se conservan siempre.</p>
             </div>
 
             <div class="plan-grid lw-reveal before lw-stagger">
@@ -952,11 +952,11 @@
                     <div class="plan-card">
                         <div class="eyebrow green" style="align-self: flex-start; margin-bottom: 16px;">Prueba gratuita</div>
                         <h3 style="font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 700; color: var(--brand-navy); margin: 0 0 6px;">Empieza gratis</h3>
-                        <p style="font-size: var(--text-sm); color: var(--text-muted); margin: 0 0 22px; line-height: 1.5;">Todo el producto, sin límites, durante 3 meses.</p>
+                        <p style="font-size: var(--text-sm); color: var(--text-muted); margin: 0 0 22px; line-height: 1.5;">Todo el producto durante 3 meses. Luego, gratis para siempre con hasta 5 casos activos, 1 usuario y 10 consultas de IA al mes.</p>
                         <div style="margin-bottom: 22px; min-height: 70px;">
                             <div style="display: flex; align-items: baseline; gap: 8px;">
                                 <span class="price free">$0</span>
-                                <span class="price-suffix">/ 3 meses</span>
+                                <span class="price-suffix">para empezar</span>
                             </div>
                             <div style="font-size: var(--text-sm); color: var(--text-faint); margin-top: 8px;">Sin tarjeta de crédito</div>
                         </div>
@@ -975,16 +975,33 @@
                     <div class="plan-card featured">
                         <div class="eyebrow" style="align-self: flex-start; margin-bottom: 16px;">Suscripción</div>
                         <h3 style="font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 700; color: var(--brand-navy); margin: 0 0 6px;">Profesional</h3>
-                        <p style="font-size: var(--text-sm); color: var(--text-muted); margin: 0 0 22px; line-height: 1.5;">Cuando termine tu prueba, sigue con todo igual.</p>
+                        <p style="font-size: var(--text-sm); color: var(--text-muted); margin: 0 0 22px; line-height: 1.5;">Casos ilimitados y hasta 3 usuarios. Cuando termine tu prueba, sigue con todo igual.</p>
                         <div style="margin-bottom: 22px; min-height: 70px;">
                             <div style="display: flex; align-items: baseline; gap: 8px;">
                                 <span class="price paid">$120.000</span>
                                 <span class="price-suffix">COP / mes</span>
                             </div>
-                            <div style="font-size: var(--text-sm); color: var(--text-faint); margin-top: 8px;">Una sola suscripción · cancela cuando quieras</div>
+                            <div style="font-size: var(--text-sm); color: var(--text-faint); margin-top: 8px;">o $600.000 por 6 meses · cancela cuando quieras</div>
                         </div>
                         <a href="{{ route('auth.google') }}" class="btn btn-primary btn-full" style="margin-top: auto;">Suscribirme</a>
                         <div style="font-size: 13px; color: var(--text-faint); text-align: center; margin-top: 12px;">Mismas funciones que la prueba</div>
+                    </div>
+                </div>
+
+                <div class="plan">
+                    <div class="plan-card">
+                        <div class="eyebrow" style="align-self: flex-start; margin-bottom: 16px;">Para equipos</div>
+                        <h3 style="font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 700; color: var(--brand-navy); margin: 0 0 6px;">Firma</h3>
+                        <p style="font-size: var(--text-sm); color: var(--text-muted); margin: 0 0 22px; line-height: 1.5;">Todo lo del plan Profesional para firmas de hasta 10 usuarios.</p>
+                        <div style="margin-bottom: 22px; min-height: 70px;">
+                            <div style="display: flex; align-items: baseline; gap: 8px;">
+                                <span class="price paid">$250.000</span>
+                                <span class="price-suffix">COP / mes</span>
+                            </div>
+                            <div style="font-size: var(--text-sm); color: var(--text-faint); margin-top: 8px;">o $1.250.000 por 6 meses</div>
+                        </div>
+                        <a href="{{ route('auth.google') }}" class="btn btn-primary btn-full" style="margin-top: auto;">Empezar con mi equipo</a>
+                        <div style="font-size: 13px; color: var(--text-faint); text-align: center; margin-top: 12px;">Permisos por caso para cada abogado</div>
                     </div>
                 </div>
             </div>
@@ -992,13 +1009,14 @@
             <div class="incluye-panel">
                 <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
                     <svg width="20" height="20" fill="none" stroke="var(--brand-blue)" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-                    <h3 style="font-family: var(--font-display); font-size: var(--text-xl); font-weight: 700; color: var(--brand-navy); margin: 0;">Ambos planes incluyen todo</h3>
+                    <h3 style="font-family: var(--font-display); font-size: var(--text-xl); font-weight: 700; color: var(--brand-navy); margin: 0;">La prueba, Profesional y Firma incluyen todo</h3>
                 </div>
                 <ul class="incluye-grid lw-reveal before lw-stagger" style="list-style: none; padding: 0; margin: 0;">
                     @foreach([
                         'Casos y clientes ilimitados',
                         'Importación y vigilancia de la Rama Judicial',
-                        'Alertas de actuaciones por correo',
+                        'Alertas de actuaciones por correo y WhatsApp',
+                        'Vigilancia de clientes por cédula o NIT',
                         'Calculadora de términos en días hábiles',
                         'Asistente IA jurídico',
                         'Portal del cliente y reportes PDF',
@@ -1014,7 +1032,7 @@
             </div>
 
             <p style="text-align: center; font-size: var(--text-sm); color: var(--text-faint); margin-top: 28px;">
-                Precio en pesos colombianos. La diferencia entre los planes es solo el tiempo: gratis los primeros 3 meses, luego $120.000/mes.
+                Precios en pesos colombianos. El plan Gratuito incluye hasta 5 casos activos, 1 usuario, 10 consultas de IA al mes y sincronización semanal; no incluye WhatsApp ni vigilancia de clientes.
             </p>
         </div>
     </section>

@@ -111,6 +111,7 @@ class ClientsTable
                         ->icon('heroicon-o-shield-check')
                         ->requiresConfirmation()
                         ->modalDescription('Cada noche se buscara el documento de estos clientes en la Rama Judicial y se le avisara si aparecen en procesos nuevos.')
+                        ->visible(fn (): bool => auth()->user()?->firm?->planLimits()->hasClientMonitoring() ?? true)
                         ->action(fn ($records) => $records->each->update(['process_monitoring_enabled' => true]))
                         ->deselectRecordsAfterCompletion(),
                     BulkAction::make('disable_monitoring')

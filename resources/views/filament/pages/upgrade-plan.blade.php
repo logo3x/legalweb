@@ -2,166 +2,137 @@
 
     @php
         $allPlans = $this->getPlans();
-        $currentPlan = $this->getCurrentPlan();
-        $currentSlug = $currentPlan?->slug ?? 'gratuito';
+        $limits = auth()->user()->firm?->planLimits();
+        $tier = $limits?->tier() ?? 'unmanaged';
+        $currentPlan = $limits?->plan();
 
-        // El producto se vende con un solo precio: gratis 3 meses + $120.000 COP/mes.
-        // Los modelos en BD pueden tener varios planes, pero la pagina pinta solo dos
-        // tarjetas alineadas con la landing: Empieza gratis · Profesional.
-        $freePlan = $allPlans->firstWhere('price_monthly', 0)
-            ?? $allPlans->firstWhere('slug', 'gratuito');
+        $freePlan = $allPlans->firstWhere('price_monthly', 0);
+        $paidPlans = $allPlans->where('price_monthly', '>', 0)->sortBy('price_monthly')->values();
 
-        $paidPlan = $allPlans->where('price_monthly', '>', 0)->sortBy('price_monthly')->first();
+        $money = fn (int $value): string => '$'.number_format($value, 0, ',', '.');
 
-        $paidPrice = $paidPlan?->price_monthly ?? 120000;
-        $formattedPrice = '$'.number_format($paidPrice, 0, ',', '.');
+        $planFeatures = function ($plan): array {
+            if ((int) $plan->price_monthly === 0) {
+                return [
+                    [true, 'Hasta '.($plan->max_cases ?: 5).' casos activos'],
+                    [true, '1 usuario'],
+                    [true, ($plan->ai_monthly_limit ?? 10).' consultas de IA al mes'],
+                    [true, 'Rama Judicial y SAMAI (sincronización semanal)'],
+                    [true, 'Portal del cliente, agenda y calculadora de términos'],
+                    [false, 'Avisos por WhatsApp'],
+                    [false, 'Vigilancia de clientes por documento'],
+                ];
+            }
 
-        $includes = [
-            'Casos y clientes ilimitados',
-            'Importacion y vigilancia de la Rama Judicial',
-            'Alertas de actuaciones por correo',
-            'Calculadora de terminos en dias habiles',
-            'Asistente IA juridico',
-            'Portal del cliente y reportes PDF',
-            '21 flujos procesales + facturacion por caso',
-            'Equipo de trabajo con permisos por caso',
-        ];
+            return [
+                [true, 'Casos y clientes ilimitados'],
+                [true, 'Hasta '.$plan->max_users.' usuarios con permisos por caso'],
+                [true, 'Asistente IA sin límite mensual'],
+                [true, 'Rama Judicial y SAMAI (sincronización diaria)'],
+                [true, 'Portal del cliente, reportes PDF y facturación'],
+                [true, 'Avisos por WhatsApp'],
+                [true, 'Vigilancia de clientes por documento'],
+            ];
+        };
 
-        $isOnFree = $currentSlug === ($freePlan?->slug ?? 'gratuito') || ($currentPlan && $currentPlan->price_monthly == 0);
+        $daysLeft = $tier === 'trial' ? max(0, (int) now()->startOfDay()->diffInDays($limits->limitsStartAt()->copy()->startOfDay(), false)) : null;
     @endphp
 
-    <div style="max-width: 980px; margin: 0 auto;">
+    <div style="max-width: 1100px; margin: 0 auto;">
 
-        {{-- Header --}}
-        <div style="text-align: center; margin-bottom: 40px;">
+        <div style="text-align: center; margin-bottom: 36px;">
             <h2 style="font-size: 28px; font-weight: 700; color: #1E3A5F; margin: 0 0 10px; font-family: 'Poppins','Inter',sans-serif;">
-                Un precio. Todo incluido.
+                Elija el plan para su práctica
             </h2>
-            <p style="font-size: 15px; color: #6b7280; max-width: 640px; margin: 0 auto; line-height: 1.6;">
-                Prueba LegalWeb completo y gratis por <strong>3 meses</strong>. Despues, una sola suscripcion de
-                <strong>{{ $formattedPrice }} COP/mes</strong> &mdash; sin niveles, sin limites de casos, sin sorpresas.
+            <p style="font-size: 15px; color: #6b7280; max-width: 680px; margin: 0 auto; line-height: 1.6;">
+                Todas las cuentas empiezan con <strong>3 meses gratis con todo incluido</strong>. Después puede seguir gratis con el plan
+                Gratuito o pasar a Profesional o Firma. Sus datos se conservan siempre.
             </p>
-        </div>
-
-        {{-- Planes --}}
-        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; margin-bottom: 32px;" class="lw-plans-grid">
-
-            {{-- Plan gratis --}}
-            <div style="background: #fff; border-radius: 16px; padding: 32px; border: {{ $isOnFree ? '2px solid #10b981' : '1px solid #e5e7eb' }}; position: relative; box-shadow: 0 1px 3px rgba(15,23,42,.06);">
-                @if($isOnFree)
-                    <div style="position: absolute; top: -13px; left: 50%; transform: translateX(-50%); background: #10b981; color: #fff; font-size: 11px; font-weight: 700; letter-spacing: .03em; padding: 4px 14px; border-radius: 999px; text-transform: uppercase;">Tu plan actual</div>
-                @endif
-
-                <div style="display: inline-flex; align-items: center; background: #ECFDF5; color: #047857; font-size: 12px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; padding: 5px 12px; border-radius: 999px; margin-bottom: 16px;">Prueba gratuita</div>
-                <h3 style="font-family: 'Poppins','Inter',sans-serif; font-size: 24px; font-weight: 700; color: #1E3A5F; margin: 0 0 6px;">Empieza gratis</h3>
-                <p style="font-size: 14px; color: #64748B; margin: 0 0 22px; line-height: 1.5;">Todo el producto, sin limites, durante 3 meses.</p>
-
-                <div style="margin-bottom: 22px;">
-                    <div style="display: flex; align-items: baseline; gap: 8px;">
-                        <span style="font-family: 'Poppins','Inter',sans-serif; font-size: 3rem; font-weight: 800; color: #10b981; line-height: 1;">$0</span>
-                        <span style="font-size: 16px; color: #64748B; font-weight: 600;">/ 3 meses</span>
-                    </div>
-                    <div style="font-size: 14px; color: #94A3B8; margin-top: 8px;">Sin tarjeta de credito</div>
+            @if($tier === 'trial')
+                <div style="display: inline-block; margin-top: 16px; padding: 8px 16px; background: #FEF3C7; color: #92400E; border-radius: 999px; font-size: 13px; font-weight: 600;">
+                    Le quedan {{ $daysLeft }} días de prueba. Desde el {{ $limits->limitsStartAt()->format('d/m/Y') }} aplica el plan Gratuito.
                 </div>
+            @endif
+        </div>
 
-                @if($isOnFree)
-                    <div style="text-align: center; padding: 14px; background: #ECFDF5; border-radius: 10px; font-size: 14px; font-weight: 600; color: #047857;">
-                        Plan activo
+        <div style="display: grid; grid-template-columns: repeat({{ 1 + $paidPlans->count() }}, 1fr); gap: 20px; margin-bottom: 28px;" class="lw-plans-grid">
+
+            @if($freePlan)
+                @php $isCurrent = in_array($tier, ['trial', 'free'], true); @endphp
+                <div style="background: #fff; border-radius: 16px; padding: 28px; border: {{ $isCurrent ? '2px solid #10b981' : '1px solid #e5e7eb' }}; position: relative; box-shadow: 0 1px 3px rgba(15,23,42,.06);">
+                    @if($isCurrent)
+                        <div style="position: absolute; top: -13px; left: 50%; transform: translateX(-50%); background: #10b981; color: #fff; font-size: 11px; font-weight: 700; padding: 4px 14px; border-radius: 999px; text-transform: uppercase; white-space: nowrap;">{{ $tier === 'trial' ? 'En prueba' : 'Tu plan actual' }}</div>
+                    @endif
+                    <h3 style="font-family: 'Poppins','Inter',sans-serif; font-size: 22px; font-weight: 700; color: #1E3A5F; margin: 0 0 6px;">Gratuito</h3>
+                    <p style="font-size: 14px; color: #64748B; margin: 0 0 18px; line-height: 1.5;">Para empezar o para una práctica pequeña.</p>
+                    <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 20px;">
+                        <span style="font-family: 'Poppins','Inter',sans-serif; font-size: 2.6rem; font-weight: 800; color: #10b981; line-height: 1;">$0</span>
+                        <span style="font-size: 15px; color: #64748B; font-weight: 600;">siempre</span>
                     </div>
-                @else
-                    <div style="text-align: center; padding: 14px; color: #94A3B8; font-size: 13px;">
-                        Disponible solo al registrarse
-                    </div>
-                @endif
-
-                <div style="font-size: 13px; color: #94A3B8; text-align: center; margin-top: 12px;">Configurelo en 60 segundos</div>
-            </div>
-
-            {{-- Plan pago --}}
-            <div style="background: #fff; border-radius: 16px; padding: 32px; border: 1px solid transparent; position: relative; box-shadow: 0 14px 32px rgba(58,134,255,.22), 0 2px 6px rgba(58,134,255,.10); outline: 2px solid #3A86FF; outline-offset: -2px;">
-                <div style="position: absolute; top: -13px; left: 50%; transform: translateX(-50%); background: #3A86FF; color: #fff; font-size: 11px; font-weight: 700; letter-spacing: .03em; padding: 4px 14px; border-radius: 999px; text-transform: uppercase;">Recomendado</div>
-
-                <div style="display: inline-flex; align-items: center; background: #EFF6FF; color: #1d4ed8; font-size: 12px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; padding: 5px 12px; border-radius: 999px; margin-bottom: 16px;">Suscripcion</div>
-                <h3 style="font-family: 'Poppins','Inter',sans-serif; font-size: 24px; font-weight: 700; color: #1E3A5F; margin: 0 0 6px;">Profesional</h3>
-                <p style="font-size: 14px; color: #64748B; margin: 0 0 22px; line-height: 1.5;">Cuando termine tu prueba, sigue con todo igual.</p>
-
-                <div style="margin-bottom: 22px;">
-                    <div style="display: flex; align-items: baseline; gap: 8px;">
-                        <span style="font-family: 'Poppins','Inter',sans-serif; font-size: 3rem; font-weight: 800; color: #3A86FF; line-height: 1;">{{ $formattedPrice }}</span>
-                        <span style="font-size: 16px; color: #64748B; font-weight: 600;">COP / mes</span>
-                    </div>
-                    <div style="font-size: 14px; color: #94A3B8; margin-top: 8px;">Una sola suscripcion &middot; cancela cuando quieras</div>
+                    @include('filament.pages.partials.plan-features', ['features' => $planFeatures($freePlan)])
                 </div>
+            @endif
 
-                @if($paidPlan && $isOnFree)
-                    <form method="POST" action="{{ route('wompi.checkout') }}" style="display: flex; flex-direction: column; gap: 8px;">
-                        @csrf
-                        <input type="hidden" name="plan_id" value="{{ $paidPlan->id }}">
-                        <input type="hidden" name="billing_cycle" value="monthly">
-                        <details class="lw-coupon" style="font-size: 13px; color: #475569;">
-                            <summary style="cursor: pointer; user-select: none; padding: 8px 12px; display: inline-flex; align-items: center; gap: 6px; background: #F1F5F9; border-radius: 8px; font-weight: 600; color: #1E3A5F; transition: background .15s ease-out;"
-                                onmouseover="this.style.background='#E2E8F0'" onmouseout="this.style.background='#F1F5F9'">
-                                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="transition: transform .2s ease-out;" class="lw-coupon-chevron"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
-                                <span>Tengo un codigo de descuento</span>
-                            </summary>
-                            <input type="text" name="discount_code" placeholder="EJEMPLO20"
-                                style="margin-top: 10px; width: 100%; padding: 11px 14px; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 14px; font-family: 'JetBrains Mono', monospace; text-transform: uppercase; letter-spacing: .03em; outline: none; transition: border-color .15s ease-out, box-shadow .15s ease-out;"
-                                onfocus="this.style.borderColor='#3A86FF';this.style.boxShadow='0 0 0 3px rgba(58,134,255,.15)'"
-                                onblur="this.style.borderColor='#CBD5E1';this.style.boxShadow='none'"
-                                oninput="this.value = this.value.toUpperCase()">
-                        </details>
-                        <style>
-                            .lw-coupon[open] .lw-coupon-chevron { transform: rotate(45deg); }
-                            .lw-coupon summary::-webkit-details-marker { display: none; }
-                            .lw-coupon summary { list-style: none; }
-                        </style>
-                        <button type="submit"
-                            style="width: 100%; padding: 14px; background: #3A86FF; color: #fff; font-size: 15px; font-weight: 600; border: none; border-radius: 10px; cursor: pointer; box-shadow: 0 8px 18px rgba(58,134,255,.28); transition: background .2s;"
-                            onmouseover="this.style.background='#2563eb'" onmouseout="this.style.background='#3A86FF'">
-                            Suscribirme ahora
-                        </button>
-                    </form>
-                @elseif($paidPlan && $currentPlan?->id === $paidPlan->id)
-                    <div style="text-align: center; padding: 14px; background: #EFF6FF; border-radius: 10px; font-size: 14px; font-weight: 600; color: #1d4ed8;">
-                        Plan activo
+            @foreach($paidPlans as $plan)
+                @php
+                    $isCurrent = $tier === 'paid' && $currentPlan?->id === $plan->id;
+                    $isRecommended = $loop->first;
+                    $semesterSaving = max(0, $plan->price_monthly * 6 - $plan->price_yearly);
+                @endphp
+                <div style="background: #fff; border-radius: 16px; padding: 28px; position: relative; {{ $isCurrent ? 'border: 2px solid #10b981;' : ($isRecommended ? 'border: 2px solid #3A86FF; box-shadow: 0 14px 32px rgba(58,134,255,.18);' : 'border: 1px solid #e5e7eb;') }}">
+                    @if($isCurrent)
+                        <div style="position: absolute; top: -13px; left: 50%; transform: translateX(-50%); background: #10b981; color: #fff; font-size: 11px; font-weight: 700; padding: 4px 14px; border-radius: 999px; text-transform: uppercase;">Tu plan actual</div>
+                    @elseif($isRecommended)
+                        <div style="position: absolute; top: -13px; left: 50%; transform: translateX(-50%); background: #3A86FF; color: #fff; font-size: 11px; font-weight: 700; padding: 4px 14px; border-radius: 999px; text-transform: uppercase;">Recomendado</div>
+                    @endif
+                    <h3 style="font-family: 'Poppins','Inter',sans-serif; font-size: 22px; font-weight: 700; color: #1E3A5F; margin: 0 0 6px;">{{ $plan->name }}</h3>
+                    <p style="font-size: 14px; color: #64748B; margin: 0 0 18px; line-height: 1.5;">{{ $plan->description ?: 'Para abogados independientes y equipos pequeños.' }}</p>
+                    <div style="display: flex; align-items: baseline; gap: 8px;">
+                        <span style="font-family: 'Poppins','Inter',sans-serif; font-size: 2.6rem; font-weight: 800; color: #3A86FF; line-height: 1;">{{ $money($plan->price_monthly) }}</span>
+                        <span style="font-size: 15px; color: #64748B; font-weight: 600;">COP / mes</span>
                     </div>
-                @else
-                    <div style="text-align: center; padding: 14px; color: #94A3B8; font-size: 13px;">
-                        Disponible al terminar la prueba
+                    <div style="font-size: 13px; color: #64748B; margin: 6px 0 20px;">
+                        o {{ $money($plan->price_yearly) }} por 6 meses @if($semesterSaving > 0)<strong style="color: #047857;">(ahorra {{ $money($semesterSaving) }})</strong>@endif
                     </div>
-                @endif
 
-                <div style="font-size: 13px; color: #94A3B8; text-align: center; margin-top: 12px;">Mismas funciones que la prueba</div>
-            </div>
+                    @include('filament.pages.partials.plan-features', ['features' => $planFeatures($plan)])
 
+                    @if($isCurrent)
+                        <div style="text-align: center; padding: 12px; background: #ECFDF5; border-radius: 10px; font-size: 14px; font-weight: 600; color: #047857; margin-top: 18px;">Plan activo</div>
+                    @else
+                        <form method="POST" action="{{ route('wompi.checkout') }}" style="display: flex; flex-direction: column; gap: 8px; margin-top: 18px;">
+                            @csrf
+                            <input type="hidden" name="plan_id" value="{{ $plan->id }}">
+                            <select name="billing_cycle" style="padding: 10px 12px; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 14px; color: #1E3A5F;">
+                                <option value="monthly">Mensual: {{ $money($plan->price_monthly) }}</option>
+                                <option value="biannual">Semestral: {{ $money($plan->price_yearly) }}</option>
+                            </select>
+                            <details class="lw-coupon" style="font-size: 13px; color: #475569;">
+                                <summary style="cursor: pointer; padding: 6px 0; font-weight: 600; color: #1E3A5F;">Tengo un código de descuento</summary>
+                                <input type="text" name="discount_code" placeholder="EJEMPLO20" oninput="this.value = this.value.toUpperCase()"
+                                    style="margin-top: 6px; width: 100%; padding: 10px 12px; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 14px; text-transform: uppercase;">
+                            </details>
+                            <button type="submit"
+                                style="width: 100%; padding: 13px; background: {{ $isRecommended ? '#3A86FF' : '#1E3A5F' }}; color: #fff; font-size: 15px; font-weight: 600; border: none; border-radius: 10px; cursor: pointer;">
+                                {{ $tier === 'paid' ? 'Cambiar a '.$plan->name : 'Suscribirme a '.$plan->name }}
+                            </button>
+                        </form>
+                    @endif
+                </div>
+            @endforeach
         </div>
 
-        {{-- Lo que incluye --}}
-        <div style="background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 32px; box-shadow: 0 1px 3px rgba(15,23,42,.06);">
-            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
-                <svg width="22" height="22" fill="none" stroke="#3A86FF" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-                <h3 style="font-family: 'Poppins','Inter',sans-serif; font-size: 20px; font-weight: 700; color: #1E3A5F; margin: 0;">Ambos planes incluyen todo</h3>
-            </div>
-            <ul style="list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px 32px;" class="lw-incluye-grid">
-                @foreach($includes as $feature)
-                    <li style="display: flex; align-items: flex-start; gap: 10px; font-size: 14px; color: #374151;">
-                        <svg width="16" height="16" fill="none" stroke="#10b981" stroke-width="2.5" viewBox="0 0 24 24" style="flex-shrink: 0; margin-top: 2px;"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                        <span>{{ $feature }}</span>
-                    </li>
-                @endforeach
-            </ul>
-        </div>
-
-        <p style="text-align: center; font-size: 13px; color: #94A3B8; margin-top: 28px;">
-            Precio en pesos colombianos. La diferencia entre los planes es solo el tiempo: gratis los primeros 3 meses, luego {{ $formattedPrice }}/mes.
+        <p style="text-align: center; font-size: 13px; color: #94A3B8;">
+            Precios en pesos colombianos. Pago seguro con Wompi. Si su cuenta supera los límites del plan Gratuito, sus casos se conservan: solo no podrá agregar casos activos nuevos.
         </p>
     </div>
 
     <style>
-        @media (max-width: 768px) {
+        @media (max-width: 900px) {
             .lw-plans-grid { grid-template-columns: 1fr !important; }
-            .lw-incluye-grid { grid-template-columns: 1fr !important; }
         }
+        .lw-coupon summary::-webkit-details-marker { display: none; }
+        .lw-coupon summary { list-style: none; }
     </style>
 
 </x-filament-panels::page>

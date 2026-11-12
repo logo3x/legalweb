@@ -9,6 +9,7 @@ use App\Models\Client;
 use App\Models\ImportLog;
 use App\Models\LegalCase;
 use App\Models\User;
+use App\Services\FirmPlan;
 use App\Services\SamaiService;
 use App\Services\TybaService;
 use App\Services\UsageLimiter;
@@ -100,7 +101,7 @@ class ListLegalCases extends ListRecords
                         ->validationMessages(['required' => 'Debe seleccionar un abogado responsable.']),
                 ])
                 ->action(function (array $data) {
-                    if (! UsageLimiter::attempt('judicial')) {
+                    if (! $this->ensureCaseSlots() || ! UsageLimiter::attempt('judicial')) {
                         return;
                     }
 
@@ -155,7 +156,7 @@ class ListLegalCases extends ListRecords
                         ->validationMessages(['required' => 'Debe seleccionar un abogado responsable.']),
                 ])
                 ->action(function (array $data) {
-                    if (! UsageLimiter::attempt('judicial')) {
+                    if (! $this->ensureCaseSlots() || ! UsageLimiter::attempt('judicial')) {
                         return;
                     }
 
@@ -164,7 +165,7 @@ class ListLegalCases extends ListRecords
                         ->map(fn ($l) => preg_replace('/[^0-9]/', '', trim($l)))
                         ->filter(fn ($r) => strlen($r) >= 20)
                         ->unique()
-                        ->take(20)
+                        ->take($this->importableCount(20))
                         ->values();
 
                     if ($radicados->isEmpty()) {
@@ -271,6 +272,38 @@ class ListLegalCases extends ListRecords
      *
      * @return array{error: ?string, detail: ?string, imported: bool, message: ?string, case: ?LegalCase}
      */
+    /**
+     * Avisa si el plan ya no permite mas casos activos.
+     */
+    private function ensureCaseSlots(): bool
+    {
+        $firm = auth()->user()->firm;
+
+        if (! $firm || $firm->planLimits()->canAddActiveCase()) {
+            return true;
+        }
+
+        Notification::make()
+            ->title('Alcanzo el limite de casos activos')
+            ->body(FirmPlan::upgradeMessage('El plan Gratuito permite '.$firm->planLimits()->maxActiveCases().' casos activos.'))
+            ->warning()
+            ->persistent()
+            ->send();
+
+        return false;
+    }
+
+    /**
+     * Cuantos radicados se pueden importar sin pasar el limite de casos activos.
+     */
+    private function importableCount(int $max): int
+    {
+        $limits = auth()->user()->firm?->planLimits();
+        $allowed = $limits?->maxActiveCases();
+
+        return $allowed === null ? $max : max(0, min($max, $allowed - $limits->activeCasesCount()));
+    }
+
     private function importSingleRadicado(string $radicado, int $clientId, int $userId): array
     {
         $firmId = auth()->user()->firm_id;

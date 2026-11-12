@@ -2,6 +2,7 @@
 
 namespace App\Notifications\Concerns;
 
+use App\Models\Firm;
 use App\Notifications\Channels\WhatsAppChannel;
 use App\Services\WhatsAppService;
 
@@ -24,10 +25,21 @@ trait SendsWhatsApp
             && ! ($notifiable->is_demo ?? false)
             && method_exists($notifiable, 'routeNotificationFor')
             && filled($notifiable->routeNotificationFor('whatsapp', $this))
+            && $this->firmPlanAllowsWhatsApp($notifiable)
             && app(WhatsAppService::class)->isConfigured()) {
             $channels[] = WhatsAppChannel::class;
         }
 
         return $channels;
+    }
+
+    /**
+     * El plan Gratuito (despues de la prueba) no incluye WhatsApp.
+     */
+    protected function firmPlanAllowsWhatsApp(object $notifiable): bool
+    {
+        $firm = isset($notifiable->firm_id) ? Firm::find($notifiable->firm_id) : null;
+
+        return ! $firm || $firm->planLimits()->hasWhatsApp();
     }
 }

@@ -6,6 +6,7 @@ use App\Models\CasePermission;
 use App\Models\FirmInvitation;
 use App\Models\LegalCase;
 use App\Models\User;
+use App\Services\FirmPlan;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Forms\Components\CheckboxList;
@@ -102,6 +103,17 @@ class TeamMembers extends Page
                 ->action(function (array $data) {
                     $email = strtolower(trim($data['email']));
                     $firm = auth()->user()->firm;
+
+                    if (! $firm->planLimits()->canInviteUser()) {
+                        Notification::make()
+                            ->title('Alcanzo el limite de usuarios de su plan')
+                            ->body(FirmPlan::upgradeMessage('Su plan permite '.$firm->planLimits()->maxUsers().' usuario(s), contando las invitaciones pendientes.'))
+                            ->warning()
+                            ->persistent()
+                            ->send();
+
+                        return;
+                    }
 
                     $existingUser = User::where('email', $email)->where('firm_id', $firm->id)->first();
                     if ($existingUser) {
