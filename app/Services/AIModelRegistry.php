@@ -29,6 +29,11 @@ class AIModelRegistry
 
     private const EXCLUDED_PATTERN = '/tts|image|audio|live|embed|safety|guard|code|vision-only/i';
 
+    /**
+     * Modelos de NVIDIA que no sirven para redactar texto juridico.
+     */
+    private const NVIDIA_EXCLUDED_PATTERN = '/reward|parse|retriever|clip|translate|detector|calibration|vlm|-vl-|vision|neva|vila|fuyu|kosmos|deplot|cosmos|omni|starcoder|gemma-2b|recurrentgemma|llama2|sea-lion|palmyra-(med|fin)|nemoguard|topic-control/i';
+
     public function __construct(private AIProviderClient $client) {}
 
     /**
@@ -178,15 +183,24 @@ class AIModelRegistry
         // El preferido va primero y por eso tambien encabeza el orden automatico de uso:
         // OpenRouter con data_collection=deny no entrena con los datos; Gemini gratuito si puede,
         // pero suele responder mejor en derecho colombiano (AI_PREFERRED_PROVIDER).
-        $lists = config('services.ai.preferred_provider') === AIProviderClient::GEMINI
-            ? [$this->discoverGeminiModels(), $this->discoverOpenRouterModels()]
-            : [$this->discoverOpenRouterModels(), $this->discoverGeminiModels()];
+        $byProvider = [
+            AIProviderClient::OPENROUTER => fn (): array => $this->discoverOpenRouterModels(),
+            AIProviderClient::GEMINI => fn (): array => $this->discoverGeminiModels(),
+            AIProviderClient::NVIDIA => fn (): array => $this->discoverNvidiaModels(),
+        ];
 
-        $candidates = [];
+        $preferred = config('services.ai.preferred_provider');
+
+        if (isset($byProvider[$preferred])) {
+            $byProvider = [$preferred => $byProvider[$preferred]] + $byProvider;
+        }
+
+        $lists = array_values(array_map(fn (callable $discover): array => $discover(), $byProvider));
         $keys = array_map('array_keys', $lists);
+        $candidates = [];
 
-        for ($i = 0; $i < max(count($keys[0]), count($keys[1])); $i++) {
-            foreach ([0, 1] as $list) {
+        for ($i = 0; $i < max(array_map('count', $keys)); $i++) {
+            foreach (array_keys($lists) as $list) {
                 if (isset($keys[$list][$i])) {
                     $candidates[$keys[$list][$i]] = $lists[$list][$keys[$list][$i]];
                 }
@@ -312,6 +326,62 @@ class AIModelRegistry
     }
 
     /**
+     * Modelos de chat del catalogo de NVIDIA. Muchos aparecen en la lista pero la cuenta
+     * no los tiene habilitados (404): la verificacion los descarta.
+     *
+     * @return array<string, string>
+     */
+    private function discoverNvidiaModels(): array
+    {
+        if (! $this->client->isConfigured(AIProviderClient::NVIDIA)) {
+            return [];
+        }
+
+        $catalog = [];
+
+        try {
+            $response = Http::timeout(15)
+                ->withToken((string) config('services.nvidia.api_key'))
+                ->get(config('services.nvidia.base_url').'/models');
+
+            foreach ($response->json('data', []) as $model) {
+                $id = $model['id'] ?? '';
+
+                if ($id === '' || preg_match(self::EXCLUDED_PATTERN, $id) || preg_match(self::NVIDIA_EXCLUDED_PATTERN, $id)) {
+                    continue;
+                }
+
+                $catalog[$id] = $id;
+            }
+        } catch (\Exception $e) {
+            Log::info('NVIDIA models list error: '.$e->getMessage());
+        }
+
+        // Primero el configurado y los grandes de NVIDIA (mejor calidad en espanol juridico).
+        $preferred = array_filter([config('services.nvidia.model'), 'nvidia/nemotron-3-ultra-550b-a55b', 'nvidia/nemotron-3-super-120b-a12b', 'nvidia/llama-3.1-nemotron-ultra-253b-v1']);
+        $ordered = [];
+
+        foreach ($preferred as $id) {
+            if (! $catalog || isset($catalog[$id])) {
+                $ordered[$id] = $id;
+            }
+        }
+
+        $ordered += $catalog;
+
+        return collect(array_slice($ordered, 0, $this->probeBudget(AIProviderClient::NVIDIA), true))
+            ->mapWithKeys(fn (string $id) => [AIProviderClient::makeKey(AIProviderClient::NVIDIA, $id) => self::nvidiaLabel($id)])
+            ->all();
+    }
+
+    private static function nvidiaLabel(string $id): string
+    {
+        $name = str($id)->afterLast('/')->replace('-', ' ')->title()->toString();
+
+        return "{$name} (NVIDIA)";
+    }
+
+    /**
      * Lista minima cuando aun no se ha corrido ninguna verificacion.
      *
      * @return list<array{key: string, label: string, verified_at: string}>
@@ -322,6 +392,7 @@ class AIModelRegistry
             AIProviderClient::makeKey(AIProviderClient::GEMINI, config('services.gemini.model')),
             AIProviderClient::makeKey(AIProviderClient::GEMINI, 'gemini-flash-latest'),
             AIProviderClient::makeKey(AIProviderClient::OPENROUTER, (string) config('services.openrouter.model')),
+            AIProviderClient::makeKey(AIProviderClient::NVIDIA, (string) config('services.nvidia.model')),
         ])
             ->filter(fn (string $key) => filled(AIProviderClient::parseKey($key)[1]))
             ->unique()

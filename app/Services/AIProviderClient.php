@@ -19,6 +19,19 @@ class AIProviderClient
 
     public const OPENROUTER = 'openrouter';
 
+    public const NVIDIA = 'nvidia';
+
+    /**
+     * Nombre visible de cada proveedor.
+     *
+     * @var array<string, string>
+     */
+    public const PROVIDER_LABELS = [
+        self::GEMINI => 'Gemini',
+        self::OPENROUTER => 'OpenRouter',
+        self::NVIDIA => 'NVIDIA',
+    ];
+
     /**
      * @return array{0: string, 1: string}
      */
@@ -56,6 +69,7 @@ class AIProviderClient
             return match ($provider) {
                 self::GEMINI => $this->completeWithGemini($model, $systemPrompt, $userMessage, $maxTokens, $timeout),
                 self::OPENROUTER => $this->completeWithOpenRouter($model, $systemPrompt, $userMessage, $maxTokens, $timeout),
+                self::NVIDIA => $this->completeWithNvidia($model, $systemPrompt, $userMessage, $maxTokens, $timeout),
                 default => $this->result(null, null, "{$key}: proveedor desconocido"),
             };
         } catch (\Exception $e) {
@@ -131,6 +145,39 @@ class AIProviderClient
             Log::info("OpenRouter {$model} fallo", ['status' => $response->status(), 'error' => $error]);
 
             return $this->result(null, $response->status(), "OpenRouter {$model}: HTTP {$response->status()} - {$error}");
+        }
+
+        return $this->result($response->json('choices.0.message.content'), $response->status(), null, [
+            'prompt_tokens' => (int) $response->json('usage.prompt_tokens', 0),
+            'completion_tokens' => (int) $response->json('usage.completion_tokens', 0),
+            'total_tokens' => (int) $response->json('usage.total_tokens', 0),
+        ]);
+    }
+
+    /**
+     * NVIDIA API Catalog: misma forma que la API de chat de OpenAI.
+     *
+     * @return CompletionResult
+     */
+    private function completeWithNvidia(string $model, string $systemPrompt, string $userMessage, int $maxTokens, int $timeout): array
+    {
+        $response = Http::timeout($timeout)
+            ->withToken((string) config('services.nvidia.api_key'))
+            ->post(config('services.nvidia.base_url').'/chat/completions', [
+                'model' => $model,
+                'messages' => [
+                    ['role' => 'system', 'content' => $systemPrompt],
+                    ['role' => 'user', 'content' => $userMessage],
+                ],
+                'max_tokens' => $maxTokens,
+                'temperature' => 0.3,
+            ]);
+
+        if (! $response->successful()) {
+            $error = $response->json('detail') ?? $response->json('error.message') ?? 'sin detalle';
+            Log::info("NVIDIA {$model} fallo", ['status' => $response->status(), 'error' => $error]);
+
+            return $this->result(null, $response->status(), "NVIDIA {$model}: HTTP {$response->status()} - {$error}");
         }
 
         return $this->result($response->json('choices.0.message.content'), $response->status(), null, [

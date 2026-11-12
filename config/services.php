@@ -66,7 +66,7 @@ return [
     ],
 
     'ai' => [
-        // Proveedor que se intenta primero: "openrouter" (privacidad) o "gemini" (calidad, plan gratuito puede entrenar).
+        // Proveedor que se intenta primero: "openrouter" (privacidad), "gemini" (calidad, plan gratuito puede entrenar) o "nvidia".
         'preferred_provider' => env('AI_PREFERRED_PROVIDER', 'openrouter'),
         // Cada cuantas horas se prueba automaticamente un modelo sin uso reciente (cuida la cuota gratuita).
         'health_interval_hours' => (int) env('AI_HEALTH_INTERVAL_HOURS', 6),
@@ -79,6 +79,15 @@ return [
         'max_candidates' => (int) env('OPENROUTER_MAX_CANDIDATES', 5),
         // "deny" solo enruta a proveedores que no almacenan ni entrenan con los datos enviados.
         'data_collection' => env('OPENROUTER_DATA_COLLECTION', 'deny'),
+    ],
+
+    // NVIDIA API Catalog (build.nvidia.com): compatible con OpenAI. El catalogo lista modelos que la
+    // cuenta no siempre tiene habilitados, por eso se descubren y se prueban como los de OpenRouter.
+    'nvidia' => [
+        'api_key' => env('NVIDIA_API_KEY'),
+        'model' => env('NVIDIA_MODEL', 'nvidia/nemotron-3-ultra-550b-a55b'),
+        'base_url' => 'https://integrate.api.nvidia.com/v1',
+        'max_candidates' => (int) env('NVIDIA_MAX_CANDIDATES', 3),
     ],
 
     'twilio' => [

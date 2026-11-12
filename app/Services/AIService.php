@@ -124,7 +124,7 @@ class AIService
                 'user_id' => auth()->id(),
                 'legal_case_id' => $case?->id,
                 'action' => $context['action'] ?? 'otro',
-                'provider' => $provider === AIProviderClient::GEMINI ? 'Gemini' : 'OpenRouter',
+                'provider' => AIProviderClient::PROVIDER_LABELS[$provider] ?? $provider,
                 'model' => $model,
                 'prompt_tokens' => $usage['prompt_tokens'],
                 'completion_tokens' => $usage['completion_tokens'],

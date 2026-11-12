@@ -173,7 +173,9 @@ class AIModelHealth
      */
     private function handleOutage(): void
     {
-        if (! $this->client->isConfigured(AIProviderClient::GEMINI) && ! $this->client->isConfigured(AIProviderClient::OPENROUTER)) {
+        $configured = array_filter(array_keys(AIProviderClient::PROVIDER_LABELS), fn (string $provider): bool => $this->client->isConfigured($provider));
+
+        if (! $configured) {
             return;
         }
 

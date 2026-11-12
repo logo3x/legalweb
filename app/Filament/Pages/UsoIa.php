@@ -98,7 +98,7 @@ class UsoIa extends Page
                 ->icon('heroicon-o-arrow-path')
                 ->color('gray')
                 ->requiresConfirmation()
-                ->modalDescription('Consulta los catalogos de Gemini y OpenRouter y prueba los modelos gratuitos. Puede tardar varios minutos.')
+                ->modalDescription('Consulta los catalogos de Gemini, OpenRouter y NVIDIA y prueba los modelos gratuitos. Puede tardar varios minutos.')
                 ->authorize(fn (): bool => static::canAccess())
                 ->action(function (): void {
                     if (! $this->allowProbe()) {

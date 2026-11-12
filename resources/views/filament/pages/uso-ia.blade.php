@@ -51,7 +51,7 @@
 
         @if(empty($modelHealth))
             <p style="color: #94a3b8; font-size: 14px; text-align: center; padding: 24px 0;">
-                No hay modelos disponibles. Revise que GEMINI_API_KEY u OPENROUTER_API_KEY estén en el .env y use "Buscar modelos nuevos".
+                No hay modelos disponibles. Revise que GEMINI_API_KEY, OPENROUTER_API_KEY o NVIDIA_API_KEY estén en el .env y use "Buscar modelos nuevos".
             </p>
         @else
             <div style="overflow-x: auto;">
