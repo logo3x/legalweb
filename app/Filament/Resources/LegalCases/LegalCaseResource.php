@@ -27,6 +27,7 @@ use Illuminate\Auth\Access\Response;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Str;
 
 class LegalCaseResource extends Resource
 {
@@ -39,6 +40,41 @@ class LegalCaseResource extends Resource
     protected static ?string $pluralModelLabel = 'Casos';
 
     protected static ?int $navigationSort = 1;
+
+    protected static ?string $recordTitleAttribute = 'title';
+
+    protected static ?int $globalSearchSort = 1;
+
+    /**
+     * Busqueda global (Ctrl+K): por numero interno, radicado, titulo o contraparte.
+     *
+     * @return array<string>
+     */
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['case_number', 'external_case_number', 'title', 'opposing_party', 'client.first_name', 'client.last_name', 'client.document_number'];
+    }
+
+    public static function getGlobalSearchResultTitle(Model $record): string
+    {
+        return "{$record->case_number} · ".Str::limit((string) $record->title, 70);
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public static function getGlobalSearchResultDetails(Model $record): array
+    {
+        return array_filter([
+            'Cliente' => $record->client?->full_name,
+            'Radicado' => $record->external_case_number,
+        ]);
+    }
+
+    public static function getGlobalSearchEloquentQuery(): Builder
+    {
+        return parent::getGlobalSearchEloquentQuery()->with('client');
+    }
 
     public static function form(Schema $schema): Schema
     {

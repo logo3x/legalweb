@@ -9,6 +9,7 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\NavigationGroup;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -34,6 +35,18 @@ class AdminPanelProvider extends PanelProvider
             // Sin registro por formulario: las cuentas se crean con Google (que crea la firma) o por invitacion.
             ->databaseNotifications()
             ->databaseNotificationsPolling('30s')
+            // Lo mas usado arriba (Casos, Agenda, Vencimientos, Clientes sin grupo); luego estos grupos.
+            ->navigationGroups([
+                NavigationGroup::make('Seguimiento'),
+                NavigationGroup::make('Herramientas'),
+                NavigationGroup::make('Configuración')->collapsed(),
+                NavigationGroup::make('Super Admin')->collapsed(),
+            ])
+            ->sidebarCollapsibleOnDesktop()
+            // Ctrl+K / Cmd+K abre la busqueda de casos y clientes.
+            ->globalSearchKeyBindings(['command+k', 'ctrl+k'])
+            ->globalSearchFieldKeyBindingSuffix()
+            ->unsavedChangesAlerts()
             ->brandName('LegalWeb')
             ->brandLogo(function () {
                 $firm = auth()->user()?->firm;

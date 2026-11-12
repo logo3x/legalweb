@@ -13,6 +13,7 @@ use App\Services\CaseSyncService;
 use App\Services\DocumentGenerator;
 use App\Services\GeneratedFileStore;
 use App\Services\SamaiService;
+use App\Services\UsageLimiter;
 use App\Services\WhatsAppService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Filament\Actions\Action;
@@ -29,6 +30,7 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\HtmlString;
+use Illuminate\Support\Str;
 
 class ViewLegalCase extends ViewRecord
 {
@@ -95,6 +97,10 @@ class ViewLegalCase extends ViewRecord
                             ->helperText($this->aiDataNotice()),
                     ])
                     ->action(function (array $data) {
+                        if (! UsageLimiter::attempt('ai')) {
+                            return;
+                        }
+
                         try {
                             session(['ai_model' => $data['ai_model'] ?? null]);
                             $content = app(AIService::class)
@@ -102,7 +108,7 @@ class ViewLegalCase extends ViewRecord
                                 ->draftDocument($this->record, $data['document_type']);
                         } catch (\Exception $e) {
                             Log::error('AI draft error: '.$e->getMessage());
-                            Notification::make()->title('Error de IA')->body($e->getMessage())->danger()->send();
+                            Notification::make()->title('Error de IA')->body('No se pudo generar el borrador. Intente de nuevo en unos minutos.')->danger()->send();
 
                             return;
                         }
@@ -126,7 +132,7 @@ class ViewLegalCase extends ViewRecord
                             );
                         } catch (\Exception $e) {
                             Log::error('Word generation error: '.$e->getMessage());
-                            Notification::make()->title('Error generando Word')->body($e->getMessage())->danger()->send();
+                            Notification::make()->title('Error generando Word')->body('No se pudo crear el archivo. Intente de nuevo.')->danger()->send();
 
                             return;
                         }
@@ -144,6 +150,8 @@ class ViewLegalCase extends ViewRecord
                 ->button(),
             ActionGroup::make([
                 Action::make('download_report')
+                    // El reporte incluye actuaciones y vencimientos: exige el mismo permiso que esas pestanas.
+                    ->authorize(fn (): bool => $this->userCanOnCase('events.view'))
                     ->label('Descargar Reporte PDF')
                     ->icon('heroicon-o-document-arrow-down')
                     ->action(function () {
@@ -183,15 +191,17 @@ class ViewLegalCase extends ViewRecord
                                 ],
                             ])->setPaper('letter');
 
-                            $fileName = "reporte_{$case->case_number}_".now()->format('Y_m_d').'.pdf';
+                            $fileName = "reporte_{$case->case_number}_".now()->format('Y_m_d').'_'.Str::random(16).'.pdf';
                             $path = app(GeneratedFileStore::class)->pathFor($case->firm_id, $fileName);
 
                             $pdf->save($path);
                             $this->js('window.location.href = '.json_encode(route('download.file', basename($path))));
                         } catch (\Exception $e) {
+                            Log::error('Case report error: '.$e->getMessage());
+
                             Notification::make()
                                 ->title('Error al generar reporte')
-                                ->body($e->getMessage())
+                                ->body('No se pudo generar el reporte. Intente de nuevo.')
                                 ->danger()
                                 ->send();
                         }
@@ -208,6 +218,10 @@ class ViewLegalCase extends ViewRecord
                         : "Se consultara el radicado {$this->record->external_case_number} en la API de la Rama Judicial para actualizar datos del proceso y registrar nuevas actuaciones.")
                     ->modalSubmitActionLabel('Sincronizar')
                     ->action(function () {
+                        if (! UsageLimiter::attempt('judicial')) {
+                            return;
+                        }
+
                         $log = app(CaseSyncService::class)->sync($this->record, 'manual', notify: false);
                         $this->record->refresh();
 
@@ -398,6 +412,10 @@ class ViewLegalCase extends ViewRecord
             return;
         }
 
+        if (! UsageLimiter::attempt('whatsapp-portal', 'case-'.$record->getKey())) {
+            return;
+        }
+
         $record->generatePortalToken();
         $notification = new PortalSharedNotification($record);
         $message = $notification->toWhatsApp($client);
@@ -471,6 +489,10 @@ class ViewLegalCase extends ViewRecord
         }
 
         $generate = function (?string $modelKey) use ($task, $failureMessage): array {
+            if (! UsageLimiter::attempt('ai')) {
+                return ['result' => 'Alcanzo el limite de consultas de IA por hora. Intente de nuevo mas tarde.', 'meta' => '', 'model' => $modelKey];
+            }
+
             $ai = app(AIService::class)->usingModel($modelKey);
             $result = $ai->{$task}($this->record);
             $usedKey = $ai->getLastModelKey();

@@ -9,6 +9,8 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Filament\Actions\Action;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Str;
+use UnitEnum;
 
 class Reports extends Page
 {
@@ -20,7 +22,9 @@ class Reports extends Page
 
     protected static ?string $title = 'Reportes y Analytics';
 
-    protected static ?int $navigationSort = 6;
+    protected static ?int $navigationSort = 22;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Herramientas';
 
     /**
      * El reporte resume toda la firma; los colaboradores solo deben ver sus casos asignados.
@@ -55,7 +59,7 @@ class Reports extends Page
                         ->setPaper('letter')
                         ->setOption('isHtml5ParserEnabled', true);
 
-                    $fileName = 'reporte_'.str_replace(' ', '_', strtolower($data['firm']->name)).'_'.now()->format('Y_m_d').'.pdf';
+                    $fileName = 'reporte_'.str_replace(' ', '_', strtolower($data['firm']->name)).'_'.now()->format('Y_m_d').'_'.Str::random(16).'.pdf';
                     $path = app(GeneratedFileStore::class)->pathFor(auth()->user()->firm_id, $fileName);
 
                     $pdf->save($path);

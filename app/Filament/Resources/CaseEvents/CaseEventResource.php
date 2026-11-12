@@ -14,6 +14,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class CaseEventResource extends Resource
 {
@@ -35,7 +36,9 @@ class CaseEventResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Actuaciones';
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 11;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Seguimiento';
 
     public static function form(Schema $schema): Schema
     {

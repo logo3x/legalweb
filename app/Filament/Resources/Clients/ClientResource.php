@@ -14,6 +14,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class ClientResource extends Resource
@@ -26,7 +27,32 @@ class ClientResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Clientes';
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 4;
+
+    protected static ?string $recordTitleAttribute = 'full_name';
+
+    protected static ?int $globalSearchSort = 2;
+
+    /**
+     * Busqueda global (Ctrl+K): por nombre o numero de documento.
+     *
+     * @return array<string>
+     */
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['first_name', 'last_name', 'document_number'];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public static function getGlobalSearchResultDetails(Model $record): array
+    {
+        return array_filter([
+            'Documento' => trim("{$record->document_type} {$record->document_number}"),
+            'Teléfono' => $record->phone,
+        ]);
+    }
 
     public static function form(Schema $schema): Schema
     {

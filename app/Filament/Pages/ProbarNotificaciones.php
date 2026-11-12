@@ -14,6 +14,7 @@ use App\Notifications\PortalAccessNotification;
 use App\Notifications\ReminderDueNotification;
 use App\Notifications\TermDeadlineNotification;
 use App\Notifications\TybaSyncNotification;
+use App\Services\UsageLimiter;
 use BackedEnum;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
@@ -27,13 +28,13 @@ class ProbarNotificaciones extends Page
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedEnvelopeOpen;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Configuracion';
+    protected static string|UnitEnum|null $navigationGroup = 'Configuración';
 
-    protected static ?string $navigationLabel = 'Probar Notificaciones';
+    protected static ?string $navigationLabel = 'Probar avisos';
 
     protected static ?string $title = 'Probar Notificaciones';
 
-    protected static ?int $navigationSort = 30;
+    protected static ?int $navigationSort = 35;
 
     public function getNotifications(): array
     {
@@ -92,6 +93,10 @@ class ProbarNotificaciones extends Page
 
     public function enviarPrueba(string $key): void
     {
+        if (! UsageLimiter::attempt('test-notification')) {
+            return;
+        }
+
         $user = auth()->user();
 
         $case = LegalCase::where('firm_id', $user->firm_id)
@@ -130,7 +135,7 @@ class ProbarNotificaciones extends Page
 
             Notification::make()
                 ->title('Error enviando correo de prueba')
-                ->body('Detalles: '.$e->getMessage())
+                ->body('Revise la configuracion e intente de nuevo.')
                 ->danger()
                 ->send();
         }

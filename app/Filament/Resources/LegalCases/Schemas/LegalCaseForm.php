@@ -2,7 +2,9 @@
 
 namespace App\Filament\Resources\LegalCases\Schemas;
 
+use App\Filament\Resources\Clients\Schemas\ClientForm;
 use App\Models\CaseFlow;
+use App\Models\Client;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -91,8 +93,16 @@ class LegalCaseForm
                             ->relationship('client', 'first_name')
                             ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->first_name} {$record->last_name} ({$record->document_number})")
                             ->required()
-                            ->searchable()
-                            ->preload(),
+                            ->searchable(['first_name', 'last_name', 'document_number'])
+                            ->preload()
+                            // Crear el cliente sin salir del formulario del caso.
+                            ->createOptionForm(ClientForm::basicFields())
+                            ->createOptionModalHeading('Nuevo cliente')
+                            ->createOptionUsing(fn (array $data): int => Client::create([
+                                ...$data,
+                                'firm_id' => auth()->user()->firm_id,
+                                'user_id' => auth()->id(),
+                            ])->getKey()),
                         Select::make('user_id')
                             ->label('Abogado Responsable')
                             ->hintIcon('heroicon-o-question-mark-circle', tooltip: 'Abogado principal a cargo del caso.')

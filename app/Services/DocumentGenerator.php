@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Firm;
 use App\Models\LegalCase;
+use Illuminate\Support\Str;
 use PhpOffice\PhpWord\PhpWord;
 use PhpOffice\PhpWord\SimpleType\Jc;
 
@@ -69,7 +70,7 @@ class DocumentGenerator
 
         $this->addFooter($section, $firm);
 
-        $fileName = 'borrador_'.str_replace(' ', '_', strtolower($documentType)).'_'.$case->case_number.'.docx';
+        $fileName = 'borrador_'.str_replace(' ', '_', strtolower($documentType)).'_'.$case->case_number.'_'.Str::random(16).'.docx';
         $filePath = app(GeneratedFileStore::class)->pathFor($case->firm_id, $fileName);
 
         $phpWord->save($filePath, 'Word2007');

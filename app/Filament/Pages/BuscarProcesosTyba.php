@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Models\LegalCase;
 use App\Services\SamaiService;
 use App\Services\TybaService;
+use App\Services\UsageLimiter;
 use BackedEnum;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -14,6 +15,7 @@ use Filament\Pages\Page;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Log;
 use UnitEnum;
 
@@ -27,11 +29,11 @@ class BuscarProcesosTyba extends Page implements HasForms
 
     protected static ?string $navigationLabel = 'Buscar procesos';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Casos';
+    protected static string|UnitEnum|null $navigationGroup = 'Seguimiento';
 
     protected static ?string $title = 'Buscar procesos en Rama Judicial y SAMAI';
 
-    protected static ?int $navigationSort = 5;
+    protected static ?int $navigationSort = 10;
 
     public ?array $data = [];
 
@@ -78,6 +80,12 @@ class BuscarProcesosTyba extends Page implements HasForms
         }
 
         $this->form->fill($initial);
+
+        $hasInitialSearch = $initial['nombre'] !== '' || $initial['radicado'] !== '' || $initial['documento'] !== '';
+
+        if ($hasInitialSearch && ! UsageLimiter::attempt('judicial')) {
+            return;
+        }
 
         if ($initial['nombre'] !== '' && strlen($initial['nombre']) >= 3) {
             $this->ejecutarBusqueda('nombre', $initial['nombre']);
@@ -192,6 +200,11 @@ class BuscarProcesosTyba extends Page implements HasForms
     public function buscar(): void
     {
         $data = $this->form->getState();
+
+        if (! UsageLimiter::attempt('judicial')) {
+            return;
+        }
+
         $modo = $data['modo'] ?? 'nombre';
         $term = trim((string) ($data[$modo] ?? ''));
         $tipo = (int) ($data['tipo_documento'] ?? 1);
@@ -247,8 +260,8 @@ class BuscarProcesosTyba extends Page implements HasForms
 
     protected function loadExistingRadicados(): void
     {
-        $this->existingRadicados = LegalCase::withoutGlobalScopes()
-            ->where('firm_id', auth()->user()->firm_id)
+        // Con FirmScope: un colaborador solo recibe los radicados de sus casos.
+        $this->existingRadicados = LegalCase::withoutGlobalScope(SoftDeletingScope::class)
             ->whereNotNull('external_case_number')
             ->pluck('external_case_number')
             ->toArray();

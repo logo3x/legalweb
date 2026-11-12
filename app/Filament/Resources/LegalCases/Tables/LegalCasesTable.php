@@ -2,12 +2,17 @@
 
 namespace App\Filament\Resources\LegalCases\Tables;
 
+use App\Models\LegalCase;
+use App\Services\CaseSyncService;
+use App\Services\UsageLimiter;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\ViewAction;
+use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
@@ -97,6 +102,28 @@ class LegalCasesTable
                     ->label('Ver'),
                 EditAction::make()
                     ->label('Editar'),
+                // Atajo para no tener que entrar al caso a sincronizar.
+                Action::make('quick_sync')
+                    ->label('Sincronizar')
+                    ->icon('heroicon-o-arrow-path')
+                    ->color('gray')
+                    ->visible(fn (LegalCase $record): bool => filled($record->external_case_number) && ! $record->trashed())
+                    ->authorize(fn (LegalCase $record): bool => (bool) auth()->user()?->hasCasePermission($record->getKey(), 'events.create'))
+                    ->action(function (LegalCase $record): void {
+                        if (! UsageLimiter::attempt('judicial')) {
+                            return;
+                        }
+
+                        $log = app(CaseSyncService::class)->sync($record, 'manual', notify: false);
+
+                        $notification = Notification::make()->title($record->case_number)->body($log->mensaje);
+
+                        match ($log->status) {
+                            'error' => $notification->danger()->send(),
+                            'ok' => $notification->success()->send(),
+                            default => $notification->info()->send(),
+                        };
+                    }),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

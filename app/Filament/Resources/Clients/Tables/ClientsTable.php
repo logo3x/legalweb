@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Clients\Tables;
 
 use App\Models\LegalCase;
 use App\Services\TybaService;
+use App\Services\UsageLimiter;
 use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
@@ -15,6 +16,8 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\HtmlString;
 
 class ClientsTable
 {
@@ -78,13 +81,16 @@ class ClientsTable
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel('Cerrar')
                     ->modalContent(function ($record) {
+                        if (! UsageLimiter::attempt('judicial')) {
+                            return new HtmlString('<p class="text-sm text-gray-500">Espere un momento antes de volver a consultar la Rama Judicial.</p>');
+                        }
+
                         $name = trim("{$record->last_name} {$record->first_name}");
                         $tyba = app(TybaService::class);
                         $procesos = $tyba->searchByName($name);
 
                         // Marcar cuales ya estan importados
-                        $existingRadicados = LegalCase::withoutGlobalScopes()
-                            ->where('firm_id', auth()->user()->firm_id)
+                        $existingRadicados = LegalCase::withoutGlobalScope(SoftDeletingScope::class)
                             ->whereNotNull('external_case_number')
                             ->pluck('external_case_number')
                             ->toArray();

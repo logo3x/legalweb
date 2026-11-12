@@ -6,6 +6,7 @@ use App\Services\CourtAnalyticsService;
 use BackedEnum;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
+use UnitEnum;
 
 class CourtAnalytics extends Page
 {
@@ -13,13 +14,15 @@ class CourtAnalytics extends Page
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingLibrary;
 
-    protected static ?string $navigationLabel = 'Analitica de Despachos';
+    protected static ?string $navigationLabel = 'Analítica de despachos';
 
     protected static ?string $title = 'Analitica de Despachos';
 
     protected static ?string $slug = 'analitica-despachos';
 
-    protected static ?int $navigationSort = 7;
+    protected static ?int $navigationSort = 21;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Herramientas';
 
     /**
      * @return array<string, mixed>

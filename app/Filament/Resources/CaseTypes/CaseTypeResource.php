@@ -28,7 +28,7 @@ class CaseTypeResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Tipos de Proceso';
 
-    protected static ?int $navigationSort = 10;
+    protected static ?int $navigationSort = 33;
 
     /**
      * Los tipos y flujos procesales son compartidos por todas las firmas: solo el superadmin los modifica.

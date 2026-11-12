@@ -68,6 +68,8 @@ return [
     'ai' => [
         // Proveedor que se intenta primero: "openrouter" (privacidad) o "gemini" (calidad, plan gratuito puede entrenar).
         'preferred_provider' => env('AI_PREFERRED_PROVIDER', 'openrouter'),
+        // Cada cuantas horas se prueba automaticamente un modelo sin uso reciente (cuida la cuota gratuita).
+        'health_interval_hours' => (int) env('AI_HEALTH_INTERVAL_HOURS', 6),
     ],
 
     'openrouter' => [

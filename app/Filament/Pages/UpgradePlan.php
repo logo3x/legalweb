@@ -7,6 +7,7 @@ use BackedEnum;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Database\Eloquent\Collection;
+use UnitEnum;
 
 class UpgradePlan extends Page
 {
@@ -20,7 +21,9 @@ class UpgradePlan extends Page
 
     protected static ?string $slug = 'planes';
 
-    protected static ?int $navigationSort = 19;
+    protected static ?int $navigationSort = 32;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Configuración';
 
     public function getPlans(): Collection
     {

@@ -2,7 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\Subscription;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -46,20 +45,9 @@ class EnforceSubscriptionStatus
             }
         }
 
-        $sub = Subscription::where('firm_id', $user->firm_id)
-            ->whereIn('status', ['active', 'past_due'])
-            ->latest('id')
-            ->first();
-
-        if (! $sub) {
-            return $next($request);
-        }
-
-        // Read-only si: status past_due o (active con gracia vencida)
-        $isReadOnly = $sub->status === 'past_due'
-            || ($sub->grace_until && $sub->grace_until->isPast() && $sub->ends_at && $sub->ends_at->isPast());
-
-        if (! $isReadOnly) {
+        // Las escrituras de Livewire (POST /livewire/update) no pasan por aqui:
+        // las bloquea el guardian de modelos de AppServiceProvider.
+        if (! $user->firm?->isReadOnly()) {
             return $next($request);
         }
 

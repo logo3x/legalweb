@@ -24,6 +24,7 @@ class AIService
     public function __construct(
         private AIProviderClient $client,
         private AIModelRegistry $registry,
+        private AIModelHealth $health,
     ) {}
 
     public function getLastProvider(): ?string
@@ -86,10 +87,12 @@ class AIService
      */
     private function attempt(string $key, string $systemPrompt, string $userMessage, int $maxTokens, array $context, float $start, ?string $label = null): ?string
     {
+        $attemptStart = microtime(true);
         $response = $this->client->complete($key, $systemPrompt, $userMessage, $maxTokens);
         $succeeded = filled($response['content']);
 
         $this->registry->recordResult($key, $succeeded, $response['status'], $label);
+        $this->health->record($key, $succeeded, $response['status'], $response['error'] ?? null, (int) round((microtime(true) - $attemptStart) * 1000), 'uso', $label);
 
         if (! $succeeded) {
             $this->lastError = $response['error'] ?? "{$key}: respuesta vacia";

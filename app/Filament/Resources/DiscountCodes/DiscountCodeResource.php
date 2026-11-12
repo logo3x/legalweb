@@ -27,9 +27,9 @@ class DiscountCodeResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Codigos de descuento';
 
-    protected static ?string $navigationLabel = 'Codigos de descuento';
+    protected static ?string $navigationLabel = 'Códigos de descuento';
 
-    protected static ?int $navigationSort = 70;
+    protected static ?int $navigationSort = 71;
 
     public static function canAccess(): bool
     {

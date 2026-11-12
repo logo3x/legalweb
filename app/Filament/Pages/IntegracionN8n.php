@@ -22,7 +22,7 @@ class IntegracionN8n extends Page
 
     protected static string|UnitEnum|null $navigationGroup = 'Super Admin';
 
-    protected static ?string $navigationLabel = 'Integracion n8n';
+    protected static ?string $navigationLabel = 'Integración n8n';
 
     protected static ?string $title = 'Integracion con n8n';
 

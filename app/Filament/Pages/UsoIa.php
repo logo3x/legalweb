@@ -3,11 +3,16 @@
 namespace App\Filament\Pages;
 
 use App\Models\AiUsageLog;
+use App\Services\AIModelHealth;
+use App\Services\AIModelRegistry;
 use BackedEnum;
+use Filament\Actions\Action;
+use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Schema;
 use UnitEnum;
 
@@ -32,6 +37,94 @@ class UsoIa extends Page
     public static function canAccess(): bool
     {
         return auth()->user()?->role === 'superadmin';
+    }
+
+    /**
+     * Estado de cada modelo de IA, en el orden en que la app los intenta.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function getModelHealth(): array
+    {
+        return app(AIModelHealth::class)->report();
+    }
+
+    public function getLastModelsRefresh(): ?string
+    {
+        return app(AIModelRegistry::class)->lastVerifiedAt();
+    }
+
+    /**
+     * Prueba un modelo puntual desde el boton de su fila.
+     */
+    public function probeModel(string $key): void
+    {
+        abort_unless(static::canAccess(), 403);
+
+        if (! array_key_exists($key, app(AIModelRegistry::class)->options()) || ! $this->allowProbe()) {
+            return;
+        }
+
+        $entry = app(AIModelHealth::class)->probe($key);
+        $notification = Notification::make()->title($entry['label']);
+
+        if ($entry['ok']) {
+            $notification->body('Respondio en '.number_format((int) $entry['latency_ms']).' ms.')->success()->send();
+        } else {
+            $notification->body('No respondio: '.($entry['error'] ?? 'sin detalle'))->danger()->send();
+        }
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('probe_all')
+                ->label('Probar todos los modelos')
+                ->icon('heroicon-o-signal')
+                ->authorize(fn (): bool => static::canAccess())
+                ->action(function (): void {
+                    if (! $this->allowProbe()) {
+                        return;
+                    }
+
+                    $results = app(AIModelHealth::class)->probeAll();
+                    $ok = count(array_filter($results, fn (array $entry): bool => $entry['ok']));
+
+                    $notification = Notification::make()->title("{$ok} de ".count($results).' modelo(s) respondieron');
+                    $ok > 0 ? $notification->success()->send() : $notification->danger()->send();
+                }),
+            Action::make('refresh_models')
+                ->label('Buscar modelos nuevos')
+                ->icon('heroicon-o-arrow-path')
+                ->color('gray')
+                ->requiresConfirmation()
+                ->modalDescription('Consulta los catalogos de Gemini y OpenRouter y prueba los modelos gratuitos. Puede tardar varios minutos.')
+                ->authorize(fn (): bool => static::canAccess())
+                ->action(function (): void {
+                    if (! $this->allowProbe()) {
+                        return;
+                    }
+
+                    $verified = app(AIModelRegistry::class)->refresh();
+
+                    $notification = Notification::make()->title(count($verified).' modelo(s) disponibles');
+                    $verified ? $notification->success()->send() : $notification->danger()->send();
+                }),
+        ];
+    }
+
+    /**
+     * Limita las pruebas manuales para no agotar la cuota gratuita de los proveedores.
+     */
+    private function allowProbe(): bool
+    {
+        $allowed = RateLimiter::attempt('ai-probe:'.auth()->id(), 10, fn (): bool => true, 3600);
+
+        if (! $allowed) {
+            Notification::make()->title('Demasiadas pruebas')->body('Espere un rato antes de volver a probar los modelos.')->warning()->send();
+        }
+
+        return (bool) $allowed;
     }
 
     public function setRange(string $key): void

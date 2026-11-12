@@ -13,10 +13,12 @@ use App\Models\MassEmailCampaign;
 use App\Models\Reminder;
 use App\Models\User;
 use App\Notifications\ReminderDueNotification;
+use App\Services\AIModelHealth;
 use App\Services\AIModelRegistry;
 use App\Services\GeneratedFileStore;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
@@ -264,6 +266,17 @@ Route::get('/cron/{token}/{task?}', function (string $token, ?string $task = nul
             }
         }
         $results[] = "queue: {$processed} job(s) procesados";
+    }
+
+    // Comprobacion automatica de los modelos de IA: cada 10 minutos prueba como maximo 2
+    // modelos sin noticias recientes. Se cuelga de la tarea "queue" para no exigir otro cron.
+    if ((! $task || $task === 'queue') && Cache::add('ai.model_health.tick', true, now()->addMinutes(10))) {
+        try {
+            $probed = app(AIModelHealth::class)->runScheduledCheck(2);
+            $results[] = 'ai-health: '.count($probed).' modelo(s) probados';
+        } catch (Throwable $e) {
+            Log::warning('ai-health fallo: '.$e->getMessage());
+        }
     }
 
     // Tarea: monthly-reports (dia 1 de cada mes a las 7am)

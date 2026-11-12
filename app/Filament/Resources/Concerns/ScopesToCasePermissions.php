@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Concerns;
 
 use App\Models\CasePermission;
+use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
@@ -66,6 +67,23 @@ trait ScopesToCasePermissions
     public static function canRestoreAny(): bool
     {
         return static::canDeleteAny();
+    }
+
+    /**
+     * Regla para el selector de caso: un colaborador solo puede elegir casos donde tiene
+     * el permiso (o dejar el caso actual del registro que esta editando).
+     */
+    public static function caseSelectionRule(string $permission): Closure
+    {
+        return fn (?Model $record): Closure => function (string $attribute, mixed $value, Closure $fail) use ($record, $permission): void {
+            $allowed = static::caseIdsWithPermission($permission);
+
+            if ($allowed === null || in_array((int) $value, $allowed, true) || ($record && (int) $record->legal_case_id === (int) $value)) {
+                return;
+            }
+
+            $fail('No tiene permiso para usar ese caso.');
+        };
     }
 
     /**

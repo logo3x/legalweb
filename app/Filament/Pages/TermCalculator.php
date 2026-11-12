@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
+use UnitEnum;
 
 class TermCalculator extends Page
 {
@@ -15,11 +16,13 @@ class TermCalculator extends Page
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalculator;
 
-    protected static ?string $navigationLabel = 'Calculadora';
+    protected static ?string $navigationLabel = 'Calculadora de términos';
 
     protected static ?string $title = 'Calculadora de Terminos Judiciales';
 
-    protected static ?int $navigationSort = 7;
+    protected static ?int $navigationSort = 20;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Herramientas';
 
     public ?string $startDate = null;
 

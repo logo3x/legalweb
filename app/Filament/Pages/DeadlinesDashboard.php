@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Resources\CaseEvents\CaseEventResource;
 use App\Models\CaseEvent;
 use App\Models\LegalCase;
 use App\Models\Reminder;
@@ -17,11 +18,11 @@ class DeadlinesDashboard extends Page
 
     protected static ?string $navigationLabel = 'Vencimientos';
 
+    protected static ?string $slug = 'vencimientos';
+
     protected static ?string $title = 'Dashboard de Vencimientos';
 
     protected static ?int $navigationSort = 3;
-
-    protected static bool $shouldRegisterNavigation = false;
 
     public function getDeadlinesData(): array
     {
@@ -63,6 +64,9 @@ class DeadlinesDashboard extends Page
         // Ultimas actuaciones de Rama Judicial (ultimos 15 dias)
         $recentActuaciones = CaseEvent::with('legalCase')
             ->whereHas('legalCase', fn ($q) => $q->where('firm_id', $firmId))
+            // Colaboradores: solo actuaciones de casos donde tienen permiso de verlas.
+            ->when(CaseEventResource::caseIdsWithPermission('events.view'), fn ($q, array $ids) => $q->whereIn('legal_case_id', $ids))
+            ->when(CaseEventResource::caseIdsWithPermission('events.view') === [], fn ($q) => $q->whereRaw('1 = 0'))
             ->where('event_type', 'actuacion')
             ->where('event_date', '>=', now()->subDays(15))
             ->orderByDesc('event_date')

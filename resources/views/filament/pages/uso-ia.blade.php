@@ -14,8 +14,19 @@
         $byProvider = $this->getByProvider();
         $daily = $this->getDailySeries();
 
-        $maxDailyTokens = max(array_column($daily, 'tokens')) ?: 1;
-        $maxFirmTokens = $byFirm ? max(array_column($byFirm, 'tokens')) : 1;
+        // max() de un arreglo vacio lanza error en PHP 8: sin llamadas en el rango se usa 1.
+        $maxDailyTokens = max([1, ...array_column($daily, 'tokens')]);
+        $maxFirmTokens = max([1, ...array_column($byFirm, 'tokens')]);
+
+        $modelHealth = $this->getModelHealth();
+        $lastRefresh = $this->getLastModelsRefresh();
+        $stateStyles = [
+            'activo' => ['Activo', '#065F46', '#D1FAE5'],
+            'falla' => ['No responde', '#991B1B', '#FEE2E2'],
+            'sin_datos' => ['Sin comprobar', '#475569', '#F1F5F9'],
+            'retirado' => ['Retirado', '#92400E', '#FEF3C7'],
+        ];
+        $sourceLabels = ['uso' => 'uso real', 'prueba' => 'prueba manual', 'automatica' => 'prueba automática'];
 
         $rangeOptions = [
             '7d' => 'Ultimos 7 dias',
@@ -24,6 +35,76 @@
             'all' => 'Todo el tiempo',
         ];
     @endphp
+
+    {{-- Estado de los modelos de IA --}}
+    <div style="background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px; margin-bottom: 6px;">
+            <h3 style="font-size: 16px; font-weight: 700; color: #1E3A5F; margin: 0; font-family: 'Poppins',sans-serif;">Estado de los modelos</h3>
+            <span style="font-size: 12px; color: #94a3b8;">
+                Última búsqueda de modelos: {{ $lastRefresh ? \Illuminate\Support\Carbon::parse($lastRefresh)->diffForHumans() : 'nunca' }}
+            </span>
+        </div>
+        <p style="font-size: 13px; color: #6b7280; margin: 0 0 16px;">
+            Se actualiza solo con cada uso real de la IA y con una prueba automática a los modelos sin uso reciente.
+            Si ninguno responde, LegalWeb busca modelos nuevos y le avisa en la campana de notificaciones.
+        </p>
+
+        @if(empty($modelHealth))
+            <p style="color: #94a3b8; font-size: 14px; text-align: center; padding: 24px 0;">
+                No hay modelos disponibles. Revise que GEMINI_API_KEY u OPENROUTER_API_KEY estén en el .env y use "Buscar modelos nuevos".
+            </p>
+        @else
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                    <thead>
+                        <tr style="background: #f9fafb;">
+                            <th style="text-align: left; padding: 10px 12px; font-weight: 600; color: #6b7280; border-bottom: 1px solid #e5e7eb;">#</th>
+                            <th style="text-align: left; padding: 10px 12px; font-weight: 600; color: #6b7280; border-bottom: 1px solid #e5e7eb;">Modelo</th>
+                            <th style="text-align: left; padding: 10px 12px; font-weight: 600; color: #6b7280; border-bottom: 1px solid #e5e7eb;">Estado</th>
+                            <th style="text-align: right; padding: 10px 12px; font-weight: 600; color: #6b7280; border-bottom: 1px solid #e5e7eb;">Respuesta</th>
+                            <th style="text-align: left; padding: 10px 12px; font-weight: 600; color: #6b7280; border-bottom: 1px solid #e5e7eb;">Última comprobación</th>
+                            <th style="padding: 10px 12px; border-bottom: 1px solid #e5e7eb;"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($modelHealth as $model)
+                            @php [$stateLabel, $stateColor, $stateBg] = $stateStyles[$model['state']]; @endphp
+                            <tr style="border-bottom: 1px solid #f3f4f6;">
+                                <td style="padding: 10px 12px; color: #94a3b8;">{{ $model['position'] ?: '-' }}</td>
+                                <td style="padding: 10px 12px; color: #111827; font-weight: 500;">
+                                    {{ $model['label'] }}
+                                    @if($model['error'])
+                                        <div style="font-size: 11px; color: #b91c1c; font-weight: 400; margin-top: 2px; max-width: 420px;">{{ \Illuminate\Support\Str::limit($model['error'], 140) }}</div>
+                                    @endif
+                                </td>
+                                <td style="padding: 10px 12px;">
+                                    <span style="display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; color: {{ $stateColor }}; background: {{ $stateBg }};">{{ $stateLabel }}</span>
+                                    @if($model['failures'] > 1)
+                                        <span style="font-size: 11px; color: #b91c1c;">{{ $model['failures'] }} fallos seguidos</span>
+                                    @endif
+                                </td>
+                                <td style="padding: 10px 12px; text-align: right; color: #374151;">{{ $model['latency_ms'] !== null ? number_format($model['latency_ms']).' ms' : '-' }}</td>
+                                <td style="padding: 10px 12px; color: #6b7280; font-size: 12px;">
+                                    {{ $model['checked_at']?->diffForHumans() ?? '-' }}
+                                    @if($model['source'])
+                                        <span style="color: #94a3b8;">({{ $sourceLabels[$model['source']] ?? $model['source'] }})</span>
+                                    @endif
+                                </td>
+                                <td style="padding: 10px 12px; text-align: right;">
+                                    @if($model['state'] !== 'retirado')
+                                        <button type="button" wire:click="probeModel(@js($model['key']))" wire:loading.attr="disabled" wire:target="probeModel"
+                                            style="padding: 4px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid #3A86FF; background: #fff; color: #3A86FF;">
+                                            Probar
+                                        </button>
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
+    </div>
 
     {{-- Selector de rango --}}
     <div style="display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap;">

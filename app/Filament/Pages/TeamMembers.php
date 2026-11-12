@@ -23,13 +23,13 @@ class TeamMembers extends Page
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserPlus;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Configuracion';
+    protected static string|UnitEnum|null $navigationGroup = 'Configuración';
 
     protected static ?string $navigationLabel = 'Equipo';
 
     protected static ?string $title = 'Equipo de Trabajo';
 
-    protected static ?int $navigationSort = 21;
+    protected static ?int $navigationSort = 31;
 
     public static function canAccess(): bool
     {

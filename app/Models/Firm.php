@@ -110,6 +110,24 @@ class Firm extends Model
         ];
     }
 
+    /**
+     * Modo solo lectura: suscripcion en mora o vencida con el periodo de gracia terminado.
+     */
+    public function isReadOnly(): bool
+    {
+        $subscription = Subscription::where('firm_id', $this->id)
+            ->whereIn('status', ['active', 'past_due'])
+            ->latest('id')
+            ->first();
+
+        if (! $subscription) {
+            return false;
+        }
+
+        return $subscription->status === 'past_due'
+            || ($subscription->grace_until && $subscription->grace_until->isPast() && $subscription->ends_at && $subscription->ends_at->isPast());
+    }
+
     public function realCasesCount(): int
     {
         return $this->legalCases()->where('is_demo', false)->count();

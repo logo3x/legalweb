@@ -7,7 +7,9 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Component;
 use Filament\Schemas\Schema;
+use Illuminate\Validation\Rules\Unique;
 
 class ClientForm
 {
@@ -15,38 +17,7 @@ class ClientForm
     {
         return $schema
             ->components([
-                Select::make('document_type')
-                    ->label('Tipo de Documento')
-                    ->options([
-                        'CC' => 'Cédula de Ciudadanía',
-                        'CE' => 'Cédula de Extranjería',
-                        'NIT' => 'NIT',
-                        'PP' => 'Pasaporte',
-                        'TI' => 'Tarjeta de Identidad',
-                    ])
-                    ->required()
-                    ->default('CC'),
-                TextInput::make('document_number')
-                    ->label('Número de Documento')
-                    ->required()
-                    ->unique(ignoreRecord: true)
-                    ->maxLength(20),
-                TextInput::make('first_name')
-                    ->label('Nombres')
-                    ->required()
-                    ->maxLength(100),
-                TextInput::make('last_name')
-                    ->label('Apellidos')
-                    ->required()
-                    ->maxLength(100),
-                TextInput::make('email')
-                    ->label('Correo Electrónico')
-                    ->email()
-                    ->maxLength(255),
-                TextInput::make('phone')
-                    ->label('Teléfono')
-                    ->tel()
-                    ->maxLength(20),
+                ...self::basicFields(),
                 TextInput::make('address')
                     ->label('Dirección'),
                 TextInput::make('city')
@@ -73,5 +44,49 @@ class ClientForm
                     ->searchable()
                     ->preload(),
             ]);
+    }
+
+    /**
+     * Datos esenciales del cliente; tambien se usan para crearlo desde el formulario del caso.
+     *
+     * @return array<int, Component>
+     */
+    public static function basicFields(): array
+    {
+        return [
+            Select::make('document_type')
+                ->label('Tipo de Documento')
+                ->options([
+                    'CC' => 'Cédula de Ciudadanía',
+                    'CE' => 'Cédula de Extranjería',
+                    'NIT' => 'NIT',
+                    'PP' => 'Pasaporte',
+                    'TI' => 'Tarjeta de Identidad',
+                ])
+                ->required()
+                ->default('CC'),
+            TextInput::make('document_number')
+                ->label('Número de Documento')
+                ->required()
+                // Unico dentro de la firma (otra firma puede tener el mismo cliente).
+                ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule): Unique => $rule->where('firm_id', auth()->user()?->firm_id))
+                ->maxLength(20),
+            TextInput::make('first_name')
+                ->label('Nombres')
+                ->required()
+                ->maxLength(100),
+            TextInput::make('last_name')
+                ->label('Apellidos')
+                ->required()
+                ->maxLength(100),
+            TextInput::make('email')
+                ->label('Correo Electrónico')
+                ->email()
+                ->maxLength(255),
+            TextInput::make('phone')
+                ->label('Teléfono')
+                ->tel()
+                ->maxLength(20),
+        ];
     }
 }

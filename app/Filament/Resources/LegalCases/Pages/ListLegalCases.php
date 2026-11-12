@@ -11,6 +11,7 @@ use App\Models\LegalCase;
 use App\Models\User;
 use App\Services\SamaiService;
 use App\Services\TybaService;
+use App\Services\UsageLimiter;
 use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
@@ -19,11 +20,44 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
+use Filament\Schemas\Components\Tabs\Tab;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\QueryException;
 
 class ListLegalCases extends ListRecords
 {
     protected static string $resource = LegalCaseResource::class;
+
+    /**
+     * Pestanas de acceso rapido sobre la lista de casos.
+     *
+     * @return array<string, Tab>
+     */
+    public function getTabs(): array
+    {
+        $active = ['abierto', 'en_progreso', 'en_espera'];
+
+        return [
+            'todos' => Tab::make('Todos'),
+            'activos' => Tab::make('Activos')
+                ->icon('heroicon-o-briefcase')
+                ->modifyQueryUsing(fn (Builder $query) => $query->whereIn('status', $active)),
+            'novedades' => Tab::make('Con novedades')
+                ->icon('heroicon-o-bell-alert')
+                ->modifyQueryUsing(fn (Builder $query) => $query->whereHas('events', fn (Builder $q) => $q
+                    ->where('event_type', 'actuacion')
+                    ->where('created_at', '>=', now()->subDays(7)))),
+            'sin_movimiento' => Tab::make('Sin movimiento (60 días)')
+                ->icon('heroicon-o-pause-circle')
+                ->modifyQueryUsing(fn (Builder $query) => $query
+                    ->whereIn('status', $active)
+                    ->where('created_at', '<', now()->subDays(60))
+                    ->whereDoesntHave('events', fn (Builder $q) => $q->where('event_date', '>=', now()->subDays(60)))),
+            'cerrados' => Tab::make('Cerrados y archivados')
+                ->icon('heroicon-o-archive-box')
+                ->modifyQueryUsing(fn (Builder $query) => $query->whereIn('status', ['cerrado', 'archivado'])),
+        ];
+    }
 
     public array $importResults = [];
 
@@ -66,6 +100,10 @@ class ListLegalCases extends ListRecords
                         ->validationMessages(['required' => 'Debe seleccionar un abogado responsable.']),
                 ])
                 ->action(function (array $data) {
+                    if (! UsageLimiter::attempt('judicial')) {
+                        return;
+                    }
+
                     $radicado = preg_replace('/[^0-9]/', '', $data['radicado']);
                     $result = $this->importSingleRadicado($radicado, $data['client_id'], $data['user_id']);
 
@@ -117,6 +155,10 @@ class ListLegalCases extends ListRecords
                         ->validationMessages(['required' => 'Debe seleccionar un abogado responsable.']),
                 ])
                 ->action(function (array $data) {
+                    if (! UsageLimiter::attempt('judicial')) {
+                        return;
+                    }
+
                     $lines = preg_split('/[\r\n]+/', trim($data['radicados']));
                     $radicados = collect($lines)
                         ->map(fn ($l) => preg_replace('/[^0-9]/', '', trim($l)))
@@ -211,6 +253,8 @@ class ListLegalCases extends ListRecords
                 ->modalCancelActionLabel('Cerrar')
                 ->modalContent(function () {
                     $logs = ImportLog::where('firm_id', auth()->user()->firm_id)
+                        // Los colaboradores solo ven sus propias importaciones.
+                        ->when(! auth()->user()->isAdmin(), fn ($q) => $q->where('user_id', auth()->id()))
                         ->orderByDesc('created_at')
                         ->limit(10)
                         ->get();

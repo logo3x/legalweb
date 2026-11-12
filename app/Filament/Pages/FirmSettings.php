@@ -30,13 +30,13 @@ class FirmSettings extends Page
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCog6Tooth;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Configuracion';
+    protected static string|UnitEnum|null $navigationGroup = 'Configuración';
 
     protected static ?string $navigationLabel = 'Mi Firma';
 
     protected static ?string $title = 'Mi Firma';
 
-    protected static ?int $navigationSort = 20;
+    protected static ?int $navigationSort = 30;
 
     public ?array $data = [];
 
