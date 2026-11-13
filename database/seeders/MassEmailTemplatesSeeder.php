@@ -70,6 +70,33 @@ class MassEmailTemplatesSeeder extends Seeder
 HTML,
             ],
 
+            [
+                'category' => 'onboarding',
+                'name' => 'Primer proceso - dia 3',
+                'subject' => 'Su primer proceso en LegalWeb toma 1 minuto',
+                'body' => <<<'HTML'
+<p><span class="lw-pill">Primeros pasos</span></p>
+<h2>{{first_name}}, aun no ha importado su primer proceso.</h2>
+<p>Es el paso que hace que LegalWeb empiece a trabajar por usted: desde esa noche revisamos el proceso en la Rama Judicial o SAMAI y le avisamos por correo cada nueva actuacion.</p>
+
+<ol class="lw-num-list">
+    <li>Entre a <strong>Casos</strong> y pulse <strong>Importar proceso</strong>.</li>
+    <li>Pegue el radicado de 23 digitos y elija el cliente (puede crearlo ahi mismo).</li>
+    <li>Listo: traemos despacho, juez, partes y actuaciones.</li>
+</ol>
+
+<div class="lw-callout success">
+    <strong>Tip:</strong> con <em>Importacion masiva</em> puede pegar hasta 20 radicados a la vez.
+</div>
+
+<p style="text-align:center;margin:28px 0;">
+    <a href="{{login_url}}" class="lw-btn-primary">Importar mi primer proceso</a>
+</p>
+
+<p class="small">Si algo no funciona o tiene dudas, responda este correo y le ayudamos.</p>
+HTML,
+            ],
+
             // ============================================================
             // RETENCION / TRIAL
             // ============================================================
@@ -365,22 +392,12 @@ HTML,
             // ============================================================
             [
                 'category' => 'novedades',
-                'name' => 'Novedades noviembre 2026 - WhatsApp, SAMAI, IA privada y planes',
-                'subject' => 'Novedades en LegalWeb: WhatsApp, SAMAI, vigilancia por cedula y cambios importantes',
+                'name' => 'Novedades noviembre 2026 - SAMAI, IA privada y planes',
+                'subject' => 'Novedades en LegalWeb: SAMAI, vigilancia por cedula, IA privada y cambios importantes',
                 'body' => <<<'HTML'
 <p><span class="lw-pill brand">Novedades de noviembre</span></p>
 <h2>{{first_name}}, LegalWeb ahora trabaja aun mas por usted</h2>
 <p>Estas son las mejoras que ya estan disponibles en su panel, y algunos cambios que le pedimos revisar.</p>
-
-<div class="lw-card">
-    <div class="lw-card-row">
-        <div class="lw-card-ico"><div style="background:#D1FAE5;color:#065F46;">&#128172;</div></div>
-        <div class="lw-card-body">
-            <h4>Avisos por WhatsApp</h4>
-            <p>Reciba las nuevas actuaciones, vencimientos y recordatorios en su WhatsApp. Activelo en <strong>Mi Firma</strong>. Tambien puede enviar a su cliente el enlace del portal por WhatsApp, con su autorizacion.</p>
-        </div>
-    </div>
-</div>
 
 <div class="lw-card">
     <div class="lw-card-row">
@@ -428,13 +445,13 @@ HTML,
 <ul class="lw-check-list">
     <li>Toda cuenta nueva sigue teniendo <strong>3 meses gratis con todo incluido</strong>.</li>
     <li>Al terminar la prueba, puede seguir <strong>gratis</strong> con hasta 5 casos activos, 1 usuario y 10 consultas de IA al mes. Sus casos y datos se conservan siempre.</li>
-    <li><strong>Profesional</strong> ($120.000/mes o $600.000 por 6 meses): casos ilimitados y 3 usuarios. <strong>Firma</strong> ($250.000/mes): hasta 10 usuarios.</li>
+    <li><strong>Profesional</strong> ($120.000/mes o $600.000 por 6 meses): casos ilimitados, 3 usuarios y vigilancia de clientes por cedula o NIT. <strong>Firma</strong> ($250.000/mes): hasta 10 usuarios.</li>
     <li>Si su prueba ya termino, los limites del plan Gratuito aplican desde el <strong>12 de diciembre de 2026</strong>. Le avisaremos antes.</li>
 </ul>
 
 <div class="lw-callout brand">
     <strong>Actualizamos los Terminos y Condiciones (version 3.3) y la Politica de Privacidad.</strong>
-    Incluyen los avisos por WhatsApp, la vigilancia de clientes por documento, la consulta de SAMAI y el ocultamiento de datos personales en la IA.
+    Incluyen la vigilancia de clientes por documento, la consulta de SAMAI, los nuevos proveedores de IA y el ocultamiento de datos personales antes de enviar informacion a la IA.
     Puede leerlos en <a href="{{site_url}}/portal/terminos">Terminos y Condiciones</a> y <a href="{{site_url}}/portal/privacidad">Politica de Privacidad</a>.
     Si tiene preguntas o no esta de acuerdo, responda este correo.
 </div>

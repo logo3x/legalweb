@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LegalWeb · El día que tu proceso cambie, lo sabrás antes que nadie</title>
-    <meta name="description" content="Software para abogados en Colombia: vigila tus procesos en la Rama Judicial y SAMAI, te avisa por correo y WhatsApp, calcula términos en días hábiles y vigila a tus clientes por cédula o NIT. 3 meses gratis.">
+    <meta name="description" content="Software para abogados en Colombia: vigila tus procesos en la Rama Judicial y SAMAI, te avisa por correo, calcula términos en días hábiles y vigila a tus clientes por cédula o NIT. 3 meses gratis.">
     <meta property="og:title" content="LegalWeb · Vigilancia judicial automática para abogados">
-    <meta property="og:description" content="Importa tu radicado y LegalWeb vigila la Rama Judicial y SAMAI cada noche. Te avisa por correo y WhatsApp apenas aparezca una nueva actuación.">
+    <meta property="og:description" content="Importa tu radicado y LegalWeb vigila la Rama Judicial y SAMAI cada noche. Te avisa por correo apenas aparezca una nueva actuación.">
     <meta property="og:type" content="website">
     <meta property="og:image" content="https://legalweb.com.co/images/og-cover.png">
     <link rel="icon" href="/images/favicon.ico" type="image/x-icon">
@@ -735,7 +735,7 @@
                 </h1>
                 <p class="lead lw-hero-lead">
                     LegalWeb vigila tus procesos en la Rama Judicial y en SAMAI y, cada vez que aparece una nueva actuación,
-                    te avisa por correo y WhatsApp. Sin entrar a consultar uno por uno. Sin perder un término.
+                    te avisa por correo. Sin entrar a consultar uno por uno. Sin perder un término.
                 </p>
                 <div class="lw-hero-cta" style="display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 18px;">
                     <a href="{{ route('auth.google') }}" class="btn btn-primary btn-lg">
@@ -811,8 +811,8 @@
                 <div class="pain-card">
                     <p class="pain-q">“Reviso la consulta de procesos uno por uno, todos los días.”</p>
                     <p class="pain-why">Con 30 o 40 procesos son horas a la semana entre la consulta de la Rama Judicial, SAMAI y páginas que se caen justo cuando más las necesitas.</p>
-                    <p class="pain-fix"><strong>LegalWeb lo hace por ti cada madrugada</strong> en la Rama Judicial y en SAMAI (Consejo de Estado y tribunales administrativos) y te avisa solo cuando hay algo nuevo, por correo y por WhatsApp.</p>
-                    <div class="pain-example"><b>Ejemplo</b>A las 3:00 a.m. se revisan tus 40 procesos. A las 7:00 te llega al WhatsApp: «Auto que admite la demanda · Juzgado 3.º Civil del Circuito de Medellín».</div>
+                    <p class="pain-fix"><strong>LegalWeb lo hace por ti cada madrugada</strong> en la Rama Judicial y en SAMAI (Consejo de Estado y tribunales administrativos) y te avisa por correo solo cuando hay algo nuevo, con lo que cambió.</p>
+                    <div class="pain-example"><b>Ejemplo</b>A las 3:00 a.m. se revisan tus 40 procesos. A las 7:00 tienes en tu correo: «Auto que admite la demanda · Juzgado 3.º Civil del Circuito de Medellín».</div>
                 </div>
                 <div class="pain-card">
                     <p class="pain-q">“Me da miedo que se me venza un término.”</p>
@@ -831,7 +831,7 @@
                     <span class="new-badge">Nuevo</span>
                     <p class="pain-q">“Mi cliente me llama todos los días a preguntar cómo va su proceso.”</p>
                     <p class="pain-why">Cada llamada interrumpe tu trabajo, y perseguir los documentos que el cliente debe entregar es otra tarea más.</p>
-                    <p class="pain-fix"><strong>Portal del cliente</strong> con el estado del proceso en lenguaje claro, <strong>avisos por WhatsApp</strong> (con su autorización) y <strong>reporte mensual en PDF</strong> automático.</p>
+                    <p class="pain-fix"><strong>Portal del cliente</strong> con el estado del proceso en lenguaje claro, <strong>solicitud de documentos</strong> y <strong>reporte mensual en PDF</strong> automático por correo.</p>
                     <div class="pain-example"><b>Ejemplo</b>Le envías el enlace del portal por WhatsApp. Tu cliente ve las actuaciones, te envía el enlace de los documentos que le pediste y cada mes recibe su reporte, sin llamarte.</div>
                 </div>
                 <div class="pain-card">
@@ -902,7 +902,7 @@
                         <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                         <span class="num">04</span>
                     </div>
-                    <h3>Te avisa por correo y WhatsApp</h3>
+                    <h3>Te avisa por correo</h3>
                     <p>Recibes la actuación, el despacho y la fecha, y ves qué cambió. Entras directo al caso con un clic.</p>
                 </div>
             </div>
@@ -983,11 +983,12 @@
     <section id="vista-previa" class="std" style="background: var(--white);" x-data="{
         active: 0,
         tabs: [
-            { name: 'Escritorio', img: '/images/screenshots/escritorio.png', desc: 'Vista general con KPIs: casos activos, clientes, actuaciones recientes y alertas de vencimiento.' },
-            { name: 'Detalle del caso', img: '/images/screenshots/detalle-caso.png', desc: 'Datos del proceso y de la Rama Judicial, partes, despacho, juez, actuaciones y accesos al portal.' },
-            { name: 'Agenda', img: '/images/screenshots/agenda.png', desc: 'Recordatorios y vencimientos con prioridad y alertas automáticas en días hábiles.' },
-            { name: 'Reportes', img: '/images/screenshots/reportes.png', desc: 'Analítica de despachos, tipos de actuaciones y actividad mensual de tu práctica.' },
-            { name: 'Flujo de proceso', img: '/images/screenshots/flujo-proceso.png', desc: '21 flujos precargados según la legislación colombiana (CGP, CPT, Ley 906, CPACA), totalmente editables.' },
+            { name: 'Mi día', img: '/images/screenshots/escritorio.png', desc: 'Al entrar ves lo que importa hoy: vencimientos de los próximos 3 días, audiencias de hoy y mañana, novedades que trajo la Rama Judicial en la madrugada y documentos que enviaron tus clientes.' },
+            { name: 'Búsqueda Ctrl+K', img: '/images/screenshots/busqueda.png', desc: 'Escribe un radicado, un nombre o una cédula y salta directo al caso o al cliente, desde cualquier pantalla.' },
+            { name: 'Detalle del caso', img: '/images/screenshots/detalle-caso.png', desc: 'Datos del proceso y de la Rama Judicial, partes, despacho, juez, actuaciones, documentos, facturación y accesos al portal.' },
+            { name: 'Vencimientos', img: '/images/screenshots/vencimientos.png', desc: 'Todos tus términos en días hábiles, ordenados por urgencia: vencidos, hoy, mañana y próximos 30 días.' },
+            { name: 'Analítica de despachos', img: '/images/screenshots/analitica.png', desc: 'Cuánto se demora cada despacho entre actuaciones en tus procesos, cuál es el más lento y qué casos llevan más de 60 días sin movimiento.' },
+            { name: 'Flujo de proceso', img: '/images/screenshots/flujo-proceso.png', desc: '21 flujos precargados según la legislación colombiana (CGP, CPT, Ley 906, CPACA), con plazos en días hábiles y totalmente editables.' },
             { name: 'Equipo de trabajo', img: '/images/screenshots/equipo.png', desc: 'Invita colaboradores y asigna casos con permisos individuales; tú mantienes el acceso total.' }
         ]
     }">
@@ -995,7 +996,7 @@
             <div class="section-head lw-reveal before">
                 <span class="eyebrow">La plataforma por dentro</span>
                 <h2>Así se ve LegalWeb cada mañana</h2>
-                <p>Datos reales importados desde la Rama Judicial, en una interfaz hecha para trabajar rápido.</p>
+                <p>Una interfaz hecha para trabajar rápido. Las imágenes usan datos de ejemplo: nombres y radicados ficticios.</p>
             </div>
             <div class="preview-tabs">
                 <template x-for="(tab, index) in tabs" :key="'tab-'+index">
@@ -1102,7 +1103,7 @@
                     @foreach([
                         'Casos y clientes ilimitados',
                         'Importación y vigilancia de la Rama Judicial',
-                        'Alertas de actuaciones por correo y WhatsApp',
+                        'Alertas de actuaciones por correo',
                         'Vigilancia de clientes por cédula o NIT',
                         'Calculadora de términos en días hábiles',
                         'Asistente IA jurídico',
@@ -1119,7 +1120,7 @@
             </div>
 
             <p style="text-align: center; font-size: var(--text-sm); color: var(--text-faint); margin-top: 28px;">
-                Precios en pesos colombianos. El plan Gratuito incluye hasta 5 casos activos, 1 usuario, 10 consultas de IA al mes y sincronización semanal; no incluye WhatsApp ni vigilancia de clientes.
+                Precios en pesos colombianos. El plan Gratuito incluye hasta 5 casos activos, 1 usuario, 10 consultas de IA al mes y sincronización semanal; no incluye la vigilancia de clientes por cédula o NIT.
             </p>
         </div>
     </section>

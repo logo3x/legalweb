@@ -42,7 +42,7 @@ class FlowProgressRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
-            ->description('El flujo de proceso muestra las etapas legales de su caso. Cada paso tiene un plazo en dias habiles. Puede marcar los pasos como completados, en progreso u omitidos. Los plazos se calculan segun el calendario judicial colombiano.')
+            ->description('El flujo de proceso muestra las etapas legales de su caso. Cada paso tiene un plazo en días hábiles. Puede marcar los pasos como completados, en progreso u omitidos. Los plazos se calculan según el calendario judicial colombiano.')
             ->recordTitleAttribute('flowStep.name')
             ->columns([
                 TextColumn::make('flowStep.order')

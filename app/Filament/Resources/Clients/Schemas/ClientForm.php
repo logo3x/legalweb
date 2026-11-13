@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Clients\Schemas;
 
 use App\Models\Client;
+use App\Services\WhatsAppService;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -27,6 +28,7 @@ class ClientForm
                     ->label('Notas')
                     ->columnSpanFull(),
                 Toggle::make('whatsapp_enabled')
+                    ->visible(fn (): bool => WhatsAppService::isEnabled())
                     ->label('El cliente autorizó recibir avisos por WhatsApp')
                     ->hint(fn (): ?string => auth()->user()?->firm?->planLimits()->hasWhatsApp() === false ? 'Incluido en los planes Profesional y Firma' : null)
                     ->helperText(fn (?Client $record): string => 'Active esta opción solo si el cliente le dio su autorización (Ley 1581 de 2012). '

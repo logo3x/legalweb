@@ -15,9 +15,18 @@ use Illuminate\Support\Facades\Log;
  */
 class WhatsAppService
 {
+    /**
+     * WhatsApp activado en la plataforma (WHATSAPP_ENABLED). Apagado, no se muestra ni se envia nada.
+     */
+    public static function isEnabled(): bool
+    {
+        return (bool) config('services.twilio.enabled');
+    }
+
     public function isConfigured(): bool
     {
-        return filled(config('services.twilio.sid'))
+        return self::isEnabled()
+            && filled(config('services.twilio.sid'))
             && filled(config('services.twilio.auth_token'))
             && filled(config('services.twilio.whatsapp_from'));
     }

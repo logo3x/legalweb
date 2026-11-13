@@ -290,6 +290,8 @@ Route::get('/cron/{token}/{task?}', function (string $token, ?string $task = nul
         Artisan::call('app:check-subscription-grace');
         // Aviso 30 y 3 dias antes de que apliquen los limites del plan Gratuito.
         Artisan::call('app:notify-plan-limits');
+        // Correos automaticos de ciclo de vida (bienvenida, primer proceso, inactividad).
+        Artisan::call('app:send-lifecycle-emails');
         $results[] = 'check-subscription-grace: OK';
     }
 

@@ -27,14 +27,14 @@
             <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-bottom: 24px;">
                 @if ($data['slowest'])
                     <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 16px;">
-                        <div style="font-size: 12px; color: #b91c1c; font-weight: 600;">Despacho mas lento</div>
+                        <div style="font-size: 12px; color: #b91c1c; font-weight: 600;">Despacho más lento</div>
                         <div style="font-size: 14px; font-weight: 700; color: #1f2937; margin-top: 4px;">{{ $data['slowest']['court'] }}</div>
                         <div style="font-size: 12px; color: #6b7280;">{{ $fmt($data['slowest']['avg_days_between_events']) }} en promedio entre actuaciones</div>
                     </div>
                 @endif
                 @if ($data['fastest'])
                     <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 16px;">
-                        <div style="font-size: 12px; color: #15803d; font-weight: 600;">Despacho mas agil</div>
+                        <div style="font-size: 12px; color: #15803d; font-weight: 600;">Despacho más ágil</div>
                         <div style="font-size: 14px; font-weight: 700; color: #1f2937; margin-top: 4px;">{{ $data['fastest']['court'] }}</div>
                         <div style="font-size: 12px; color: #6b7280;">{{ $fmt($data['fastest']['avg_days_between_events']) }} en promedio entre actuaciones</div>
                     </div>
@@ -50,9 +50,9 @@
                         <th style="padding: 12px; text-align: center;">Casos</th>
                         <th style="padding: 12px; text-align: center;">Activos</th>
                         <th style="padding: 12px; text-align: center;">Actuaciones</th>
-                        <th style="padding: 12px; text-align: center;" title="Promedio de dias entre una actuacion y la siguiente">Dias entre actuaciones</th>
-                        <th style="padding: 12px; text-align: center;" title="Promedio de dias desde la ultima actuacion en casos activos">Dias sin movimiento</th>
-                        <th style="padding: 12px; text-align: center;" title="Duracion promedio de los casos cerrados">Duracion casos cerrados</th>
+                        <th style="padding: 12px; text-align: center;" title="Promedio de dias entre una actuacion y la siguiente">Días entre actuaciones</th>
+                        <th style="padding: 12px; text-align: center;" title="Promedio de dias desde la ultima actuacion en casos activos">Días sin movimiento</th>
+                        <th style="padding: 12px; text-align: center;" title="Duracion promedio de los casos cerrados">Duración casos cerrados</th>
                         <th style="padding: 12px; text-align: center;">Estancados</th>
                     </tr>
                 </thead>

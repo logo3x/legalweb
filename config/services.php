@@ -91,6 +91,8 @@ return [
     ],
 
     'twilio' => [
+        // Interruptor general: WhatsApp queda oculto y sin envios hasta activarlo (Twilio + plantillas aprobadas por Meta).
+        'enabled' => (bool) env('WHATSAPP_ENABLED', false),
         'sid' => env('TWILIO_SID'),
         'auth_token' => env('TWILIO_AUTH_TOKEN'),
         'whatsapp_from' => env('TWILIO_WHATSAPP_FROM'),

@@ -180,7 +180,7 @@ class PlanLimitsTest extends TestCase
 
     public function test_free_plan_does_not_send_whatsapp(): void
     {
-        config(['services.twilio.sid' => 'AC123', 'services.twilio.auth_token' => 'tok', 'services.twilio.whatsapp_from' => '+14155238886']);
+        config(['services.twilio.enabled' => true, 'services.twilio.sid' => 'AC123', 'services.twilio.auth_token' => 'tok', 'services.twilio.whatsapp_from' => '+14155238886']);
         $this->onFreeLimits();
         $this->admin->update(['whatsapp_enabled' => true, 'whatsapp_phone' => '3001234567']);
         $client = Client::factory()->create(['firm_id' => $this->firm->id]);

@@ -21,14 +21,14 @@ return new class extends Migration
 
         $novedades = new ProductUpdatesNotification(
             title: 'Novedades en LegalWeb',
-            body: 'Avisos por WhatsApp, vigilancia de clientes por cedula o NIT, procesos de SAMAI, IA que oculta los datos personales, busqueda rapida con Ctrl+K y analitica de despachos.',
+            body: 'Vigilancia de clientes por cedula o NIT, procesos de SAMAI, IA que oculta los datos personales, busqueda rapida con Ctrl+K, panel Mi dia y analitica de despachos.',
             actionLabel: 'Ver mi plan y novedades',
             actionUrl: url('/admin/planes'),
         );
 
         $terminos = new ProductUpdatesNotification(
             title: 'Actualizamos los Terminos y la Politica de Privacidad',
-            body: 'Version 3.3: WhatsApp, vigilancia por documento, SAMAI y ocultamiento de datos personales en la IA. Si tiene preguntas, escribanos.',
+            body: 'Version 3.3: vigilancia por documento, SAMAI, nuevos proveedores de IA y ocultamiento de datos personales. Si tiene preguntas, escribanos.',
             actionLabel: 'Leer los terminos',
             actionUrl: url('/portal/terminos'),
         );

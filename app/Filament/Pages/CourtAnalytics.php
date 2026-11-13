@@ -16,7 +16,7 @@ class CourtAnalytics extends Page
 
     protected static ?string $navigationLabel = 'Analítica de despachos';
 
-    protected static ?string $title = 'Analitica de Despachos';
+    protected static ?string $title = 'Analítica de despachos';
 
     protected static ?string $slug = 'analitica-despachos';
 

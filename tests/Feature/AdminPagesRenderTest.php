@@ -27,10 +27,22 @@ class AdminPagesRenderTest extends TestCase
 
     public function test_firm_settings_page_renders_with_whatsapp_section(): void
     {
+        config(['services.twilio.enabled' => true]);
+
         $this->actingAs($this->user)
             ->get('/admin/firm-settings')
             ->assertOk()
             ->assertSee('Notificaciones por WhatsApp');
+    }
+
+    public function test_whatsapp_is_hidden_while_disabled(): void
+    {
+        config(['services.twilio.enabled' => false]);
+
+        $this->actingAs($this->user)
+            ->get('/admin/firm-settings')
+            ->assertOk()
+            ->assertDontSee('Notificaciones por WhatsApp');
     }
 
     public function test_court_analytics_page_renders_with_data(): void

@@ -20,17 +20,16 @@ class CasesByTypeChart extends ApexChartWidget
             return false;
         }
 
-        return CaseType::withCount(['legalCases' => fn ($q) => $q->where('firm_id', $firmId)])
-            ->having('legal_cases_count', '>', 0)
-            ->exists();
+        return CaseType::whereHas('legalCases', fn ($q) => $q->where('firm_id', $firmId))->exists();
     }
 
     protected function getOptions(): array
     {
         $firmId = auth()->user()?->firm_id;
 
-        $types = CaseType::withCount(['legalCases' => fn ($q) => $q->where('firm_id', $firmId)])
-            ->having('legal_cases_count', '>', 0)
+        // whereHas en vez de HAVING sobre withCount: HAVING sin GROUP BY falla en SQLite.
+        $types = CaseType::whereHas('legalCases', fn ($q) => $q->where('firm_id', $firmId))
+            ->withCount(['legalCases' => fn ($q) => $q->where('firm_id', $firmId)])
             ->get()
             ->filter(fn ($t) => ! empty($t->name) && (int) $t->legal_cases_count > 0)
             ->values();

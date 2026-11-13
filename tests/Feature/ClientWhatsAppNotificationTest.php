@@ -33,6 +33,7 @@ class ClientWhatsAppNotificationTest extends TestCase
         parent::setUp();
 
         config([
+            'services.twilio.enabled' => true,
             'services.twilio.sid' => 'AC123',
             'services.twilio.auth_token' => 'secret',
             'services.twilio.whatsapp_from' => '+15550001111',

@@ -44,7 +44,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->sidebarCollapsibleOnDesktop()
             // Ctrl+K / Cmd+K abre la busqueda de casos y clientes.
-            ->globalSearchKeyBindings(['command+k', 'ctrl+k'])
+            ->globalSearchKeyBindings(['ctrl+k', 'command+k'])
             ->globalSearchFieldKeyBindingSuffix()
             ->unsavedChangesAlerts()
             ->brandName('LegalWeb')

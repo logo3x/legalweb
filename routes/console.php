@@ -26,3 +26,5 @@ Schedule::command('app:sync-tyba-actuaciones')->dailyAt('03:00');
 Schedule::command('app:verify-ai-models')->dailyAt('06:00');
 
 Schedule::command('app:notify-plan-limits')->dailyAt('09:05');
+
+Schedule::command('app:send-lifecycle-emails')->dailyAt('10:00');

@@ -21,7 +21,7 @@
                             <div style="font-size: 14px; font-weight: 600; color: #111827;">
                                 {{ $member->name }}
                                 @if($member->id === auth()->id())
-                                    <span style="font-size: 11px; color: #6b7280; font-weight: 400;">(tu)</span>
+                                    <span style="font-size: 11px; color: #6b7280; font-weight: 400;">(tú)</span>
                                 @endif
                             </div>
                             <div style="font-size: 13px; color: #6b7280;">{{ $member->email }}</div>
@@ -138,11 +138,11 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
             <div style="font-size: 13px; color: #0369a1;">
-                <strong>Como funciona:</strong><br>
+                <strong>Cómo funciona:</strong><br>
                 1. Invite un colaborador con su correo de Google<br>
-                2. Cuando inicie sesion se vinculara automaticamente a su firma<br>
-                3. Despliegue "Gestionar casos asignados" para asignar casos especificos con permisos individuales<br>
-                4. El colaborador solo vera los casos que usted le asigne<br>
+                2. Cuando inicie sesión se vinculará automáticamente a su firma<br>
+                3. Despliegue "Gestionar casos asignados" para asignar casos específicos con permisos individuales<br>
+                4. El colaborador solo verá los casos que usted le asigne<br>
                 5. El administrador siempre tiene acceso total a todos los casos
             </div>
         </div>

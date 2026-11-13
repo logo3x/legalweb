@@ -11,4 +11,9 @@ class PlanOverview extends Widget
     protected static ?int $sort = -1;
 
     protected int|string|array $columnSpan = 'full';
+
+    /**
+     * Se muestra apenas abre el escritorio, sin esperar a que cargue el resto.
+     */
+    protected static bool $isLazy = false;
 }

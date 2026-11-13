@@ -56,6 +56,14 @@ class LegalCasesTable
                         'cerrado' => 'success',
                         'archivado' => 'danger',
                         default => 'gray',
+                    })
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'abierto' => 'Abierto',
+                        'en_progreso' => 'En progreso',
+                        'en_espera' => 'En espera',
+                        'cerrado' => 'Cerrado',
+                        'archivado' => 'Archivado',
+                        default => ucfirst($state),
                     }),
                 TextColumn::make('priority')
                     ->label('Prioridad')

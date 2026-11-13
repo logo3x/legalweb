@@ -35,7 +35,7 @@
         ['label' => $maxCases === null ? 'Casos ilimitados' : "{$maxCases} casos activos", 'active' => true],
         ['label' => ($maxUsers ?? 'Usuarios').($maxUsers ? ' usuario(s)' : ' ilimitados'), 'active' => true],
         ['label' => $aiLimit === null ? 'Asistente IA' : "IA: {$aiUsed}/{$aiLimit} este mes", 'active' => true],
-        ['label' => 'Avisos por WhatsApp', 'active' => $limits?->hasWhatsApp() ?? true],
+        ...(\App\Services\WhatsAppService::isEnabled() ? [['label' => 'Avisos por WhatsApp', 'active' => $limits?->hasWhatsApp() ?? true]] : []),
         ['label' => 'Vigilancia de clientes', 'active' => $limits?->hasClientMonitoring() ?? true],
         ['label' => ($limits?->syncEveryDays() ?? 1) > 1 ? 'Rama Judicial semanal' : 'Rama Judicial diaria', 'active' => true],
     ];

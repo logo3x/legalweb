@@ -168,7 +168,7 @@ class FirmSettings extends Page
 
                 Section::make('Notificaciones por WhatsApp')
                     ->description('Reciba en su celular las alertas importantes: vencimientos, nuevas actuaciones de la Rama Judicial, documentos del cliente y accesos al portal.')
-                    ->visible(fn () => DbSchema::hasColumn('users', 'whatsapp_enabled'))
+                    ->visible(fn () => WhatsAppService::isEnabled() && DbSchema::hasColumn('users', 'whatsapp_enabled'))
                     ->schema([
                         Placeholder::make('whatsapp_status')
                             ->label('')
@@ -299,6 +299,7 @@ class FirmSettings extends Page
     {
         return [
             Action::make('test_whatsapp')
+                ->visible(fn (): bool => WhatsAppService::isEnabled())
                 ->label('Probar WhatsApp')
                 ->icon('heroicon-o-chat-bubble-left-ellipsis')
                 ->color('success')

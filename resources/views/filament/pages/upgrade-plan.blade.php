@@ -19,7 +19,7 @@
                     [true, ($plan->ai_monthly_limit ?? 10).' consultas de IA al mes'],
                     [true, 'Rama Judicial y SAMAI (sincronización semanal)'],
                     [true, 'Portal del cliente, agenda y calculadora de términos'],
-                    [false, 'Avisos por WhatsApp'],
+                    ...(\App\Services\WhatsAppService::isEnabled() ? [[false, 'Avisos por WhatsApp']] : []),
                     [false, 'Vigilancia de clientes por documento'],
                 ];
             }
@@ -30,7 +30,7 @@
                 [true, 'Asistente IA sin límite mensual'],
                 [true, 'Rama Judicial y SAMAI (sincronización diaria)'],
                 [true, 'Portal del cliente, reportes PDF y facturación'],
-                [true, 'Avisos por WhatsApp'],
+                ...(\App\Services\WhatsAppService::isEnabled() ? [[true, 'Avisos por WhatsApp']] : []),
                 [true, 'Vigilancia de clientes por documento'],
             ];
         };

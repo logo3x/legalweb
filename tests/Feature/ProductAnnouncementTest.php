@@ -20,14 +20,15 @@ class ProductAnnouncementTest extends TestCase
     {
         $this->seed(MassEmailTemplatesSeeder::class);
 
-        $template = MassEmailTemplate::where('name', 'Novedades noviembre 2026 - WhatsApp, SAMAI, IA privada y planes')->firstOrFail();
+        $template = MassEmailTemplate::where('name', 'Novedades noviembre 2026 - SAMAI, IA privada y planes')->firstOrFail();
         $user = User::factory()->create(['name' => 'Camila Rojas', 'firm_id' => Firm::factory()->create()->id]);
         $campaign = new MassEmailCampaign(['subject' => $template->subject, 'body' => $template->body]);
 
         $html = (string) (new MassEmailNotification($campaign))->toMail($user)->render();
 
         $this->assertStringContainsString('Camila, LegalWeb ahora trabaja aun mas por usted', $html);
-        $this->assertStringContainsString('Avisos por WhatsApp', $html);
+        $this->assertStringContainsString('Vigilancia de clientes por cedula o NIT', $html);
+        $this->assertStringNotContainsString('WhatsApp', $html);
         $this->assertStringContainsString('12 de diciembre de 2026', $html);
         $this->assertStringContainsString(url('/portal/privacidad'), $html);
         $this->assertStringNotContainsString('{{', $html);

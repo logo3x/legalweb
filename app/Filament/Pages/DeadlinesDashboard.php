@@ -20,7 +20,7 @@ class DeadlinesDashboard extends Page
 
     protected static ?string $slug = 'vencimientos';
 
-    protected static ?string $title = 'Dashboard de Vencimientos';
+    protected static ?string $title = 'Vencimientos';
 
     protected static ?int $navigationSort = 3;
 

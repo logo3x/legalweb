@@ -32,7 +32,7 @@ class BillingRelationManager extends RelationManager
 
     protected static string $relationship = 'billingEntries';
 
-    protected static ?string $title = 'Facturacion';
+    protected static ?string $title = 'Facturación';
 
     public function isReadOnly(): bool
     {

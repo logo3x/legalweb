@@ -2,10 +2,10 @@
 <details style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; margin-bottom: 24px;">
     <summary style="padding: 12px 16px; cursor: pointer; font-size: 13px; font-weight: 500; color: #1e40af; list-style: none; display: flex; align-items: center; gap: 8px;">
         <svg style="width: 16px; height: 16px;" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/></svg>
-        Como funcionan los vencimientos
+        Cómo funcionan los vencimientos
     </summary>
     <div style="padding: 0 16px 12px 16px; font-size: 13px; color: #1e40af; line-height: 1.5;">
-        Este panel muestra los plazos y vencimientos de sus procesos judiciales. Las alertas se generan automaticamente cuando la Rama Judicial registra actuaciones como autos, traslados, audiencias o sentencias. Los plazos se calculan en dias habiles segun el calendario judicial colombiano (excluyendo fines de semana, festivos y vacancia judicial).
+        Este panel muestra los plazos y vencimientos de sus procesos judiciales. Las alertas se generan automáticamente cuando la Rama Judicial registra actuaciones como autos, traslados, audiencias o sentencias. Los plazos se calculan en días hábiles según el calendario judicial colombiano (excluyendo fines de semana, festivos y vacancia judicial).
     </div>
 </details>
 
@@ -14,8 +14,8 @@
     @foreach([
         ['label' => 'Vencidos', 'value' => $data['summary']['vencidos'], 'bg' => '#fef2f2', 'border' => '#fecaca', 'color' => '#dc2626'],
         ['label' => 'Vencen hoy', 'value' => $data['summary']['hoy'], 'bg' => '#fff7ed', 'border' => '#fed7aa', 'color' => '#ea580c'],
-        ['label' => '1-3 dias', 'value' => $data['summary']['urgentes'], 'bg' => '#fefce8', 'border' => '#fde68a', 'color' => '#ca8a04'],
-        ['label' => '4-7 dias', 'value' => $data['summary']['proximos'], 'bg' => '#eff6ff', 'border' => '#bfdbfe', 'color' => '#2563eb'],
+        ['label' => '1-3 días', 'value' => $data['summary']['urgentes'], 'bg' => '#fefce8', 'border' => '#fde68a', 'color' => '#ca8a04'],
+        ['label' => '4-7 días', 'value' => $data['summary']['proximos'], 'bg' => '#eff6ff', 'border' => '#bfdbfe', 'color' => '#2563eb'],
         ['label' => 'Total pendientes', 'value' => $data['summary']['total'], 'bg' => '#f9fafb', 'border' => '#e5e7eb', 'color' => '#4b5563'],
     ] as $stat)
         <div style="background: {{ $stat['bg'] }}; border: 1px solid {{ $stat['border'] }}; border-radius: 12px; padding: 16px; text-align: center;">
@@ -29,8 +29,8 @@
     {{-- Timeline de vencimientos --}}
     <div style="background: #fff; border-radius: 12px; border: 1px solid #e5e7eb;">
         <div style="padding: 16px 20px; border-bottom: 1px solid #f3f4f6;">
-            <h3 style="font-size: 16px; font-weight: 600; color: #111827; margin: 0;">Timeline de Vencimientos</h3>
-            <p style="font-size: 12px; color: #9ca3af; margin: 4px 0 0 0;">Proximos 30 dias - alertas desde la Rama Judicial</p>
+            <h3 style="font-size: 16px; font-weight: 600; color: #111827; margin: 0;">Próximos vencimientos</h3>
+            <p style="font-size: 12px; color: #9ca3af; margin: 4px 0 0 0;">Próximos 30 días · alertas desde la Rama Judicial</p>
         </div>
 
         @forelse ($data['reminders'] as $reminder)
@@ -89,9 +89,9 @@
                         @elseif($reminder['days'] === 0)
                             HOY
                         @elseif($reminder['days'] === 1)
-                            MANANA
+                            MAÑANA
                         @else
-                            {{ $reminder['days'] }} dias
+                            {{ $reminder['days'] }} días
                         @endif
                     </div>
                     <div style="font-size: 11px; color: #9ca3af;">{{ $reminder['due_date'] }}</div>
@@ -101,7 +101,7 @@
             <div style="padding: 40px; text-align: center; color: #9ca3af;">
                 <svg style="width: 48px; height: 48px; margin: 0 auto 12px; color: #86efac;" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 <p style="font-weight: 500; margin: 0;">Sin vencimientos pendientes</p>
-                <p style="font-size: 13px; margin: 4px 0 0 0;">Las alertas se generan automaticamente al sincronizar con la Rama Judicial.</p>
+                <p style="font-size: 13px; margin: 4px 0 0 0;">Las alertas se generan automáticamente al sincronizar con la Rama Judicial.</p>
             </div>
         @endforelse
     </div>
@@ -111,7 +111,7 @@
         <div style="background: #fff; border-radius: 12px; border: 1px solid #e5e7eb; margin-bottom: 16px;">
             <div style="padding: 14px 16px; border-bottom: 1px solid #f3f4f6;">
                 <h3 style="font-size: 14px; font-weight: 600; color: #111827; margin: 0;">Actuaciones Recientes</h3>
-                <p style="font-size: 11px; color: #9ca3af; margin: 2px 0 0 0;">Ultimos 15 dias desde Rama Judicial</p>
+                <p style="font-size: 11px; color: #9ca3af; margin: 2px 0 0 0;">Últimos 15 días desde la Rama Judicial</p>
             </div>
             <div style="max-height: 320px; overflow-y: auto;">
                 @forelse ($data['recentActuaciones'] as $act)
