@@ -9,11 +9,8 @@ class MassEmailTemplatesSeeder extends Seeder
 {
     public function run(): void
     {
-        // Plantillas a eliminar — mencionan el plan Firma que fue desactivado.
-        $obsolete = [
-            'Plan firma - para equipos',
-            'Plan firma - upgrade equipo',
-        ];
+        // Plantillas a eliminar.
+        $obsolete = [];
         MassEmailTemplate::whereIn('name', $obsolete)->delete();
 
         $templates = $this->templates();
@@ -105,16 +102,16 @@ HTML,
                 'body' => <<<'HTML'
 <p><span class="lw-pill warning">Quedan menos de 7 dias</span></p>
 <h2>{{first_name}}, casi se acaba la prueba.</h2>
-<p>Esta semana es la ultima para que pueda activar su suscripcion y mantener acceso completo a todo lo que ya configuro en LegalWeb.</p>
+<p>Esta semana es la ultima de su prueba con todo incluido. Despues su cuenta pasa al plan Gratuito: sus datos se conservan, pero con limites.</p>
 
-<h3>Lo que pierde si no activa:</h3>
+<h3>Lo que cambia en el plan Gratuito:</h3>
 <ul class="lw-check-list">
-    <li>Vigilancia automatica diaria de la Rama Judicial</li>
-    <li>Alertas por correo de nuevas actuaciones</li>
-    <li>Asistente IA para resumenes y borradores</li>
-    <li>Portal del cliente con seguimiento en tiempo real</li>
-    <li>Calculo automatico de terminos en dias habiles</li>
+    <li>Hasta 5 casos activos y 1 usuario</li>
+    <li>Sincronizacion con la Rama Judicial semanal en vez de diaria</li>
+    <li>10 consultas de IA al mes</li>
+    <li>Sin avisos por WhatsApp ni vigilancia de clientes por cedula o NIT</li>
 </ul>
+<p>Con el plan Profesional sigue exactamente como en la prueba.</p>
 
 <p style="text-align:center;margin:28px 0;">
     <a href="{{login_url}}" class="lw-btn-primary">Activar ahora — $120.000 COP/mes</a>
@@ -129,10 +126,10 @@ HTML,
                 'body' => <<<'HTML'
 <p><span class="lw-pill danger">Prueba expirada</span></p>
 <h2>{{first_name}}, no se preocupe — todo sigue donde lo dejo.</h2>
-<p>Su prueba gratuita termino, pero sus casos, clientes y configuracion <strong>siguen intactos</strong> en su cuenta. Solo entro a modo solo-lectura mientras decide.</p>
+<p>Su prueba gratuita termino, pero sus casos, clientes y configuracion <strong>siguen intactos</strong>. Su cuenta paso al plan Gratuito: hasta 5 casos activos, 1 usuario y sincronizacion semanal.</p>
 
 <div class="lw-callout">
-    <strong>Para reactivar:</strong> entre al panel y vaya a <em>Mi Plan</em>. En menos de 60 segundos vuelve a estar operando al 100%.
+    <strong>Para volver a tenerlo todo:</strong> entre al panel y vaya a <em>Mi Plan</em>. En menos de 60 segundos vuelve a tener casos ilimitados, WhatsApp y vigilancia diaria.
 </div>
 
 <p style="text-align:center;margin:28px 0;">
@@ -366,6 +363,87 @@ HTML,
             // ============================================================
             // NOVEDADES / PRODUCTO
             // ============================================================
+            [
+                'category' => 'novedades',
+                'name' => 'Novedades noviembre 2026 - WhatsApp, SAMAI, IA privada y planes',
+                'subject' => 'Novedades en LegalWeb: WhatsApp, SAMAI, vigilancia por cedula y cambios importantes',
+                'body' => <<<'HTML'
+<p><span class="lw-pill brand">Novedades de noviembre</span></p>
+<h2>{{first_name}}, LegalWeb ahora trabaja aun mas por usted</h2>
+<p>Estas son las mejoras que ya estan disponibles en su panel, y algunos cambios que le pedimos revisar.</p>
+
+<div class="lw-card">
+    <div class="lw-card-row">
+        <div class="lw-card-ico"><div style="background:#D1FAE5;color:#065F46;">&#128172;</div></div>
+        <div class="lw-card-body">
+            <h4>Avisos por WhatsApp</h4>
+            <p>Reciba las nuevas actuaciones, vencimientos y recordatorios en su WhatsApp. Activelo en <strong>Mi Firma</strong>. Tambien puede enviar a su cliente el enlace del portal por WhatsApp, con su autorizacion.</p>
+        </div>
+    </div>
+</div>
+
+<div class="lw-card">
+    <div class="lw-card-row">
+        <div class="lw-card-ico"><div style="background:#DBEAFE;color:#1E40AF;">&#128269;</div></div>
+        <div class="lw-card-body">
+            <h4>Vigilancia de clientes por cedula o NIT</h4>
+            <p>Cada noche buscamos a sus clientes en la Rama Judicial y le avisamos si aparecen en un proceso nuevo. Asi se entera de una demanda contra su cliente desde el primer dia.</p>
+        </div>
+    </div>
+</div>
+
+<div class="lw-card">
+    <div class="lw-card-row">
+        <div class="lw-card-ico"><div style="background:#FEF3C7;color:#78350F;">&#9878;</div></div>
+        <div class="lw-card-body">
+            <h4>Procesos de SAMAI (Consejo de Estado y tribunales administrativos)</h4>
+            <p>Importe y vigile tambien sus procesos contencioso-administrativos, con el mismo radicado.</p>
+        </div>
+    </div>
+</div>
+
+<div class="lw-card">
+    <div class="lw-card-row">
+        <div class="lw-card-ico"><div style="background:#F3E8FF;color:#6B21A8;">&#128274;</div></div>
+        <div class="lw-card-body">
+            <h4>Asistente IA que protege el secreto profesional</h4>
+            <p>Antes de enviar un caso a la IA, LegalWeb oculta nombres, cedulas, telefonos y correos, y los vuelve a poner en su documento. El proveedor de IA nunca ve a su cliente.</p>
+        </div>
+    </div>
+</div>
+
+<div class="lw-card">
+    <div class="lw-card-row">
+        <div class="lw-card-ico"><div style="background:#E0F2FE;color:#075985;">&#9889;</div></div>
+        <div class="lw-card-body">
+            <h4>Mas rapido en el dia a dia</h4>
+            <p>Busque cualquier caso o cliente con <strong>Ctrl+K</strong>, cree el cliente sin salir del formulario del caso, sincronice desde la lista y revise la nueva <strong>Analitica de despachos</strong> con los tiempos reales de sus procesos.</p>
+        </div>
+    </div>
+</div>
+
+<div class="lw-divider"></div>
+
+<h3>Cambios en los planes</h3>
+<ul class="lw-check-list">
+    <li>Toda cuenta nueva sigue teniendo <strong>3 meses gratis con todo incluido</strong>.</li>
+    <li>Al terminar la prueba, puede seguir <strong>gratis</strong> con hasta 5 casos activos, 1 usuario y 10 consultas de IA al mes. Sus casos y datos se conservan siempre.</li>
+    <li><strong>Profesional</strong> ($120.000/mes o $600.000 por 6 meses): casos ilimitados y 3 usuarios. <strong>Firma</strong> ($250.000/mes): hasta 10 usuarios.</li>
+    <li>Si su prueba ya termino, los limites del plan Gratuito aplican desde el <strong>12 de diciembre de 2026</strong>. Le avisaremos antes.</li>
+</ul>
+
+<div class="lw-callout brand">
+    <strong>Actualizamos los Terminos y Condiciones (version 3.3) y la Politica de Privacidad.</strong>
+    Incluyen los avisos por WhatsApp, la vigilancia de clientes por documento, la consulta de SAMAI y el ocultamiento de datos personales en la IA.
+    Puede leerlos en <a href="{{site_url}}/portal/terminos">Terminos y Condiciones</a> y <a href="{{site_url}}/portal/privacidad">Politica de Privacidad</a>.
+    Si tiene preguntas o no esta de acuerdo, responda este correo.
+</div>
+
+<p style="text-align:center;margin:28px 0;">
+    <a href="{{login_url}}" class="lw-btn-primary">Ver las novedades en mi panel</a>
+</p>
+HTML,
+            ],
             [
                 'category' => 'novedades',
                 'name' => 'Novedades del mes - update general',

@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LegalWeb · El día que tu proceso cambie, lo sabrás antes que nadie</title>
-    <meta name="description" content="LegalWeb vigila tus procesos en la Rama Judicial y te notifica por correo cada vez que aparece una nueva actuación. 3 meses gratis sin tarjeta de crédito.">
+    <meta name="description" content="Software para abogados en Colombia: vigila tus procesos en la Rama Judicial y SAMAI, te avisa por correo y WhatsApp, calcula términos en días hábiles y vigila a tus clientes por cédula o NIT. 3 meses gratis.">
     <meta property="og:title" content="LegalWeb · Vigilancia judicial automática para abogados">
-    <meta property="og:description" content="Importa tu radicado y LegalWeb vigila la Rama Judicial cada noche. Te avisa por correo apenas aparezca una nueva actuación.">
+    <meta property="og:description" content="Importa tu radicado y LegalWeb vigila la Rama Judicial y SAMAI cada noche. Te avisa por correo y WhatsApp apenas aparezca una nueva actuación.">
     <meta property="og:type" content="website">
     <meta property="og:image" content="https://legalweb.com.co/images/og-cover.png">
     <link rel="icon" href="/images/favicon.ico" type="image/x-icon">
@@ -307,6 +307,35 @@
             font-weight: 600; color: var(--brand-navy); margin: 0 0 8px;
         }
         .feat-card p { font-size: var(--text-sm); color: var(--text-muted); line-height: 1.6; margin: 0; }
+
+        /* Dolores y soluciones */
+        .pain-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+        .pain-card {
+            position: relative; display: flex; flex-direction: column; gap: 14px;
+            background: var(--white); border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-xl); padding: 26px;
+            transition: transform .25s ease, box-shadow .25s ease;
+        }
+        .pain-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+        .pain-card .pain-q {
+            font-family: var(--font-display); font-size: 18px; font-weight: 600; line-height: 1.35;
+            color: var(--brand-navy); margin: 0; padding-left: 14px; border-left: 3px solid var(--red-500);
+        }
+        .pain-card .pain-why { font-size: 13.5px; color: var(--text-muted); line-height: 1.55; margin: 0; }
+        .pain-card .pain-fix { font-size: var(--text-sm); color: var(--text-body); line-height: 1.6; margin: 0; }
+        .pain-card .pain-fix strong { color: var(--green-700); }
+        .pain-card .pain-example {
+            margin-top: auto; background: var(--surface-sunken); border: 1px dashed var(--border-default);
+            border-radius: var(--radius-lg); padding: 12px 14px; font-size: 13px; color: var(--text-body); line-height: 1.55;
+        }
+        .pain-card .pain-example b { display: block; font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--text-faint); margin-bottom: 4px; }
+        .new-badge {
+            position: absolute; top: 18px; right: 18px; font-size: 10.5px; font-weight: 800; letter-spacing: .06em;
+            text-transform: uppercase; color: #fff; background: var(--green-600); padding: 4px 9px; border-radius: var(--radius-full);
+        }
+        .pain-card .new-badge + .pain-q { padding-right: 62px; }
+        @media (max-width: 980px) { .pain-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 640px) { .pain-grid { grid-template-columns: 1fr; } }
 
         /* Preview */
         .preview-tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 28px; }
@@ -672,6 +701,7 @@
                 <img src="/images/logo.svg" alt="LegalWeb" style="height: 38px;">
             </a>
             <div class="links">
+                <a href="#por-que">¿Por qué LegalWeb?</a>
                 <a href="#vigilancia">Vigilancia judicial</a>
                 <a href="#funcionalidades">Funcionalidades</a>
                 <a href="#vista-previa">La plataforma</a>
@@ -696,7 +726,7 @@
                         <span class="lw-ping" style="position: absolute; inset: 0; border-radius: 50%; background: var(--green-500);"></span>
                         <span style="position: relative; width: 8px; height: 8px; border-radius: 50%; background: var(--green-500);"></span>
                     </span>
-                    Conectado con la Rama Judicial de Colombia
+                    Conectado con la Rama Judicial y SAMAI
                 </div>
                 <h1 class="lw-hero-h1">
                     El día que tu proceso<br>
@@ -704,8 +734,8 @@
                     antes que nadie.
                 </h1>
                 <p class="lead lw-hero-lead">
-                    LegalWeb vigila tus procesos en la Rama Judicial y, cada vez que aparece una nueva actuación,
-                    te lo notifica por correo. Sin entrar a consultar uno por uno. Sin perder un término.
+                    LegalWeb vigila tus procesos en la Rama Judicial y en SAMAI y, cada vez que aparece una nueva actuación,
+                    te avisa por correo y WhatsApp. Sin entrar a consultar uno por uno. Sin perder un término.
                 </p>
                 <div class="lw-hero-cta" style="display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 18px;">
                     <a href="{{ route('auth.google') }}" class="btn btn-primary btn-lg">
@@ -769,6 +799,63 @@
         </div>
     </section>
 
+    {{-- Dolores del abogado en Colombia y como los resolvemos --}}
+    <section id="por-que" class="std" style="background: var(--surface-page);">
+        <div class="container">
+            <div class="section-head lw-reveal before">
+                <span class="eyebrow">Hecho para abogados en Colombia</span>
+                <h2>Lo que le quita tiempo (y sueño) a un abogado, resuelto</h2>
+                <p>Seis problemas que vemos todos los días en firmas y abogados independientes, y cómo LegalWeb los resuelve con ejemplos reales de uso.</p>
+            </div>
+            <div class="pain-grid lw-reveal before lw-stagger">
+                <div class="pain-card">
+                    <p class="pain-q">“Reviso la consulta de procesos uno por uno, todos los días.”</p>
+                    <p class="pain-why">Con 30 o 40 procesos son horas a la semana entre la consulta de la Rama Judicial, SAMAI y páginas que se caen justo cuando más las necesitas.</p>
+                    <p class="pain-fix"><strong>LegalWeb lo hace por ti cada madrugada</strong> en la Rama Judicial y en SAMAI (Consejo de Estado y tribunales administrativos) y te avisa solo cuando hay algo nuevo, por correo y por WhatsApp.</p>
+                    <div class="pain-example"><b>Ejemplo</b>A las 3:00 a.m. se revisan tus 40 procesos. A las 7:00 te llega al WhatsApp: «Auto que admite la demanda · Juzgado 3.º Civil del Circuito de Medellín».</div>
+                </div>
+                <div class="pain-card">
+                    <p class="pain-q">“Me da miedo que se me venza un término.”</p>
+                    <p class="pain-why">Días hábiles, festivos, vacancia judicial, notificaciones por estado… un error de conteo puede costar el proceso y una queja disciplinaria.</p>
+                    <p class="pain-fix"><strong>Calculadora de términos en días hábiles</strong> con el calendario judicial colombiano, tablero de vencimientos y recordatorios antes de que venza cada plazo.</p>
+                    <div class="pain-example"><b>Ejemplo</b>Te notifican por estado el auto que inadmite la demanda: LegalWeb cuenta los 5 días hábiles para subsanar (art. 90 del CGP), salta el festivo y te recuerda dos días antes.</div>
+                </div>
+                <div class="pain-card">
+                    <span class="new-badge">Nuevo</span>
+                    <p class="pain-q">“Me enteré tarde de que demandaron a mi cliente.”</p>
+                    <p class="pain-why">Un cliente empresa recibe una demanda o un embargo y tú lo sabes cuando ya corren los términos para contestar.</p>
+                    <p class="pain-fix"><strong>Vigilancia por cédula o NIT:</strong> cada noche buscamos a tus clientes en la Rama Judicial y te avisamos si aparecen en un proceso que aún no tienes en LegalWeb.</p>
+                    <div class="pain-example"><b>Ejemplo</b>Distribuidora Andina S.A.S. aparece como demandada en un proceso ejecutivo nuevo. Recibes el radicado, lo importas con un clic y preparas la defensa desde el primer día.</div>
+                </div>
+                <div class="pain-card">
+                    <span class="new-badge">Nuevo</span>
+                    <p class="pain-q">“Mi cliente me llama todos los días a preguntar cómo va su proceso.”</p>
+                    <p class="pain-why">Cada llamada interrumpe tu trabajo, y perseguir los documentos que el cliente debe entregar es otra tarea más.</p>
+                    <p class="pain-fix"><strong>Portal del cliente</strong> con el estado del proceso en lenguaje claro, <strong>avisos por WhatsApp</strong> (con su autorización) y <strong>reporte mensual en PDF</strong> automático.</p>
+                    <div class="pain-example"><b>Ejemplo</b>Le envías el enlace del portal por WhatsApp. Tu cliente ve las actuaciones, te envía el enlace de los documentos que le pediste y cada mes recibe su reporte, sin llamarte.</div>
+                </div>
+                <div class="pain-card">
+                    <span class="new-badge">Nuevo</span>
+                    <p class="pain-q">“Quiero usar inteligencia artificial sin romper el secreto profesional.”</p>
+                    <p class="pain-why">Copiar datos de tus clientes en un chat de IA puede exponerlos: varios servicios gratuitos usan lo que reciben para entrenar sus modelos.</p>
+                    <p class="pain-fix"><strong>IA jurídica con datos ocultos:</strong> antes de enviar el caso, LegalWeb reemplaza nombres, cédulas, teléfonos y correos por marcadores y los vuelve a poner en tu documento. Primero usamos proveedores que no entrenan con tus datos.</p>
+                    <div class="pain-example"><b>Ejemplo</b>Pides el borrador de un poder: el proveedor de IA solo ve [CLIENTE] y [CLIENTE_DOCUMENTO]. Tú descargas el Word con los datos reales, listo para revisar.</div>
+                </div>
+                <div class="pain-card">
+                    <span class="new-badge">Nuevo</span>
+                    <p class="pain-q">“Mis expedientes están regados entre Excel, carpetas y WhatsApp.”</p>
+                    <p class="pain-why">Buscar un radicado, saber qué abogado lleva qué caso o cuánto se demora un despacho te quita tiempo que podrías facturar.</p>
+                    <p class="pain-fix"><strong>Todo en un solo lugar:</strong> expediente digital, búsqueda rápida con Ctrl+K, equipo con permisos por caso y <strong>analítica de despachos</strong> con los tiempos reales de tus procesos.</p>
+                    <div class="pain-example"><b>Ejemplo</b>Presionas Ctrl+K, escribes la cédula del cliente y entras al caso. En la analítica ves que ese juzgado tarda en promedio 45 días en resolver en tus procesos.</div>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 36px;">
+                <a href="{{ route('auth.google') }}" class="btn btn-primary btn-lg">Probar gratis 3 meses</a>
+                <p style="font-size: 13px; color: var(--text-faint); margin: 12px 0 0;">Sin tarjeta de crédito · tus datos se conservan siempre</p>
+            </div>
+        </div>
+    </section>
+
     {{-- Vigilancia flow --}}
     <section id="vigilancia" class="std" style="background: var(--white);">
         <div class="container">
@@ -798,7 +885,7 @@
                         <span class="num">02</span>
                     </div>
                     <h3>Vigilancia diaria</h3>
-                    <p>Cada día a las 3:00 a.m. el sistema vuelve a consultar la Rama Judicial por ti, de forma automática.</p>
+                    <p>Cada día a las 3:00 a.m. el sistema vuelve a consultar la Rama Judicial y SAMAI por ti, de forma automática.</p>
                 </div>
 
                 <div class="step">
@@ -815,8 +902,8 @@
                         <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                         <span class="num">04</span>
                     </div>
-                    <h3>Te avisa por correo</h3>
-                    <p>Recibes un correo con la actuación, el despacho y la fecha. Entras directo al caso con un click.</p>
+                    <h3>Te avisa por correo y WhatsApp</h3>
+                    <p>Recibes la actuación, el despacho y la fecha, y ves qué cambió. Entras directo al caso con un clic.</p>
                 </div>
             </div>
 
@@ -858,7 +945,7 @@
                         <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
                     </div>
                     <h3>Asistente IA jurídico</h3>
-                    <p>Resumen del caso, siguiente paso recomendado y borradores de demandas, tutelas y memoriales. Siempre orientativos.</p>
+                    <p>Resumen del caso, siguiente paso recomendado y borradores de demandas, tutelas y memoriales. Los datos personales de tus clientes se ocultan antes de llegar a la IA.</p>
                 </div>
                 <div class="feat-card">
                     <div class="ico warning">
@@ -872,14 +959,14 @@
                         <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                     </div>
                     <h3>Portal del cliente</h3>
-                    <p>Tus clientes consultan el estado de su proceso en tiempo real, con un enlace seguro y sin crear cuenta.</p>
+                    <p>Tus clientes consultan su proceso con un enlace seguro, sin crear cuenta, y te envían los documentos que les pidas. Se lo compartes por WhatsApp.</p>
                 </div>
                 <div class="feat-card">
                     <div class="ico danger">
                         <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
                     </div>
                     <h3>Reportes y analítica</h3>
-                    <p>KPIs por estado, tipo y abogado. Reporte PDF mensual que se envía automáticamente al cliente.</p>
+                    <p>Indicadores por estado, tipo y abogado, analítica de despachos y reporte PDF mensual que se envía automáticamente al cliente.</p>
                 </div>
                 <div class="feat-card">
                     <div class="ico success">
