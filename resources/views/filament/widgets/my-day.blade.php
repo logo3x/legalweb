@@ -26,7 +26,7 @@
                     @endif
                 </div>
             </div>
-            <span style="font-size: 12px; color: #94a3b8;">Presione <kbd style="padding: 1px 6px; border: 1px solid #e5e7eb; border-radius: 4px; background: #f8fafc;">Ctrl</kbd> + <kbd style="padding: 1px 6px; border: 1px solid #e5e7eb; border-radius: 4px; background: #f8fafc;">K</kbd> para buscar un caso o cliente</span>
+            <span class="lw-myday-shortcut" style="font-size: 12px; color: #94a3b8;">Presione <kbd style="padding: 1px 6px; border: 1px solid #e5e7eb; border-radius: 4px; background: #f8fafc;">Ctrl</kbd> + <kbd style="padding: 1px 6px; border: 1px solid #e5e7eb; border-radius: 4px; background: #f8fafc;">K</kbd> para buscar un caso o cliente</span>
         </div>
 
         <div class="lw-myday-grid" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px;">
@@ -76,5 +76,6 @@
     <style>
         @media (max-width: 1100px) { .lw-myday-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } }
         @media (max-width: 640px) { .lw-myday-grid { grid-template-columns: 1fr !important; } }
+        @media (hover: none), (max-width: 640px) { .lw-myday-shortcut { display: none !important; } }
     </style>
 </x-filament-widgets::widget>

@@ -20,6 +20,7 @@ class RemindersTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->stackedOnMobile()
             ->columns([
                 IconColumn::make('is_completed')
                     ->label('')
@@ -27,7 +28,7 @@ class RemindersTable
                     ->trueIcon('heroicon-o-check-circle')
                     ->falseIcon('heroicon-o-clock'),
                 TextColumn::make('title')
-                    ->label('Titulo')
+                    ->label('Título')
                     ->searchable()
                     ->sortable()
                     ->limit(50),
@@ -44,18 +45,19 @@ class RemindersTable
                     ->formatStateUsing(fn (string $state): string => match ($state) {
                         'audiencia' => 'Audiencia',
                         'vencimiento' => 'Vencimiento',
-                        'reunion' => 'Reunion',
+                        'reunion' => 'Reunión',
                         'tarea' => 'Tarea',
                         default => 'Recordatorio',
                     }),
                 TextColumn::make('due_date')
-                    ->label('Fecha limite')
+                    ->label('Fecha límite')
                     ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->color(fn ($record) => ! $record->is_completed && $record->due_date->isPast() ? 'danger' : null),
                 TextColumn::make('priority')
                     ->label('Prioridad')
                     ->badge()
+                    ->formatStateUsing(fn (?string $state): string => ucfirst((string) $state))
                     ->color(fn (string $state): string => match ($state) {
                         'baja' => 'gray',
                         'media' => 'info',
@@ -81,7 +83,7 @@ class RemindersTable
                     ->options([
                         'audiencia' => 'Audiencia',
                         'vencimiento' => 'Vencimiento',
-                        'reunion' => 'Reunion',
+                        'reunion' => 'Reunión',
                         'tarea' => 'Tarea',
                         'recordatorio' => 'Recordatorio',
                     ]),

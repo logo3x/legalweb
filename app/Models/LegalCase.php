@@ -127,6 +127,21 @@ class LegalCase extends Model
         return $isActive && $this->isDirty('status') && ! in_array($this->getOriginal('status'), FirmPlan::ACTIVE_STATUSES, true);
     }
 
+    /**
+     * Siguiente consecutivo interno del ano, por ejemplo LW-0012-2026.
+     */
+    public static function nextCaseNumber(): string
+    {
+        $year = now()->format('Y');
+        $numbers = static::withoutGlobalScopes()
+            ->withTrashed()
+            ->where('case_number', 'like', "LW-%-{$year}")
+            ->pluck('case_number')
+            ->map(fn (string $number): int => preg_match('/^LW-(\d+)-/', $number, $m) ? (int) $m[1] : 0);
+
+        return sprintf('LW-%04d-%s', ($numbers->max() ?? 0) + 1, $year);
+    }
+
     public const SOURCE_RAMA = 'rama';
 
     public const SOURCE_SAMAI = 'samai';

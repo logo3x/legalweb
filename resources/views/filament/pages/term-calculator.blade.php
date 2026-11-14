@@ -14,7 +14,7 @@
 
         {{-- Formulario --}}
         <div style="background: #fff; border-radius: 12px; border: 1px solid #e5e7eb; padding: 24px; margin-bottom: 24px;">
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+            <div class="lw-cols-sm" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 20px;">
                 <div>
                     <label style="display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px;">Fecha de inicio</label>
                     <input type="date" wire:model="startDate" style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;">
@@ -55,7 +55,7 @@
                     </div>
                 </div>
 
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px;">
+                <div class="lw-cols-sm" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px;">
                     <div style="text-align: center; padding: 12px; background: #f9fafb; border-radius: 8px;">
                         <div style="font-size: 20px; font-weight: 700; color: #3A86FF;">{{ $result['start_date']->format('d/m/Y') }}</div>
                         <div style="font-size: 11px; color: #6b7280;">Fecha inicio</div>

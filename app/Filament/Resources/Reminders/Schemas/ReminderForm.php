@@ -16,7 +16,7 @@ class ReminderForm
         return $schema
             ->components([
                 TextInput::make('title')
-                    ->label('Titulo')
+                    ->label('Título')
                     ->required()
                     ->placeholder('Ej: Preparar memorial para audiencia'),
                 Select::make('type')
@@ -24,7 +24,7 @@ class ReminderForm
                     ->options([
                         'audiencia' => 'Audiencia',
                         'vencimiento' => 'Vencimiento de termino',
-                        'reunion' => 'Reunion',
+                        'reunion' => 'Reunión',
                         'tarea' => 'Tarea',
                         'recordatorio' => 'Recordatorio general',
                     ])
@@ -41,7 +41,7 @@ class ReminderForm
                     ->required()
                     ->default('media'),
                 DateTimePicker::make('due_date')
-                    ->label('Fecha limite')
+                    ->label('Fecha límite')
                     ->required(),
                 DateTimePicker::make('remind_at')
                     ->label('Recordar el')

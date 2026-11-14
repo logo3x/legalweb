@@ -8,7 +8,7 @@
     @endphp
 
     {{-- Resumen --}}
-    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px;">
+    <div class="lw-stats" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px;">
         <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 12px; text-align: center;">
             <div style="font-size: 24px; font-weight: 700; color: #16a34a;">{{ $imported }}</div>
             <div style="font-size: 11px; color: #15803d;">Importados</div>
@@ -30,7 +30,7 @@
     {{-- Detalle por radicado --}}
     <div style="border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
         {{-- Header --}}
-        <div style="display: grid; grid-template-columns: 1fr 200px 100px; background: #f9fafb; padding: 10px 16px; border-bottom: 1px solid #e5e7eb;">
+        <div class="lw-table-row" style="display: grid; grid-template-columns: 1fr 200px 100px; background: #f9fafb; padding: 10px 16px; border-bottom: 1px solid #e5e7eb;">
             <div style="font-size: 12px; font-weight: 600; color: #374151;">Radicado</div>
             <div style="font-size: 12px; font-weight: 600; color: #374151;">Resultado</div>
             <div style="font-size: 12px; font-weight: 600; color: #374151; text-align: center;">Estado</div>
@@ -42,21 +42,21 @@
                     'ok' => '#f0fdf4',
                     'duplicado' => '#fffbeb',
                     'no_encontrado' => '#fff7ed',
-                    'error' => '#fef2f2',
+                    'error', 'limite' => '#fef2f2',
                     default => '#fff',
                 };
                 $badgeBg = match($r['status']) {
                     'ok' => '#dcfce7',
                     'duplicado' => '#fef3c7',
                     'no_encontrado' => '#ffedd5',
-                    'error' => '#fee2e2',
+                    'error', 'limite' => '#fee2e2',
                     default => '#f3f4f6',
                 };
                 $badgeColor = match($r['status']) {
                     'ok' => '#166534',
                     'duplicado' => '#92400e',
                     'no_encontrado' => '#9a3412',
-                    'error' => '#991b1b',
+                    'error', 'limite' => '#991b1b',
                     default => '#374151',
                 };
                 $badgeText = match($r['status']) {
@@ -64,10 +64,11 @@
                     'duplicado' => 'Ya existe',
                     'no_encontrado' => 'No encontrado',
                     'error' => 'Error',
+                    'limite' => 'Sin cupo en el plan',
                     default => $r['status'],
                 };
             @endphp
-            <div style="display: grid; grid-template-columns: 1fr 200px 100px; padding: 12px 16px; border-bottom: 1px solid #f3f4f6; background: {{ $rowBg }}; align-items: center;">
+            <div class="lw-table-row" style="display: grid; grid-template-columns: 1fr 200px 100px; padding: 12px 16px; border-bottom: 1px solid #f3f4f6; background: {{ $rowBg }}; align-items: center;">
                 <div>
                     <div style="font-size: 13px; font-weight: 500; color: #111827; font-family: monospace;">{{ $r['radicado'] }}</div>
                     <div style="font-size: 11px; color: #6b7280; margin-top: 2px;">{{ $r['msg'] }}</div>
@@ -85,7 +86,7 @@
                     @elseif($r['status'] === 'no_encontrado')
                         Sin datos en Rama Judicial
                     @else
-                        Fallo al procesar
+                        {{ $r['msg'] ?? 'Fallo al procesar' }}
                     @endif
                 </div>
                 <div style="text-align: center;">

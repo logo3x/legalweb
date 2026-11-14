@@ -9,7 +9,7 @@
             Aun no hay casos con despacho asignado. Importe procesos desde la Rama Judicial o asigne el despacho en cada caso para ver estadisticas.
         </div>
     @else
-        <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-bottom: 24px;">
+        <div class="lw-stats" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-bottom: 24px;">
             @foreach ([
                 ['label' => 'Despachos', 'value' => $data['totals']['courts'], 'color' => '#1E3A5F'],
                 ['label' => 'Casos con despacho', 'value' => $data['totals']['cases'], 'color' => '#3A86FF'],
@@ -24,7 +24,7 @@
         </div>
 
         @if ($data['slowest'] || $data['fastest'])
-            <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-bottom: 24px;">
+            <div class="lw-cols" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-bottom: 24px;">
                 @if ($data['slowest'])
                     <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 16px;">
                         <div style="font-size: 12px; color: #b91c1c; font-weight: 600;">Despacho más lento</div>

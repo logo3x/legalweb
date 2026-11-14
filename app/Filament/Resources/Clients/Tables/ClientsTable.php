@@ -24,6 +24,7 @@ class ClientsTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->stackedOnMobile()
             ->columns([
                 TextColumn::make('document_type')
                     ->label('Tipo Doc.')

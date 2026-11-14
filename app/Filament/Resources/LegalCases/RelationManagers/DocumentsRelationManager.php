@@ -184,6 +184,7 @@ class DocumentsRelationManager extends RelationManager
                 TextColumn::make('priority')
                     ->label('Prioridad')
                     ->badge()
+                    ->formatStateUsing(fn (?string $state): string => ucfirst((string) $state))
                     ->color(fn (?string $state): string => match ($state) {
                         'urgente' => 'danger',
                         'alta' => 'warning',

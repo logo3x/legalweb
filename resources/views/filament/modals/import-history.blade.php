@@ -44,21 +44,21 @@
                                     'ok' => '#f0fdf4',
                                     'duplicado' => '#fffbeb',
                                     'no_encontrado' => '#fff7ed',
-                                    'error' => '#fef2f2',
+                                    'error', 'limite' => '#fef2f2',
                                     default => '#fff',
                                 };
                                 $badgeBg = match($r['status'] ?? '') {
                                     'ok' => '#dcfce7',
                                     'duplicado' => '#fef3c7',
                                     'no_encontrado' => '#ffedd5',
-                                    'error' => '#fee2e2',
+                                    'error', 'limite' => '#fee2e2',
                                     default => '#f3f4f6',
                                 };
                                 $badgeColor = match($r['status'] ?? '') {
                                     'ok' => '#166534',
                                     'duplicado' => '#92400e',
                                     'no_encontrado' => '#9a3412',
-                                    'error' => '#991b1b',
+                                    'error', 'limite' => '#991b1b',
                                     default => '#374151',
                                 };
                                 $badgeText = match($r['status'] ?? '') {
@@ -66,6 +66,7 @@
                                     'duplicado' => 'Ya existia',
                                     'no_encontrado' => 'No encontrado',
                                     'error' => 'Error',
+                                    'limite' => 'Sin cupo en el plan',
                                     default => $r['status'] ?? '-',
                                 };
                             @endphp

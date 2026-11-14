@@ -37,6 +37,14 @@ class ViewLegalCase extends ViewRecord
 {
     protected static string $resource = LegalCaseResource::class;
 
+    /**
+     * Titulo corto: el nombre completo del caso ya aparece en la ficha y en el celular ocupaba media pantalla.
+     */
+    public function getTitle(): string
+    {
+        return Str::limit((string) $this->record->title, 70);
+    }
+
     protected function getHeaderActions(): array
     {
         return [

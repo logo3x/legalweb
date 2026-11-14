@@ -23,6 +23,8 @@ class LegalCasesTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->stackedOnMobile()
+            ->modifyQueryUsing(fn ($query) => $query->with('client'))
             ->columns([
                 TextColumn::make('case_number')
                     ->label('No. Caso')
@@ -33,7 +35,9 @@ class LegalCasesTable
                 TextColumn::make('title')
                     ->label('Título')
                     ->searchable()
-                    ->limit(40),
+                    ->limit(60)
+                    ->wrap()
+                    ->description(fn ($record): string => trim(($record->client?->first_name ?? '').' '.($record->client?->last_name ?? ''))),
                 TextColumn::make('caseType.name')
                     ->label('Tipo')
                     ->sortable()
@@ -41,11 +45,13 @@ class LegalCasesTable
                 TextColumn::make('client.first_name')
                     ->label('Cliente')
                     ->formatStateUsing(fn ($record) => "{$record->client->first_name} {$record->client->last_name}")
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('user.name')
                     ->label('Abogado')
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable()
+                    ->visibleFrom('lg'),
                 TextColumn::make('status')
                     ->label('Estado')
                     ->badge()
@@ -68,6 +74,7 @@ class LegalCasesTable
                 TextColumn::make('priority')
                     ->label('Prioridad')
                     ->badge()
+                    ->formatStateUsing(fn (?string $state): string => ucfirst((string) $state))
                     ->color(fn (string $state): string => match ($state) {
                         'baja' => 'gray',
                         'media' => 'info',
@@ -79,7 +86,8 @@ class LegalCasesTable
                     ->label('Inicio')
                     ->date('d/m/Y')
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable()
+                    ->visibleFrom('lg'),
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
@@ -87,8 +95,8 @@ class LegalCasesTable
                     ->label('Estado')
                     ->options([
                         'abierto' => 'Abierto',
-                        'en_progreso' => 'En Progreso',
-                        'en_espera' => 'En Espera',
+                        'en_progreso' => 'En progreso',
+                        'en_espera' => 'En espera',
                         'cerrado' => 'Cerrado',
                         'archivado' => 'Archivado',
                     ]),
@@ -101,7 +109,7 @@ class LegalCasesTable
                         'urgente' => 'Urgente',
                     ]),
                 SelectFilter::make('case_type_id')
-                    ->label('Tipo de Proceso')
+                    ->label('Tipo de proceso')
                     ->relationship('caseType', 'name'),
                 TrashedFilter::make(),
             ])

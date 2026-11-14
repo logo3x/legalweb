@@ -85,7 +85,7 @@ class LegalCaseResource extends Resource
     {
         return $schema
             ->components([
-                Section::make('Información del Caso')
+                Section::make('Información del caso')
                     ->icon(Heroicon::OutlinedBriefcase)
                     ->columns(4)
                     ->schema([
@@ -95,11 +95,11 @@ class LegalCaseResource extends Resource
                             ->weight('bold')
                             ->size(TextSize::Large),
                         TextEntry::make('external_case_number')
-                            ->label('Radicado Judicial')
+                            ->label('Radicado judicial')
                             ->icon('heroicon-m-document-text')
                             ->placeholder('Sin radicado'),
                         TextEntry::make('caseType.name')
-                            ->label('Tipo de Proceso')
+                            ->label('Tipo de proceso')
                             ->badge(),
                         TextEntry::make('status')
                             ->label('Estado')
@@ -114,8 +114,8 @@ class LegalCaseResource extends Resource
                             })
                             ->formatStateUsing(fn (string $state): string => match ($state) {
                                 'abierto' => 'Abierto',
-                                'en_progreso' => 'En Progreso',
-                                'en_espera' => 'En Espera',
+                                'en_progreso' => 'En progreso',
+                                'en_espera' => 'En espera',
                                 'cerrado' => 'Cerrado',
                                 'archivado' => 'Archivado',
                                 default => $state,
@@ -147,40 +147,40 @@ class LegalCaseResource extends Resource
                             ->icon('heroicon-m-user')
                             ->placeholder('Sin asignar'),
                         TextEntry::make('started_at')
-                            ->label('Fecha de Inicio')
+                            ->label('Fecha de inicio')
                             ->icon('heroicon-m-calendar')
                             ->date('d/m/Y')
                             ->placeholder('Sin definir'),
                         TextEntry::make('closed_at')
-                            ->label('Fecha de Cierre')
+                            ->label('Fecha de cierre')
                             ->icon('heroicon-m-calendar')
                             ->date('d/m/Y')
                             ->placeholder('Caso abierto'),
                         TextEntry::make('last_tyba_sync')
-                            ->label('Ultima sincronizacion')
+                            ->label('Última sincronización')
                             ->icon('heroicon-m-arrow-path')
                             ->since()
                             ->placeholder('Nunca sincronizado')
                             ->visible(fn ($record) => (bool) $record->external_case_number),
                     ]),
-                Section::make('Datos Rama Judicial')
+                Section::make('Datos de la Rama Judicial')
                     ->icon(Heroicon::OutlinedBuildingLibrary)
                     ->columns(4)
                     ->visible(fn ($record) => ! empty($record->tyba_data))
                     ->schema([
                         TextEntry::make('tyba_data.codigo_proceso')
-                            ->label('Codigo Proceso'),
+                            ->label('Código del proceso'),
                         TextEntry::make('tyba_data.tipo_proceso')
-                            ->label('Tipo Proceso'),
+                            ->label('Tipo de proceso'),
                         TextEntry::make('tyba_data.clase_proceso')
-                            ->label('Clase Proceso'),
+                            ->label('Clase de proceso'),
                         TextEntry::make('tyba_data.subclase')
                             ->label('Subclase')
                             ->placeholder('-'),
                         TextEntry::make('tyba_data.departamento')
                             ->label('Departamento'),
                         TextEntry::make('tyba_data.corporacion')
-                            ->label('Corporacion')
+                            ->label('Corporación')
                             ->placeholder('-'),
                         TextEntry::make('tyba_data.especialidad')
                             ->label('Especialidad'),
@@ -194,10 +194,10 @@ class LegalCaseResource extends Resource
                             ->label('Ponente / Juez')
                             ->placeholder('-'),
                         TextEntry::make('tyba_data.fecha_publicacion')
-                            ->label('Fecha Publicacion')
+                            ->label('Fecha de publicación')
                             ->placeholder('-'),
                         TextEntry::make('tyba_data.fecha_ultima_actuacion')
-                            ->label('Ultima Actuacion')
+                            ->label('Última actuación')
                             ->placeholder('-'),
                         TextEntry::make('tyba_data.ubicacion')
                             ->label('Sistema')
@@ -206,7 +206,7 @@ class LegalCaseResource extends Resource
                             ->label('Recurso')
                             ->placeholder('-'),
                         TextEntry::make('tyba_data.cod_despacho')
-                            ->label('Cod. Despacho')
+                            ->label('Código del despacho')
                             ->placeholder('-'),
                     ]),
                 Section::make('Partes')
@@ -225,10 +225,10 @@ class LegalCaseResource extends Resource
                             ->icon('heroicon-m-phone')
                             ->placeholder('Sin teléfono'),
                         TextEntry::make('user.name')
-                            ->label('Abogado Responsable')
+                            ->label('Abogado responsable')
                             ->icon('heroicon-m-academic-cap'),
                         TextEntry::make('user.email')
-                            ->label('Correo del Abogado')
+                            ->label('Correo del abogado')
                             ->icon('heroicon-m-envelope'),
                         TextEntry::make('opposing_party')
                             ->label('Contraparte')

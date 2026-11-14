@@ -24,7 +24,7 @@ class ListReminders extends ListRecords
     {
         return [
             CreateAction::make()
-                ->label('Nuevo Recordatorio'),
+                ->label('Nuevo recordatorio'),
         ];
     }
 

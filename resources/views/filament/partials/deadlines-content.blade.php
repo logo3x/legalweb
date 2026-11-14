@@ -10,7 +10,7 @@
 </details>
 
 {{-- Resumen --}}
-<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 24px;">
+<div class="lw-stats" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 24px;">
     @foreach([
         ['label' => 'Vencidos', 'value' => $data['summary']['vencidos'], 'bg' => '#fef2f2', 'border' => '#fecaca', 'color' => '#dc2626'],
         ['label' => 'Vencen hoy', 'value' => $data['summary']['hoy'], 'bg' => '#fff7ed', 'border' => '#fed7aa', 'color' => '#ea580c'],
@@ -25,7 +25,7 @@
     @endforeach
 </div>
 
-<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+<div class="lw-cols" style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
     {{-- Timeline de vencimientos --}}
     <div style="background: #fff; border-radius: 12px; border: 1px solid #e5e7eb;">
         <div style="padding: 16px 20px; border-bottom: 1px solid #f3f4f6;">

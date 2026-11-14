@@ -252,6 +252,16 @@
         .fi-wi-stats-overview-stat:hover, .fi-btn-color-primary:hover { transform: none !important; }
         .fi-no-notification:nth-last-child(n+2) { transform: none; opacity: 1; }
     }
+    /* Vistas propias en el celular: contadores en 2 columnas y diseños de varias columnas apilados. */
+    @media (max-width: 768px) {
+        .lw-cols { grid-template-columns: minmax(0, 1fr) !important; }
+    }
+    @media (max-width: 640px) {
+        .lw-stats { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+        .lw-cols-sm { grid-template-columns: minmax(0, 1fr) !important; }
+        .lw-table-row { grid-template-columns: minmax(0, 1fr) auto !important; }
+        .lw-table-row > :nth-child(2) { display: none !important; }
+    }
 </style>
 
 <script>

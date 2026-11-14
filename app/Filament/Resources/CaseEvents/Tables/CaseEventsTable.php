@@ -19,6 +19,7 @@ class CaseEventsTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->stackedOnMobile()
             ->columns([
                 TextColumn::make('legalCase.case_number')
                     ->label('Caso')

@@ -5,7 +5,7 @@
         <div style="text-align: center; padding: 40px; color: #9ca3af;">No hay datos para mostrar.</div>
     @else
         {{-- KPIs principales --}}
-        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px;">
+        <div class="lw-stats" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px;">
             @foreach([
                 ['label' => 'Total Casos', 'value' => $data['total_cases'], 'color' => '#3A86FF'],
                 ['label' => 'Clientes', 'value' => $data['total_clients'], 'color' => '#10b981'],
@@ -19,7 +19,7 @@
             @endforeach
         </div>
 
-        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 24px;">
+        <div class="lw-cols" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 24px;">
             {{-- Casos por Estado --}}
             <div style="background: #fff; border-radius: 12px; border: 1px solid #e5e7eb; padding: 20px;">
                 <h3 style="font-size: 15px; font-weight: 600; color: #111827; margin-bottom: 16px;">Casos por Estado</h3>
@@ -89,7 +89,7 @@
         </div>
 
         {{-- Resumen de actividad --}}
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px;">
+        <div class="lw-cols-sm" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px;">
             <div style="background: #fff; border-radius: 12px; border: 1px solid #e5e7eb; padding: 20px; text-align: center;">
                 <div style="font-size: 32px; font-weight: 700; color: #3A86FF;">{{ $data['recent_events'] }}</div>
                 <div style="font-size: 13px; color: #6b7280;">Actuaciones (30 dias)</div>
@@ -147,7 +147,7 @@
         </div>
         @endif
 
-        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 24px;">
+        <div class="lw-cols" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 24px;">
             {{-- Actuaciones mas frecuentes --}}
             @if(!empty($data['events_by_type']))
             <div style="background: #fff; border-radius: 12px; border: 1px solid #e5e7eb; padding: 20px;">

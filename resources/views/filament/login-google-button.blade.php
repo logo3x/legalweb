@@ -1,7 +1,7 @@
 <div style="margin-top: 24px;">
     <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
         <div style="flex-grow: 1; height: 1px; background: #e5e7eb;"></div>
-        <span style="margin: 0 12px; font-size: 11px; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.05em;">O continua con</span>
+        <span style="margin: 0 12px; font-size: 11px; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.05em;">O continúe con</span>
         <div style="flex-grow: 1; height: 1px; background: #e5e7eb;"></div>
     </div>
 
@@ -19,6 +19,6 @@
     </a>
 
     <p style="margin-top: 16px; text-align: center; font-size: 12px; color: #9ca3af;">
-        Al continuar, aceptas los <a href="{{ route('portal.terms') }}" target="_blank" style="color: #3b82f6; text-decoration: none;">terminos</a> y la <a href="{{ route('portal.privacy') }}" target="_blank" style="color: #3b82f6; text-decoration: none;">politica de privacidad</a>
+        Al continuar, acepta los <a href="{{ route('portal.terms') }}" target="_blank" style="color: #3b82f6; text-decoration: none;">términos</a> y la <a href="{{ route('portal.privacy') }}" target="_blank" style="color: #3b82f6; text-decoration: none;">política de privacidad</a>
     </p>
 </div>

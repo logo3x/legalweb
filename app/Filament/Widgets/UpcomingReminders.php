@@ -69,6 +69,7 @@ class UpcomingReminders extends TableWidget
                 TextColumn::make('priority')
                     ->label('Urgencia')
                     ->badge()
+                    ->formatStateUsing(fn (?string $state): string => ucfirst((string) $state))
                     ->color(fn (string $state): string => match ($state) {
                         'urgente' => 'danger',
                         'alta' => 'warning',

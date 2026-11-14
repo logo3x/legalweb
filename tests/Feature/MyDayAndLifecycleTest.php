@@ -40,7 +40,7 @@ class MyDayAndLifecycleTest extends TestCase
         Http::fake();
 
         $this->firm = Firm::factory()->create();
-        $this->admin = User::factory()->create(['firm_id' => $this->firm->id, 'role' => 'admin', 'name' => 'Andrea Gomez']);
+        $this->admin = User::factory()->create(['firm_id' => $this->firm->id, 'role' => 'admin', 'name' => 'Andrea Gomez', 'email' => 'andrea@firmagomez.co']);
         $client = Client::factory()->create(['firm_id' => $this->firm->id]);
         $this->case = LegalCase::factory()->create(['firm_id' => $this->firm->id, 'client_id' => $client->id, 'user_id' => $this->admin->id, 'is_demo' => false]);
     }
@@ -155,7 +155,7 @@ class MyDayAndLifecycleTest extends TestCase
         $this->actingAs($this->admin)
             ->get('/admin')
             ->assertOk()
-            ->assertSee('Buenos')
+            ->assertSee('Todo al día')
             ->assertSee('Primeros pasos en LegalWeb');
     }
 }
