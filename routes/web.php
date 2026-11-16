@@ -372,7 +372,10 @@ Route::get('/cron/{token}/{task?}', function (string $token, ?string $task = nul
     if ($task === 'verify-ai-models') {
         // Por tramos: el hosting corta las peticiones largas; el resto lo continua el cron de cada minuto.
         Artisan::call('app:verify-ai-models', ['--budget' => 50]);
-        $results[] = 'verify-ai-models: '.trim(Artisan::output());
+        $progress = app(AIModelRegistry::class)->refreshProgress();
+        $results[] = $progress
+            ? "verify-ai-models: busqueda en curso ({$progress['probed']} de {$progress['total']}), continua cada minuto"
+            : 'verify-ai-models: '.count(app(AIModelRegistry::class)->verifiedModels()).' modelo(s) disponibles';
     }
 
     // Tarea: mass-emails (cada 5 min, despacha campañas programadas que llegaron a su hora)
