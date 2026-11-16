@@ -45,13 +45,13 @@ class SamaiService
                 ->timeout(8)
                 ->get(self::BASE_URL.'/Vistas/Casos/Jprocesos.ashx/corporaciones');
         } catch (\Throwable) {
-            Cache::put('samai:corporaciones:fallo', true, now()->addMinutes(10));
+            $this->markUnreachable();
 
             return [];
         }
 
         if (! $response->successful() || ! $response->json('ok')) {
-            Cache::put('samai:corporaciones:fallo', true, now()->addMinutes(10));
+            $this->markUnreachable();
 
             return [];
         }
@@ -210,6 +210,26 @@ class SamaiService
             'es_privado' => (bool) ($item['esPrivado'] ?? false),
             'url' => $guid !== '' ? self::detailUrl($guid) : self::BASE_URL.'/Vistas/Casos/procesos.aspx',
         ];
+    }
+
+    /**
+     * SAMAI no respondio: se deja de intentar por 10 minutos y se avisa al superadmin (una vez por semana).
+     */
+    private function markUnreachable(): void
+    {
+        Cache::put('samai:corporaciones:fallo', true, now()->addMinutes(10));
+
+        SystemNews::notifySuperadmins(
+            'SAMAI no está respondiendo',
+            [
+                'El servidor de LegalWeb no logró consultar SAMAI (Consejo de Estado). Puede ser una caída temporal de SAMAI o un bloqueo de su servidor hacia el hosting.',
+                'Mientras tanto, la búsqueda de procesos sigue funcionando con la Rama Judicial. Si el aviso se repite la próxima semana, conviene revisar la conexión desde el hosting.',
+            ],
+            'Abrir Buscar procesos',
+            url('/admin/buscar-procesos-tyba'),
+            onceKey: 'samai.unreachable',
+            onceForDays: 7,
+        );
     }
 
     private function client(): PendingRequest

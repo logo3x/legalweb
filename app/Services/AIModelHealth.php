@@ -167,8 +167,22 @@ class AIModelHealth
         }
 
         $this->handleOutage();
+        $this->notifyChanges();
 
         return $due;
+    }
+
+    /**
+     * Correo de novedades al superadmin si cambio el modelo principal u otra cosa relevante.
+     * Nunca interrumpe la comprobacion automatica.
+     */
+    public function notifyChanges(): void
+    {
+        try {
+            app(AIChangeNotifier::class)->check();
+        } catch (\Throwable $e) {
+            Log::warning('AI: no se pudieron revisar las novedades de los modelos', ['error' => $e->getMessage()]);
+        }
     }
 
     /**

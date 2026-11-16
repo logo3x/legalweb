@@ -17,6 +17,7 @@ use App\Services\AIModelHealth;
 use App\Services\AIModelRegistry;
 use App\Services\GeneratedFileStore;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -292,6 +293,20 @@ Route::get('/cron/{token}/{task?}', function (string $token, ?string $task = nul
             $results[] = 'ai-health: '.count($probed).' modelo(s) probados';
         } catch (Throwable $e) {
             Log::warning('ai-health fallo: '.$e->getMessage());
+        }
+    }
+
+    // Respaldo de la verificacion diaria de modelos (verify-ai-models): si el cron de las 6:00 no
+    // corrio en mas de 30 horas, se ejecuta aqui una vez (como maximo cada 2 horas si falla).
+    $lastVerified = app(AIModelRegistry::class)->lastVerifiedAt();
+    if ((! $task || $task === 'queue')
+        && (! $lastVerified || Carbon::parse($lastVerified)->lt(now()->subHours(30)))
+        && Cache::add('ai.verify_models.fallback_lock', true, now()->addHours(2))) {
+        try {
+            Artisan::call('app:verify-ai-models');
+            $results[] = 'verify-ai-models (respaldo): '.count(app(AIModelRegistry::class)->verifiedModels()).' modelo(s) disponibles';
+        } catch (Throwable $e) {
+            Log::warning('verify-ai-models (respaldo) fallo: '.$e->getMessage());
         }
     }
 

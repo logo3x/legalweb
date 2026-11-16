@@ -239,6 +239,17 @@ class TybaService
             if (in_array($response->status(), [401, 404], true)) {
                 // La Rama retiro esta consulta del acceso publico.
                 $this->documentSearchUnavailable = true;
+                SystemNews::notifySuperadmins(
+                    'La Rama Judicial no permite consultar por cédula o NIT',
+                    [
+                        'La consulta pública de procesos de la Rama Judicial respondió que la búsqueda por documento no existe o no está autorizada (HTTP '.$response->status().').',
+                        'LegalWeb busca automáticamente por el nombre del cliente y filtra por las partes del proceso, tanto en el buscador como en la vigilancia nocturna.',
+                        'Si la Rama vuelve a habilitarla, LegalWeb la usará de nuevo sin que tenga que hacer nada.',
+                    ],
+                    'Abrir Buscar procesos',
+                    url('/admin/buscar-procesos-tyba'),
+                    onceKey: 'rama.document_search_unavailable',
+                );
                 break;
             }
 

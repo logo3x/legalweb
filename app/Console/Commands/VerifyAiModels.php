@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Services\AIModelHealth;
 use App\Services\AIModelRegistry;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
@@ -11,9 +12,12 @@ use Illuminate\Console\Command;
 #[Description('Consulta el catalogo de Gemini y OpenRouter, prueba los modelos y guarda los que responden')]
 class VerifyAiModels extends Command
 {
-    public function handle(AIModelRegistry $registry): int
+    public function handle(AIModelRegistry $registry, AIModelHealth $health): int
     {
         $verified = $registry->refresh();
+
+        // Correo de novedades si la verificacion cambio el modelo principal o la lista.
+        $health->notifyChanges();
 
         if (! $verified) {
             $this->error('Ningun modelo respondio. Se conserva la lista anterior.');
