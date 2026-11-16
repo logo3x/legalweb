@@ -6,6 +6,7 @@ use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
+use Filament\Support\Components\Attributes\Unexposed;
 use Filament\Support\Services\RelationshipJoiner;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
@@ -18,6 +19,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Query\Builder;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\Modelable;
+use Livewire\Attributes\Reactive;
 use Livewire\Component;
 use Livewire\WithoutUrlPagination;
 use LogicException;
@@ -30,6 +32,7 @@ class TableSelectLivewireComponent extends Component implements HasActions, HasF
     use WithoutUrlPagination;
 
     #[Locked]
+    #[Reactive]
     public bool $isDisabled = false;
 
     #[Locked]
@@ -62,6 +65,7 @@ class TableSelectLivewireComponent extends Component implements HasActions, HasF
     #[Modelable]
     public string | array | null $state = null;
 
+    #[Unexposed]
     public function table(Table $table): Table
     {
         $tableConfiguration = base64_decode($this->tableConfiguration);
@@ -87,6 +91,7 @@ class TableSelectLivewireComponent extends Component implements HasActions, HasF
             ->maxSelectableRecords(is_array($this->state) ? $this->maxSelectableRecords : 1)
             ->deselectAllRecordsWhenFiltered(false)
             ->disabledSelection($this->isDisabled)
+            ->persistInSession(false)
             ->arguments($this->getTableArguments());
 
         if (filled($this->relationshipName)) {
@@ -142,11 +147,13 @@ class TableSelectLivewireComponent extends Component implements HasActions, HasF
     /**
      * @return array<mixed>
      */
+    #[Unexposed]
     public function getTableArguments(): array
     {
         return $this->tableArguments;
     }
 
+    #[Unexposed]
     public function render(): string
     {
         return '{{ $this->table }}';

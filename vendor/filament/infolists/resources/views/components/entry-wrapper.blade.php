@@ -8,7 +8,8 @@
 
 @php
     use Filament\Support\Enums\Alignment;
-    use Illuminate\View\ComponentAttributeBag;
+    use Filament\Support\View\ComponentAttributeBag as FilamentComponentAttributeBag;
+    use Illuminate\View\ComponentSlot;
 
     if ($entry) {
         $action ??= $entry->getAction();
@@ -26,7 +27,14 @@
 
     $beforeLabelContainer = $entry?->getChildSchema($entry::BEFORE_LABEL_SCHEMA_KEY)?->toHtmlString();
     $afterLabelContainer = $entry?->getChildSchema($entry::AFTER_LABEL_SCHEMA_KEY)?->toHtmlString();
-    $beforeContentContainer = $entry?->getChildSchema($entry::BEFORE_CONTENT_SCHEMA_KEY)?->toHtmlString();
+
+    $aboveContentSchema = $entry?->getChildSchema($entry::ABOVE_CONTENT_SCHEMA_KEY);
+    $hasAboveContentSchema = $entry?->hasChildSchemaConfiguration($entry::ABOVE_CONTENT_SCHEMA_KEY) || $aboveContentSchema;
+
+    $beforeContentContainer = $entry?->getChildSchema($entry::BEFORE_CONTENT_SCHEMA_KEY);
+    $hasBeforeContentSchema = $entry?->hasChildSchemaConfiguration($entry::BEFORE_CONTENT_SCHEMA_KEY) || $beforeContentContainer;
+    $beforeContentContainer = $beforeContentContainer?->toHtmlString();
+
     $afterContentContainer = $entry?->getChildSchema($entry::AFTER_CONTENT_SCHEMA_KEY)?->toHtmlString();
 @endphp
 
@@ -41,9 +49,9 @@
     }}
 >
     @if ($label && $labelSrOnly)
-        <dt class="fi-in-entry-label fi-sr-only">
+        <div class="fi-in-entry-label fi-sr-only" role="term">
             {{ $label }}
-        </dt>
+        </div>
     @endif
 
     <div class="fi-in-entry-label-col">
@@ -53,24 +61,25 @@
             <div
                 @class([
                     'fi-in-entry-label-ctn',
-                    ($label instanceof \Illuminate\View\ComponentSlot) ? $label->attributes->get('class') : null,
+                    ($label instanceof ComponentSlot) ? $label->attributes->get('class') : null,
                 ])
             >
                 {{ $beforeLabelContainer }}
 
                 @if ($label && (! $labelSrOnly))
-                    <dt
+                    <div
                         {{
                             (
-                                ($label instanceof \Illuminate\View\ComponentSlot)
+                                ($label instanceof ComponentSlot)
                                 ? $label->attributes
-                                : (new ComponentAttributeBag)
+                                : (new FilamentComponentAttributeBag)
                             )
                                 ->class(['fi-in-entry-label'])
                         }}
+                        role="term"
                     >
                         {{ $label }}
-                    </dt>
+                    </div>
                 @endif
 
                 {{ $afterLabelContainer }}
@@ -81,10 +90,18 @@
     </div>
 
     <div class="fi-in-entry-content-col">
-        {{ $entry?->getChildSchema($entry::ABOVE_CONTENT_SCHEMA_KEY) }}
+        @if ($hasAboveContentSchema)
+            <div class="fi-in-entry-content-slot">
+                {{ $aboveContentSchema }}
+            </div>
+        @endif
 
-        <dd class="fi-in-entry-content-ctn">
-            {{ $beforeContentContainer }}
+        <div class="fi-in-entry-content-ctn" role="definition">
+            @if ($hasBeforeContentSchema)
+                <div class="fi-in-entry-content-slot">
+                    {{ $beforeContentContainer }}
+                </div>
+            @endif
 
             @if (filled($url))
                 <a
@@ -125,7 +142,7 @@
             @endif
 
             {{ $afterContentContainer }}
-        </dd>
+        </div>
 
         {{ $entry?->getChildSchema($entry::BELOW_CONTENT_SCHEMA_KEY) }}
     </div>

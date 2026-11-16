@@ -42,11 +42,16 @@ return [
 
         'form' => [
 
+            'password' => [
+                'label' => 'Dabartinis slaptažodis',
+                'validation_attribute' => 'dabartinis slaptažodis',
+            ],
+
             'code' => [
 
                 'label' => 'Įveskite 6 skaitmenų kodą iš autentifikavimo programos',
 
-                'validation_attribute' => 'code',
+                'validation_attribute' => 'kodas',
 
                 'below_content' => 'Jums reikės įvesti 6 skaitmenų kodą iš savo autentifikavimo programos kaskart, kai prisijungsite arba atliksite jautrius veiksmus.',
 

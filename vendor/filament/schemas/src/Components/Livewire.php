@@ -3,15 +3,15 @@
 namespace Filament\Schemas\Components;
 
 use Closure;
+use Filament\Support\Components\Contracts\HasEmbeddedView;
+use Filament\Support\View\ComponentAttributeBag as FilamentComponentAttributeBag;
+use Livewire\Livewire as LivewireFacade;
 
-class Livewire extends Component
+class Livewire extends Component implements HasEmbeddedView
 {
-    /**
-     * @var view-string
-     */
-    protected string $view = 'filament-schemas::components.livewire';
+    protected ?string $publishedViewOverrideCheckPath = 'filament-schemas::components.livewire';
 
-    protected bool | Closure $isLazy = false;
+    protected bool | Closure $isLazyLoaded = false;
 
     /**
      * @var array<string, mixed> | Closure
@@ -55,16 +55,32 @@ class Livewire extends Component
         return $this->evaluate($this->component);
     }
 
-    public function lazy(bool | Closure $condition = true): static
+    public function lazyLoaded(bool | Closure $condition = true): static
     {
-        $this->isLazy = $condition;
+        $this->isLazyLoaded = $condition;
 
         return $this;
     }
 
+    /**
+     * @deprecated Use `lazyLoaded()` instead.
+     */
+    public function lazy(bool | Closure $condition = true): static
+    {
+        return $this->lazyLoaded($condition);
+    }
+
+    public function isLazyLoaded(): bool
+    {
+        return (bool) $this->evaluate($this->isLazyLoaded);
+    }
+
+    /**
+     * @deprecated Use `isLazyLoaded()` instead.
+     */
     public function isLazy(): bool
     {
-        return (bool) $this->evaluate($this->isLazy);
+        return $this->isLazyLoaded();
     }
 
     /**
@@ -94,7 +110,7 @@ class Livewire extends Component
             'record' => $this->getRecord(),
         ];
 
-        if ($this->isLazy()) {
+        if ($this->isLazyLoaded()) {
             $properties['lazy'] = true;
         }
 
@@ -107,5 +123,28 @@ class Livewire extends Component
     public function getId(): ?string
     {
         return $this->getCustomId();
+    }
+
+    public function toEmbeddedHtml(): string
+    {
+        $extraAttributes = $this->getExtraAttributes();
+        $id = $this->getId();
+        $hasWrapper = filled($id) || filled($extraAttributes);
+
+        $component = $this->getComponent();
+        $properties = $this->getComponentProperties();
+        $key = $this->getLivewireKey() ?? "{$this->getLivewire()->getId()}.{$component}";
+
+        $livewireHtml = LivewireFacade::mount($component, $properties, $key);
+
+        if ($hasWrapper) {
+            $attributes = (new FilamentComponentAttributeBag)
+                ->merge(['id' => $id], escape: false)
+                ->merge($extraAttributes, escape: false);
+
+            return '<div ' . $attributes->toHtml() . '>' . $livewireHtml . '</div>';
+        }
+
+        return $livewireHtml;
     }
 }

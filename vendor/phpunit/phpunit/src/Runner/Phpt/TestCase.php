@@ -72,12 +72,17 @@ use Throwable;
  *
  * @see https://qa.php.net/phpt_details.php
  */
-final readonly class TestCase implements Reorderable, SelfDescribing, Test
+final class TestCase implements Reorderable, SelfDescribing, Test
 {
     /**
      * @var non-empty-string
      */
-    private string $filename;
+    private readonly string $filename;
+
+    /**
+     * @var list<string>
+     */
+    private array $groups = [];
 
     /**
      * @param non-empty-string $filename
@@ -123,7 +128,7 @@ final readonly class TestCase implements Reorderable, SelfDescribing, Test
             return;
         }
 
-        $code                 = (new Renderer)->render($this->filename, $sections['FILE']);
+        $code                 = (new Renderer)->render($sections['FILE_EXTERNAL_PATH'] ?? $this->filename, $sections['FILE']);
         $xfail                = false;
         $environmentVariables = [];
         $phpSettings          = $parser->parseIniSection($this->settings(CodeCoverage::instance()->isActive()));
@@ -270,6 +275,26 @@ final readonly class TestCase implements Reorderable, SelfDescribing, Test
     public function sortId(): string
     {
         return $this->filename;
+    }
+
+    /**
+     * @return list<string>
+     *
+     * @internal This method is not covered by the backward compatibility promise for PHPUnit
+     */
+    public function groups(): array
+    {
+        return $this->groups;
+    }
+
+    /**
+     * @param list<string> $groups
+     *
+     * @internal This method is not covered by the backward compatibility promise for PHPUnit
+     */
+    public function setGroups(array $groups): void
+    {
+        $this->groups = $groups;
     }
 
     /**
@@ -481,7 +506,17 @@ final readonly class TestCase implements Reorderable, SelfDescribing, Test
                 ],
             );
 
-            if ($coverage === false) {
+            /**
+             * @phpstan-ignore instanceof.internalClass
+             */
+            if (!$coverage instanceof RawCodeCoverageData) {
+                EventFacade::emitter()->testRunnerTriggeredPhpunitWarning(
+                    sprintf(
+                        'Code coverage could not be collected for %s',
+                        $this->filename,
+                    ),
+                );
+
                 /**
                  * @phpstan-ignore staticMethod.internalClass
                  */

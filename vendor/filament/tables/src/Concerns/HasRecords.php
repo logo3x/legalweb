@@ -3,6 +3,8 @@
 namespace Filament\Tables\Concerns;
 
 use Filament\Support\ArrayRecord;
+use Filament\Support\Components\Attributes\Unexposed;
+use Filament\Tables\Enums\PaginationMode;
 use Illuminate\Contracts\Pagination\CursorPaginator;
 use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -24,6 +26,9 @@ trait HasRecords
 
     protected Collection | Paginator | CursorPaginator | null $cachedTableRecords = null;
 
+    protected bool $shouldApplyTableColumnRelationshipAggregates = true;
+
+    #[Unexposed]
     public function getFilteredTableQuery(): ?Builder
     {
         $query = $this->getTable()->getQuery();
@@ -32,9 +37,17 @@ trait HasRecords
             return null;
         }
 
-        return $this->filterTableQuery($query);
+        $shouldApplyTableColumnRelationshipAggregates = $this->shouldApplyTableColumnRelationshipAggregates;
+        $this->shouldApplyTableColumnRelationshipAggregates = true;
+
+        try {
+            return $this->filterTableQuery($query);
+        } finally {
+            $this->shouldApplyTableColumnRelationshipAggregates = $shouldApplyTableColumnRelationshipAggregates;
+        }
     }
 
+    #[Unexposed]
     public function filterTableQuery(Builder $query): Builder
     {
         $this->applyFiltersToTableQuery($query);
@@ -42,7 +55,9 @@ trait HasRecords
         $this->applySearchToTableQuery($query);
 
         foreach ($this->getTable()->getVisibleColumns() as $column) {
-            $column->applyRelationshipAggregates($query);
+            if ($this->shouldApplyTableColumnRelationshipAggregates) {
+                $column->applyRelationshipAggregates($query);
+            }
 
             if ($this->getTable()->isGroupsOnly()) {
                 continue;
@@ -54,6 +69,7 @@ trait HasRecords
         return $query;
     }
 
+    #[Unexposed]
     public function getFilteredSortedTableQuery(): ?Builder
     {
         $query = $this->getFilteredTableQuery();
@@ -69,6 +85,7 @@ trait HasRecords
         return $query;
     }
 
+    #[Unexposed]
     public function getTableQueryForExport(): Builder
     {
         $query = $this->getTable()->getQuery();
@@ -85,18 +102,27 @@ trait HasRecords
         $table = $this->getTable();
         $relationship = $table->getRelationship();
 
-        if ($table->getRelationship() instanceof BelongsToMany && ! $table->allowsDuplicates()) {
+        if ($table->getRelationship() instanceof BelongsToMany) {
             invade($relationship)->hydratePivotRelation($records->all());
         }
 
         return $records;
     }
 
+    #[Unexposed]
     public function getTableRecords(): Collection | Paginator | CursorPaginator
     {
         if (! $this->getTable()->hasQuery()) {
             if ($this->cachedTableRecords) {
                 return $this->cachedTableRecords;
+            }
+
+            $sortColumn = $this->getTableSortColumn();
+            $sortDirection = $this->getTableSortDirection();
+
+            if ($sortColumn && $this->getTable()->getColumn($sortColumn)?->isToggledHidden()) {
+                $sortColumn = null;
+                $sortDirection = null;
             }
 
             $records = $this->getTable()->evaluate($this->getTable()->getDataSource(), [
@@ -105,9 +131,9 @@ trait HasRecords
                 'page' => fn (): int | string => $this->getTablePage(),
                 'recordsPerPage' => fn (): int | string => $this->getTableRecordsPerPage(),
                 'search' => fn (): ?string => $this->getTableSearch(),
-                'sort' => fn (): array => [$this->getTableSortColumn(), $this->getTableSortDirection()],
-                'sortColumn' => fn (): ?string => $this->getTableSortColumn(),
-                'sortDirection' => fn (): ?string => $this->getTableSortDirection(),
+                'sort' => static fn (): array => [$sortColumn, $sortDirection],
+                'sortColumn' => static fn (): ?string => $sortColumn,
+                'sortDirection' => static fn (): ?string => $sortDirection,
             ]);
 
             if (is_array($records)) {
@@ -168,6 +194,10 @@ trait HasRecords
             throw new LogicException("Table [{$livewireClass}] must have a [query()], [relationship()], or [records()].");
         }
 
+        if ($this->getTable()->hasPivotRecordKeys()) {
+            $query = $this->applyPivotRecordKeyToTableQuery($query);
+        }
+
         if (
             (! $this->getTable()->isPaginated()) ||
             ($this->isTableReordering() && (! $this->getTable()->isPaginatedWhileReordering()))
@@ -224,6 +254,10 @@ trait HasRecords
             $column->applyRelationshipAggregates($query);
         }
 
+        if ($table->hasPivotRecordKeys()) {
+            $this->applyPivotRecordKeyToTableQuery($query->getQuery());
+        }
+
         $record = $table->selectPivotDataInQuery($query)->first();
 
         return $record?->setRawAttributes($record->getRawOriginal());
@@ -232,6 +266,7 @@ trait HasRecords
     /**
      * @return Model | array<string, mixed> | null
      */
+    #[Unexposed]
     public function getTableRecord(?string $key): Model | array | null
     {
         $record = $this->resolveTableRecord($key);
@@ -246,6 +281,7 @@ trait HasRecords
     /**
      * @param  Model | array<string, mixed>  $record
      */
+    #[Unexposed]
     public function getTableRecordKey(Model | array $record): string
     {
         if (is_array($record)) {
@@ -254,8 +290,12 @@ trait HasRecords
 
         $table = $this->getTable();
 
-        if (! ($table->getRelationship() instanceof BelongsToMany && $table->allowsDuplicates())) {
+        if (! $table->hasPivotRecordKeys()) {
             return $record->getKey();
+        }
+
+        if (array_key_exists('filament_pivot_key', $record->getAttributes())) {
+            return $record->getAttribute('filament_pivot_key');
         }
 
         /** @var BelongsToMany $relationship */
@@ -267,6 +307,38 @@ trait HasRecords
         return $record->getAttributeValue($pivotKeyName);
     }
 
+    protected function getQualifiedTablePivotKeyName(): string
+    {
+        /** @var BelongsToMany $relationship */
+        $relationship = $this->getTable()->getRelationship();
+
+        return $relationship->qualifyPivotColumn(app($relationship->getPivotClass())->getKeyName());
+    }
+
+    protected function applyPivotRecordKeyToTableQuery(Builder $query): Builder
+    {
+        $qualifiedKeyName = $this->getQualifiedTablePivotKeyName();
+        $query->addSelect("{$qualifiedKeyName} as filament_pivot_key");
+
+        if ($this->getTable()->getPaginationMode() === PaginationMode::Cursor) {
+            foreach ($query->getQuery()->orders ?? [] as $orderIndex => $order) {
+                if (($order['column'] ?? null) === $qualifiedKeyName) {
+                    $query->getQuery()->orders[$orderIndex]['column'] = 'filament_pivot_key';
+                }
+            }
+
+            if (! in_array('filament_pivot_key', array_column($query->getQuery()->orders ?? [], 'column'), true)) {
+                $query->orderBy('filament_pivot_key');
+            }
+        }
+
+        return $query->withGlobalScope('filamentPivotRecordKey', function (Builder $query) use ($qualifiedKeyName): void {
+            $this->getTable()->selectPivotDataInQuery($query);
+            $query->addSelect("{$qualifiedKeyName} as filament_pivot_key");
+        });
+    }
+
+    #[Unexposed]
     public function getAllTableRecordsCount(): int
     {
         if ($this->cachedTableRecords instanceof LengthAwarePaginator) {
@@ -276,6 +348,7 @@ trait HasRecords
         return $this->getFilteredTableQuery()->count();
     }
 
+    #[Unexposed]
     public function flushCachedTableRecords(): void
     {
         $this->cachedTableRecords = null;
@@ -284,6 +357,7 @@ trait HasRecords
     /**
      * @deprecated Override the `table()` method to configure the table.
      */
+    #[Unexposed]
     public function allowsDuplicates(): bool
     {
         return $this->allowsDuplicates;
@@ -292,6 +366,7 @@ trait HasRecords
     /**
      * @deprecated Override the `table()` method to configure the table.
      */
+    #[Unexposed]
     public function getTableRecordTitle(Model $record): ?string
     {
         return null;
@@ -300,6 +375,7 @@ trait HasRecords
     /**
      * @deprecated Override the `table()` method to configure the table.
      */
+    #[Unexposed]
     public function getTableModelLabel(): ?string
     {
         return null;
@@ -308,6 +384,7 @@ trait HasRecords
     /**
      * @deprecated Override the `table()` method to configure the table.
      */
+    #[Unexposed]
     public function getTablePluralModelLabel(): ?string
     {
         return null;

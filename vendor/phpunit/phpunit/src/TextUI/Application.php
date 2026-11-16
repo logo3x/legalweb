@@ -11,7 +11,6 @@ namespace PHPUnit\TextUI;
 
 use const PHP_EOL;
 use const PHP_VERSION;
-use function assert;
 use function class_exists;
 use function defined;
 use function dirname;
@@ -93,6 +92,7 @@ use PHPUnit\TextUI\Output\Printer;
 use PHPUnit\TextUI\XmlConfiguration\Configuration as XmlConfiguration;
 use PHPUnit\TextUI\XmlConfiguration\DefaultConfiguration;
 use PHPUnit\TextUI\XmlConfiguration\Loader;
+use PHPUnit\Util\ExcludeList;
 use PHPUnit\Util\Http\PhpDownloader;
 use SebastianBergmann\Timer\Timer;
 use Throwable;
@@ -342,8 +342,6 @@ final readonly class Application
 
             exit($result->shellExitCode());
         }
-
-        assert(isset($resultCollectedFromEvents));
 
         print 'There were errors:' . PHP_EOL;
 
@@ -848,13 +846,22 @@ final readonly class Application
             return;
         }
 
+        $excludeList = new ExcludeList(true);
+
         foreach (require $classMapFile as $codeUnitName => $sourceCodeFile) {
             if (!str_starts_with($codeUnitName, 'PHPUnit\\') &&
                 !str_starts_with($codeUnitName, 'SebastianBergmann\\')) {
                 continue;
             }
 
-            if (str_contains($sourceCodeFile, '/tests/')) {
+            $sourceCodeFile = realpath($sourceCodeFile);
+
+            if ($sourceCodeFile === false) {
+                continue;
+            }
+
+            // only preload code that belongs to PHPUnit or one of its dependencies
+            if (!$excludeList->isExcluded($sourceCodeFile)) {
                 continue;
             }
 

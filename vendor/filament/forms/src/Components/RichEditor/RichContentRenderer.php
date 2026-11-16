@@ -155,6 +155,14 @@ class RichContentRenderer implements Htmlable
 
     public function getFileAttachmentUrl(mixed $file): ?string
     {
+        // The `$file` value comes from a `data-id` attribute on an image node in
+        // client-submitted rich editor content, and is not authorized here before
+        // being passed to the filesystem. Applications whose disk stores files
+        // belonging to multiple users or records must supply a custom file
+        // attachment provider (or use the Spatie Media Library provider) that
+        // validates the id against records the current user is allowed to read.
+        // See the "Securing file attachment IDs" section of the rich editor
+        // documentation.
         $fileAttachmentProvider = $this->getFileAttachmentProvider();
 
         if ($fileAttachmentProvider) {
@@ -178,7 +186,7 @@ class RichContentRenderer implements Htmlable
             try {
                 return $storage->temporaryUrl(
                     $file,
-                    now()->addMinutes(30)->endOfHour(),
+                    now()->addMinutes(config('filament.temporary_file_url_expiry_minutes', 30))->endOfHour(),
                 );
             } catch (Throwable $exception) {
                 // This driver does not support creating temporary URLs.
@@ -203,6 +211,15 @@ class RichContentRenderer implements Htmlable
 
     protected function processCustomBlocks(Editor $editor): void
     {
+        $editor->descendants(function (object &$node): void {
+            if ($node->type !== 'renderedCustomBlock') {
+                return;
+            }
+
+            $node->type = 'customBlock';
+            unset($node->html);
+        });
+
         if (blank($this->customBlocks)) {
             return;
         }
@@ -281,15 +298,81 @@ class RichContentRenderer implements Htmlable
         });
     }
 
+    protected function flattenMergeTagsForText(Editor $editor): void
+    {
+        $editor->descendants(function (object &$node): void {
+            if (! isset($node->content) || ! is_array($node->content)) {
+                return;
+            }
+
+            $hasMergeTags = false;
+
+            foreach ($node->content as $child) {
+                if (in_array($child->type, ['mergeTag', 'rawHtmlMergeTag'])) {
+                    $hasMergeTags = true;
+
+                    break;
+                }
+            }
+
+            if (! $hasMergeTags) {
+                return;
+            }
+
+            $merged = [];
+
+            foreach ($node->content as $child) {
+                foreach ($this->resolveTextNodesFromMergeTag($child) as $textNode) {
+                    $last = end($merged);
+
+                    if ($last && $last->type === 'text' && $textNode->type === 'text') {
+                        $last->text .= $textNode->text;
+                    } else {
+                        $merged[] = $textNode;
+                    }
+                }
+            }
+
+            $node->content = $merged;
+        });
+    }
+
+    /**
+     * @return array<object>
+     */
+    protected function resolveTextNodesFromMergeTag(object $node): array
+    {
+        if ($node->type === 'mergeTag') {
+            return $node->content ?? [];
+        }
+
+        if ($node->type === 'rawHtmlMergeTag') {
+            $text = trim(preg_replace('/\s+/', ' ', strip_tags($node->html ?? '')));
+
+            if ($text === '') {
+                return [];
+            }
+
+            return [
+                (object) [
+                    'type' => 'text',
+                    'text' => $text,
+                ],
+            ];
+        }
+
+        return [$node];
+    }
+
     protected function processMentions(Editor $editor): void
     {
         if (blank($this->mentionProviders)) {
             return;
         }
 
-        $mentionsByChar = [];
+        $mentionsByTriggerCharacter = [];
 
-        $editor->descendants(function (object &$node) use (&$mentionsByChar): void {
+        $editor->descendants(function (object &$node) use (&$mentionsByTriggerCharacter): void {
             if ($node->type !== 'mention') {
                 return;
             }
@@ -300,39 +383,39 @@ class RichContentRenderer implements Htmlable
                 return;
             }
 
-            $char = $node->attrs->char ?? '@';
-            $mentionsByChar[$char][] = (string) $id;
+            $triggerCharacter = $node->attrs->char ?? '@';
+            $mentionsByTriggerCharacter[$triggerCharacter][] = (string) $id;
         });
 
-        $labelsByChar = [];
+        $labelsByTriggerCharacter = [];
 
-        foreach ($mentionsByChar as $char => $ids) {
-            $provider = $this->getMentionProvider($char);
+        foreach ($mentionsByTriggerCharacter as $triggerCharacter => $ids) {
+            $provider = $this->getMentionProvider($triggerCharacter);
 
             if ($provider) {
-                $labelsByChar[$char] = $provider->getLabels(array_unique($ids));
+                $labelsByTriggerCharacter[$triggerCharacter] = $provider->getLabels(array_unique($ids));
             }
         }
 
-        $editor->descendants(function (object &$node) use ($labelsByChar): void {
+        $editor->descendants(function (object &$node) use ($labelsByTriggerCharacter): void {
             if ($node->type !== 'mention') {
                 return;
             }
 
             $id = $node->attrs->id ?? null;
-            $char = $node->attrs->char ?? '@';
+            $triggerCharacter = $node->attrs->char ?? '@';
 
             if (blank($id)) {
                 return;
             }
 
-            $provider = $this->getMentionProvider($char);
+            $provider = $this->getMentionProvider($triggerCharacter);
 
             if (! $provider) {
                 return;
             }
 
-            $label = $labelsByChar[$char][(string) $id] ?? $node->attrs->label ?? (string) $id;
+            $label = $labelsByTriggerCharacter[$triggerCharacter][(string) $id] ?? $node->attrs->label ?? (string) $id;
             $node->attrs->label = $label;
 
             $url = $provider->getUrl((string) $id, $label);
@@ -400,6 +483,7 @@ class RichContentRenderer implements Htmlable
             app(LeadExtension::class),
             app(Link::class, [
                 'options' => [
+                    'HTMLAttributes' => [],
                     'allowedProtocols' => $this->getLinkProtocols(),
                 ],
             ]),
@@ -484,6 +568,19 @@ class RichContentRenderer implements Htmlable
 
     public function toUnsafeHtml(): string
     {
+        // Security: This method returns unsanitized HTML. Only use for
+        // internal processing — never render in Blade. Use `toHtml()`.
+
+        return $this->renderHtml(shouldSanitize: false);
+    }
+
+    public function toHtml(): string
+    {
+        return $this->renderHtml(shouldSanitize: true);
+    }
+
+    protected function renderHtml(bool $shouldSanitize): string
+    {
         $editor = $this->getEditor();
 
         $this->processCustomBlocks($editor);
@@ -492,12 +589,25 @@ class RichContentRenderer implements Htmlable
         $this->processMentions($editor);
         $this->processNodes($editor);
 
-        return $editor->getHTML();
-    }
+        if (! $shouldSanitize) {
+            return $editor->getHTML();
+        }
 
-    public function toHtml(): string
-    {
-        return Str::sanitizeHtml($this->toUnsafeHtml());
+        $customBlockHtml = [];
+
+        $editor->descendants(function (object &$node) use (&$customBlockHtml): void {
+            if ($node->type !== 'renderedCustomBlock') {
+                return;
+            }
+
+            // Only registered block renderers may bypass sanitization. Incoming
+            // `renderedCustomBlock` nodes were reset by `processCustomBlocks()`.
+            $placeholder = '<div data-id="' . Str::random(40) . '"></div>';
+            $customBlockHtml[$placeholder] = $node->html ?? '';
+            $node->html = $placeholder;
+        });
+
+        return strtr(Str::sanitizeHtml($editor->getHTML()), $customBlockHtml);
     }
 
     public function toText(): string
@@ -505,6 +615,7 @@ class RichContentRenderer implements Htmlable
         $editor = $this->getEditor();
 
         $this->processMergeTags($editor);
+        $this->flattenMergeTagsForText($editor);
 
         return $editor->getText();
     }
@@ -541,10 +652,34 @@ class RichContentRenderer implements Htmlable
     }
 
     /**
-     * @param  ?array<class-string<RichContentCustomBlock> | array<string, mixed> | Closure>  $blocks
+     * @param  ?array<class-string<RichContentCustomBlock> | array<class-string<RichContentCustomBlock> | array<string, mixed> | Closure> | array<string, mixed> | Closure>  $blocks
      */
     public function customBlocks(?array $blocks): static
     {
+        if ($blocks !== null) {
+            $flattened = [];
+
+            foreach ($blocks as $key => $value) {
+                if (is_string($key) && is_a($key, RichContentCustomBlock::class, allow_string: true)) {
+                    // Data association: `BlockClass::class => $data`
+                    $flattened[$key] = $value;
+                } elseif (is_array($value)) {
+                    // Group or ungrouped section: `'Label' => [...]` or `[...]`
+                    foreach ($value as $innerKey => $innerValue) {
+                        if (is_string($innerKey)) {
+                            $flattened[$innerKey] = $innerValue;
+                        } else {
+                            $flattened[] = $innerValue;
+                        }
+                    }
+                } else {
+                    $flattened[] = $value;
+                }
+            }
+
+            $blocks = $flattened;
+        }
+
         $this->customBlocks = $blocks;
 
         return $this;
@@ -591,7 +726,7 @@ class RichContentRenderer implements Htmlable
         }
 
         foreach ($this->mentionProviders as $provider) {
-            if ($provider->getChar() === $char) {
+            if ($provider->getTriggerCharacter() === $char) {
                 return $provider;
             }
         }

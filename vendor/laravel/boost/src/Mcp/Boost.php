@@ -6,10 +6,10 @@ namespace Laravel\Boost\Mcp;
 
 use Laravel\Boost\Mcp\Methods\CallToolWithExecutor;
 use Laravel\Boost\Mcp\Prompts\LaravelCodeSimplifier\LaravelCodeSimplifier;
+use Laravel\Boost\Mcp\Prompts\UpgradeAiSdkv1\UpgradeAiSdkV1;
 use Laravel\Boost\Mcp\Prompts\UpgradeInertiav3\UpgradeInertiaV3;
 use Laravel\Boost\Mcp\Prompts\UpgradeLaravelv13\UpgradeLaravelV13;
 use Laravel\Boost\Mcp\Prompts\UpgradeLivewirev4\UpgradeLivewireV4;
-use Laravel\Boost\Mcp\Tools\ApplicationInfo;
 use Laravel\Boost\Mcp\Tools\BrowserLogs;
 use Laravel\Boost\Mcp\Tools\DatabaseConnections;
 use Laravel\Boost\Mcp\Tools\DatabaseQuery;
@@ -17,7 +17,10 @@ use Laravel\Boost\Mcp\Tools\DatabaseSchema;
 use Laravel\Boost\Mcp\Tools\GetAbsoluteUrl;
 use Laravel\Boost\Mcp\Tools\LastError;
 use Laravel\Boost\Mcp\Tools\ReadLogEntries;
+use Laravel\Boost\Mcp\Tools\RecordRule;
 use Laravel\Boost\Mcp\Tools\SearchDocs;
+use Laravel\Boost\Mcp\Tools\Tinker;
+use Laravel\Mcp\Schema\Icon;
 use Laravel\Mcp\Server;
 use Laravel\Mcp\Server\Prompt;
 use Laravel\Mcp\Server\Resource;
@@ -38,7 +41,21 @@ class Boost extends Server
     /**
      * The MCP server's instructions for the LLM.
      */
-    protected string $instructions = 'Laravel ecosystem MCP server offering database schema access, error logs, semantic documentation search and more. Boost helps with code generation.';
+    protected string $instructions = 'Laravel ecosystem MCP server offering database schema access, error logs, semantic documentation search, and more. Boost helps with code generation.';
+
+    /**
+     * The icons exposed to MCP clients.
+     *
+     * @return list<Icon>
+     */
+    protected function icons(): array
+    {
+        $svg = (string) file_get_contents(__DIR__.'/../../resources/icons/boost.svg');
+
+        return [
+            Icon::from('data:image/svg+xml;base64,'.base64_encode($svg), 'image/svg+xml', ['40x40']),
+        ];
+    }
 
     /**
      * The default pagination length for resources that support pagination.
@@ -82,7 +99,6 @@ class Boost extends Server
     protected function discoverTools(): array
     {
         return $this->filterPrimitives([
-            ApplicationInfo::class,
             BrowserLogs::class,
             DatabaseConnections::class,
             DatabaseQuery::class,
@@ -90,7 +106,9 @@ class Boost extends Server
             GetAbsoluteUrl::class,
             LastError::class,
             ReadLogEntries::class,
+            RecordRule::class,
             SearchDocs::class,
+            Tinker::class,
         ], 'tools');
     }
 
@@ -111,6 +129,7 @@ class Boost extends Server
     {
         return $this->filterPrimitives([
             LaravelCodeSimplifier::class,
+            UpgradeAiSdkV1::class,
             UpgradeInertiaV3::class,
             UpgradeLaravelV13::class,
             UpgradeLivewireV4::class,

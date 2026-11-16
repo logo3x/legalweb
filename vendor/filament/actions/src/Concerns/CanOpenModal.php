@@ -8,6 +8,7 @@ use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\View\ActionsIconAlias;
 use Filament\Support\Enums\Alignment;
+use Filament\Support\Enums\SlideOverPosition;
 use Filament\Support\Enums\Width;
 use Filament\Support\Facades\FilamentIcon;
 use Filament\Support\Icons\Heroicon;
@@ -44,6 +45,8 @@ trait CanOpenModal
 
     protected bool | Closure $isModalSlideOver = false;
 
+    protected SlideOverPosition | Closure | null $modalSlideOverPosition = null;
+
     protected Alignment | string | Closure | null $modalAlignment = null;
 
     /**
@@ -74,11 +77,15 @@ trait CanOpenModal
 
     protected string | Htmlable | Closure | null $modalDescription = null;
 
+    protected string | Htmlable | Closure | null $modalEyebrow = null;
+
     protected Width | string | Closure | null $modalWidth = null;
 
     protected bool | Closure | null $hasModal = null;
 
     protected bool | Closure | null $isModalHidden = null;
+
+    protected bool | Closure | null $isModalClickThrough = null;
 
     protected bool | Closure | null $hasModalCloseButton = null;
 
@@ -88,12 +95,21 @@ trait CanOpenModal
 
     protected bool | Closure | null $isModalAutofocused = null;
 
+    protected bool | Closure | null $hasUnsavedChangesAlert = null;
+
     protected string | BackedEnum | Htmlable | Closure | null $modalIcon = null;
 
     /**
      * @var string | array<string> | Closure | null
      */
     protected string | array | Closure | null $modalIconColor = null;
+
+    public function modalClickThrough(bool | Closure | null $condition = true): static
+    {
+        $this->isModalClickThrough = $condition;
+
+        return $this;
+    }
 
     public function closeModalByClickingAway(bool | Closure | null $condition = true): static
     {
@@ -105,6 +121,13 @@ trait CanOpenModal
     public function closeModalByEscaping(bool | Closure | null $condition = true): static
     {
         $this->isModalClosedByEscaping = $condition;
+
+        return $this;
+    }
+
+    public function unsavedChangesAlert(bool | Closure | null $condition = true): static
+    {
+        $this->hasUnsavedChangesAlert = $condition;
 
         return $this;
     }
@@ -166,10 +189,17 @@ trait CanOpenModal
         return $this;
     }
 
+    public function slideOverPosition(SlideOverPosition | Closure | null $position = null): static
+    {
+        $this->modalSlideOverPosition = $position;
+
+        return $this;
+    }
+
     /**
      * @param  array<Action> | Closure | null  $actions
      *
-     *@deprecated Use `modalFooterActions()` instead.
+     * @deprecated Use `modalFooterActions()` instead.
      */
     public function modalActions(array | Closure | null $actions = null): static
     {
@@ -198,7 +228,7 @@ trait CanOpenModal
     /**
      * @param  array<Action> | Closure  $actions
      *
-     *@deprecated Use `extraModalFooterActions()` instead.
+     * @deprecated Use `extraModalFooterActions()` instead.
      */
     public function extraModalActions(array | Closure $actions): static
     {
@@ -300,6 +330,13 @@ trait CanOpenModal
     public function modalDescription(string | Htmlable | Closure | null $description = null): static
     {
         $this->modalDescription = $description;
+
+        return $this;
+    }
+
+    public function modalEyebrow(string | Htmlable | Closure | null $eyebrow = null): static
+    {
+        $this->modalEyebrow = $eyebrow;
 
         return $this;
     }
@@ -631,6 +668,16 @@ trait CanOpenModal
         return filled($this->getModalDescription());
     }
 
+    public function getModalEyebrow(): string | Htmlable | null
+    {
+        return $this->evaluate($this->modalEyebrow);
+    }
+
+    public function hasModalEyebrow(): bool
+    {
+        return filled($this->getModalEyebrow());
+    }
+
     public function getModalWidth(): Width | string
     {
         if ($width = $this->evaluate($this->modalWidth)) {
@@ -659,6 +706,11 @@ trait CanOpenModal
         return (bool) $this->evaluate($this->isModalSlideOver);
     }
 
+    public function getModalSlideOverPosition(): ?SlideOverPosition
+    {
+        return $this->evaluate($this->modalSlideOverPosition);
+    }
+
     public function hasModal(): ?bool
     {
         return $this->evaluate($this->hasModal);
@@ -675,10 +727,16 @@ trait CanOpenModal
         }
 
         return $this->hasCustomModalHeading() ||
+            $this->hasModalEyebrow() ||
             $this->hasModalDescription() ||
             $this->hasModalContent() ||
             $this->hasModalContentFooter() ||
             (value($checkForSchemaUsing, $this) ?? false);
+    }
+
+    public function isModalClickThrough(): bool
+    {
+        return (bool) $this->evaluate($this->isModalClickThrough);
     }
 
     public function hasModalCloseButton(): bool
@@ -699,6 +757,11 @@ trait CanOpenModal
     public function isModalAutofocused(): bool
     {
         return $this->evaluate($this->isModalAutofocused) ?? ModalComponent::$isAutofocused;
+    }
+
+    public function hasUnsavedChangesAlert(): bool
+    {
+        return (bool) ($this->evaluate($this->hasUnsavedChangesAlert) ?? (! $this->isSchemaDisabled()));
     }
 
     /**
@@ -761,5 +824,10 @@ trait CanOpenModal
         $this->isModalHeaderSticky = $condition;
 
         return $this;
+    }
+
+    public function hasCustomModalPresence(): bool
+    {
+        return $this->hasModal !== null;
     }
 }

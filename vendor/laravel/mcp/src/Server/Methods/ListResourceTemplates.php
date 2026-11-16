@@ -7,13 +7,18 @@ namespace Laravel\Mcp\Server\Methods;
 use Laravel\Mcp\Server\Contracts\Method;
 use Laravel\Mcp\Server\Pagination\CursorPaginator;
 use Laravel\Mcp\Server\ServerContext;
-use Laravel\Mcp\Server\Transport\JsonRpcRequest;
-use Laravel\Mcp\Server\Transport\JsonRpcResponse;
+use Laravel\Mcp\Transport\JsonRpcRequest;
+use Laravel\Mcp\Transport\JsonRpcResponse;
 
 class ListResourceTemplates implements Method
 {
     public function handle(JsonRpcRequest $request, ServerContext $context): JsonRpcResponse
     {
+        $request->validate([
+            'cursor' => ['nullable', 'string'],
+            'per_page' => ['nullable', 'integer:strict', 'min:1'],
+        ]);
+
         $paginator = new CursorPaginator(
             items: $context->resourceTemplates(),
             perPage: $context->perPage($request->get('per_page')),

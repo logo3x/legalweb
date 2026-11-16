@@ -5,6 +5,8 @@ namespace Filament\Widgets\Commands;
 use Filament\Support\Commands\Concerns\CanAskForLivewireComponentLocation;
 use Filament\Support\Commands\Concerns\CanAskForResource;
 use Filament\Support\Commands\Concerns\CanAskForViewLocation;
+use Filament\Support\Commands\Concerns\CanConfigureVite;
+use Filament\Support\Commands\Concerns\CanManageJavaScriptPackages;
 use Filament\Support\Commands\Concerns\CanManipulateFiles;
 use Filament\Support\Commands\Concerns\HasCluster;
 use Filament\Support\Commands\Concerns\HasPanel;
@@ -22,15 +24,16 @@ use Filament\Widgets\TableWidget;
 use Filament\Widgets\Widget;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
-use Illuminate\Support\Stringable;
 use ReflectionClass;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 
 use function Filament\Support\discover_app_classes;
+use function Filament\Support\is_path_within_vendor_directory;
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\search;
 use function Laravel\Prompts\select;
@@ -47,6 +50,8 @@ class MakeWidgetCommand extends Command
     use CanAskForResource;
     use CanAskForViewLocation;
     use CanCheckFileGenerationFlags;
+    use CanConfigureVite;
+    use CanManageJavaScriptPackages;
     use CanManipulateFiles;
     use HasCluster;
     use HasPanel;
@@ -91,6 +96,21 @@ class MakeWidgetCommand extends Command
 
     protected string $widgetsDirectory;
 
+    protected ?string $livewireComponentNamespace = null;
+
+    protected ?string $livewireComponentViewNamespace = null;
+
+    protected ?string $framework = null;
+
+    protected bool $isTypeScript = false;
+
+    protected string $renderer;
+
+    /** @var array<string, string> */
+    protected array $rendererFiles = [];
+
+    protected Filesystem $filesystem;
+
     /**
      * @return array<InputArgument>
      */
@@ -111,6 +131,15 @@ class MakeWidgetCommand extends Command
     protected function getOptions(): array
     {
         return [
+            new InputOption('js', mode: InputOption::VALUE_NONE, description: 'Generate a framework-free JavaScript widget'),
+            new InputOption('react', mode: InputOption::VALUE_NONE, description: 'Generate a React widget'),
+            new InputOption('vue', mode: InputOption::VALUE_NONE, description: 'Generate a Vue widget'),
+            new InputOption('svelte', mode: InputOption::VALUE_NONE, description: 'Generate a Svelte 5 widget'),
+            new InputOption('typescript', mode: InputOption::VALUE_NONE, description: 'Generate a typed JavaScript widget'),
+            new InputOption('ts', mode: InputOption::VALUE_NONE, description: 'Alias for --typescript'),
+            new InputOption('pm', mode: InputOption::VALUE_REQUIRED, description: 'The package manager to use (npm, yarn)'),
+            new InputOption('skip-install', mode: InputOption::VALUE_NONE, description: 'Do not install JavaScript dependencies'),
+            new InputOption('skip-build', mode: InputOption::VALUE_NONE, description: 'Do not offer to compile assets'),
             new InputOption(
                 name: 'chart',
                 shortcut: 'C',
@@ -162,9 +191,35 @@ class MakeWidgetCommand extends Command
         ];
     }
 
-    public function handle(): int
+    public function handle(Filesystem $filesystem): int
     {
+        $this->filesystem = $filesystem;
+
         try {
+            $frameworks = array_values(array_filter(['js', 'react', 'vue', 'svelte'], fn (string $framework): bool => (bool) $this->option($framework)));
+
+            if (count($frameworks) > 1) {
+                $this->components->error('Only one of --js, --react, --vue, or --svelte may be specified.');
+
+                return static::FAILURE;
+            }
+
+            $this->framework = $framework = $frameworks[0] ?? null;
+            $this->isTypeScript = $this->option('typescript') || $this->option('ts');
+            $this->rendererFiles = [];
+
+            if ($this->isTypeScript && ! $framework) {
+                $this->components->error('Use --typescript or --ts with --js, --react, --vue, or --svelte.');
+
+                return static::FAILURE;
+            }
+
+            if ($framework && ($this->option('chart') || $this->option('stats-overview') || $this->option('table'))) {
+                $this->components->error('JavaScript renderer options cannot be combined with --chart, --stats-overview, or --table.');
+
+                return static::FAILURE;
+            }
+
             $this->configureFqnEnd();
             $this->configureType();
             $this->configurePanel(
@@ -195,6 +250,31 @@ class MakeWidgetCommand extends Command
             $this->components->info('Make sure to register the widget with [widgets()] or discover it with [discoverWidgets()] in the panel service provider.');
         }
 
+        if ($this->framework) {
+            $pendingActions = [];
+            if ($this->isTypeScript && ! $this->configureJavaScriptRendererTypeScript(
+                '@filament/widgets/js-widget',
+                'vendor/filament/widgets/resources/js/types/js-widget.d.ts',
+            )) {
+                $pendingActions[] = 'Configure the @filament/widgets/js-widget type alias in tsconfig.json: https://filamentphp.com/docs/5.x/widgets/custom-widgets#typing-renderers';
+            }
+            if (! $this->registerViteInput($this->renderer)) {
+                $pendingActions[] = "Add [{$this->renderer}] to the Laravel plugin's input array in your Vite config.";
+            }
+            if (! $this->configureJavaScriptRendererVite($this->framework)) {
+                $pendingActions[] = "Configure Vite to compile {$this->framework} and preserve the renderer's default export: https://filamentphp.com/docs/5.x/advanced/assets#building-lazy-loaded-es-modules";
+            }
+            if (filled($pendingActions)) {
+                $this->components->warn('Action is required to complete the widget setup:');
+                $this->components->bulletList($pendingActions);
+            }
+            if (! glob(base_path('vite.config.*s'))) {
+                return static::SUCCESS;
+            }
+
+            return $this->buildJavaScriptAssets('widget') ? static::SUCCESS : static::FAILURE;
+        }
+
         return static::SUCCESS;
     }
 
@@ -215,6 +295,7 @@ class MakeWidgetCommand extends Command
     protected function configureType(): void
     {
         $this->type = match (true) {
+            filled($this->framework) => Widget::class,
             boolval($this->option('chart')) => ChartWidget::class,
             boolval($this->option('stats-overview')) => StatsOverviewWidget::class,
             boolval($this->option('table')) => TableWidget::class,
@@ -227,6 +308,7 @@ class MakeWidgetCommand extends Command
                 StatsOverviewWidget::class => 'Stats overview',
                 TableWidget::class => 'Table',
             ],
+            default: $this->input->isInteractive() ? null : Widget::class,
         );
     }
 
@@ -311,9 +393,11 @@ class MakeWidgetCommand extends Command
             [
                 $this->widgetsNamespace,
                 $this->widgetsDirectory,
+                $this->livewireComponentViewNamespace,
             ] = $this->askForLivewireComponentLocation(
                 question: 'Where would you like to create the widget?',
             );
+            $this->livewireComponentNamespace = $this->widgetsNamespace;
 
             return;
         }
@@ -322,7 +406,7 @@ class MakeWidgetCommand extends Command
         $namespaces = $this->panel->getWidgetNamespaces();
 
         foreach ($directories as $index => $directory) {
-            if (str($directory)->startsWith(base_path('vendor'))) {
+            if (is_path_within_vendor_directory($directory, base_path())) {
                 unset($directories[$index]);
                 unset($namespaces[$index]);
             }
@@ -359,33 +443,50 @@ class MakeWidgetCommand extends Command
     {
         $this->fqn = $this->widgetsNamespace . '\\' . $this->fqnEnd;
 
+        if ($this->framework) {
+            $this->configureRendererLocation();
+
+            return;
+        }
+
         if ($this->type === Widget::class) {
             $componentLocations = FilamentCli::getLivewireComponentLocations();
 
             $matchingComponentLocationNamespaces = collect($componentLocations)
                 ->keys()
-                ->filter(fn (string $namespace): bool => str($this->fqn)->startsWith($namespace));
+                ->filter(fn (string $namespace): bool => str($this->fqn)->startsWith("{$namespace}\\"));
+
+            if (count($matchingComponentLocationNamespaces) === 1) {
+                $this->livewireComponentNamespace = Arr::first($matchingComponentLocationNamespaces);
+                $this->livewireComponentViewNamespace = $componentLocations[$this->livewireComponentNamespace]['viewNamespace'] ?? null;
+            }
+
+            $view = str($this->fqn);
+
+            if ($view->contains('Filament\\')) {
+                $view = $view->after('Filament\\')->prepend('Filament\\');
+            } elseif (filled($this->livewireComponentNamespace)) {
+                $view = $this->getLivewireComponentViewName(
+                    $this->livewireComponentNamespace,
+                    (string) $view->after("{$this->livewireComponentNamespace}\\"),
+                );
+            } else {
+                $view = $view
+                    ->afterLast('\\Livewire\\')
+                    ->prepend('Livewire\\');
+            }
 
             [
                 $this->view,
                 $this->viewPath,
             ] = $this->askForViewLocation(
-                view: str($this->fqn)
-                    ->whenContains(
-                        'Filament\\',
-                        fn (Stringable $fqn) => $fqn->after('Filament\\')->prepend('Filament\\'),
-                        fn (Stringable $fqn) => $fqn
-                            ->afterLast('\\Livewire\\')
-                            ->prepend('Livewire\\'),
-                    )
+                view: str($view)
                     ->replace('\\', '/')
                     ->explode('/')
                     ->map(Str::kebab(...))
                     ->implode('.'),
                 question: 'Where would you like to create the Blade view for the widget?',
-                defaultNamespace: (count($matchingComponentLocationNamespaces) === 1)
-                    ? $componentLocations[Arr::first($matchingComponentLocationNamespaces)]['viewNamespace'] ?? null
-                    : null,
+                defaultNamespace: $this->livewireComponentViewNamespace,
             );
         }
     }
@@ -400,14 +501,28 @@ class MakeWidgetCommand extends Command
             ->replace('\\', '/')
             ->replace('//', '/');
 
-        if (! $this->option('force') && $this->checkForCollision($path)) {
+        if (! $this->option('force') && $this->checkForCollision([$path, ...array_keys($this->rendererFiles)])) {
             throw new FailureCommandOutput;
+        }
+
+        if ($this->framework) {
+            $this->configurePackageManager();
+            $this->installJavaScriptDependencies($this->getJavaScriptRendererDependencies(
+                $this->framework,
+                $this->isTypeScript,
+                $this->getViteVersion(),
+            ));
         }
 
         $this->writeFile($path, app(CustomWidgetClassGenerator::class, [
             'fqn' => $this->fqn,
-            'view' => $this->view,
+            'view' => $this->view ?? '',
+            ...($this->framework ? ['renderer' => $this->renderer] : []),
         ]));
+
+        if ($this->framework) {
+            $this->createRenderer();
+        }
     }
 
     protected function createChartWidget(): void
@@ -520,5 +635,49 @@ class MakeWidgetCommand extends Command
         }
 
         $this->copyStubToApp('WidgetView', $this->viewPath);
+    }
+
+    protected function configureRendererLocation(): void
+    {
+        $directory = 'js';
+        $name = str($this->fqn);
+
+        if ($name->startsWith(app()->getNamespace())) {
+            $name = $name->after(app()->getNamespace());
+        }
+
+        $name = $name->replace('\\', '/');
+
+        if ($name->contains('/')) {
+            $directory .= '/' . $name->beforeLast('/')->explode('/')->map(Str::kebab(...))->implode('/');
+        }
+        $basename = $name->afterLast('/')->toString();
+        $extension = match ($this->framework) {
+            'react' => $this->isTypeScript ? 'tsx' : 'jsx',
+            'svelte' => $this->isTypeScript ? 'svelte.ts' : 'svelte.js',
+            default => $this->isTypeScript ? 'ts' : 'js',
+        };
+        $entry = "{$directory}/" . Str::kebab($basename) . ".{$extension}";
+        $this->renderer = 'resources/' . $entry;
+        $stubPrefix = ucfirst($this->framework) . ($this->isTypeScript ? 'TypeScript' : '');
+        $this->rendererFiles = [resource_path($entry) => $stubPrefix . 'WidgetRenderer'];
+        if (in_array($this->framework, ['vue', 'svelte'])) {
+            $this->rendererFiles[resource_path("{$directory}/{$basename}.{$this->framework}")] = $stubPrefix . 'WidgetComponent';
+        }
+    }
+
+    protected function createRenderer(): void
+    {
+        $componentName = class_basename($this->fqn);
+        $componentIdentifier = (ctype_lower($componentName[0]) || in_array($componentName, [
+            'React', 'JsWidgetProps', 'JsWidgetRenderer', 'Configuration',
+        ], strict: true)) ? 'Component' : $componentName;
+
+        foreach ($this->rendererFiles as $path => $stub) {
+            $this->copyStubToApp($stub, $path, [
+                'componentName' => $componentName,
+                'componentIdentifier' => $componentIdentifier,
+            ]);
+        }
     }
 }

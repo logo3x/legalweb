@@ -11,15 +11,17 @@ use Laravel\Boost\Concerns\MakesHttpRequests;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\Server\Tool;
+use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 use Laravel\Roster\Package;
-use Laravel\Roster\Roster;
+use Laravel\Roster\ProjectManager;
 use Throwable;
 
+#[IsReadOnly]
 class SearchDocs extends Tool
 {
     use MakesHttpRequests;
 
-    public function __construct(protected Roster $roster)
+    public function __construct(protected ProjectManager $project)
     {
         //
     }
@@ -43,7 +45,7 @@ class SearchDocs extends Tool
                 ->required(),
             'packages' => $schema->array()
                 ->items($schema->string()->description("The composer package name (e.g., 'symfony/console')"))
-                ->description('Package names to limit searching to from application-info. Useful if you know the package(s) you need. i.e. laravel/framework, inertiajs/inertia-laravel, @inertiajs/react'),
+                ->description('Composer or npm package names to limit the search to, e.g. laravel/framework, inertiajs/inertia-laravel, @inertiajs/react'),
             'token_limit' => $schema->integer()
                 ->description('Maximum number of tokens to return in the response. Defaults to 3,000 tokens, maximum 1,000,000 tokens. If results are truncated, or you need more complete documentation, increase this value (e.g.5000, 10000)'),
         ];
@@ -68,22 +70,22 @@ class SearchDocs extends Tool
             return $rawQueries;
         }
 
-        $queries = array_filter(
+        $queries = array_values(array_filter(
             array_map(trim(...), $rawQueries),
             fn (string $query): bool => $query !== '' && $query !== '*'
-        );
+        ));
 
         try {
-            $packagesCollection = $this->roster->packages();
+            $packagesCollection = $this->project->php()->packages()->concat($this->project->js()->packages());
 
             // Only search in specific packages
             if ($packagesFilter) {
-                $packagesCollection = $packagesCollection->filter(fn (Package $package): bool => in_array($package->rawName(), $packagesFilter, true));
+                $packagesCollection = $packagesCollection->filter(fn (Package $package): bool => in_array($package->name(), $packagesFilter, true));
             }
 
             $packages = $packagesCollection->map(function (Package $package): array {
-                $name = $package->rawName();
-                $version = $package->majorVersion().'.x';
+                $name = $package->name();
+                $version = $package->major().'.x';
 
                 return [
                     'name' => $name,

@@ -1,6 +1,6 @@
 ---
 name: wayfinder-development
-description: "Activates whenever referencing backend routes in frontend components. Use when importing from @/actions or @/routes, calling Laravel routes from TypeScript, or working with Wayfinder route functions."
+description: "Use this skill for Laravel Wayfinder which auto-generates typed functions for Laravel controllers and routes. ALWAYS use this skill when frontend code needs to call backend routes or controller actions. Trigger when: connecting any React/Vue/Svelte/Inertia frontend to Laravel controllers, routes, building end-to-end features with both frontend and backend, wiring up forms or links to backend endpoints, fixing route-related TypeScript errors, importing from @/actions or @/routes, or running wayfinder:generate. Use Wayfinder route functions instead of hardcoded URLs. Covers: wayfinder() vite plugin, .url()/.get()/.post()/.form(), query params, route model binding, tree-shaking. Do not use for backend-only task"
 license: MIT
 metadata:
   author: laravel
@@ -8,25 +8,29 @@ metadata:
 @php
 /** @var \Laravel\Boost\Install\GuidelineAssist $assist */
 @endphp
-# Wayfinder Development
+# Wayfinder development
 
 ## Documentation
 
 Use `search-docs` for detailed Wayfinder patterns and documentation.
 
-## Quick Reference
+## Quick reference
 
-### Generate Routes
+### Generate routes
 
-Run after route changes if Vite plugin isn't installed:
+If the Vite plugin isn't installed, run this command after route changes:
+
 ```bash
 {{ $assist->artisanCommand('wayfinder:generate --no-interaction') }}
 ```
-For form helpers, use `--with-form` flag:
+
+To generate form helpers, add the `--with-form` flag:
+
 ```bash
 {{ $assist->artisanCommand('wayfinder:generate --with-form --no-interaction') }}
 ```
-### Import Patterns
+
+### Import patterns
 
 @boostsnippet("Controller Action Imports", "typescript")
 // Named imports for tree-shaking (preferred)...
@@ -36,7 +40,7 @@ import { show, store, update } from '@/actions/App/Http/Controllers/PostControll
 import { show as postShow } from '@/routes/post'
 @endboostsnippet
 
-### Common Methods
+### Common methods
 
 @boostsnippet("Wayfinder Methods", "typescript")
 // Get route object...
@@ -55,25 +59,25 @@ destroy.delete(1)
 store.form() // { action: "/posts", method: "post" }
 
 // Query parameters...
-show(1, { query: { page: 1 } }) // "/posts/1?page=1"
+show(1, { query: { page: 1 } }) // { url: "/posts/1?page=1", method: "get" }
 @endboostsnippet
 
-@if($assist->roster->uses(\Laravel\Roster\Enums\Packages::INERTIA_LARAVEL) || $assist->roster->uses(\Laravel\Roster\Enums\Packages::INERTIA_REACT) || $assist->roster->uses(\Laravel\Roster\Enums\Packages::INERTIA_VUE) || $assist->roster->uses(\Laravel\Roster\Enums\Packages::INERTIA_SVELTE))
+@if($assist->project->php()->uses(\Laravel\Boost\Support\PackageRegistry::INERTIA_LARAVEL) || $assist->project->js()->uses([\Laravel\Boost\Support\PackageRegistry::INERTIA_REACT, \Laravel\Boost\Support\PackageRegistry::INERTIA_VUE, \Laravel\Boost\Support\PackageRegistry::INERTIA_SVELTE]))
 ## Wayfinder + Inertia
 
 @if($assist->inertia()->hasFormComponent())
 Use Wayfinder with the `<Form>` component:
-@if($assist->roster->uses(\Laravel\Roster\Enums\Packages::INERTIA_REACT))
+@if($assist->project->js()->uses(\Laravel\Boost\Support\PackageRegistry::INERTIA_REACT))
 @boostsnippet("Wayfinder Form (React)", "typescript")
 <Form {...store.form()}><input name="title" /></Form>
 @endboostsnippet
 @endif
-@if($assist->roster->uses(\Laravel\Roster\Enums\Packages::INERTIA_VUE))
+@if($assist->project->js()->uses(\Laravel\Boost\Support\PackageRegistry::INERTIA_VUE))
 @boostsnippet("Wayfinder Form (Vue)", "vue")
 <Form v-bind="store.form()"><input name="title" /></Form>
 @endboostsnippet
 @endif
-@if($assist->roster->uses(\Laravel\Roster\Enums\Packages::INERTIA_SVELTE))
+@if($assist->project->js()->uses(\Laravel\Boost\Support\PackageRegistry::INERTIA_SVELTE))
 @boostsnippet("Wayfinder Form (Svelte)", "svelte")
 <Form {...store.form()}><input name="title" /></Form>
 @endboostsnippet
@@ -92,11 +96,11 @@ form.submit(store());
 
 ## Verification
 
-1. Run `{{ $assist->artisanCommand('wayfinder:generate') }}` to regenerate routes if Vite plugin isn't installed
-2. Check TypeScript imports resolve correctly
-3. Verify route URLs match expected paths
+1. If the Vite plugin isn't installed, run `{{ $assist->artisanCommand('wayfinder:generate') }}` to regenerate routes
+2. Check that TypeScript imports resolve
+3. Verify that route URLs match the expected paths
 
-## Common Pitfalls
+## Common pitfalls
 
 - Using default imports instead of named imports (breaks tree-shaking)
 - Forgetting to regenerate after route changes

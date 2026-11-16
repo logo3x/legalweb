@@ -1,15 +1,29 @@
 export default function wizardSchemaComponent({
     isSkippable,
     isStepPersistedInQueryString,
-    key,
+    livewireId,
+    schemaKey,
     startStep,
     stepQueryStringKey,
 }) {
+    let nextStep
+
     return {
+        boundResetHandler: null,
         step: null,
 
         init() {
-            this.step = this.getSteps().at(startStep - 1)
+            nextStep = this.$nextStep
+
+            const steps = this.getSteps()
+            const queryStringStep = new URLSearchParams(
+                window.location.search,
+            ).get(stepQueryStringKey)
+
+            this.step =
+                isStepPersistedInQueryString && steps.includes(queryStringStep)
+                    ? queryStringStep
+                    : steps.at(startStep - 1)
 
             this.$watch('step', () => {
                 this.updateQueryString()
@@ -17,22 +31,54 @@ export default function wizardSchemaComponent({
             })
 
             this.autofocusFields(true)
+
+            this.boundResetHandler = (event) => {
+                if (
+                    event.detail.livewireId !== livewireId ||
+                    event.detail.schemaKey !== schemaKey ||
+                    isStepPersistedInQueryString
+                ) {
+                    return
+                }
+
+                this.$nextTick(() => {
+                    this.step = this.getSteps().at(startStep - 1) ?? this.step
+                })
+            }
+
+            window.addEventListener(
+                'reset-schema-component-state',
+                this.boundResetHandler,
+            )
         },
 
         async requestNextStep() {
-            await this.$wire.callSchemaComponentMethod(key, 'nextStep', {
+            await nextStep({
                 currentStepIndex: this.getStepIndex(this.step),
+                currentStepKey: this.step,
             })
         },
 
-        goToNextStep() {
-            let nextStepIndex = this.getStepIndex(this.step) + 1
-
-            if (nextStepIndex >= this.getSteps().length) {
+        goToNextStep(nextStep = null, currentStep = null) {
+            if (currentStep !== null && this.step !== currentStep) {
                 return
             }
 
-            this.step = this.getSteps()[nextStepIndex]
+            if (nextStep === null) {
+                const currentStepIndex = this.getStepIndex(this.step)
+
+                if (currentStepIndex === -1) {
+                    return
+                }
+
+                nextStep = this.getSteps()[currentStepIndex + 1]
+            }
+
+            if (!this.getSteps().includes(nextStep)) {
+                return
+            }
+
+            this.step = nextStep
 
             this.scroll()
         },
@@ -75,20 +121,25 @@ export default function wizardSchemaComponent({
 
         autofocusFields(respectCurrentFocus = false) {
             this.$nextTick(() => {
+                const wizard = this.$el.closest('.fi-sc-wizard')
                 if (
                     respectCurrentFocus &&
                     document.activeElement &&
                     document.activeElement !== document.body &&
-                    this.$el.compareDocumentPosition(document.activeElement) &
+                    wizard.compareDocumentPosition(document.activeElement) &
                         Node.DOCUMENT_POSITION_PRECEDING
                 ) {
                     return
                 }
 
                 const fields =
-                    this.$refs[`step-${this.step}`]?.querySelectorAll(
-                        '[autofocus]',
-                    ) ?? []
+                    Array.from(wizard.children)
+                        .find(
+                            (element) =>
+                                element.getAttribute('x-ref') ===
+                                `step-${this.step}`,
+                        )
+                        ?.querySelectorAll('[autofocus]') ?? []
 
                 for (const field of fields) {
                     field.focus()
@@ -101,15 +152,9 @@ export default function wizardSchemaComponent({
         },
 
         getStepIndex(step) {
-            let index = this.getSteps().findIndex(
+            return this.getSteps().findIndex(
                 (indexedStep) => indexedStep === step,
             )
-
-            if (index === -1) {
-                return 0
-            }
-
-            return index
         },
 
         getSteps() {
@@ -126,8 +171,9 @@ export default function wizardSchemaComponent({
 
         isStepAccessible(stepKey) {
             return (
-                isSkippable ||
-                this.getStepIndex(this.step) > this.getStepIndex(stepKey)
+                this.getStepIndex(stepKey) !== -1 &&
+                (isSkippable ||
+                    this.getStepIndex(this.step) > this.getStepIndex(stepKey))
             )
         },
 
@@ -140,6 +186,15 @@ export default function wizardSchemaComponent({
             url.searchParams.set(stepQueryStringKey, this.step)
 
             history.replaceState(null, document.title, url.toString())
+        },
+
+        destroy() {
+            if (this.boundResetHandler) {
+                window.removeEventListener(
+                    'reset-schema-component-state',
+                    this.boundResetHandler,
+                )
+            }
         },
     }
 }

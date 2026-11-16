@@ -18,6 +18,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use LogicException;
 use Throwable;
 
 class ImportCsv implements ShouldQueue
@@ -62,74 +63,98 @@ class ImportCsv implements ShouldQueue
         return $this->importer->getJobMiddleware();
     }
 
+    public function getImport(): Import
+    {
+        return $this->import;
+    }
+
     public function handle(): void
     {
+        if ($this->batch()?->cancelled()) {
+            return;
+        }
+
         /** @var Authenticatable $user */
         $user = $this->import->user;
 
-        auth()->setUser($user);
+        $guard = auth()->guard();
+        $previousUser = $guard->user();
 
-        $processedRows = 0;
-        $successfulRows = 0;
+        if ((! $previousUser) && (! method_exists($guard, 'forgetUser'))) {
+            throw new LogicException('The import auth guard must implement [forgetUser()] to restore its guest state.');
+        }
 
-        $rows = is_array($this->rows) ? $this->rows : unserialize(base64_decode($this->rows));
+        try {
+            $guard->setUser($user);
 
-        DB::transaction(function () use (&$processedRows, $rows, &$successfulRows): void {
-            foreach ($rows as $row) {
-                $row = $this->utf8Encode($row);
+            $processedRows = 0;
+            $successfulRows = 0;
 
-                try {
-                    ($this->importer)($row);
-                    $successfulRows++;
-                } catch (RowImportFailedException $exception) {
-                    $this->logFailedRow($row, $exception->getMessage());
-                } catch (ValidationException $exception) {
-                    $this->logFailedRow($row, collect($exception->errors())->flatten()->implode(' '));
-                } catch (Throwable $exception) {
-                    report($exception);
+            $rows = is_array($this->rows) ? $this->rows : unserialize(base64_decode($this->rows), ['allowed_classes' => false]);
 
-                    $this->logFailedRow($row);
+            DB::transaction(function () use (&$processedRows, $rows, &$successfulRows): void {
+                foreach ($rows as $row) {
+                    $row = $this->utf8Encode($row);
+
+                    try {
+                        ($this->importer)($row);
+                        $successfulRows++;
+                    } catch (RowImportFailedException $exception) {
+                        $this->logFailedRow($row, $exception->getMessage());
+                    } catch (ValidationException $exception) {
+                        $this->logFailedRow($row, collect($exception->errors())->flatten()->implode(' '));
+                    } catch (Throwable $exception) {
+                        report($exception);
+
+                        $this->logFailedRow($row);
+                    }
+
+                    $processedRows++;
                 }
 
-                $processedRows++;
+                $this->import::query()
+                    ->whereKey($this->import)
+                    ->lockForUpdate()
+                    ->update([
+                        'processed_rows' => new Expression('processed_rows + ' . $processedRows),
+                        'successful_rows' => new Expression('successful_rows + ' . $successfulRows),
+                    ]);
+
+                $this->import::query()
+                    ->whereKey($this->import)
+                    ->whereColumn('processed_rows', '>', 'total_rows')
+                    ->lockForUpdate()
+                    ->update([
+                        'processed_rows' => new Expression('total_rows'),
+                    ]);
+
+                $this->import::query()
+                    ->whereKey($this->import)
+                    ->whereColumn('successful_rows', '>', 'total_rows')
+                    ->lockForUpdate()
+                    ->update([
+                        'successful_rows' => new Expression('total_rows'),
+                    ]);
+
+                $this->import->failedRows()->createMany($this->failedRows);
+            });
+
+            $this->import->refresh();
+
+            event(new ImportChunkProcessed(
+                $this->import,
+                $this->columnMap,
+                $this->options,
+                $processedRows,
+                $successfulRows,
+            ));
+        } finally {
+            if ($previousUser) {
+                $guard->setUser($previousUser);
+            } else {
+                $guard->forgetUser();
             }
-
-            $this->import::query()
-                ->whereKey($this->import)
-                ->lockForUpdate()
-                ->update([
-                    'processed_rows' => new Expression('processed_rows + ' . $processedRows),
-                    'successful_rows' => new Expression('successful_rows + ' . $successfulRows),
-                ]);
-
-            $this->import::query()
-                ->whereKey($this->import)
-                ->whereColumn('processed_rows', '>', 'total_rows')
-                ->lockForUpdate()
-                ->update([
-                    'processed_rows' => new Expression('total_rows'),
-                ]);
-
-            $this->import::query()
-                ->whereKey($this->import)
-                ->whereColumn('successful_rows', '>', 'total_rows')
-                ->lockForUpdate()
-                ->update([
-                    'successful_rows' => new Expression('total_rows'),
-                ]);
-
-            $this->import->failedRows()->createMany($this->failedRows);
-        });
-
-        $this->import->refresh();
-
-        event(new ImportChunkProcessed(
-            $this->import,
-            $this->columnMap,
-            $this->options,
-            $processedRows,
-            $successfulRows,
-        ));
+        }
     }
 
     public function retryUntil(): ?CarbonInterface
@@ -171,7 +196,7 @@ class ImportCsv implements ShouldQueue
     protected function filterSensitiveData(array $data): array
     {
         return array_reduce(
-            $this->importer->getColumns(),
+            $this->importer->getCachedColumns(),
             function (array $carry, ImportColumn $column): array {
                 if (! $column->isSensitive()) {
                     return $carry;

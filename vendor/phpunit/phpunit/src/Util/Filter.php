@@ -62,13 +62,19 @@ final readonly class Filter
     }
 
     /**
-     * @param list<array{file: string, line: ?int, class?: class-string, function?: string, type: string}> $frames
+     * @param list<array{file?: string, line?: int, function?: string, type?: string, ...}> $frames
      */
     private static function stackTraceAsString(array $frames): string
     {
         $buffer      = '';
-        $prefix      = defined('__PHPUNIT_PHAR_ROOT__') ? __PHPUNIT_PHAR_ROOT__ : false;
+        $prefix      = false;
         $excludeList = new ExcludeList;
+
+        if (defined('__PHPUNIT_PHAR__')) {
+            // @codeCoverageIgnoreStart
+            $prefix = 'phar://' . __PHPUNIT_PHAR__ . '/';
+            // @codeCoverageIgnoreEnd
+        }
 
         foreach ($frames as $frame) {
             if (self::shouldPrintFrame($frame, $prefix, $excludeList)) {
@@ -84,7 +90,7 @@ final readonly class Filter
     }
 
     /**
-     * @param array{file?: non-empty-string} $frame
+     * @param array{file?: non-empty-string, ...<mixed>} $frame
      */
     private static function shouldPrintFrame(array $frame, false|string $prefix, ExcludeList $excludeList): bool
     {
@@ -120,7 +126,7 @@ final readonly class Filter
     }
 
     /**
-     * @param list<array{file?: non-empty-string, line?: int}> $trace
+     * @param list<array{file?: non-empty-string, line?: int, ...}> $trace
      */
     private static function frameExists(array $trace, string $file, int $line): bool
     {

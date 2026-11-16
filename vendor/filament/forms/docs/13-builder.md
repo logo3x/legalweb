@@ -1,9 +1,6 @@
 ---
 title: Builder
 ---
-import Aside from "@components/Aside.astro"
-import AutoScreenshot from "@components/AutoScreenshot.astro"
-import UtilityInjection from "@components/UtilityInjection.astro"
 
 ## Introduction
 
@@ -57,7 +54,7 @@ Builder::make('content')
     ])
 ```
 
-<AutoScreenshot name="forms/fields/builder/simple" alt="Builder" version="5.x" />
+<AutoScreenshot name="forms/fields/builder/simple" alt="Builder" />
 
 We recommend that you store builder data with a `JSON` column in your database. Additionally, if you're using Eloquent, make sure that column has an `array` cast.
 
@@ -116,9 +113,9 @@ Block::make('heading')
 
 Any fields that you use from `$state` should be `live()` if you wish to see the item label update live as you use the form.
 
-<UtilityInjection set="formFields" version="5.x" extras="Key;;string;;$key;;The key for the current block.||State;;array<string, mixed>;;$state;;The raw unvalidated data for the current block.">You can inject various utilities into the function passed to `label()` as parameters.</UtilityInjection>
+<UtilityInjection set="formFields" extras="Key;;string;;$key;;The key for the current block.||Index;;int;;$index;;The zero-based index of the current block.||State;;array<string, mixed>;;$state;;The raw unvalidated data for the current block.">You can inject various utilities into the function passed to `label()` as parameters.</UtilityInjection>
 
-<AutoScreenshot name="forms/fields/builder/labelled" alt="Builder with labelled blocks based on the content" version="5.x" />
+<AutoScreenshot name="forms/fields/builder/labelled" alt="Builder with labelled blocks based on the content" />
 
 ### Numbering builder items
 
@@ -134,7 +131,7 @@ Builder::make('content')
     ->blockNumbers(false)
 ```
 
-<UtilityInjection set="formFields" version="5.x">As well as allowing a static value, the `blockNumbers()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="formFields">As well as allowing a static value, the `blockNumbers()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
 
 ## Setting a block's icon
 
@@ -148,9 +145,9 @@ Block::make('paragraph')
     ->icon(Heroicon::Bars3BottomLeft)
 ```
 
-<UtilityInjection set="formFields" version="5.x">As well as allowing a static value, the `icon()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="formFields">As well as allowing a static value, the `icon()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
 
-<AutoScreenshot name="forms/fields/builder/icons" alt="Builder with block icons in the dropdown" version="5.x" />
+<AutoScreenshot name="forms/fields/builder/icons" alt="Builder with block icons in the dropdown" />
 
 ### Adding icons to the header of blocks
 
@@ -178,9 +175,9 @@ Builder::make('content')
     ->blockIcons(FeatureFlag::active())
 ```
 
-<UtilityInjection set="formFields" version="5.x">As well as allowing a static value, the `blockIcons()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="formFields">As well as allowing a static value, the `blockIcons()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
 
-<AutoScreenshot name="forms/fields/builder/block-icons" alt="Builder with icons in block headers" version="5.x" />
+<AutoScreenshot name="forms/fields/builder/block-icons" alt="Builder with icons in block headers" />
 
 ## Previewing blocks
 
@@ -223,9 +220,9 @@ Builder::make('content')
     ->blockPreviews(FeatureFlag::active())
 ```
 
-<UtilityInjection set="formFields" version="5.x">As well as allowing static values, the `blockPreviews()` and `preview()` methods also accept functions to dynamically calculate them. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="formFields">As well as allowing static values, the `blockPreviews()` and `preview()` methods also accept functions to dynamically calculate them. You can inject various utilities into the function as parameters.</UtilityInjection>
 
-<AutoScreenshot name="forms/fields/builder/block-previews" alt="Builder with block previews" version="5.x" />
+<AutoScreenshot name="forms/fields/builder/block-previews" alt="Builder with block previews" />
 
 ### Interactive block previews
 
@@ -241,7 +238,7 @@ Builder::make('content')
     ])
 ```
 
-<UtilityInjection set="formFields" version="5.x">As well as allowing a static value, the `areInteractive` argument also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="formFields">As well as allowing a static value, the `areInteractive` argument also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
 
 ## Adding items
 
@@ -261,7 +258,7 @@ Builder::make('content')
     ->addActionLabel('Add a new block')
 ```
 
-<UtilityInjection set="formFields" version="5.x">As well as allowing a static value, the `addActionLabel()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="formFields">As well as allowing a static value, the `addActionLabel()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
 
 ### Aligning the add action button
 
@@ -278,9 +275,9 @@ Builder::make('content')
     ->addActionAlignment(Alignment::Start)
 ```
 
-<UtilityInjection set="formFields" version="5.x">As well as allowing a static value, the `addActionAlignment()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="formFields">As well as allowing a static value, the `addActionAlignment()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
 
-<AutoScreenshot name="forms/fields/builder/add-action-alignment" alt="Builder with add action aligned to the start" version="5.x" />
+<AutoScreenshot name="forms/fields/builder/add-action-alignment" alt="Builder with add action aligned to the start" />
 
 ### Preventing the user from adding items
 
@@ -296,7 +293,7 @@ Builder::make('content')
     ->addable(false)
 ```
 
-<UtilityInjection set="formFields" version="5.x">As well as allowing a static value, the `addable()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="formFields">As well as allowing a static value, the `addable()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
 
 ## Deleting items
 
@@ -316,11 +313,13 @@ Builder::make('content')
     ->deletable(false)
 ```
 
-<UtilityInjection set="formFields" version="5.x">As well as allowing a static value, the `deletable()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="formFields">As well as allowing a static value, the `deletable()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
 
 ## Reordering items
 
-A button is displayed on each item to allow the user to drag and drop to reorder it in the list.
+Blocks can be reordered by dragging. To provide visible controls for keyboard users, enable [reordering with buttons](#reordering-items-with-buttons).
+
+When some blocks are hidden, reordering places the visible blocks first and retains the hidden blocks after them in the stored state.
 
 ### Preventing the user from reordering items
 
@@ -336,11 +335,11 @@ Builder::make('content')
     ->reorderable(false)
 ```
 
-<UtilityInjection set="formFields" version="5.x">As well as allowing a static value, the `reorderable()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="formFields">As well as allowing a static value, the `reorderable()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
 
 ### Reordering items with buttons
 
-You may use the `reorderableWithButtons()` method to enable reordering items with buttons to move the item up and down:
+You may use `reorderableWithButtons()` to display move up and move down buttons:
 
 ```php
 use Filament\Forms\Components\Builder;
@@ -352,7 +351,7 @@ Builder::make('content')
     ->reorderableWithButtons()
 ```
 
-<AutoScreenshot name="forms/fields/builder/reorderable-with-buttons" alt="Builder that is reorderable with buttons" version="5.x" />
+<AutoScreenshot name="forms/fields/builder/reorderable-with-buttons" alt="Builder that is reorderable with buttons" />
 
 Optionally, you may pass a boolean value to control if the builder should be ordered with buttons or not:
 
@@ -366,7 +365,7 @@ Builder::make('content')
     ->reorderableWithButtons(FeatureFlag::active())
 ```
 
-<UtilityInjection set="formFields" version="5.x">As well as allowing a static value, the `reorderableWithButtons()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="formFields">As well as allowing a static value, the `reorderableWithButtons()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
 
 ### Preventing reordering with drag and drop
 
@@ -382,7 +381,9 @@ Builder::make('content')
     ->reorderableWithDragAndDrop(false)
 ```
 
-<UtilityInjection set="formFields" version="5.x">As well as allowing a static value, the `reorderableWithDragAndDrop()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
+This also removes the visually hidden fallback buttons. Explicitly enabled visible move buttons remain available. Use `reorderable(false)` to prevent all reordering.
+
+<UtilityInjection set="formFields">As well as allowing a static value, the `reorderableWithDragAndDrop()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
 
 ## Collapsing items
 
@@ -398,7 +399,7 @@ Builder::make('content')
     ->collapsible()
 ```
 
-<AutoScreenshot name="forms/fields/builder/collapsible" alt="Collapsible builder" version="5.x" />
+<AutoScreenshot name="forms/fields/builder/collapsible" alt="Collapsible builder" />
 
 You may also collapse all items by default:
 
@@ -412,7 +413,7 @@ Builder::make('content')
     ->collapsed()
 ```
 
-<AutoScreenshot name="forms/fields/builder/collapsed" alt="Collapsed builder" version="5.x" />
+<AutoScreenshot name="forms/fields/builder/collapsed" alt="Collapsed builder" />
 
 Optionally, the `collapsible()` and `collapsed()` methods accept a boolean value to control if the builder should be collapsible and collapsed or not:
 
@@ -427,7 +428,9 @@ Builder::make('content')
     ->collapsed(FeatureFlag::active())
 ```
 
-<UtilityInjection set="formFields" version="5.x">As well as allowing static values, the `collapsible()` and `collapsed()` methods also accept functions to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="formFields">As well as allowing static values, the `collapsible()` and `collapsed()` methods also accept functions to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
+
+If collapsed items contain components that are expensive to render, you can [lazy load their block schemas](#lazy-loading-block-schemas) when they are expanded.
 
 ## Cloning items
 
@@ -443,9 +446,42 @@ Builder::make('content')
     ->cloneable()
 ```
 
-<AutoScreenshot name="forms/fields/builder/cloneable" alt="Cloneable repeater" version="5.x" />
+<AutoScreenshot name="forms/fields/builder/cloneable" alt="Cloneable repeater" />
 
 ## Customizing the block picker
+
+### Grouping blocks
+
+You may group blocks under headings by using named arrays in `blocks()`:
+
+```php
+use Filament\Forms\Components\Builder;
+use Filament\Forms\Components\Builder\Block;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
+
+Builder::make('content')
+    ->blocks([
+        'Content' => [
+            Block::make('heading')
+                ->schema([TextInput::make('text')]),
+            Block::make('paragraph')
+                ->schema([Textarea::make('text')]),
+        ],
+        'Media' => [
+            Block::make('video')
+                ->schema([TextInput::make('url')->url()]),
+        ],
+    ])
+```
+
+Groups appear in the order they are defined. You may include ungrouped blocks alongside named groups; ungrouped blocks appear first without a heading. Grouping only affects the picker, not the order or stored state of the blocks you add.
+
+Use group names that PHP keeps as string array keys. Integer keys (including numeric strings such as `'2026'`, which PHP converts to integers) are treated as ungrouped lists of blocks.
+
+<AutoScreenshot name="forms/fields/builder/grouped-blocks" alt="Builder with grouped blocks in the picker" />
+
+When you configure multiple columns using `blockPickerColumns()`, groups flow down each column before moving to the next. Groups stay together, and their heights are balanced across the columns. Otherwise, groups are stacked vertically. Searching hides groups with no matching blocks.
 
 ### Changing the number of columns in the block picker
 
@@ -468,9 +504,9 @@ This method can be used in a couple of different ways:
 
 Breakpoints (`sm`, `md`, `lg`, `xl`, `2xl`) are defined by Tailwind, and can be found in the [Tailwind documentation](https://tailwindcss.com/docs/responsive-design#overview).
 
-<UtilityInjection set="formFields" version="5.x">As well as allowing a static value, the `blockPickerColumns()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="formFields">As well as allowing a static value, the `blockPickerColumns()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
 
-<AutoScreenshot name="forms/fields/builder/block-picker-columns" alt="Builder with 2 block picker columns" version="5.x" />
+<AutoScreenshot name="forms/fields/builder/block-picker-columns" alt="Builder with 2 block picker columns" />
 
 ### Increasing the width of the block picker
 
@@ -487,7 +523,56 @@ Builder::make()
     ])
 ```
 
-<UtilityInjection set="formFields" version="5.x">As well as allowing a static value, the `blockPickerWidth()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="formFields">As well as allowing a static value, the `blockPickerWidth()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
+
+### Searching blocks
+
+If you have many blocks, you may allow users to search them in the block picker using the `searchable()` method:
+
+```php
+use Filament\Forms\Components\Builder;
+
+Builder::make('content')
+    ->searchable()
+    ->blocks([
+        // ...
+    ])
+```
+
+The search matches block labels in the browser, without making a server request, and is case-insensitive. You may customize the placeholder of the search field using the `searchPrompt()` method, and the message displayed when no blocks match the search using the `noSearchResultsMessage()` method:
+
+```php
+use Filament\Forms\Components\Builder;
+
+Builder::make('content')
+    ->searchable()
+    ->searchPrompt('Search for a block')
+    ->noSearchResultsMessage('No blocks found.')
+    ->blocks([
+        // ...
+    ])
+```
+
+<UtilityInjection set="formFields">As well as allowing static values, the `searchable()`, `searchPrompt()` and `noSearchResultsMessage()` methods also accept functions to dynamically calculate them. You can inject various utilities into the functions as parameters.</UtilityInjection>
+
+The search prompt is displayed as plain text. If you pass an `HtmlString` to `searchPrompt()`, its tags are removed and its HTML entities are decoded.
+
+#### Tweaking the search debounce
+
+By default, the block picker filters blocks immediately as the user types. You may debounce the search using the `searchDebounce()` method, which accepts the number of milliseconds to wait:
+
+```php
+use Filament\Forms\Components\Builder;
+
+Builder::make('content')
+    ->searchable()
+    ->searchDebounce(500)
+    ->blocks([
+        // ...
+    ])
+```
+
+<UtilityInjection set="formFields">As well as allowing a static value, the `searchDebounce()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
 
 ## Limiting the number of times a block can be used
 
@@ -503,13 +588,13 @@ Block::make('heading')
     ->maxItems(1)
 ```
 
-<UtilityInjection set="formFields" version="5.x">As well as allowing a static value, the `maxItems()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="formFields">As well as allowing a static value, the `maxItems()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
 
 ## Using `$get()` to access parent field values
 
 All form components are able to [use `$get()` and `$set()`](overview#injecting-the-state-of-another-field) to access another field's value. However, you might experience unexpected behavior when using this inside the builder's schema.
 
-This is because `$get()` and `$set()`, by default, are scoped to the current builder item. This means that you are able to interact with another field inside that builder item easily without knowing which builder item the current form component belongs to.
+This is because `$get()` and `$set()`, by default, are scoped to the current builder item's `data` array. This means that you are able to interact with another field inside that builder item easily without knowing which builder item the current form component belongs to.
 
 The consequence of this is that you may be confused when you are unable to interact with a field outside the builder. We use `../` syntax to solve this problem - `$get('../parent_field_name')`.
 
@@ -521,7 +606,10 @@ Consider your form has this data structure:
 
     'builder' => [
         'item1' => [
-            'service_id' => 2,
+            'type' => 'service',
+            'data' => [
+                'service_id' => 2,
+            ],
         ],
     ],
 ]
@@ -529,11 +617,17 @@ Consider your form has this data structure:
 
 You are trying to retrieve the value of `client_id` from inside the builder item.
 
-`$get()` is relative to the current builder item, so `$get('client_id')` is looking for `$get('builder.item1.client_id')`.
+`$get()` is relative to the current builder item's `data` array, so `$get('client_id')` looks for `builder.item1.data.client_id` in the form data.
 
-You can use `../` to go up a level in the data structure, so `$get('../client_id')` is `$get('builder.client_id')` and `$get('../client_id')` is `$get('client_id')`.
+You can use `../` to go up a level in the data structure:
 
-The special case of `$get()` with no arguments, or `$get('')` or `$get('./')`, will always return the full data array for the current builder item.
+- `$get('../client_id')` looks for `builder.item1.client_id`.
+- `$get('../../client_id')` looks for `builder.client_id`.
+- `$get('../../../client_id')` reaches `client_id` at the root of the form data shown above and returns `1`.
+
+If the form has its own state path, these paths remain relative to that form's data, not the entire Livewire component.
+
+The special case of `$get()` with no arguments, or `$get('')` or `$get('./')`, returns the current block's `data` array, `['service_id' => 2]`, not the enclosing item with its `type` and `data` keys.
 
 ## Builder validation
 
@@ -554,7 +648,61 @@ Builder::make('content')
     ->maxItems(5)
 ```
 
-<UtilityInjection set="formFields" version="5.x">As well as allowing static values, the `minItems()` and `maxItems()` methods also accept a function to dynamically calculate them. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="formFields">As well as allowing static values, the `minItems()` and `maxItems()` methods also accept a function to dynamically calculate them. You can inject various utilities into the function as parameters.</UtilityInjection>
+
+> [!NOTE]
+> `maxItems()` is a validation rule. Filament can build and render item schemas before validation rejects excessive item counts. To avoid long processing times if your application accidentally creates too many items, you can [limit item processing](#limiting-item-processing) separately.
+
+## Limiting item processing
+
+If your application's JavaScript accidentally creates a large state array, building and rendering a schema for every block can cause a long wait. You can opt in to a processing limit using `maxItemsForProcessing()`. If the raw state exceeds this limit, Filament aborts with an HTTP 413 response before building the builder's item schemas, without truncating the data. All raw items count towards the limit, including items with unrecognized block types:
+
+```php
+use Filament\Forms\Components\Builder;
+
+Builder::make('content')
+    ->blocks([
+        // ...
+    ])
+    ->maxItems(5)
+    ->maxItemsForProcessing(100)
+```
+
+The processing limit is independent of `maxItems()` validation and is disabled by default. It accepts an integer, or `null` to disable it. It limits the number of items in each builder, not the total number of nested items or fields in a request.
+
+> [!CAUTION]
+> The processing limit also applies to existing data loaded from your database. A record above the limit cannot be opened through that form until you raise the limit or correct its data elsewhere. Choose a limit that accommodates existing records you need to edit, including records above your validation limit.
+
+This is an opt-in performance safeguard, not a security boundary or a guarantee of request duration. See the shared [guidance on configuring processing limits globally](repeater#applying-processing-limits-globally) for repeaters, builders, and repeatable entries, including increasing, decreasing, or disabling the limit on individual components and the scope of the processing limit.
+
+## Lazy loading block schemas
+
+If a block's schema is expensive to render, you can pass a `Schema` object to `schema()` and use `lazyLoaded()`. This is particularly useful when items are [collapsed](#collapsing-items) by default. Each block item schema will be loaded independently when its item is expanded and enters the viewport:
+
+```php
+use Filament\Forms\Components\Builder;
+use Filament\Forms\Components\Builder\Block;
+use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Schema;
+
+Builder::make('content')
+    ->blocks([
+        Block::make('heading')
+            ->schema(
+                Schema::make()
+                    ->components([
+                        TextInput::make('content')
+                            ->label('Heading')
+                            ->required(),
+                    ])
+                    ->lazyLoaded(),
+            ),
+        // ...
+    ])
+    ->collapsed()
+```
+
+Builder block item schemas automatically receive unique keys from their item state paths. You can learn more about lazy schemas in the [schema overview](../schemas/overview#lazy-loading-a-child-schema).
 
 ## Customizing the builder item actions
 
@@ -587,7 +735,7 @@ Builder::make('content')
     )
 ```
 
-<UtilityInjection set="formFields" version="5.x" extras="Action;;Filament\Actions\Action;;$action;;The action object to customize.">The action registration methods can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="formFields" extras="Action;;Filament\Actions\Action;;$action;;The action object to customize.">The action registration methods can inject various utilities into the function as parameters.</UtilityInjection>
 
 ### Confirming builder actions with a modal
 
@@ -606,9 +754,10 @@ Builder::make('content')
     )
 ```
 
-<Aside variant="info">
-    The `addAction()`, `addBetweenAction()`, `collapseAction()`, `collapseAllAction()`, `expandAction()`, `expandAllAction()` and `reorderAction()` methods do not support confirmation modals, as clicking their buttons does not make the network request that is required to show the modal.
-</Aside>
+> [!NOTE]
+> The `addAction()`, `addBetweenAction()`, `collapseAction()`, `collapseAllAction()`, `expandAction()` and `expandAllAction()` methods do not support confirmation modals, as clicking their buttons does not make the network request that is required to show the modal.
+
+Completing a drag that changes the block order invokes `reorderAction()`, which supports `requiresConfirmation()`. Clicking the drag handle alone does not invoke the action.
 
 ### Adding extra item actions to a builder
 
@@ -650,7 +799,7 @@ Builder::make('content')
 
 In this example, `$arguments['item']` gives you the ID of the current builder item. You can validate the data in that builder item using the `getItemState()` method on the builder component. This method returns the validated data for the item. If the item is not valid, it will cancel the action and show an error message for that item in the form.
 
-If you want to get the raw data from the current item without validating it, you can use `$component->getRawItemState($arguments['item'])` instead.
+If you want to get a snapshot of the current item's state without validating it, you can use `$component->getItemStateSnapshot($arguments['item'])` instead. The snapshot still applies state transformations.
 
 If you want to manipulate the raw data for the entire builder, for example, to add, remove or modify items, you can use `$component->getState()` to get the data, and `$component->state($state)` to set it again:
 

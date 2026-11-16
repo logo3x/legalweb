@@ -7,15 +7,18 @@ namespace Laravel\Mcp\Server\Testing;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Auth\Authenticatable;
 use InvalidArgumentException;
+use Laravel\Mcp\Exceptions\JsonRpcException;
 use Laravel\Mcp\Server;
-use Laravel\Mcp\Server\Exceptions\JsonRpcException;
+use Laravel\Mcp\Server\Contracts\HasUriTemplate;
 use Laravel\Mcp\Server\Primitive;
 use Laravel\Mcp\Server\Prompt;
 use Laravel\Mcp\Server\Resource;
 use Laravel\Mcp\Server\Tool;
 use Laravel\Mcp\Server\Transport\FakeTransporter;
-use Laravel\Mcp\Server\Transport\JsonRpcRequest;
-use Laravel\Mcp\Server\Transport\JsonRpcResponse;
+use Laravel\Mcp\Support\UriTemplate;
+use Laravel\Mcp\Transport\JsonRpcRequest;
+use Laravel\Mcp\Transport\JsonRpcResponse;
+use Stringable;
 
 class PendingTestResponse
 {
@@ -27,6 +30,102 @@ class PendingTestResponse
         protected string $serverClass
     ) {
         //
+    }
+
+    public function tools(): TestListResponse
+    {
+        $server = $this->initializeServer();
+        $tools = [];
+        $cursor = null;
+
+        do {
+            $request = new JsonRpcRequest(
+                uniqid(),
+                'tools/list',
+                $cursor !== null ? ['cursor' => $cursor] : [],
+            );
+
+            $response = $this->executeRequest($server, $request);
+
+            if (! $response instanceof JsonRpcResponse) {
+                throw new InvalidArgumentException('Expected a JsonRpcResponse for [tools/list].');
+            }
+
+            $result = $response->toArray()['result'] ?? null;
+
+            if (! is_array($result) || ! is_array($result['tools'] ?? null)) {
+                throw new InvalidArgumentException('Invalid tools/list response from server.');
+            }
+
+            $tools = [...$tools, ...$result['tools']];
+            $cursor = is_string($result['nextCursor'] ?? null) ? $result['nextCursor'] : null;
+        } while ($cursor !== null);
+
+        return new TestListResponse($tools);
+    }
+
+    public function resources(): TestListResponse
+    {
+        $server = $this->initializeServer();
+        $resources = [];
+        $cursor = null;
+
+        do {
+            $request = new JsonRpcRequest(
+                uniqid(),
+                'resources/list',
+                $cursor !== null ? ['cursor' => $cursor] : [],
+            );
+
+            $response = $this->executeRequest($server, $request);
+
+            if (! $response instanceof JsonRpcResponse) {
+                throw new InvalidArgumentException('Expected a JsonRpcResponse for [resources/list].');
+            }
+
+            $result = $response->toArray()['result'] ?? null;
+
+            if (! is_array($result) || ! is_array($result['resources'] ?? null)) {
+                throw new InvalidArgumentException('Invalid resources/list response from server.');
+            }
+
+            $resources = [...$resources, ...$result['resources']];
+            $cursor = is_string($result['nextCursor'] ?? null) ? $result['nextCursor'] : null;
+        } while ($cursor !== null);
+
+        return new TestListResponse($resources);
+    }
+
+    public function prompts(): TestListResponse
+    {
+        $server = $this->initializeServer();
+        $prompts = [];
+        $cursor = null;
+
+        do {
+            $request = new JsonRpcRequest(
+                uniqid(),
+                'prompts/list',
+                $cursor !== null ? ['cursor' => $cursor] : [],
+            );
+
+            $response = $this->executeRequest($server, $request);
+
+            if (! $response instanceof JsonRpcResponse) {
+                throw new InvalidArgumentException('Expected a JsonRpcResponse for [prompts/list].');
+            }
+
+            $result = $response->toArray()['result'] ?? null;
+
+            if (! is_array($result) || ! is_array($result['prompts'] ?? null)) {
+                throw new InvalidArgumentException('Invalid prompts/list response from server.');
+            }
+
+            $prompts = [...$prompts, ...$result['prompts']];
+            $cursor = is_string($result['nextCursor'] ?? null) ? $result['nextCursor'] : null;
+        } while ($cursor !== null);
+
+        return new TestListResponse($prompts);
     }
 
     /**
@@ -159,17 +258,49 @@ class PendingTestResponse
         $primitive = $this->resolvePrimitive($primitive);
         $server = $this->initializeServer();
 
-        $request = new JsonRpcRequest(
-            uniqid(),
-            $method,
-            [
-                ...$primitive->toMethodCall(),
-                'arguments' => $arguments,
-            ],
-        );
+        $params = [
+            ...$primitive->toMethodCall(),
+            'arguments' => $arguments,
+        ];
+
+        if ($method === 'resources/read' && $primitive instanceof HasUriTemplate) {
+            $params['uri'] = $this->expandUriTemplate($primitive->uriTemplate(), $arguments);
+        }
+
+        $request = new JsonRpcRequest(uniqid(), $method, $params);
 
         $response = $this->executeRequest($server, $request);
 
         return new TestResponse($primitive, $response);
+    }
+
+    /**
+     * @param  array<string, mixed>  $variables
+     */
+    protected function expandUriTemplate(UriTemplate $template, array $variables): string
+    {
+        $expanded = (string) $template;
+
+        foreach ($template->variableNames() as $name) {
+            if (! array_key_exists($name, $variables)) {
+                throw new InvalidArgumentException("Missing value for URI template variable [{$name}].");
+            }
+
+            $value = $variables[$name];
+
+            if (! is_scalar($value) && ! $value instanceof Stringable) {
+                throw new InvalidArgumentException("URI template variable [{$name}] must be a scalar or Stringable value.");
+            }
+
+            $value = (string) $value;
+
+            if (str_contains($value, '/')) {
+                throw new InvalidArgumentException("URI template variable [{$name}] value must not contain '/'.");
+            }
+
+            $expanded = str_replace('{'.$name.'}', $value, $expanded);
+        }
+
+        return $expanded;
     }
 }

@@ -83,14 +83,24 @@ class Config
         return $this->get('agents', []);
     }
 
-    public function setNightwatchMcp(bool $installed): void
+    public function setNightwatch(bool $installed): void
     {
-        $this->set('nightwatch_mcp', $installed);
+        $this->set('nightwatch', $installed);
     }
 
-    public function getNightwatchMcp(): bool
+    public function getNightwatch(): bool
     {
-        return $this->get('nightwatch_mcp', false);
+        return (bool) $this->get('nightwatch', $this->get('nightwatch_mcp', true));
+    }
+
+    public function setCloud(bool $installed): void
+    {
+        $this->set('cloud', $installed);
+    }
+
+    public function getCloud(): bool
+    {
+        return $this->get('cloud', true);
     }
 
     public function setSail(bool $useSail): void
@@ -105,15 +115,7 @@ class Config
 
     public function isValid(): bool
     {
-        $path = base_path(self::FILE);
-
-        if (! file_exists($path)) {
-            return false;
-        }
-
-        json_decode(file_get_contents($path), true);
-
-        return json_last_error() === JSON_ERROR_NONE;
+        return $this->read() !== null;
     }
 
     public function flush(): void
@@ -147,18 +149,32 @@ class Config
 
     protected function all(): array
     {
+        return $this->read() ?? [];
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    protected function read(): ?array
+    {
         $path = base_path(self::FILE);
 
         if (! file_exists($path)) {
-            return [];
+            return null;
         }
 
-        $config = json_decode(file_get_contents($path), true);
+        $contents = file_get_contents($path);
 
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            return [];
+        if ($contents === false) {
+            return null;
         }
 
-        return $config ?? [];
+        $config = json_decode($contents);
+
+        if (json_last_error() !== JSON_ERROR_NONE || ! is_object($config)) {
+            return null;
+        }
+
+        return json_decode($contents, true);
     }
 }

@@ -104,6 +104,14 @@ return [
 
         ],
 
+        'block_picker' => [
+
+            'no_search_results_message' => 'Žiadne bloky nezodpovedajú vášmu hľadaniu.',
+
+            'search_prompt' => 'Hľadať bloky',
+
+        ],
+
     ],
 
     'checkbox_list' => [
@@ -122,9 +130,53 @@ return [
 
     ],
 
+    'color_picker' => [
+
+        'panel_label' => 'Výber farby',
+
+    ],
+
+    'date_time_picker' => [
+
+        'month_select' => [
+            'label' => 'Mesiac',
+        ],
+
+        'year_input' => [
+            'label' => 'Rok',
+        ],
+
+        'hour_input' => [
+            'label' => 'Hodina',
+        ],
+
+        'minute_input' => [
+            'label' => 'Minúta',
+        ],
+
+        'second_input' => [
+            'label' => 'Sekunda',
+        ],
+
+    ],
+
     'file_upload' => [
 
+        'actions' => [
+
+            'download' => [
+                'label' => 'Stiahnuť',
+            ],
+
+            'open' => [
+                'label' => 'Otvoriť v novej záložke',
+            ],
+
+        ],
+
         'editor' => [
+
+            'label' => 'Editor obrázkov',
 
             'actions' => [
 
@@ -268,6 +320,18 @@ return [
 
         ],
 
+        'columns' => [
+
+            'actions' => [
+                'label' => 'Akcie',
+            ],
+
+            'reorder' => [
+                'label' => 'Presunúť',
+            ],
+
+        ],
+
         'fields' => [
 
             'key' => [
@@ -338,6 +402,18 @@ return [
     ],
 
     'repeater' => [
+
+        'columns' => [
+
+            'actions' => [
+                'label' => 'Akcie',
+            ],
+
+            'reorder' => [
+                'label' => 'Presunúť',
+            ],
+
+        ],
 
         'actions' => [
 
@@ -425,6 +501,10 @@ return [
 
                 ],
 
+            ],
+
+            'close_panel' => [
+                'label' => 'Zavrieť panel',
             ],
 
             'custom_block' => [
@@ -548,6 +628,35 @@ return [
 
                         'color' => [
                             'label' => 'Farba',
+
+                            'options' => [
+                                'slate' => 'Bridlicová',
+                                'gray' => 'Sivá',
+                                'zinc' => 'Zinková',
+                                'neutral' => 'Neutrálna',
+                                'stone' => 'Kamenná',
+                                'mauve' => 'Staroružová',
+                                'olive' => 'Olivová',
+                                'mist' => 'Hmlová',
+                                'taupe' => 'Taupe',
+                                'red' => 'Červená',
+                                'orange' => 'Oranžová',
+                                'amber' => 'Jantárová',
+                                'yellow' => 'Žltá',
+                                'lime' => 'Limetková',
+                                'green' => 'Zelená',
+                                'emerald' => 'Smaragdová',
+                                'teal' => 'Modrozelená',
+                                'cyan' => 'Azúrová',
+                                'sky' => 'Nebeská',
+                                'blue' => 'Modrá',
+                                'indigo' => 'Indigová',
+                                'violet' => 'Fialová',
+                                'purple' => 'Purpurová',
+                                'fuchsia' => 'Fuchsiová',
+                                'pink' => 'Ružová',
+                                'rose' => 'Ružová',
+                            ],
                         ],
 
                         'custom_color' => [
@@ -559,6 +668,28 @@ return [
                 ],
 
             ],
+
+        ],
+
+        'custom_blocks' => [
+
+            'actions' => [
+
+                'delete' => [
+                    'label' => 'Odstrániť blok',
+                ],
+
+                'edit' => [
+                    'label' => 'Upraviť blok',
+                ],
+
+            ],
+
+            'no_search_results_message' => 'Žiadne bloky nezodpovedajú vášmu hľadaniu.',
+
+            'search_label' => 'Hľadať bloky',
+
+            'search_prompt' => 'Hľadať bloky',
 
         ],
 
@@ -575,6 +706,10 @@ return [
             'searching_message' => 'Hľadám...',
         ],
 
+        'toolbar' => [
+            'label' => 'Panel nástrojov',
+        ],
+
         'tools' => [
             'align_center' => 'Zarovnať na stred',
             'align_end' => 'Zarovnať vpravo',
@@ -589,9 +724,12 @@ return [
             'code_block' => 'Blok kódu',
             'custom_blocks' => 'Bloky',
             'details' => 'Detaily',
-            'h1' => 'Názov',
-            'h2' => 'Nadpis',
-            'h3' => 'Podnadpis',
+            'h1' => 'Nadpis',
+            'h2' => 'Nadpis 2',
+            'h3' => 'Nadpis 3',
+            'h4' => 'Nadpis 4',
+            'h5' => 'Nadpis 5',
+            'h6' => 'Nadpis 6',
             'grid' => 'Mriežka',
             'grid_delete' => 'Odstrániť mriežku',
             'highlight' => 'Zvýrazniť',
@@ -601,6 +739,7 @@ return [
             'link' => 'Odkaz',
             'merge_tags' => 'Zlúčiť značky',
             'ordered_list' => 'Číslovaný zoznam',
+            'paragraph' => 'Odsek',
             'redo' => 'Prerobiť',
             'small' => 'Malý text',
             'strike' => 'Prečiarknutie',
@@ -630,6 +769,10 @@ return [
     'select' => [
 
         'actions' => [
+
+            'clear' => [
+                'label' => 'Vymazať výber',
+            ],
 
             'create_option' => [
 
@@ -675,6 +818,10 @@ return [
 
             ],
 
+            'remove_option' => [
+                'label' => 'Odstrániť :label',
+            ],
+
         ],
 
         'boolean' => [
@@ -694,6 +841,8 @@ return [
 
         'searching_message' => 'Hľadám...',
 
+        'search_label' => 'Hľadať',
+
         'search_prompt' => 'Začnite písať...',
 
     ],
@@ -709,6 +858,10 @@ return [
         ],
 
         'placeholder' => 'Nová značka',
+
+        'tag_added' => 'Pridané: :tag',
+
+        'tag_removed' => 'Odstránené: :tag',
 
     ],
 

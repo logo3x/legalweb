@@ -4,17 +4,23 @@ namespace Filament\Auth\MultiFactor\Pages;
 
 use Filament\Actions\Action;
 use Filament\Auth\MultiFactor\Contracts\MultiFactorAuthenticationProvider;
+use Filament\Auth\MultiFactor\MultiFactorChallenge;
 use Filament\Facades\Filament;
 use Filament\Pages\SimplePage;
 use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Concerns\RestrictsFileUploadsToSchemaComponents;
 use Filament\Schemas\Schema;
+use Filament\Support\Components\Attributes\Unexposed;
 use Illuminate\Contracts\Support\Htmlable;
 
 class SetUpRequiredMultiFactorAuthentication extends SimplePage
 {
+    use RestrictsFileUploadsToSchemaComponents;
+
+    #[Unexposed]
     public function mount(): void
     {
         if ((! Filament::hasMultiFactorAuthentication()) || $this->isEnabled()) {
@@ -22,21 +28,25 @@ class SetUpRequiredMultiFactorAuthentication extends SimplePage
         }
     }
 
+    #[Unexposed]
     public function getTitle(): string | Htmlable
     {
         return __('filament-panels::auth/multi-factor/pages/set-up-required-multi-factor-authentication.title');
     }
 
+    #[Unexposed]
     public function getHeading(): string | Htmlable | null
     {
         return __('filament-panels::auth/multi-factor/pages/set-up-required-multi-factor-authentication.heading');
     }
 
+    #[Unexposed]
     public function getSubheading(): string | Htmlable | null
     {
         return __('filament-panels::auth/multi-factor/pages/set-up-required-multi-factor-authentication.subheading');
     }
 
+    #[Unexposed]
     public function content(Schema $schema): Schema
     {
         return $schema
@@ -46,6 +56,7 @@ class SetUpRequiredMultiFactorAuthentication extends SimplePage
             ]);
     }
 
+    #[Unexposed]
     public function getMultiFactorAuthenticationContentComponent(): Component
     {
         $user = Filament::auth()->user();
@@ -61,6 +72,7 @@ class SetUpRequiredMultiFactorAuthentication extends SimplePage
                 ->all());
     }
 
+    #[Unexposed]
     public function getFooterActionsContentComponent(): Component
     {
         return Actions::make($this->getFooterActions())
@@ -70,6 +82,7 @@ class SetUpRequiredMultiFactorAuthentication extends SimplePage
     /**
      * @return array<Action>
      */
+    #[Unexposed]
     public function getFooterActions(): array
     {
         return [
@@ -77,6 +90,7 @@ class SetUpRequiredMultiFactorAuthentication extends SimplePage
         ];
     }
 
+    #[Unexposed]
     public function getContinueAction(): Action
     {
         return Action::make('continue')
@@ -85,16 +99,9 @@ class SetUpRequiredMultiFactorAuthentication extends SimplePage
             ->visible($this->isEnabled(...));
     }
 
+    #[Unexposed]
     public function isEnabled(): bool
     {
-        $user = Filament::auth()->user();
-
-        foreach (Filament::getMultiFactorAuthenticationProviders() as $provider) {
-            if ($provider->isEnabled($user)) {
-                return true;
-            }
-        }
-
-        return false;
+        return MultiFactorChallenge::make()->hasEnabledProviders(Filament::auth()->user());
     }
 }

@@ -5,8 +5,13 @@ namespace Filament\Actions\Imports;
 use Carbon\CarbonInterface;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
+use Filament\Actions\Imports\Downloaders\Contracts\Downloader;
+use Filament\Actions\Imports\Downloaders\CsvDownloader;
 use Filament\Actions\Imports\Models\Import;
+use Filament\Actions\Testing\TestableImport;
+use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Component;
+use Filament\Support\Concerns\CanCallHooks;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Queue\Middleware\WithoutOverlapping;
 use Illuminate\Support\Facades\Validator;
@@ -14,6 +19,16 @@ use Illuminate\Validation\ValidationException;
 
 abstract class Importer
 {
+    use CanCallHooks;
+
+    // Security: Imports do not perform per-record authorization checks.
+    // Each CSV row is processed by `resolveRecord()`, `fillRecord()`,
+    // and `saveRecord()` without consulting Laravel policies. Add
+    // manual checks in lifecycle hooks (`beforeCreate()`, etc.)
+    // if needed. Failure CSVs contain original data unchanged, so
+    // formula injection risk applies to those files too — override
+    // `shouldPreventFormulaInjection()` to neutralize it.
+
     /** @var array<ImportColumn> */
     protected array $cachedColumns;
 
@@ -34,6 +49,8 @@ abstract class Importer
      */
     protected static ?string $model = null;
 
+    protected static bool $shouldPreventFormulaInjection = false;
+
     /**
      * @param  array<string, string>  $columnMap
      * @param  array<string, mixed>  $options
@@ -45,12 +62,25 @@ abstract class Importer
     ) {}
 
     /**
+     * @param  array<string, string> | null  $columnMap
+     * @param  array<string, mixed>  $options
+     */
+    public static function test(?array $columnMap = null, array $options = [], ?Import $import = null): TestableImport
+    {
+        return TestableImport::make(static::class, $columnMap, $options, $import);
+    }
+
+    /**
      * @param  array<string, mixed>  $data
      */
     public function __invoke(array $data): void
     {
         $this->originalData = $this->data = $data;
         $this->record = null;
+
+        foreach ($this->getCachedColumns() as $column) {
+            $column->clearResolvedRelatedRecords();
+        }
 
         $this->remapData();
         $this->castData();
@@ -145,6 +175,9 @@ abstract class Importer
 
     public function resolveRecord(): ?Model
     {
+        // Security: This method runs without policy checks.
+        // Override to add authorization logic if needed.
+
         $keyName = app(static::getModel())->getKeyName();
         $keyColumnName = $this->columnMap[$keyName] ?? $keyName;
 
@@ -296,11 +329,39 @@ abstract class Importer
             ->prepend(app()->getNamespace() . 'Models\\');
     }
 
+    public static function preventFormulaInjection(bool $condition = true): void
+    {
+        static::$shouldPreventFormulaInjection = $condition;
+    }
+
+    public static function shouldPreventFormulaInjection(): bool
+    {
+        // Security: Off by default because the failure CSV is designed to be
+        // corrected and re-uploaded — prefixing a `'` to neutralize formula
+        // injection (CWE-1236) would corrupt legitimate data such as `-5` on
+        // that round trip. The failure CSV includes every uploaded column,
+        // even those not mapped to an `ImportColumn`, so this is a whole-file
+        // toggle rather than a per-column one. Enable it for a single importer
+        // by redeclaring `$shouldPreventFormulaInjection`, or globally by
+        // calling `Importer::preventFormulaInjection()` in a service provider.
+        return static::$shouldPreventFormulaInjection;
+    }
+
+    public static function getFailedRowsDownloader(): Downloader
+    {
+        return app(CsvDownloader::class);
+    }
+
     abstract public static function getCompletedNotificationBody(Import $import): string;
 
     public static function getCompletedNotificationTitle(Import $import): string
     {
         return __('filament-actions::import.notifications.completed.title');
+    }
+
+    public static function modifyCompletedNotification(Notification $notification, Import $import): Notification
+    {
+        return $notification;
     }
 
     /**
@@ -309,7 +370,8 @@ abstract class Importer
     public function getJobMiddleware(): array
     {
         return [
-            (new WithoutOverlapping("import{$this->import->getKey()}"))->expireAfter(600),
+            (new WithoutOverlapping("import{$this->import->getKey()}"))->releaseAfter(5)->expireAfter(600), // Legacy
+            (new WithoutOverlapping("filament:imports:{$this->import->getKey()}"))->releaseAfter(5)->expireAfter(600),
         ];
     }
 
@@ -387,15 +449,6 @@ abstract class Importer
     public function getOptions(): array
     {
         return $this->options;
-    }
-
-    protected function callHook(string $hook): void
-    {
-        if (! method_exists($this, $hook)) {
-            return;
-        }
-
-        $this->{$hook}();
     }
 
     public function getImport(): Import

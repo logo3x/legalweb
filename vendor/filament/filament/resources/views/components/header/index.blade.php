@@ -6,18 +6,39 @@
     'subheading' => null,
 ])
 
+@php
+    use Filament\Actions\Action;
+    use Filament\Actions\ActionGroup;
+    use Filament\Support\Facades\FilamentView;
+    use Filament\View\PanelsRenderHook;
+
+    use function Filament\Support\is_slot_empty;
+
+    $getVisibleActionNames = function (array $actions) use (&$getVisibleActionNames): array {
+        return array_map(
+            fn ($action) => $action->isVisible()
+                ? ($action instanceof ActionGroup ? $getVisibleActionNames($action->getActions()) : ($action instanceof Action ? $action->getName() : true))
+                : null,
+            $actions,
+        );
+    };
+@endphp
+
 <header
     {{
         $attributes->class([
             'fi-header',
             'fi-header-has-breadcrumbs' => $breadcrumbs,
+            'fi-header-has-subheading' => filled($subheading),
         ])
     }}
 >
-    <div>
+    @capture($headingContent)
         @if ($breadcrumbs)
             <x-filament::breadcrumbs :breadcrumbs="$breadcrumbs" />
         @endif
+
+        {{ FilamentView::renderHook(PanelsRenderHook::PAGE_HEADER_HEADING_BEFORE, scopes: $this->getRenderHookScopes()) }}
 
         @if (filled($heading))
             <h1 class="fi-header-heading">
@@ -25,30 +46,53 @@
             </h1>
         @endif
 
+        {{ FilamentView::renderHook(PanelsRenderHook::PAGE_HEADER_HEADING_AFTER, scopes: $this->getRenderHookScopes()) }}
+
         @if (filled($subheading))
             <p class="fi-header-subheading">
                 {{ $subheading }}
             </p>
         @endif
-    </div>
+    @endcapture
 
     @php
-        $beforeActions = \Filament\Support\Facades\FilamentView::renderHook(\Filament\View\PanelsRenderHook::PAGE_HEADER_ACTIONS_BEFORE, scopes: $this->getRenderHookScopes());
-        $afterActions = \Filament\Support\Facades\FilamentView::renderHook(\Filament\View\PanelsRenderHook::PAGE_HEADER_ACTIONS_AFTER, scopes: $this->getRenderHookScopes());
+        $headingContent = $headingContent();
     @endphp
 
-    @if (filled($beforeActions) || $actions || filled($afterActions))
+    @if (! is_slot_empty($headingContent))
+        <div>{{ $headingContent }}</div>
+    @else
+        {{ $headingContent }}
+    @endif
+
+    @php
+        $beforeActions = FilamentView::renderHook(PanelsRenderHook::PAGE_HEADER_ACTIONS_BEFORE, scopes: $this->getRenderHookScopes());
+        $afterActions = FilamentView::renderHook(PanelsRenderHook::PAGE_HEADER_ACTIONS_AFTER, scopes: $this->getRenderHookScopes());
+    @endphp
+
+    @capture($actionsContent)
+        {{ $beforeActions }}
+
+        @if ($actions)
+            <x-filament::actions
+                :actions="$actions"
+                :alignment="$actionsAlignment"
+                :wire:key="is_array($actions) ? $this->getId() . '.header-actions.' . md5(serialize($getVisibleActionNames($actions))) : null"
+            />
+        @endif
+
+        {{ $afterActions }}
+    @endcapture
+
+    @php
+        $actionsContent = $actionsContent();
+    @endphp
+
+    @if (! is_slot_empty($actionsContent))
         <div class="fi-header-actions-ctn">
-            {{ $beforeActions }}
-
-            @if ($actions)
-                <x-filament::actions
-                    :actions="$actions"
-                    :alignment="$actionsAlignment"
-                />
-            @endif
-
-            {{ $afterActions }}
+            {{ $actionsContent }}
         </div>
+    @else
+        {{ $actionsContent }}
     @endif
 </header>

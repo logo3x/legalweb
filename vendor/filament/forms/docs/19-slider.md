@@ -1,9 +1,6 @@
 ---
 title: Slider
 ---
-import Aside from "@components/Aside.astro"
-import AutoScreenshot from "@components/AutoScreenshot.astro"
-import UtilityInjection from "@components/UtilityInjection.astro"
 
 ## Introduction
 
@@ -15,15 +12,14 @@ use Filament\Forms\Components\Slider;
 Slider::make('slider')
 ```
 
-<AutoScreenshot name="forms/fields/slider/simple" alt="Slider" version="5.x" />
+<AutoScreenshot name="forms/fields/slider/simple" alt="Slider" />
 
 The [noUiSlider](https://refreshless.com/nouislider) package is used for this component, and much of its API is based upon that library.
 
-<Aside variant="warning">
-    Due to their nature, slider fields can never be empty. The value of the field can never be `null` or an empty array. If a slider field is empty, the user will not have a handle to drag across the track.
-
-    Because of this, slider fields have a default value set out of the box, which is set to the minimum value allowed in the [range](#controlling-the-range-of-the-slider) of the slider. The default value is used when a form is empty, for example on the Create page of a resource. To learn more about default values, check out the [`default()` documentation](overview#setting-the-default-value-of-a-field).
-</Aside>
+> [!WARNING]
+> Due to their nature, slider fields can never be empty. The value of the field can never be `null` or an empty array. If a slider field is empty, the user will not have a handle to drag across the track.
+>
+> Because of this, slider fields have a default value set out of the box, which is set to the minimum value allowed in the [range](#controlling-the-range-of-the-slider) of the slider. The default value is used when a form is empty, for example on the Create page of a resource. To learn more about default values, check out the [`default()` documentation](overview#setting-the-default-value-of-a-field).
 
 ## Controlling the range of the slider
 
@@ -36,9 +32,9 @@ Slider::make('slider')
     ->range(minValue: 40, maxValue: 80)
 ```
 
-<UtilityInjection set="formFields" version="5.x">As well as allowing static values, the `range()` method also accepts functions to dynamically calculate them. You can inject various utilities into the functions as parameters.</UtilityInjection>
+<UtilityInjection set="formFields">As well as allowing static values, the `range()` method also accepts functions to dynamically calculate them. You can inject various utilities into the functions as parameters.</UtilityInjection>
 
-<AutoScreenshot name="forms/fields/slider/range" alt="Slider with a customized range" version="5.x" />
+<AutoScreenshot name="forms/fields/slider/range" alt="Slider with a customized range" />
 
 ### Controlling the step size
 
@@ -52,7 +48,7 @@ Slider::make('slider')
     ->step(10)
 ```
 
-<UtilityInjection set="formFields" version="5.x">As well as allowing a static value, the `step()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="formFields">As well as allowing a static value, the `step()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
 
 ### Limiting the number of decimal places
 
@@ -66,7 +62,7 @@ Slider::make('slider')
     ->decimalPlaces(2)
 ```
 
-<UtilityInjection set="formFields" version="5.x">As well as allowing a static value, the `decimalPlaces()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="formFields">As well as allowing a static value, the `decimalPlaces()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
 
 ### Controlling the behavioral padding of the track
 
@@ -80,9 +76,9 @@ Slider::make('slider')
     ->rangePadding(10)
 ```
 
-<UtilityInjection set="formFields" version="5.x">As well as allowing a static value, the `rangePadding()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="formFields">As well as allowing a static value, the `rangePadding()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
 
-<AutoScreenshot name="forms/fields/slider/range-padding" alt="Slider with range padding" version="5.x" />
+<AutoScreenshot name="forms/fields/slider/range-padding" alt="Slider with range padding" />
 
 In this example, even though the minimum value is 0 and the maximum value is 100, the user will only be able to select values between 10 and 90. The padding will be applied to both ends of the track, so the selected value will always be at least 10 units away from the edges of the track.
 
@@ -118,9 +114,9 @@ Slider::make('slider')
     ->rtl(FeatureFlag::active())
 ```
 
-<UtilityInjection set="formFields" version="5.x">As well as allowing a static value, the `rtl()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="formFields">As well as allowing a static value, the `rtl()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
 
-<AutoScreenshot name="forms/fields/slider/rtl" alt="Right-to-left slider" version="5.x" />
+<AutoScreenshot name="forms/fields/slider/rtl" alt="Right-to-left slider" />
 
 ## Adding multiple values to a slider
 
@@ -134,7 +130,7 @@ Slider::make('slider')
     ->default([20, 70])
 ```
 
-<AutoScreenshot name="forms/fields/slider/multiple" alt="Slider with multiple values" version="5.x" />
+<AutoScreenshot name="forms/fields/slider/multiple" alt="Slider with multiple values" />
 
 If you're saving multiple slider values using Eloquent, you should be sure to add an `array` [cast](https://laravel.com/docs/eloquent-mutators#array-and-json-casting) to the model property:
 
@@ -169,7 +165,7 @@ Slider::make('slider')
     ->vertical()
 ```
 
-<AutoScreenshot name="forms/fields/slider/vertical" alt="Vertical slider" version="5.x" />
+<AutoScreenshot name="forms/fields/slider/vertical" alt="Vertical slider" />
 
 Optionally, you may pass a boolean value to control if the slider should be vertical or not:
 
@@ -181,7 +177,7 @@ Slider::make('slider')
     ->vertical(FeatureFlag::active())
 ```
 
-<UtilityInjection set="formFields" version="5.x">As well as allowing a static value, the `vertical()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="formFields">As well as allowing a static value, the `vertical()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
 
 ### Top-to-bottom tracks
 
@@ -196,7 +192,7 @@ Slider::make('slider')
     ->rtl(false)
 ```
 
-<AutoScreenshot name="forms/fields/slider/top-to-bottom" alt="Top-to-bottom vertical slider" version="5.x" />
+<AutoScreenshot name="forms/fields/slider/top-to-bottom" alt="Top-to-bottom vertical slider" />
 
 ## Adding tooltips to handles
 
@@ -210,7 +206,7 @@ Slider::make('slider')
     ->tooltips()
 ```
 
-<AutoScreenshot name="forms/fields/slider/tooltips" alt="Slider with tooltips" version="5.x" />
+<AutoScreenshot name="forms/fields/slider/tooltips" alt="Slider with tooltips" />
 
 Optionally, you may pass a boolean value to control if the slider should have tooltips or not:
 
@@ -224,7 +220,7 @@ Slider::make('slider')
 
 When using multiple handles, multiple tooltips will be displayed, one for each handle. Tooltips also work with [vertical tracks](#using-a-vertical-track).
 
-<AutoScreenshot name="forms/fields/slider/tooltips-vertical" alt="Vertical slider with tooltips" version="5.x" />
+<AutoScreenshot name="forms/fields/slider/tooltips-vertical" alt="Vertical slider with tooltips" />
 
 ### Custom tooltip formatting
 
@@ -241,7 +237,7 @@ Slider::make('slider')
         JS))
 ```
 
-<AutoScreenshot name="forms/fields/slider/tooltips-formatting" alt="Slider with custom tooltip formatting" version="5.x" />
+<AutoScreenshot name="forms/fields/slider/tooltips-formatting" alt="Slider with custom tooltip formatting" />
 
 ### Controlling tooltips for multiple handles individually
 
@@ -255,7 +251,7 @@ Slider::make('slider')
     ->tooltips([true, false])
 ```
 
-<AutoScreenshot name="forms/fields/slider/tooltips-multiple" alt="Slider with multiple tooltips" version="5.x" />
+<AutoScreenshot name="forms/fields/slider/tooltips-multiple" alt="Slider with multiple tooltips" />
 
 ## Filling a track with color
 
@@ -269,19 +265,19 @@ Slider::make('slider')
     ->fillTrack()
 ```
 
-<AutoScreenshot name="forms/fields/slider/fill" alt="Slider with fill" version="5.x" />
+<AutoScreenshot name="forms/fields/slider/fill" alt="Slider with fill" />
 
-Optionally, you may pass a boolean value to control if the slider should be filled or not:
+Optionally, you may pass an array of boolean values to control which sections of the track should be filled:
 
 ```php
 use Filament\Forms\Components\Slider;
 
 Slider::make('slider')
     ->range(minValue: 0, maxValue: 100)
-    ->fillTrack(FeatureFlag::active())
+    ->fillTrack([FeatureFlag::active(), false])
 ```
 
-<UtilityInjection set="formFields" version="5.x">As well as allowing a static value, the `fillTrack()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="formFields">As well as allowing a static value, the `fillTrack()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
 
 When using multiple handles, you must manually specify which parts of the track should be filled by passing an array of `true` and `false` values, one for each section. The total number of values should be one more than the number of handles. The first value will be applied to the section before the first handle, the second value will be applied to the section between the first and second handles, and so on:
 
@@ -293,11 +289,11 @@ Slider::make('slider')
     ->fillTrack([false, true, false])
 ```
 
-<AutoScreenshot name="forms/fields/slider/fill-multiple" alt="Slider with multiple fills" version="5.x" />
+<AutoScreenshot name="forms/fields/slider/fill-multiple" alt="Slider with multiple fills" />
 
 Filling also works on [vertical tracks](#using-a-vertical-track):
 
-<AutoScreenshot name="forms/fields/slider/fill-vertical" alt="Vertical slider with fill" version="5.x" />
+<AutoScreenshot name="forms/fields/slider/fill-vertical" alt="Vertical slider with fill" />
 
 ## Adding pips to tracks
 
@@ -311,15 +307,15 @@ Slider::make('slider')
     ->pips()
 ```
 
-<AutoScreenshot name="forms/fields/slider/pips" alt="Slider with pips" version="5.x" />
+<AutoScreenshot name="forms/fields/slider/pips" alt="Slider with pips" />
 
 Pips also work when there are multiple handles:
 
-<AutoScreenshot name="forms/fields/slider/pips-multiple" alt="Slider with multiple pips" version="5.x" />
+<AutoScreenshot name="forms/fields/slider/pips-multiple" alt="Slider with multiple pips" />
 
 You can also add pips to [vertical tracks](#using-a-vertical-track):
 
-<AutoScreenshot name="forms/fields/slider/pips-vertical" alt="Vertical slider with pips" version="5.x" />
+<AutoScreenshot name="forms/fields/slider/pips-vertical" alt="Vertical slider with pips" />
 
 ### Adjusting the density of pips
 
@@ -333,9 +329,9 @@ Slider::make('slider')
     ->pips(density: 5)
 ```
 
-<UtilityInjection set="formFields" version="5.x">As well as allowing a static value, the `density` parameter also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="formFields">As well as allowing a static value, the `density` parameter also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
 
-<AutoScreenshot name="forms/fields/slider/pips-density" alt="Slider with a custom pips density" version="5.x" />
+<AutoScreenshot name="forms/fields/slider/pips-density" alt="Slider with a custom pips density" />
 
 ### Custom pip label formatting
 
@@ -353,9 +349,9 @@ Slider::make('slider')
         JS))
 ```
 
-<UtilityInjection set="formFields" version="5.x">As well as allowing a static value, the `pipsFormatter()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="formFields">As well as allowing a static value, the `pipsFormatter()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
 
-<AutoScreenshot name="forms/fields/slider/pips-formatting" alt="Slider with custom pips formatting" version="5.x" />
+<AutoScreenshot name="forms/fields/slider/pips-formatting" alt="Slider with custom pips formatting" />
 
 ### Adding pip labels to steps of the track
 
@@ -371,7 +367,7 @@ Slider::make('slider')
     ->pips(PipsMode::Steps)
 ```
 
-<AutoScreenshot name="forms/fields/slider/pips-steps" alt="Slider with pips on steps" version="5.x" />
+<AutoScreenshot name="forms/fields/slider/pips-steps" alt="Slider with pips on steps" />
 
 If you would like to add additional pips to the track without labels, you can [adjust the density](#adjusting-the-density-of-pips) of the pips as well:
 
@@ -385,7 +381,7 @@ Slider::make('slider')
     ->pips(PipsMode::Steps, density: 5)
 ```
 
-<AutoScreenshot name="forms/fields/slider/pips-steps-density" alt="Slider with pips on steps and a custom density" version="5.x" />
+<AutoScreenshot name="forms/fields/slider/pips-steps-density" alt="Slider with pips on steps and a custom density" />
 
 ### Adding pip labels to percentage positions of the track
 
@@ -401,9 +397,9 @@ Slider::make('slider')
     ->pipsValues([0, 25, 50, 75, 100])
 ```
 
-<UtilityInjection set="formFields" version="5.x">As well as allowing static values, the `pipsValues()` method also accepts a function to dynamically calculate them. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="formFields">As well as allowing static values, the `pipsValues()` method also accepts a function to dynamically calculate them. You can inject various utilities into the function as parameters.</UtilityInjection>
 
-<AutoScreenshot name="forms/fields/slider/pips-positions" alt="Slider with pips on positions" version="5.x" />
+<AutoScreenshot name="forms/fields/slider/pips-positions" alt="Slider with pips on positions" />
 
 The [density](#adjusting-the-density-of-pips) still controls the spacing of the pips without labels.
 
@@ -421,9 +417,9 @@ Slider::make('slider')
     ->pipsValues(5)
 ```
 
-<UtilityInjection set="formFields" version="5.x">As well as allowing static values, the `pipsValues()` method also accepts a function to dynamically calculate them. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="formFields">As well as allowing static values, the `pipsValues()` method also accepts a function to dynamically calculate them. You can inject various utilities into the function as parameters.</UtilityInjection>
 
-<AutoScreenshot name="forms/fields/slider/pips-count" alt="Slider with a set number of pips" version="5.x" />
+<AutoScreenshot name="forms/fields/slider/pips-count" alt="Slider with a set number of pips" />
 
 The [density](#adjusting-the-density-of-pips) still controls the spacing of the pips without labels.
 
@@ -441,9 +437,9 @@ Slider::make('slider')
     ->pipsValues([5, 15, 25, 35, 45, 55, 65, 75, 85, 95])
 ```
 
-<UtilityInjection set="formFields" version="5.x">As well as allowing static values, the `pipsValues()` method also accepts a function to dynamically calculate them. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="formFields">As well as allowing static values, the `pipsValues()` method also accepts a function to dynamically calculate them. You can inject various utilities into the function as parameters.</UtilityInjection>
 
-<AutoScreenshot name="forms/fields/slider/pips-values" alt="Slider with pips on values" version="5.x" />
+<AutoScreenshot name="forms/fields/slider/pips-values" alt="Slider with pips on values" />
 
 The [density](#adjusting-the-density-of-pips) still controls the spacing of the pips without labels:
 
@@ -457,7 +453,7 @@ Slider::make('slider')
     ->pipsValues([5, 15, 25, 35, 45, 55, 65, 75, 85, 95])
 ```
 
-<AutoScreenshot name="forms/fields/slider/pips-values-density" alt="Slider with pips on values and a custom density" version="5.x" />
+<AutoScreenshot name="forms/fields/slider/pips-values-density" alt="Slider with pips on values and a custom density" />
 
 ### Manually filtering pips
 
@@ -488,11 +484,11 @@ Slider::make('slider')
         JS))
 ```
 
-<UtilityInjection set="formFields" version="5.x">As well as allowing static values, the `pipsFilter()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="formFields">As well as allowing static values, the `pipsFilter()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
 
 In this example the `%` operator is used to determine the divisibility of the pip value. The expression will return `1` for every 50 units, `2` for every 10 units, `0` for every 25 units, and `-1` for all other values:
 
-<AutoScreenshot name="forms/fields/slider/pips-filter" alt="Slider with pips filter" version="5.x" />
+<AutoScreenshot name="forms/fields/slider/pips-filter" alt="Slider with pips filter" />
 
 ## Setting a minimum difference between handles
 
@@ -506,11 +502,10 @@ Slider::make('slider')
     ->minDifference(10)
 ```
 
-<UtilityInjection set="formFields" version="5.x">As well as allowing a static value, the `minDifference()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="formFields">As well as allowing a static value, the `minDifference()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
 
-<Aside variant="warning">
-    The `minDifference()` method does not impact the validation of the slider. A skilled user could manipulate the value of the slider using JavaScript to select a value that does not align with the minimum difference. They will still be prevented from selecting a value outside the range of the slider.
-</Aside>
+> [!WARNING]
+> The `minDifference()` method does not impact the validation of the slider. A skilled user could manipulate the value of the slider using JavaScript to select a value that does not align with the minimum difference. They will still be prevented from selecting a value outside the range of the slider.
 
 ## Setting a maximum difference between handles
 
@@ -524,11 +519,10 @@ Slider::make('slider')
     ->maxDifference(40)
 ```
 
-<UtilityInjection set="formFields" version="5.x">As well as allowing a static value, the `maxDifference()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="formFields">As well as allowing a static value, the `maxDifference()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
 
-<Aside variant="warning">
-    The `maxDifference()` method does not impact the validation of the slider. A skilled user could manipulate the value of the slider using JavaScript to select a value that does not align with the maximum difference. They will still be prevented from selecting a value outside the range of the slider.
-</Aside>
+> [!WARNING]
+> The `maxDifference()` method does not impact the validation of the slider. A skilled user could manipulate the value of the slider using JavaScript to select a value that does not align with the maximum difference. They will still be prevented from selecting a value outside the range of the slider.
 
 ## Controlling the general behavior of the slider
 
@@ -574,9 +568,9 @@ Slider::make('slider')
     ->pips()
 ```
 
-<AutoScreenshot name="forms/fields/slider/non-linear" alt="Slider with non-linear track" version="5.x" />
+<AutoScreenshot name="forms/fields/slider/non-linear" alt="Slider with non-linear track" />
 
-<UtilityInjection set="formFields" version="5.x">As well as allowing static values, the `nonLinearPoints()` method also accepts a function to dynamically calculate them. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="formFields">As well as allowing static values, the `nonLinearPoints()` method also accepts a function to dynamically calculate them. You can inject various utilities into the function as parameters.</UtilityInjection>
 
 When using a non-linear track, you can also control the stepping for each section. By defining an array of two numbers for each percentage point, the first number will be used as the real value for percentage position, and the second number will be used as the step size for that section, active until the next percentage point:
 
@@ -589,9 +583,8 @@ Slider::make('slider')
     ->pips()
 ```
 
-<Aside variant="warning">
-    When using a non-linear track, the step values of certain track sections do not affect the validation of the slider. A skilled user could manipulate the value of the slider using JavaScript to select a value that does not align with a step value in the track. They will still be prevented from selecting a value outside the range of the slider.
-</Aside>
+> [!WARNING]
+> When using a non-linear track, the step values of certain track sections do not affect the validation of the slider. A skilled user could manipulate the value of the slider using JavaScript to select a value that does not align with a step value in the track. They will still be prevented from selecting a value outside the range of the slider.
 
 When using [pips](#adding-pips-to-tracks) with a non-linear track, you can ensure that pip labels are rounded and only displayed at selectable positions on the track. Otherwise, the stepping of a non-linear portion of the track could add labels to positions that are not selectable. To do this, use the `steppedPips()` method:
 

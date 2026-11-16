@@ -4,6 +4,12 @@ return [
 
     'builder' => [
 
+        'reordering' => [
+            'item' => '块',
+            'position' => ':label，位于第 :position 项，共 :count 项',
+            'moved' => ':label 已移至第 :position 项，共 :count 项',
+        ],
+
         'actions' => [
 
             'clone' => [
@@ -104,9 +110,19 @@ return [
 
         ],
 
+        'block_picker' => [
+
+            'no_search_results_message' => '未找到匹配的块。',
+
+            'search_prompt' => '搜索块',
+
+        ],
+
     ],
 
     'checkbox_list' => [
+
+        'required_description' => '请至少选择一项。',
 
         'actions' => [
 
@@ -122,9 +138,55 @@ return [
 
     ],
 
+    'color_picker' => [
+
+        'panel_label' => '颜色选择器',
+
+    ],
+
+    'date_time_picker' => [
+
+        'month_select' => [
+            'label' => '月份',
+        ],
+
+        'year_input' => [
+            'label' => '年份',
+        ],
+
+        'hour_input' => [
+            'label' => '小时',
+        ],
+
+        'minute_input' => [
+            'label' => '分钟',
+        ],
+
+        'second_input' => [
+            'label' => '秒',
+        ],
+
+    ],
+
     'file_upload' => [
 
+        'placeholder' => '尚未上传文件',
+
+        'actions' => [
+
+            'download' => [
+                'label' => '下载',
+            ],
+
+            'open' => [
+                'label' => '在新标签页中打开',
+            ],
+
+        ],
+
         'editor' => [
+
+            'label' => '图片编辑器',
 
             'actions' => [
 
@@ -262,8 +324,28 @@ return [
                 'label' => '删除行',
             ],
 
+            'move_down' => [
+                'label' => '下移',
+            ],
+
+            'move_up' => [
+                'label' => '上移',
+            ],
+
             'reorder' => [
                 'label' => '重新排序行',
+            ],
+
+        ],
+
+        'columns' => [
+
+            'actions' => [
+                'label' => '操作',
+            ],
+
+            'reorder' => [
+                'label' => '调整顺序',
             ],
 
         ],
@@ -278,6 +360,12 @@ return [
                 'label' => '值',
             ],
 
+        ],
+
+        'reordering' => [
+            'row' => '行',
+            'position' => ':label，位于第 :position 行，共 :count 行',
+            'moved' => ':label 已移至第 :position 行，共 :count 行',
         ],
 
     ],
@@ -338,6 +426,24 @@ return [
     ],
 
     'repeater' => [
+
+        'reordering' => [
+            'item' => '条目',
+            'position' => ':label，位于第 :position 项，共 :count 项',
+            'moved' => ':label 已移至第 :position 项，共 :count 项',
+        ],
+
+        'columns' => [
+
+            'actions' => [
+                'label' => '操作',
+            ],
+
+            'reorder' => [
+                'label' => '调整顺序',
+            ],
+
+        ],
 
         'actions' => [
 
@@ -425,6 +531,10 @@ return [
 
                 ],
 
+            ],
+
+            'close_panel' => [
+                'label' => '关闭面板',
             ],
 
             'custom_block' => [
@@ -548,6 +658,35 @@ return [
 
                         'color' => [
                             'label' => '颜色',
+
+                            'options' => [
+                                'slate' => '蓝灰色',
+                                'gray' => '灰色',
+                                'zinc' => '冷灰色',
+                                'neutral' => '中性灰',
+                                'stone' => '暖灰色',
+                                'mauve' => '灰紫色',
+                                'olive' => '橄榄绿',
+                                'mist' => '雾灰色',
+                                'taupe' => '灰褐色',
+                                'red' => '红色',
+                                'orange' => '橙色',
+                                'amber' => '琥珀色',
+                                'yellow' => '黄色',
+                                'lime' => '青柠绿',
+                                'green' => '绿色',
+                                'emerald' => '翠绿色',
+                                'teal' => '蓝绿色',
+                                'cyan' => '青色',
+                                'sky' => '天蓝色',
+                                'blue' => '蓝色',
+                                'indigo' => '靛蓝色',
+                                'violet' => '紫罗兰色',
+                                'purple' => '紫色',
+                                'fuchsia' => '紫红色',
+                                'pink' => '粉色',
+                                'rose' => '玫瑰红',
+                            ],
                         ],
 
                         'custom_color' => [
@@ -562,6 +701,28 @@ return [
 
         ],
 
+        'custom_blocks' => [
+
+            'actions' => [
+
+                'delete' => [
+                    'label' => '删除块',
+                ],
+
+                'edit' => [
+                    'label' => '编辑块',
+                ],
+
+            ],
+
+            'no_search_results_message' => '未找到匹配的块。',
+
+            'search_label' => '搜索块',
+
+            'search_prompt' => '搜索块',
+
+        ],
+
         'file_attachments_accepted_file_types_message' => '上传的文件必须为以下类型：:values。',
 
         'file_attachments_max_size_message' => '上传的文件大小不得超过 :max 千字节。',
@@ -573,6 +734,10 @@ return [
             'no_search_results_message' => '无匹配结果。',
             'search_prompt' => '输入内容以搜索...',
             'searching_message' => '搜索中...',
+        ],
+
+        'toolbar' => [
+            'label' => '编辑器工具栏',
         ],
 
         'tools' => [
@@ -592,6 +757,9 @@ return [
             'h1' => '标题',
             'h2' => '副标题',
             'h3' => '小标题',
+            'h4' => '四级标题',
+            'h5' => '五级标题',
+            'h6' => '六级标题',
             'grid' => '网格',
             'grid_delete' => '删除网格',
             'highlight' => '高亮',
@@ -601,6 +769,7 @@ return [
             'link' => '链接',
             'merge_tags' => '合并标签',
             'ordered_list' => '数字列表',
+            'paragraph' => '段落',
             'redo' => '重做',
             'small' => '小号文本',
             'strike' => '删除线',
@@ -630,6 +799,10 @@ return [
     'select' => [
 
         'actions' => [
+
+            'clear' => [
+                'label' => '清空选择',
+            ],
 
             'create_option' => [
 
@@ -675,12 +848,18 @@ return [
 
             ],
 
+            'remove_option' => [
+                'label' => '移除 :label',
+            ],
+
         ],
 
         'boolean' => [
             'true' => '是',
             'false' => '否',
         ],
+
+        'error_message' => '无法加载选项，请重试。',
 
         'loading_message' => '加载中...',
 
@@ -692,7 +871,11 @@ return [
 
         'placeholder' => '选择选项',
 
+        'required_description' => '请选择一项。',
+
         'searching_message' => '搜索中...',
+
+        'search_label' => '搜索',
 
         'search_prompt' => '输入内容以搜索...',
 
@@ -709,6 +892,10 @@ return [
         ],
 
         'placeholder' => '新标签',
+
+        'tag_added' => '已添加：:tag',
+
+        'tag_removed' => '已移除：:tag',
 
     ],
 
@@ -734,6 +921,8 @@ return [
     ],
 
     'toggle_buttons' => [
+
+        'required_description' => '请至少选择一项。',
 
         'boolean' => [
             'true' => '是',

@@ -11,7 +11,12 @@ namespace PHPUnit\Framework\MockObject;
 
 use function strtolower;
 use Exception;
+use PHPUnit\Framework\AssertionFailedError;
+use PHPUnit\Framework\Constraint\Constraint;
+use PHPUnit\Framework\InvalidArgumentException;
+use PHPUnit\Framework\MockObject\Rule\AnyInvokedCount;
 use PHPUnit\Framework\MockObject\Rule\InvocationOrder;
+use PHPUnit\Framework\MockObject\Runtime\PropertyHook;
 use Throwable;
 
 /**
@@ -37,6 +42,7 @@ final class InvocationHandler
     private readonly array $configurableMethods;
     private readonly bool $returnValueGeneration;
     private readonly bool $isMockObject;
+    private ?AssertionFailedError $assertionFailure = null;
 
     /**
      * @param list<ConfigurableMethod> $configurableMethods
@@ -115,6 +121,33 @@ final class InvocationHandler
     }
 
     /**
+     * The matcher is only added once the method name has been configured
+     * so that a method that cannot be configured does not leave behind a
+     * matcher without a method name rule.
+     *
+     * @param Constraint|non-empty-string|PropertyHook $constraint
+     *
+     * @throws InvalidArgumentException
+     * @throws MethodCannotBeConfiguredException
+     */
+    public function method(Constraint|PropertyHook|string $constraint): InvocationStubber
+    {
+        $matcher = new Matcher(new AnyInvokedCount);
+
+        $stubber = new InvocationStubberImplementation(
+            $this,
+            $matcher,
+            ...$this->configurableMethods,
+        );
+
+        $stubber->method($constraint);
+
+        $this->addMatcher($matcher);
+
+        return $stubber;
+    }
+
+    /**
      * @throws \PHPUnit\Framework\MockObject\Exception
      * @throws Exception
      */
@@ -136,6 +169,10 @@ final class InvocationHandler
                 }
             } catch (Exception $e) {
                 $exception = $e;
+
+                if ($this->assertionFailure === null && $e instanceof AssertionFailedError) {
+                    $this->assertionFailure = $e;
+                }
             }
         }
 
@@ -165,6 +202,10 @@ final class InvocationHandler
     {
         foreach ($this->matchers as $matcher) {
             $matcher->verify();
+        }
+
+        if ($this->assertionFailure !== null) {
+            throw $this->assertionFailure;
         }
     }
 

@@ -16,7 +16,7 @@ return [
 
                 'label' => 'Įveskite 6 skaitmenų kodą iš autentifikavimo programos',
 
-                'validation_attribute' => 'code',
+                'validation_attribute' => 'kodas',
 
                 'messages' => [
 
@@ -30,9 +30,9 @@ return [
 
             'password' => [
 
-                'label' => 'Arba įveskite dabartinį slaptažodį',
+                'label' => 'Įveskite dabartinį slaptažodį',
 
-                'validation_attribute' => 'password',
+                'validation_attribute' => 'slaptažodis',
 
             ],
 

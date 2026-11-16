@@ -1,8 +1,34 @@
 .fi-sc {
     @apply text-sm;
 
+    & > .fi-sc-liberated {
+        @apply contents;
+    }
+
+    &.fi-sc-loading {
+        @apply grid min-h-32 place-items-center text-gray-500 dark:text-gray-400;
+    }
+
+    & .fi-sc-loading-indicator,
+    & .fi-sc-loading-error {
+        @apply inline-flex items-center gap-x-1.5 text-sm;
+
+        & > .fi-icon {
+            @apply shrink-0;
+        }
+    }
+
+    & .fi-sc-loading-error {
+        @apply text-danger-600 dark:text-danger-400;
+    }
+
     &.fi-inline {
         @apply flex grow flex-wrap items-center;
+
+        & > .fi-growable,
+        & > .fi-sc-liberated > .fi-growable {
+            @apply w-full flex-1;
+        }
 
         & > .fi-sc-action:not(.fi-hidden) {
             @apply contents;
@@ -36,11 +62,21 @@
         @apply justify-between;
     }
 
-    & > .fi-hidden {
+    & > .fi-hidden,
+    & > .fi-sc-liberated > .fi-hidden {
         @apply hidden;
     }
 
-    & > .fi-grid-col {
+    & > .fi-grid-col,
+    & > .fi-sc-liberated > .fi-grid-col {
+        &.fi-width-3xs {
+            @apply max-w-3xs;
+        }
+
+        &.fi-width-2xs {
+            @apply max-w-2xs;
+        }
+
         &.fi-width-xs {
             @apply max-w-xs;
         }
@@ -85,8 +121,25 @@
             @apply max-w-7xl;
         }
 
+        &.fi-width-none {
+            @apply max-w-none;
+        }
+
+        &.fi-width-container {
+            @apply container;
+        }
+
         & > .fi-sc-component {
             @apply h-full;
         }
     }
+}
+
+/* The `<fieldset>` around a component with a client-side visibility condition exists to
+   be `disabled` while the component is hidden, not to group controls, so it must not
+   affect the layout like a fieldset. */
+fieldset.fi-sc-visibility-fieldset {
+    @apply m-0 min-w-0 border-0 p-0;
+
+    min-inline-size: 0;
 }

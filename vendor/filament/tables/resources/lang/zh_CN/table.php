@@ -6,10 +6,34 @@ return [
 
         'heading' => '列管理',
 
+        'position' => '位于第 :position 项，共 :count 项。',
+
+        'position_in_group' => '位于 :group 分组中的第 :position 项，该分组共 :count 项。',
+
+        'reordered' => ':column 已移至第 :position 项，共 :count 项。',
+
+        'reordered_deferred' => ':column 已移至第 :position 项，共 :count 项。请点击“应用列设置”保存更改。',
+
+        'reordered_in_group' => ':column 已移至 :group 分组中的第 :position 项，该分组共 :count 项。',
+
+        'reordered_in_group_deferred' => ':column 已移至 :group 分组中的第 :position 项，该分组共 :count 项。请点击“应用列设置”保存更改。',
+
         'actions' => [
 
             'apply' => [
                 'label' => '应用列设置',
+            ],
+
+            'move_up' => [
+                'label' => '上移 :column',
+            ],
+
+            'move_down' => [
+                'label' => '下移 :column',
+            ],
+
+            'reorder' => [
+                'label' => '调整列顺序',
             ],
 
             'reset' => [
@@ -24,6 +48,22 @@ return [
 
         'actions' => [
             'label' => '操作',
+        ],
+
+        'editable' => [
+            'saving' => '正在保存更改...',
+            'saved' => '更改已保存。',
+            'failure' => '无法确认更改是否已保存。请刷新页面后再试。',
+            'unavailable' => '此条目已无法编辑。',
+        ],
+
+        'icon' => [
+
+            'boolean' => [
+                'true' => '是',
+                'false' => '否',
+            ],
+
         ],
 
         'select' => [
@@ -115,6 +155,18 @@ return [
             'label' => '调整排序',
         ],
 
+        'reorder_record' => [
+            'label' => '调整记录 :key 的顺序',
+        ],
+
+        'move_record_up' => [
+            'label' => '上移 :label',
+        ],
+
+        'move_record_down' => [
+            'label' => '下移 :label',
+        ],
+
         'filter' => [
             'label' => '筛选',
         ],
@@ -129,6 +181,10 @@ return [
 
         'column_manager' => [
             'label' => '列管理',
+        ],
+
+        'toggle_record_content' => [
+            'label' => '展开或收起记录 :key',
         ],
 
     ],
@@ -219,7 +275,16 @@ return [
 
     ],
 
+    'loading' => '加载中...',
+
     'reorder_indicator' => '拖放条目调整排序',
+
+    'reordering' => [
+        'position' => ':label，位于第 :position 条记录，共 :count 条。',
+        'moved' => ':label 已移至第 :position 条记录，共 :count 条。',
+    ],
+
+    'result_count' => '{0} 暂无结果|[1,*] :count 条结果',
 
     'selection_indicator' => [
 

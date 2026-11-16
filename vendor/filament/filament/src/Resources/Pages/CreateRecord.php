@@ -16,6 +16,8 @@ use Filament\Schemas\Components\EmbeddedSchema;
 use Filament\Schemas\Components\Form;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Schema;
+use Filament\Support\Components\Attributes\Exposed;
+use Filament\Support\Components\Attributes\Unexposed;
 use Filament\Support\Exceptions\Halt;
 use Filament\Support\Facades\FilamentView;
 use Illuminate\Contracts\Support\Htmlable;
@@ -36,6 +38,7 @@ class CreateRecord extends Page
     use HasUnsavedDataChangesAlert;
 
     /** @var ?TModel */
+    #[Locked]
     public ?Model $record = null;
 
     /**
@@ -43,18 +46,28 @@ class CreateRecord extends Page
      */
     public ?array $data = [];
 
+    #[Locked]
     public ?string $previousUrl = null;
 
     protected static bool $canCreateAnother = true;
 
-    #[Locked]
+    /**
+     * After a successful creation, this stays `true` while the user is redirected, to prevent duplicate
+     * records from additional clicks of the submit button. In SPA mode, if the user then navigates back,
+     * the page is restored from Livewire's history cache with this still `true`, which would block the
+     * form from ever being submitted again. JavaScript detects the restoration and resets this property
+     * in Livewire's client-side state, which is synced with the server during the next request. It is
+     * deliberately not `#[Locked]`, since that would prevent the client-side reset from being synced.
+     */
     public bool $isCreating = false;
 
+    #[Unexposed]
     public function getBreadcrumb(): string
     {
         return static::$breadcrumb ?? __('filament-panels::resources/pages/create-record.breadcrumb');
     }
 
+    #[Unexposed]
     public function mount(): void
     {
         $this->authorizeAccess();
@@ -66,7 +79,13 @@ class CreateRecord extends Page
 
     protected function authorizeAccess(): void
     {
-        abort_unless(static::getResource()::canCreate(), 403);
+        static::getResource()::authorizeCreate();
+    }
+
+    #[Unexposed]
+    public function hydrate(): void
+    {
+        $this->authorizeAccess();
     }
 
     protected function fillForm(): void
@@ -78,6 +97,7 @@ class CreateRecord extends Page
         $this->callHook('afterFill');
     }
 
+    #[Exposed]
     public function create(bool $another = false): void
     {
         if ($this->isCreating) {
@@ -149,6 +169,7 @@ class CreateRecord extends Page
             // Rebuild child schemas without double-firing `afterStateHydrated()` hooks.
             $hydratedDefaultState = null;
             $this->form->hydrateState($hydratedDefaultState, shouldCallHydrationHooks: false);
+            $this->form->dispatchClientSideStateReset();
 
             $this->isCreating = false;
 
@@ -195,6 +216,7 @@ class CreateRecord extends Page
         return null;
     }
 
+    #[Exposed]
     public function createAnother(): void
     {
         $this->create(another: true);
@@ -287,6 +309,7 @@ class CreateRecord extends Page
             ->color('gray');
     }
 
+    #[Unexposed]
     public function getTitle(): string | Htmlable
     {
         if (filled(static::$title)) {
@@ -298,6 +321,7 @@ class CreateRecord extends Page
         ]);
     }
 
+    #[Unexposed]
     public function defaultForm(Schema $schema): Schema
     {
         if (! $schema->hasCustomColumns()) {
@@ -311,6 +335,7 @@ class CreateRecord extends Page
             ->statePath('data');
     }
 
+    #[Unexposed]
     public function form(Schema $schema): Schema
     {
         return static::getResource()::form($schema);
@@ -358,11 +383,13 @@ class CreateRecord extends Page
         return $this->getModel();
     }
 
+    #[Unexposed]
     public function canCreateAnother(): bool
     {
         return static::$canCreateAnother;
     }
 
+    #[Unexposed]
     public static function disableCreateAnother(): void
     {
         static::$canCreateAnother = false;
@@ -371,11 +398,13 @@ class CreateRecord extends Page
     /**
      * @return ?TModel
      */
+    #[Unexposed]
     public function getRecord(): ?Model
     {
         return $this->record;
     }
 
+    #[Unexposed]
     public function content(Schema $schema): Schema
     {
         return $schema
@@ -384,6 +413,7 @@ class CreateRecord extends Page
             ]);
     }
 
+    #[Unexposed]
     public function getFormContentComponent(): Component
     {
         if (! $this->hasFormWrapper()) {
@@ -401,6 +431,7 @@ class CreateRecord extends Page
             ]);
     }
 
+    #[Unexposed]
     public function getFormActionsContentComponent(): Component
     {
         return Actions::make($this->getFormActions())
@@ -410,6 +441,7 @@ class CreateRecord extends Page
             ->key('form-actions');
     }
 
+    #[Unexposed]
     public function hasFormWrapper(): bool
     {
         return true;
@@ -418,6 +450,7 @@ class CreateRecord extends Page
     /**
      * @return array<string>
      */
+    #[Unexposed]
     public function getPageClasses(): array
     {
         return [

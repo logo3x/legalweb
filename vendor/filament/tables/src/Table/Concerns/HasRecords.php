@@ -7,9 +7,12 @@ use Closure;
 use Filament\Support\Contracts\HasLabel;
 use Illuminate\Contracts\Pagination\CursorPaginator;
 use Illuminate\Contracts\Pagination\Paginator;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use Stringable;
 
 use function Filament\Support\get_model_label;
 use function Filament\Support\locale_has_pluralization;
@@ -24,9 +27,17 @@ trait HasRecords
 
     protected string | Closure | null $recordTitle = null;
 
+    protected bool $isRecordTitleInherited = false;
+
     protected string | Closure | null $recordTitleAttribute = null;
 
     protected ?Closure $dataSource = null;
+
+    protected ?string $cachedModel = null;
+
+    protected bool $hasCachedModel = false;
+
+    protected ?bool $cachedHasPivotRecordKeys = null;
 
     protected ?Closure $resolveSelectedRecordsUsing = null;
 
@@ -47,6 +58,7 @@ trait HasRecords
     public function allowDuplicates(bool | Closure $condition = true): static
     {
         $this->allowsDuplicates = $condition;
+        $this->cachedHasPivotRecordKeys = null;
 
         return $this;
     }
@@ -68,6 +80,14 @@ trait HasRecords
     public function recordTitle(string | Closure | null $title): static
     {
         $this->recordTitle = $title;
+        $this->isRecordTitleInherited = false;
+
+        return $this;
+    }
+
+    public function markRecordTitleAsInherited(): static
+    {
+        $this->isRecordTitleInherited = true;
 
         return $this;
     }
@@ -75,6 +95,10 @@ trait HasRecords
     public function recordTitleAttribute(string | Closure | null $attribute): static
     {
         $this->recordTitleAttribute = $attribute;
+
+        if ($this->isRecordTitleInherited) {
+            $this->recordTitle(null);
+        }
 
         return $this;
     }
@@ -112,20 +136,35 @@ trait HasRecords
      */
     public function getModel(): ?string
     {
-        $query = $this->getQuery();
-
-        $model = $query?->getModel();
-
-        if (blank($model)) {
-            return null;
+        if ($this->hasCachedModel) {
+            return $this->cachedModel;
         }
 
-        return $model::class;
+        $this->hasCachedModel = true;
+
+        if ($baseQuery = $this->evaluate($this->query)) {
+            return $this->cachedModel = $baseQuery->getModel()::class;
+        }
+
+        if ($relationshipQuery = $this->getRelationshipQuery()) {
+            return $this->cachedModel = $relationshipQuery->getModel()::class;
+        }
+
+        return $this->cachedModel = null;
     }
 
     public function allowsDuplicates(): bool
     {
         return (bool) $this->evaluate($this->allowsDuplicates);
+    }
+
+    /** Cached because both underlying calls evaluate Closures and this is hit per row. */
+    public function hasPivotRecordKeys(): bool
+    {
+        return $this->cachedHasPivotRecordKeys ??= (
+            ($this->getRelationship() instanceof BelongsToMany)
+            && $this->allowsDuplicates()
+        );
     }
 
     public function getModelLabel(): string
@@ -180,7 +219,9 @@ trait HasRecords
         $title ??= $this->getModelLabel();
 
         if ($title instanceof HasLabel) {
-            return $title->getLabel();
+            $title = $title->getLabel() ?? $this->getModelLabel();
+
+            return ($title instanceof Htmlable) && (! $title instanceof Stringable) ? $title->toHtml() : $title;
         }
 
         if ($title instanceof BackedEnum) {

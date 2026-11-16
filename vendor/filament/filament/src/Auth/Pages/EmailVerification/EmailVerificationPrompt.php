@@ -10,7 +10,9 @@ use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
 use Filament\Pages\SimplePage;
 use Filament\Schemas\Components\Text;
+use Filament\Schemas\Concerns\RestrictsFileUploadsToSchemaComponents;
 use Filament\Schemas\Schema;
+use Filament\Support\Components\Attributes\Unexposed;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Facades\RateLimiter;
@@ -22,8 +24,10 @@ use LogicException;
  */
 class EmailVerificationPrompt extends SimplePage
 {
+    use RestrictsFileUploadsToSchemaComponents;
     use WithRateLimiting;
 
+    #[Unexposed]
     public function mount(): void
     {
         if ((! Filament::auth()->check()) || $this->getVerifiable()->hasVerifiedEmail()) {
@@ -57,6 +61,7 @@ class EmailVerificationPrompt extends SimplePage
         $user->notify($notification);
     }
 
+    #[Unexposed]
     public function resendNotificationAction(): Action
     {
         return Action::make('resendNotification')
@@ -72,7 +77,7 @@ class EmailVerificationPrompt extends SimplePage
                     return;
                 }
 
-                $rateLimitingKey = 'filament-resend-email-verification:' . Filament::auth()->id();
+                $rateLimitingKey = 'filament:auth:resend_email_verification:rate_limit:' . Filament::getUserScopedAuthIdentifier();
 
                 if (RateLimiter::tooManyAttempts($rateLimitingKey, maxAttempts: 2)) {
                     $this->getRateLimitedNotification(new TooManyRequestsException(
@@ -110,16 +115,19 @@ class EmailVerificationPrompt extends SimplePage
             ->danger();
     }
 
+    #[Unexposed]
     public function getTitle(): string | Htmlable
     {
         return __('filament-panels::auth/pages/email-verification/email-verification-prompt.title');
     }
 
+    #[Unexposed]
     public function getHeading(): string | Htmlable | null
     {
         return __('filament-panels::auth/pages/email-verification/email-verification-prompt.heading');
     }
 
+    #[Unexposed]
     public function content(Schema $schema): Schema
     {
         return $schema

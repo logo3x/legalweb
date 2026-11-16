@@ -6,6 +6,7 @@ use Closure;
 use Filament\Support\Components\Contracts\ScopedComponentManager;
 use ReflectionClass;
 use ReflectionMethod;
+use ReflectionNamedType;
 
 class ComponentManager implements ScopedComponentManager
 {
@@ -23,6 +24,19 @@ class ComponentManager implements ScopedComponentManager
      * @var array<string, array<string>>
      */
     protected array $methodCache = [];
+
+    /** @var array<class-string, array<ReflectionMethod>> */
+    protected static array $publicMethodReflectionCache = [];
+
+    /**
+     * @var array<class-string, array<class-string>>
+     */
+    protected array $configureClassHierarchyCache = [];
+
+    /**
+     * @var array<class-string, class-string>
+     */
+    protected array $setUpMethodClassCache = [];
 
     final public function __construct() {}
 
@@ -89,8 +103,13 @@ class ComponentManager implements ScopedComponentManager
 
     public function configure(Component $component, Closure $setUp): void
     {
-        $classesToConfigure = [...array_reverse(class_parents($component)), $component::class];
-        $setUpMethodClass = (new ReflectionMethod($component, 'setUp'))->getDeclaringClass()->getName();
+        $componentClass = $component::class;
+
+        $classesToConfigure = $this->configureClassHierarchyCache[$componentClass]
+            ??= [...array_reverse(class_parents($component)), $componentClass];
+
+        $setUpMethodClass = $this->setUpMethodClassCache[$componentClass]
+            ??= (new ReflectionMethod($component, 'setUp'))->getDeclaringClass()->getName();
 
         foreach ($classesToConfigure as $classToConfigure) {
             if ($classToConfigure === $setUpMethodClass) {
@@ -119,12 +138,32 @@ class ComponentManager implements ScopedComponentManager
     public function extractPublicMethods(Component $component): array
     {
         if (! isset($this->methodCache[$component::class])) {
-            $reflection = new ReflectionClass($component);
+            $this->methodCache[$component::class] = [];
 
-            $this->methodCache[$component::class] = array_map(
-                fn (ReflectionMethod $method): string => $method->getName(),
-                $reflection->getMethods(ReflectionMethod::IS_PUBLIC),
-            );
+            // The `static`-return filter only applies to first-party Filament
+            // classes, since their fluent setters are never called from any
+            // Blade view we ship. Third-party subclasses might legitimately
+            // call their own setters from a published view, so we leave their
+            // method lists untouched.
+            $shouldSkipFluentSetters = str_starts_with($component::class, 'Filament\\');
+
+            foreach (static::getPublicMethodReflections($component::class) as $method) {
+                $name = $method->getName();
+
+                if (str_starts_with($name, '__')) {
+                    continue;
+                }
+
+                if ($shouldSkipFluentSetters) {
+                    $returnType = $method->getReturnType();
+
+                    if ($returnType instanceof ReflectionNamedType && $returnType->getName() === 'static') {
+                        continue;
+                    }
+                }
+
+                $this->methodCache[$component::class][] = $name;
+            }
         }
 
         $values = [];
@@ -134,5 +173,15 @@ class ComponentManager implements ScopedComponentManager
         }
 
         return $values;
+    }
+
+    /**
+     * @param  class-string  $componentClass
+     * @return array<ReflectionMethod>
+     */
+    public static function getPublicMethodReflections(string $componentClass): array
+    {
+        return static::$publicMethodReflectionCache[$componentClass]
+            ??= (new ReflectionClass($componentClass))->getMethods(ReflectionMethod::IS_PUBLIC);
     }
 }

@@ -44,7 +44,9 @@ class BitbucketProvider extends AbstractProvider implements ProviderInterface
     protected function getUserByToken($token)
     {
         $response = $this->getHttpClient()->get('https://api.bitbucket.org/2.0/user', [
-            RequestOptions::QUERY => ['access_token' => $token],
+            RequestOptions::HEADERS => [
+                'Authorization' => 'Bearer '.$token,
+            ],
         ]);
 
         $user = json_decode($response->getBody(), true);
@@ -64,12 +66,16 @@ class BitbucketProvider extends AbstractProvider implements ProviderInterface
      */
     protected function getEmailByToken($token)
     {
-        $emailsUrl = 'https://api.bitbucket.org/2.0/user/emails?access_token='.$token;
+        $emailsUrl = 'https://api.bitbucket.org/2.0/user/emails';
 
         try {
-            $response = $this->getHttpClient()->get($emailsUrl);
-        } catch (Exception $e) {
-            return;
+            $response = $this->getHttpClient()->get($emailsUrl, [
+                RequestOptions::HEADERS => [
+                    'Authorization' => 'Bearer '.$token,
+                ],
+            ]);
+        } catch (Exception) {
+            return null;
         }
 
         $emails = json_decode($response->getBody(), true);

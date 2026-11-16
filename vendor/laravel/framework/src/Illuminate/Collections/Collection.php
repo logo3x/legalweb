@@ -9,6 +9,7 @@ use Illuminate\Support\Traits\EnumeratesValues;
 use Illuminate\Support\Traits\Macroable;
 use Illuminate\Support\Traits\TransformsToResourceCollection;
 use InvalidArgumentException;
+use SortDirection;
 use stdClass;
 use Traversable;
 
@@ -125,22 +126,33 @@ class Collection implements ArrayAccess, CanBeEscapedWhenCastToString, Enumerabl
      */
     public function mode($key = null)
     {
-        if ($this->count() === 0) {
+        $collection = (isset($key) ? $this->pluck($key) : $this)
+            ->reject(fn ($item) => is_null($item));
+
+        if ($collection->isEmpty()) {
             return;
         }
 
-        $collection = isset($key) ? $this->pluck($key) : $this;
-
         $counts = $this->newInstance();
 
-        $collection->each(fn ($value) => $counts[$value] = isset($counts[$value]) ? $counts[$value] + 1 : 1);
+        $floats = [];
+
+        $collection->each(function ($value) use ($counts, &$floats) {
+            if (is_float($value)) {
+                $floats[$key = (string) $value] = $value;
+            } else {
+                $key = $value;
+            }
+
+            $counts[$key] = isset($counts[$key]) ? $counts[$key] + 1 : 1;
+        });
 
         $sorted = $counts->sort();
 
         $highestValue = $sorted->last();
 
         return $sorted->filter(fn ($value) => $value == $highestValue)
-            ->sort()->keys()->all();
+            ->sort()->keys()->map(fn ($key) => is_string($key) ? $floats[$key] ?? $key : $key)->all();
     }
 
     /**
@@ -166,14 +178,14 @@ class Collection implements ArrayAccess, CanBeEscapedWhenCastToString, Enumerabl
 
         $results = [];
 
-        foreach ($this->items as $key => $values) {
-            if ($values instanceof Collection) {
+        foreach ($this->items as $values) {
+            if ($values instanceof Enumerable) {
                 $values = $values->all();
             } elseif (! is_array($values)) {
                 continue;
             }
 
-            $results[$key] = $values;
+            $results[] = $values;
         }
 
         if (! $results) {
@@ -218,7 +230,7 @@ class Collection implements ArrayAccess, CanBeEscapedWhenCastToString, Enumerabl
         }
 
         if ($this->useAsCallable($key)) {
-            return ! is_null($this->first($key));
+            return array_any($this->items, $key);
         }
 
         return in_array($key, $this->items, true);
@@ -507,6 +519,8 @@ class Collection implements ArrayAccess, CanBeEscapedWhenCastToString, Enumerabl
      * @param  mixed  $key
      * @param  TGetOrPutValue|(\Closure(): TGetOrPutValue)  $value
      * @return TValue|TGetOrPutValue
+     *
+     * @phpstan-this-out static<TKey, TValue|TGetOrPutValue>
      */
     public function getOrPut($key, $value)
     {
@@ -585,6 +599,10 @@ class Collection implements ArrayAccess, CanBeEscapedWhenCastToString, Enumerabl
             }
 
             if (is_object($resolvedKey)) {
+                $resolvedKey = (string) $resolvedKey;
+            }
+
+            if (is_null($resolvedKey)) {
                 $resolvedKey = (string) $resolvedKey;
             }
 
@@ -995,7 +1013,7 @@ class Collection implements ArrayAccess, CanBeEscapedWhenCastToString, Enumerabl
     /**
      * Select specific values from the items within the collection.
      *
-     * @param  \Illuminate\Support\Enumerable<array-key, TKey>|array<array-key, TKey>|string|null  $keys
+     * @param  \Illuminate\Support\Enumerable<int, string>|list<string>|string|null  $keys
      * @return static
      */
     public function select($keys)
@@ -1048,8 +1066,10 @@ class Collection implements ArrayAccess, CanBeEscapedWhenCastToString, Enumerabl
      * Push an item onto the beginning of the collection.
      *
      * @param  TValue  $value
-     * @param  TKey  $key
+     * @param  TKey|null  $key
      * @return $this
+     *
+     * @phpstan-this-out ($key is null ? static<TKey|int, TValue> : $this)
      */
     public function prepend($value, $key = null)
     {
@@ -1063,6 +1083,8 @@ class Collection implements ArrayAccess, CanBeEscapedWhenCastToString, Enumerabl
      *
      * @param  TValue  ...$values
      * @return $this
+     *
+     * @phpstan-this-out static<TKey|int, TValue>
      */
     public function push(...$values)
     {
@@ -1078,6 +1100,8 @@ class Collection implements ArrayAccess, CanBeEscapedWhenCastToString, Enumerabl
      *
      * @param  TValue  ...$values
      * @return $this
+     *
+     * @phpstan-this-out static<TKey|int, TValue>
      */
     public function unshift(...$values)
     {
@@ -1123,9 +1147,13 @@ class Collection implements ArrayAccess, CanBeEscapedWhenCastToString, Enumerabl
     /**
      * Put an item in the collection by key.
      *
+     * @template TPutValue
+     *
      * @param  TKey  $key
-     * @param  TValue  $value
+     * @param  TPutValue  $value
      * @return $this
+     *
+     * @phpstan-this-out static<TKey, TValue|TPutValue>
      */
     public function put($key, $value)
     {
@@ -1266,16 +1294,16 @@ class Collection implements ArrayAccess, CanBeEscapedWhenCastToString, Enumerabl
             throw new InvalidArgumentException('Number of shifted items may not be less than zero.');
         }
 
-        if ($this->isEmpty()) {
-            return null;
-        }
-
         if ($count === 0) {
             return $this->newInstance();
         }
 
         if ($count === 1) {
             return array_shift($this->items);
+        }
+
+        if ($this->isEmpty()) {
+            return $this->newInstance();
         }
 
         $results = [];
@@ -1481,7 +1509,7 @@ class Collection implements ArrayAccess, CanBeEscapedWhenCastToString, Enumerabl
     /**
      * Get the first item in the collection but throw an exception if no matching items exist.
      *
-     * @param  (callable(TValue, TKey): bool)|string  $key
+     * @param  (callable(TValue, TKey): bool)|string|null  $key
      * @param  mixed  $operator
      * @param  mixed  $value
      * @return TValue
@@ -1560,7 +1588,7 @@ class Collection implements ArrayAccess, CanBeEscapedWhenCastToString, Enumerabl
     /**
      * Sort items in descending order.
      *
-     * @param  int  $options
+     * @param  int-mask-of<SORT_REGULAR|SORT_NUMERIC|SORT_STRING|SORT_LOCALE_STRING|SORT_NATURAL|SORT_FLAG_CASE>  $options
      * @return static
      */
     public function sortDesc($options = SORT_REGULAR)
@@ -1575,9 +1603,9 @@ class Collection implements ArrayAccess, CanBeEscapedWhenCastToString, Enumerabl
     /**
      * Sort the collection using the given callback.
      *
-     * @param  array<array-key, (callable(TValue, TValue): mixed)|(callable(TValue, TKey): mixed)|string|array{string, string}>|(callable(TValue, TKey): mixed)|string  $callback
-     * @param  int  $options
-     * @param  bool  $descending
+     * @param  array<array-key, (callable(TValue, TValue): mixed)|(callable(TValue, TKey): mixed)|string|array{string, SortDirection|'asc'|'desc'}>|(callable(TValue, TKey): mixed)|string|int  $callback
+     * @param  int-mask-of<SORT_REGULAR|SORT_NUMERIC|SORT_STRING|SORT_LOCALE_STRING|SORT_NATURAL|SORT_FLAG_CASE>  $options
+     * @param  SortDirection|bool  $descending
      * @return static
      */
     public function sortBy($callback, $options = SORT_REGULAR, $descending = false)
@@ -1597,8 +1625,10 @@ class Collection implements ArrayAccess, CanBeEscapedWhenCastToString, Enumerabl
             $results[$key] = $callback($value, $key);
         }
 
-        $descending ? arsort($results, $options)
-            : asort($results, $options);
+        match ($descending) {
+            false, SortDirection::Ascending => asort($results, $options),
+            true, SortDirection::Descending => arsort($results, $options),
+        };
 
         // Once we have sorted all of the keys in the array, we will loop through them
         // and grab the corresponding model so we can set the underlying items list
@@ -1613,8 +1643,8 @@ class Collection implements ArrayAccess, CanBeEscapedWhenCastToString, Enumerabl
     /**
      * Sort the collection using multiple comparisons.
      *
-     * @param  array<array-key, (callable(TValue, TValue): mixed)|(callable(TValue, TKey): mixed)|string|array{string, string}>  $comparisons
-     * @param  int  $options
+     * @param  array<array-key, (callable(TValue, TValue): mixed)|(callable(TValue, TKey): mixed)|string|array{string, SortDirection|'asc'|'desc'}>  $comparisons
+     * @param  int-mask-of<SORT_REGULAR|SORT_NUMERIC|SORT_STRING|SORT_LOCALE_STRING|SORT_NATURAL|SORT_FLAG_CASE>  $options
      * @return static
      */
     protected function sortByMany(array $comparisons = [], int $options = SORT_REGULAR)
@@ -1627,15 +1657,18 @@ class Collection implements ArrayAccess, CanBeEscapedWhenCastToString, Enumerabl
 
                 $prop = $comparison[0];
 
-                $ascending = Arr::get($comparison, 1, true) === true ||
-                             Arr::get($comparison, 1, true) === 'asc';
+                $direction = match (Arr::get($comparison, 1, true)) {
+                    true, 'asc', SortDirection::Ascending => SortDirection::Ascending,
+                    false, 'desc', SortDirection::Descending => SortDirection::Descending,
+                    default => SortDirection::Descending, // for backwards compatibility
+                };
 
                 if (! is_string($prop) && is_callable($prop)) {
                     $result = $prop($a, $b);
                 } else {
                     $values = [data_get($a, $prop), data_get($b, $prop)];
 
-                    if (! $ascending) {
+                    if ($direction === SortDirection::Descending) {
                         $values = array_reverse($values);
                     }
 
@@ -1647,7 +1680,7 @@ class Collection implements ArrayAccess, CanBeEscapedWhenCastToString, Enumerabl
                         }
                     } else {
                         $result = match ($options) {
-                            SORT_NUMERIC => (int) $values[0] <=> (int) $values[1],
+                            SORT_NUMERIC => (float) $values[0] <=> (float) $values[1],
                             SORT_STRING => strcmp($values[0], $values[1]),
                             SORT_NATURAL => strnatcmp((string) $values[0], (string) $values[1]),
                             SORT_LOCALE_STRING => strcoll($values[0], $values[1]),
@@ -1670,8 +1703,8 @@ class Collection implements ArrayAccess, CanBeEscapedWhenCastToString, Enumerabl
     /**
      * Sort the collection in descending order using the given callback.
      *
-     * @param  array<array-key, (callable(TValue, TValue): mixed)|(callable(TValue, TKey): mixed)|string|array{string, string}>|(callable(TValue, TKey): mixed)|string  $callback
-     * @param  int  $options
+     * @param  array<array-key, (callable(TValue, TValue): mixed)|(callable(TValue, TKey): mixed)|string|array{string, SortDirection|'asc'|'desc'}>|(callable(TValue, TKey): mixed)|string|int  $callback
+     * @param  int-mask-of<SORT_REGULAR|SORT_NUMERIC|SORT_STRING|SORT_LOCALE_STRING|SORT_NATURAL|SORT_FLAG_CASE>  $options
      * @return static
      */
     public function sortByDesc($callback, $options = SORT_REGULAR)
@@ -1680,7 +1713,7 @@ class Collection implements ArrayAccess, CanBeEscapedWhenCastToString, Enumerabl
             foreach ($callback as $index => $key) {
                 $comparison = Arr::wrap($key);
 
-                $comparison[1] = 'desc';
+                $comparison[1] = SortDirection::Descending;
 
                 $callback[$index] = $comparison;
             }
@@ -1692,15 +1725,18 @@ class Collection implements ArrayAccess, CanBeEscapedWhenCastToString, Enumerabl
     /**
      * Sort the collection keys.
      *
-     * @param  int  $options
-     * @param  bool  $descending
+     * @param  int-mask-of<SORT_REGULAR|SORT_NUMERIC|SORT_STRING|SORT_LOCALE_STRING|SORT_NATURAL|SORT_FLAG_CASE>  $options
+     * @param  SortDirection|bool  $descending
      * @return static
      */
     public function sortKeys($options = SORT_REGULAR, $descending = false)
     {
         $items = $this->items;
 
-        $descending ? krsort($items, $options) : ksort($items, $options);
+        match ($descending) {
+            false, SortDirection::Ascending => ksort($items, $options),
+            true, SortDirection::Descending => krsort($items, $options),
+        };
 
         return $this->newInstance($items);
     }
@@ -1708,12 +1744,12 @@ class Collection implements ArrayAccess, CanBeEscapedWhenCastToString, Enumerabl
     /**
      * Sort the collection keys in descending order.
      *
-     * @param  int  $options
+     * @param  int-mask-of<SORT_REGULAR|SORT_NUMERIC|SORT_STRING|SORT_LOCALE_STRING|SORT_NATURAL|SORT_FLAG_CASE>  $options
      * @return static
      */
     public function sortKeysDesc($options = SORT_REGULAR)
     {
-        return $this->sortKeys($options, true);
+        return $this->sortKeys($options, SortDirection::Descending);
     }
 
     /**
@@ -1927,6 +1963,8 @@ class Collection implements ArrayAccess, CanBeEscapedWhenCastToString, Enumerabl
      *
      * @param  TValue  $item
      * @return $this
+     *
+     * @phpstan-this-out static<TKey|int, TValue>
      */
     public function add($item)
     {

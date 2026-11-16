@@ -1,8 +1,6 @@
 ---
 title: Sections
 ---
-import AutoScreenshot from "@components/AutoScreenshot.astro"
-import UtilityInjection from "@components/UtilityInjection.astro"
 
 ## Introduction
 
@@ -18,9 +16,9 @@ Section::make('Rate limiting')
     ])
 ```
 
-<UtilityInjection set="schemaComponents" version="5.x">As well as allowing static values, the `make()` and `description()` methods also accept functions to dynamically calculate them. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="schemaComponents">As well as allowing static values, the `make()` and `description()` methods also accept functions to dynamically calculate them. You can inject various utilities into the function as parameters.</UtilityInjection>
 
-<AutoScreenshot name="schemas/layout/section/simple" alt="Section" version="5.x" />
+<AutoScreenshot name="schemas/layout/section/simple" alt="Section" />
 
 You can also use a section without a header, which just wraps the components in a simple card:
 
@@ -33,7 +31,7 @@ Section::make()
     ])
 ```
 
-<AutoScreenshot name="schemas/layout/section/without-header" alt="Section without header" version="5.x" />
+<AutoScreenshot name="schemas/layout/section/without-header" alt="Section without header" />
 
 ## Adding an icon to the section's header
 
@@ -51,9 +49,9 @@ Section::make('Cart')
     ])
 ```
 
-<UtilityInjection set="schemaComponents" version="5.x">As well as allowing a static value, the `icon()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="schemaComponents">As well as allowing a static value, the `icon()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
 
-<AutoScreenshot name="schemas/layout/section/icons" alt="Section with icon" version="5.x" />
+<AutoScreenshot name="schemas/layout/section/icons" alt="Section with icon" />
 
 ## Positioning the heading and description aside
 
@@ -70,7 +68,7 @@ Section::make('Rate limiting')
     ])
 ```
 
-<AutoScreenshot name="schemas/layout/section/aside" alt="Section with heading and description aside" version="5.x" />
+<AutoScreenshot name="schemas/layout/section/aside" alt="Section with heading and description aside" />
 
 Optionally, you may pass a boolean value to control if the section should be aside or not:
 
@@ -85,7 +83,24 @@ Section::make('Rate limiting')
     ])
 ```
 
-<UtilityInjection set="schemaComponents" version="5.x">As well as allowing a static value, the `aside()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="schemaComponents">As well as allowing a static value, the `aside()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
+
+### Positioning the content before the heading
+
+Use `contentBefore()` with `aside()` to position the content before the heading and description on medium and larger screens:
+
+```php
+use Filament\Schemas\Components\Section;
+
+Section::make('Rate limiting')
+    ->aside()
+    ->contentBefore()
+    ->schema([
+        // ...
+    ])
+```
+
+You may pass a boolean or a closure to `contentBefore()` to control this condition.
 
 ## Collapsing sections
 
@@ -115,7 +130,7 @@ Section::make('Cart')
     ->collapsed()
 ```
 
-<AutoScreenshot name="schemas/layout/section/collapsed" alt="Collapsed section" version="5.x" />
+<AutoScreenshot name="schemas/layout/section/collapsed" alt="Collapsed section" />
 
 Optionally, the `collapsible()` and `collapsed()` methods accept a boolean value to control if the section should be collapsible and collapsed or not:
 
@@ -131,7 +146,9 @@ Section::make('Cart')
     ->collapsed(FeatureFlag::active())
 ```
 
-<UtilityInjection set="schemaComponents" version="5.x">As well as allowing static values, the `collapsible()` and `collapsed()` methods also accept functions to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="schemaComponents">As well as allowing static values, the `collapsible()` and `collapsed()` methods also accept functions to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
+
+If a collapsed section contains components that are expensive to render, you can [lazy load its content](#lazy-loading-section-content) when the section is expanded.
 
 ### Persisting collapsed sections in the user's session
 
@@ -178,7 +195,7 @@ Section::make('Cart')
     ->persistCollapsed(FeatureFlag::active())
 ```
 
-<UtilityInjection set="schemaComponents" version="5.x">As well as allowing static values, the `persistCollapsed()` and `id()` methods also accept functions to dynamically calculate them. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="schemaComponents">As well as allowing static values, the `persistCollapsed()` and `id()` methods also accept functions to dynamically calculate them. You can inject various utilities into the function as parameters.</UtilityInjection>
 
 ## Compact section styling
 
@@ -195,7 +212,7 @@ Section::make('Rate limiting')
     ->compact()
 ```
 
-<AutoScreenshot name="schemas/layout/section/compact" alt="Compact section" version="5.x" />
+<AutoScreenshot name="schemas/layout/section/compact" alt="Compact section" />
 
 Optionally, the `compact()` method accepts a boolean value to control if the section should be compact or not:
 
@@ -210,7 +227,7 @@ Section::make('Rate limiting')
     ->compact(FeatureFlag::active())
 ```
 
-<UtilityInjection set="schemaComponents" version="5.x">As well as allowing a static value, the `compact()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="schemaComponents">As well as allowing a static value, the `compact()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
 
 ## Secondary section styling
 
@@ -227,7 +244,7 @@ Section::make('Notes')
     ->compact()
 ```
 
-<AutoScreenshot name="schemas/layout/section/secondary" alt="Secondary section" version="5.x" />
+<AutoScreenshot name="schemas/layout/section/secondary" alt="Secondary section" />
 
 Optionally, the `secondary()` method accepts a boolean value to control if the section should be secondary or not:
 
@@ -246,6 +263,7 @@ Section::make('Notes')
 You may insert [actions](../actions) and any other schema component (usually [prime components](primes)) into the header of a section by passing an array of components to the `afterHeader()` method:
 
 ```php
+use Filament\Actions\Action;
 use Filament\Schemas\Components\Section;
 
 Section::make('Rate limiting')
@@ -258,15 +276,16 @@ Section::make('Rate limiting')
     ])
 ```
 
-<UtilityInjection set="schemaComponents" version="5.x">As well as allowing a static value, the `afterHeader()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="schemaComponents">As well as allowing a static value, the `afterHeader()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
 
-<AutoScreenshot name="schemas/layout/section/header/actions" alt="Section with actions in the header" version="5.x" />
+<AutoScreenshot name="schemas/layout/section/header/actions" alt="Section with actions in the header" />
 
 ## Inserting actions and other components in the footer of a section
 
 You may insert [actions](../actions) and any other schema component (usually [prime components](primes)) into the footer of a section by passing an array of components to the `footer()` method:
 
 ```php
+use Filament\Actions\Action;
 use Filament\Schemas\Components\Section;
 
 Section::make('Rate limiting')
@@ -279,9 +298,9 @@ Section::make('Rate limiting')
     ])
 ```
 
-<UtilityInjection set="schemaComponents" version="5.x">As well as allowing a static value, the `footer()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="schemaComponents">As well as allowing a static value, the `footer()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
 
-<AutoScreenshot name="schemas/layout/section/footer/actions" alt="Section with actions in the footer" version="5.x" />
+<AutoScreenshot name="schemas/layout/section/footer/actions" alt="Section with actions in the footer" />
 
 ## Using grid columns within a section
 
@@ -297,6 +316,31 @@ Section::make('Heading')
     ->columns(2)
 ```
 
-<AutoScreenshot name="schemas/layout/section/columns" alt="Section with grid columns" version="5.x" />
+<AutoScreenshot name="schemas/layout/section/columns" alt="Section with grid columns" />
 
-<UtilityInjection set="schemaComponents" version="5.x">As well as allowing a static value, the `columns()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="schemaComponents">As well as allowing a static value, the `columns()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
+
+## Lazy loading section content
+
+If the content of a section is expensive to render, you can pass a `Schema` object to `schema()` and use `lazyLoaded()`. This is particularly useful for a section that is [collapsed](#collapsing-sections) by default. The section and its header will render immediately, while its content will not be loaded until the section is expanded and the content enters the viewport:
+
+```php
+use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
+
+Section::make('Customer details')
+    ->key('customerDetails')
+    ->schema(
+        Schema::make()
+            ->components([
+                TextInput::make('name'),
+                TextInput::make('email')
+                    ->email(),
+            ])
+            ->lazyLoaded(),
+    )
+    ->collapsed()
+```
+
+Every lazy schema must have a unique key. In this example, the child schema inherits its key from the section. You can learn more in the [schema overview](overview#lazy-loading-a-child-schema).

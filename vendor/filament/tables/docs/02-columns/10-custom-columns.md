@@ -1,7 +1,6 @@
 ---
 title: Custom columns
 ---
-import Aside from "@components/Aside.astro"
 
 ## Introduction
 
@@ -26,9 +25,8 @@ class AudioPlayerColumn extends Column
 
 It will also create a view file at `resources/views/filament/tables/columns/audio-player-column.blade.php`.
 
-<Aside variant="info">
-    Filament table columns are **not** Livewire components. Defining public properties and methods on a table column class will not make them accessible in the Blade view.
-</Aside>
+> [!NOTE]
+> Filament table columns are **not** Livewire components. Public properties are not automatically available as variables in the Blade view. Public methods are available as variable functions, such as `$getState()`, or through the `$column` instance. Making a method public does not automatically expose it to remote calls from Livewire.
 
 ## Accessing the state of the column in the Blade view
 
@@ -152,7 +150,7 @@ class AudioPlayerColumn extends Column
 }
 ```
 
-Now, you can pass a static value or a function to the `speed()` method, and [inject any utility](overview#component-utility-injection) as a parameter:
+Now, you can pass a static value or a function to the `speed()` method, and [inject any utility](overview#column-utility-injection) as a parameter:
 
 ```php
 use App\Filament\Tables\Columns\AudioPlayerColumn;
@@ -160,3 +158,41 @@ use App\Filament\Tables\Columns\AudioPlayerColumn;
 AudioPlayerColumn::make('recording')
     ->speed(fn (Conference $record): float => $record->isGlobal() ? 1 : 0.5)
 ```
+
+## Adding a loading skeleton
+
+When a table uses [`loadingSkeleton()`](../overview#displaying-a-loading-skeleton), Filament adds the `.fi-ta-content-loading` class to the table content while its records are updating. You may use this class in your theme's CSS to add a loading skeleton to a custom column.
+
+First, add a CSS hook class to the outer element of the column's Blade view:
+
+```blade
+<div class="fi-ta-audio-player" {{ $getExtraAttributeBag() }}>
+    <audio controls src="{{ $getState() }}"></audio>
+</div>
+```
+
+Then, style the column while it is inside the loading table content. The loading skeleton CSS variables ensure that your column uses the same animation, background color, and border radius as Filament's built-in columns:
+
+```css
+.fi-ta-content-loading .fi-ta-audio-player {
+    position: relative;
+    width: fit-content;
+    max-width: 100%;
+    color: transparent;
+
+    &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        animation: var(--loading-skeleton-animation);
+        background-color: var(--loading-skeleton-bg);
+        border-radius: var(--loading-skeleton-border-radius);
+    }
+
+    & > * {
+        opacity: 0;
+    }
+}
+```
+
+The pseudo-element uses the dimensions of your column's existing content, so no additional skeleton HTML is required. You may adjust its inset, width, height, or border radius to match the shape of your column without changing the shared loading skeleton styles.

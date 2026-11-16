@@ -4,25 +4,29 @@ namespace Filament\Forms\Components;
 
 use Closure;
 use Filament\Forms\View\FormsIconAlias;
+use Filament\Support\Components\Contracts\HasEmbeddedView;
 use Filament\Support\Concerns\HasAlignment;
 use Filament\Support\Concerns\HasExtraAlpineAttributes;
+use Filament\Support\Enums\Alignment;
+use Filament\Support\Facades\FilamentAsset;
 use Filament\Support\Icons\Heroicon;
+use Filament\Support\View\ComponentAttributeBag as FilamentComponentAttributeBag;
+use Filament\Support\View\Components\ButtonComponent;
+use Filament\Support\View\Components\LinkComponent;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Js;
 use InvalidArgumentException;
 
 use function Filament\Support\generate_icon_html;
 
-class FileUpload extends BaseFileUpload
+class FileUpload extends BaseFileUpload implements HasEmbeddedView
 {
     use Concerns\HasExtraInputAttributes;
     use Concerns\HasPlaceholder;
     use HasAlignment;
     use HasExtraAlpineAttributes;
 
-    /**
-     * @var view-string
-     */
-    protected string $view = 'filament-forms::components.file-upload';
+    protected ?string $publishedViewOverrideCheckPath = 'filament-forms::components.file-upload';
 
     protected bool | Closure $shouldAutomaticallyCropImagesToAspectRatio = false;
 
@@ -40,21 +44,21 @@ class FileUpload extends BaseFileUpload
 
     protected string | int | float | Closure | null $itemPanelAspectRatio = null;
 
-    protected string | Closure $loadingIndicatorPosition = 'right';
+    protected string | Closure | null $loadingIndicatorPosition = null;
 
     protected string | Closure | null $panelAspectRatio = null;
 
     protected string | Closure | null $panelLayout = 'compact';
 
-    protected string | Closure $removeUploadedFileButtonPosition = 'left';
+    protected string | Closure | null $removeUploadedFileButtonPosition = null;
 
     protected bool | Closure $shouldAppendFiles = false;
 
     protected bool | Closure $shouldOrientImagesFromExif = true;
 
-    protected string | Closure $uploadButtonPosition = 'right';
+    protected string | Closure | null $uploadButtonPosition = null;
 
-    protected string | Closure $uploadProgressIndicatorPosition = 'right';
+    protected string | Closure | null $uploadProgressIndicatorPosition = null;
 
     protected bool | Closure $hasImageEditor = false;
 
@@ -62,7 +66,7 @@ class FileUpload extends BaseFileUpload
 
     protected bool | Closure $canEditSvgs = true;
 
-    protected bool | Closure $isSvgEditingConfirmed = false;
+    protected bool | Closure $shouldConfirmSvgEditing = false;
 
     protected bool | Closure $shouldAutomaticallyOpenImageEditorForAspectRatio = false;
 
@@ -122,6 +126,17 @@ class FileUpload extends BaseFileUpload
         $this->placeholder($label);
 
         return $this;
+    }
+
+    public function getPlaceholder(): ?string
+    {
+        $placeholder = $this->evaluate($this->placeholder);
+
+        if (($placeholder !== null) || (! $this->isDisabled())) {
+            return $placeholder;
+        }
+
+        return blank($this->getState()) ? __('filament-forms::components.file_upload.placeholder') : '';
     }
 
     public function image(): static
@@ -393,7 +408,7 @@ class FileUpload extends BaseFileUpload
 
     public function getLoadingIndicatorPosition(): string
     {
-        return $this->evaluate($this->loadingIndicatorPosition);
+        return $this->evaluate($this->loadingIndicatorPosition) ?? ($this->isAvatar() ? 'center bottom' : 'right');
     }
 
     public function getPanelAspectRatio(): ?string
@@ -408,17 +423,23 @@ class FileUpload extends BaseFileUpload
 
     public function getRemoveUploadedFileButtonPosition(): string
     {
-        return $this->evaluate($this->removeUploadedFileButtonPosition);
+        return $this->evaluate($this->removeUploadedFileButtonPosition) ?? ($this->isAvatar()
+            ? ($this->hasImageEditor() ? 'left bottom' : 'center bottom')
+            : 'left');
     }
 
     public function getUploadButtonPosition(): string
     {
-        return $this->evaluate($this->uploadButtonPosition);
+        return $this->evaluate($this->uploadButtonPosition) ?? ($this->isAvatar()
+            ? ($this->hasImageEditor() ? 'right bottom' : 'center bottom')
+            : 'right');
     }
 
     public function getUploadProgressIndicatorPosition(): string
     {
-        return $this->evaluate($this->uploadProgressIndicatorPosition);
+        return $this->evaluate($this->uploadProgressIndicatorPosition) ?? ($this->isAvatar()
+            ? ($this->hasImageEditor() ? 'right bottom' : 'center bottom')
+            : 'right');
     }
 
     public function isAvatar(): bool
@@ -459,7 +480,7 @@ class FileUpload extends BaseFileUpload
 
     public function confirmSvgEditing(bool | Closure $condition = true): static
     {
-        $this->isSvgEditingConfirmed = $condition;
+        $this->shouldConfirmSvgEditing = $condition;
 
         return $this;
     }
@@ -488,7 +509,7 @@ class FileUpload extends BaseFileUpload
     public function imageEditorMode(int $mode): static
     {
         if (! in_array($mode, [1, 2, 3])) {
-            throw new InvalidArgumentException("The file upload editor mode must be either 1, 2 or 3. [{$mode}] given, which is unsupported. See https://github.com/fengyuanchen/cropperjs#viewmode for more information on the available modes. Mode 0 is not supported, as it does not allow configuration via manual inputs.");
+            throw new InvalidArgumentException("The file upload editor mode must be either 1, 2 or 3. [{$mode}] given, which is unsupported. See https://github.com/fengyuanchen/cropperjs/blob/v1/README.md#viewmode for more information on the available modes. Mode 0 is not supported, as it does not allow configuration via manual inputs.");
         }
 
         $this->imageEditorMode = $mode;
@@ -526,7 +547,7 @@ class FileUpload extends BaseFileUpload
     public function getImageEditorViewportHeight(): ?int
     {
         if (($targetHeight = (int) $this->getAutomaticallyResizeImagesHeight()) > 1) {
-            return (int) round($targetHeight * $this->getParentTargetSizes($targetHeight), precision: 0);
+            return (int) round($targetHeight * $this->getImageEditorViewportScaleFactor($targetHeight), precision: 0);
         }
 
         if (filled($ratio = $this->getAutomaticallyCropImagesAspectRatio())) {
@@ -543,7 +564,7 @@ class FileUpload extends BaseFileUpload
     public function getImageEditorViewportWidth(): ?int
     {
         if (($targetWidth = (int) $this->getAutomaticallyResizeImagesWidth()) > 1) {
-            return (int) round($targetWidth * $this->getParentTargetSizes($targetWidth), precision: 0);
+            return (int) round($targetWidth * $this->getImageEditorViewportScaleFactor($targetWidth), precision: 0);
         }
 
         if (filled($ratio = $this->getAutomaticallyCropImagesAspectRatio())) {
@@ -557,7 +578,15 @@ class FileUpload extends BaseFileUpload
         return $this->evaluate($this->imageEditorViewportWidth);
     }
 
+    /**
+     * @deprecated Use `getImageEditorViewportScaleFactor()` instead.
+     */
     protected function getParentTargetSizes(int $widthOrHeight): int | float
+    {
+        return $this->getImageEditorViewportScaleFactor($widthOrHeight);
+    }
+
+    protected function getImageEditorViewportScaleFactor(int $widthOrHeight): int | float
     {
         $targetWidth = (int) $this->getAutomaticallyResizeImagesWidth();
 
@@ -602,9 +631,17 @@ class FileUpload extends BaseFileUpload
         return (bool) $this->evaluate($this->canEditSvgs);
     }
 
+    public function shouldConfirmSvgEditing(): bool
+    {
+        return (bool) $this->evaluate($this->shouldConfirmSvgEditing);
+    }
+
+    /**
+     * @deprecated Use `shouldConfirmSvgEditing()` instead.
+     */
     public function isSvgEditingConfirmed(): bool
     {
-        return (bool) $this->evaluate($this->isSvgEditingConfirmed);
+        return $this->shouldConfirmSvgEditing();
     }
 
     public function shouldAutomaticallyOpenImageEditorForAspectRatio(): bool
@@ -822,5 +859,355 @@ class FileUpload extends BaseFileUpload
     public function getMimeTypeMap(): array
     {
         return $this->evaluate($this->mimeTypeMap);
+    }
+
+    public function toEmbeddedHtml(): string
+    {
+        $id = $this->getId();
+        $automaticallyCropImagesAspectRatio = $this->getAutomaticallyCropImagesAspectRatio();
+        $automaticallyResizeImagesHeight = $this->getAutomaticallyResizeImagesHeight();
+        $automaticallyResizeImagesWidth = $this->getAutomaticallyResizeImagesWidth();
+        $isAvatar = $this->isAvatar();
+        $isMultiple = $this->isMultiple();
+        $statePath = $this->getStatePath();
+        $isDisabled = $this->isDisabled();
+        $placeholder = $this->getPlaceholder();
+        $hasImageEditor = $this->hasImageEditor();
+        $isImageEditorExplicitlyEnabled = $this->isImageEditorExplicitlyEnabled();
+        $hasCircleCropper = $this->hasCircleCropper();
+        $livewireKey = $this->getLivewireKey();
+        $maxFiles = $this->getMaxFiles();
+        $maxSize = $this->getMaxSize();
+        $minSize = $this->getMinSize();
+
+        $alignment = $this->getAlignment() ?? Alignment::Start;
+
+        if (! $alignment instanceof Alignment) {
+            $alignment = filled($alignment) ? (Alignment::tryFrom($alignment) ?? $alignment) : null;
+        }
+
+        $wireKey = $livewireKey . '.' . substr(md5(serialize([
+            $isDisabled,
+            $isDisabled ? $placeholder : null,
+            $isDisabled && ($placeholder === '') && blank($this->getState()),
+        ])), 0, 64);
+
+        $outerAttributes = $this->getExtraAttributeBag()
+            ->merge([
+                'aria-labelledby' => "{$id}-label",
+                'id' => $id,
+                'role' => 'group',
+            ], escape: false)
+            ->merge($this->getExtraAlpineAttributes(), escape: false)
+            ->class([
+                'fi-fo-file-upload',
+                'fi-fo-file-upload-avatar' => $isAvatar,
+                ($alignment instanceof Alignment) ? "fi-align-{$alignment->value}" : $alignment,
+            ]);
+
+        $extraInputAttributeBag = $this->getExtraInputAttributeBag();
+
+        $inputAttributes = $extraInputAttributeBag
+            ->merge($this->getAccessibilityAttributes(), escape: false)
+            ->merge([
+                'aria-labelledby' => "{$id}-label",
+                'disabled' => $isDisabled,
+                'multiple' => $isMultiple,
+                'type' => 'file',
+            ], escape: false);
+
+        $alpineComponentSrc = FilamentAsset::getAlpineComponentSrc('file-upload', 'filament/forms');
+
+        ob_start(); ?>
+
+        <div
+            hidden
+            data-field-accessibility
+            <?php if (! $extraInputAttributeBag->has('aria-describedby')) { ?> data-preserve-filepond-description <?php } ?>
+            <?= $inputAttributes->only(['aria-describedby', 'aria-invalid'])->toHtml() ?>
+        ></div>
+        <div
+            x-load
+            x-load-src="<?= e($alpineComponentSrc) ?>"
+            x-data="fileUploadFormComponent({
+                        acceptedFileTypes: <?= Js::from($this->getAcceptedFileTypes()) ?>,
+                        automaticallyCropImagesAspectRatio: <?= Js::from($automaticallyCropImagesAspectRatio) ?>,
+                        automaticallyOpenImageEditorForAspectRatio: <?= Js::from($this->getAutomaticallyOpenImageEditorForAspectRatio()) ?>,
+                        automaticallyResizeImagesMode: <?= Js::from($this->getAutomaticallyResizeImagesMode()) ?>,
+                        automaticallyResizeImagesHeight: <?= Js::from($automaticallyResizeImagesHeight) ?>,
+                        automaticallyResizeImagesWidth: <?= Js::from($automaticallyResizeImagesWidth) ?>,
+                        canEditSvgs: <?= Js::from($this->canEditSvgs()) ?>,
+                        confirmSvgEditingMessage: <?= Js::from(__('filament-forms::components.file_upload.editor.svg.messages.confirmation')) ?>,
+                        disabledSvgEditingMessage: <?= Js::from(__('filament-forms::components.file_upload.editor.svg.messages.disabled')) ?>,
+                        hasCircleCropper: <?= Js::from($hasCircleCropper) ?>,
+                        hasImageEditor: <?= Js::from($hasImageEditor) ?>,
+                        imageEditorEmptyFillColor: <?= Js::from($this->getImageEditorEmptyFillColor()) ?>,
+                        imageEditorMode: <?= Js::from($this->getImageEditorMode()) ?>,
+                        imageEditorViewportHeight: <?= Js::from($this->getImageEditorViewportHeight()) ?>,
+                        imageEditorViewportWidth: <?= Js::from($this->getImageEditorViewportWidth()) ?>,
+                        imagePreviewHeight: <?= Js::from($this->getImagePreviewHeight()) ?>,
+                        isAvatar: <?= Js::from($isAvatar) ?>,
+                        isDeletable: <?= Js::from($this->isDeletable()) ?>,
+                        isDisabled: <?= Js::from($isDisabled) ?>,
+                        isDownloadable: <?= Js::from($this->isDownloadable()) ?>,
+                        isImageEditorExplicitlyEnabled: <?= Js::from($isImageEditorExplicitlyEnabled) ?>,
+                        isMultiple: <?= Js::from($isMultiple) ?>,
+                        isOpenable: <?= Js::from($this->isOpenable()) ?>,
+                        isPasteable: <?= Js::from($this->isPasteable()) ?>,
+                        isPreviewable: <?= Js::from($this->isPreviewable()) ?>,
+                        isReorderable: <?= Js::from($this->isReorderable()) ?>,
+                        isSvgEditingConfirmed: <?= Js::from($this->shouldConfirmSvgEditing()) ?>,
+                        itemPanelAspectRatio: <?= Js::from($this->getItemPanelAspectRatio()) ?>,
+                        loadingIndicatorPosition: <?= Js::from($this->getLoadingIndicatorPosition()) ?>,
+                        locale: <?= Js::from(app()->getLocale()) ?>,
+                        maxFiles: <?= Js::from($maxFiles) ?>,
+                        maxFilesValidationMessage: <?= Js::from($maxFiles ? trans_choice('validation.max.array', $maxFiles, ['attribute' => $this->getValidationAttribute(), 'max' => $maxFiles]) : null) ?>,
+                        maxParallelUploads: <?= Js::from($this->getMaxParallelUploads()) ?>,
+                        maxSize: <?= Js::from($maxSize ? "{$maxSize}KB" : null) ?>,
+                        mimeTypeMap: <?= Js::from($this->getMimeTypeMap()) ?>,
+                        minSize: <?= Js::from($minSize ? "{$minSize}KB" : null) ?>,
+                        panelAspectRatio: <?= Js::from($this->getPanelAspectRatio()) ?>,
+                        panelLayout: <?= Js::from($this->getPanelLayout()) ?>,
+                        placeholder: <?= Js::from($placeholder) ?>,
+                        removeUploadedFileButtonPosition: <?= Js::from($this->getRemoveUploadedFileButtonPosition()) ?>,
+                        shouldAppendFiles: <?= Js::from($this->shouldAppendFiles()) ?>,
+                        shouldAutomaticallyUpscaleImagesWhenResizing: <?= Js::from($this->shouldAutomaticallyUpscaleImagesWhenResizing()) ?>,
+                        shouldOrientImageFromExif: <?= Js::from($this->shouldOrientImagesFromExif()) ?>,
+                        shouldTransformImage: <?= Js::from($automaticallyCropImagesAspectRatio || $automaticallyResizeImagesHeight || $automaticallyResizeImagesWidth) ?>,
+                        state: $wire.<?= $this->applyStateBindingModifiers("\$entangle('{$statePath}')") ?>,
+                        statePath: <?= Js::from($statePath) ?>,
+                        uploadButtonPosition: <?= Js::from($this->getUploadButtonPosition()) ?>,
+                        uploadingMessage: <?= Js::from($this->getUploadingMessage()) ?>,
+                        downloadActionLabel: <?= Js::from(__('filament-forms::components.file_upload.actions.download.label')) ?>,
+                        openActionLabel: <?= Js::from(__('filament-forms::components.file_upload.actions.open.label')) ?>,
+                        uploadProgressIndicatorPosition: <?= Js::from($this->getUploadProgressIndicatorPosition()) ?>,
+                    })"
+            wire:ignore
+            wire:key="<?= e($wireKey) ?>"
+            <?= $outerAttributes->toHtml() ?>
+        >
+            <div class="fi-fo-file-upload-input-ctn">
+                <input
+                    x-ref="input"
+                    <?= $inputAttributes->toHtml() ?>
+                />
+            </div>
+
+            <div
+                x-show="error"
+                x-text="error"
+                x-cloak
+                role="alert"
+                class="fi-fo-file-upload-error-message"
+            ></div>
+
+            <?php if ($hasImageEditor && ! $isDisabled) { ?>
+                <div
+                    aria-label="<?= e(__('filament-forms::components.file_upload.editor.label')) ?>"
+                    aria-modal="true"
+                    role="dialog"
+                    x-show="isEditorOpen"
+                    x-cloak
+                    x-on:click.stop=""
+                    x-trap.noscroll="isEditorOpen"
+                    x-on:keydown.escape.prevent.stop="closeEditor"
+                    <?= (new FilamentComponentAttributeBag)->class([
+                        'fi-fo-file-upload-editor',
+                        'fi-fo-file-upload-editor-circle-cropper' => $hasCircleCropper,
+                        'fi-fo-file-upload-editor-crop-only' => ! $isImageEditorExplicitlyEnabled,
+                    ])->toHtml() ?>
+                >
+                    <div
+                        aria-hidden="true"
+                        class="fi-fo-file-upload-editor-overlay"
+                    ></div>
+
+                    <div class="fi-fo-file-upload-editor-window">
+                        <div class="fi-fo-file-upload-editor-image-ctn">
+                            <?php // Decorative: Cropper.js drives this image and the editor dialog is labelled elsewhere.?>
+                            <img
+                                alt=""
+                                x-ref="editor"
+                                class="fi-fo-file-upload-editor-image"
+                            />
+                        </div>
+
+                        <div class="fi-fo-file-upload-editor-control-panel">
+                            <?php if ($isImageEditorExplicitlyEnabled) { ?>
+                                <div class="fi-fo-file-upload-editor-control-panel-main">
+                                    <div class="fi-fo-file-upload-editor-control-panel-group">
+                                        <?php foreach ([
+                                            [
+                                                'label' => __('filament-forms::components.file_upload.editor.fields.x_position.label'),
+                                                'ref' => 'xPositionInput',
+                                                'unit' => __('filament-forms::components.file_upload.editor.fields.x_position.unit'),
+                                                'alpineSaveHandler' => 'editor.setData({...editor.getData(true), x: +$el.value})',
+                                            ],
+                                            [
+                                                'label' => __('filament-forms::components.file_upload.editor.fields.y_position.label'),
+                                                'ref' => 'yPositionInput',
+                                                'unit' => __('filament-forms::components.file_upload.editor.fields.y_position.unit'),
+                                                'alpineSaveHandler' => 'editor.setData({...editor.getData(true), y: +$el.value})',
+                                            ],
+                                            [
+                                                'label' => __('filament-forms::components.file_upload.editor.fields.width.label'),
+                                                'ref' => 'widthInput',
+                                                'unit' => __('filament-forms::components.file_upload.editor.fields.width.unit'),
+                                                'alpineSaveHandler' => 'editor.setData({...editor.getData(true), width: +$el.value})',
+                                            ],
+                                            [
+                                                'label' => __('filament-forms::components.file_upload.editor.fields.height.label'),
+                                                'ref' => 'heightInput',
+                                                'unit' => __('filament-forms::components.file_upload.editor.fields.height.unit'),
+                                                'alpineSaveHandler' => 'editor.setData({...editor.getData(true), height: +$el.value})',
+                                            ],
+                                            [
+                                                'label' => __('filament-forms::components.file_upload.editor.fields.rotation.label'),
+                                                'ref' => 'rotationInput',
+                                                'unit' => __('filament-forms::components.file_upload.editor.fields.rotation.unit'),
+                                                'alpineSaveHandler' => 'editor.rotateTo(+$el.value)',
+                                            ],
+                                        ] as $input) { ?>
+                                            <label>
+                                                <div class="fi-input-wrp">
+                                                    <div class="fi-input-wrp-prefix fi-input-wrp-prefix-has-content fi-input-wrp-prefix-has-label">
+                                                        <span class="fi-input-wrp-label">
+                                                            <?= e($input['label']) ?>
+                                                        </span>
+                                                    </div>
+
+                                                    <div class="fi-input-wrp-content-ctn">
+                                                        <input
+                                                            x-on:keyup.enter.prevent.stop="editor && <?= $input['alpineSaveHandler'] ?>"
+                                                            x-on:blur="editor && <?= $input['alpineSaveHandler'] ?>"
+                                                            x-ref="<?= e($input['ref']) ?>"
+                                                            x-on:keydown.enter.prevent
+                                                            type="text"
+                                                            class="fi-input"
+                                                        />
+                                                    </div>
+
+                                                    <div class="fi-input-wrp-suffix fi-input-wrp-suffix-has-label">
+                                                        <span class="fi-input-wrp-label">
+                                                            <?= e($input['unit']) ?>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </label>
+                                        <?php } ?>
+                                    </div>
+
+                                    <div class="fi-fo-file-upload-editor-control-panel-group">
+                                        <?php foreach ($this->getImageEditorActions() as $groupedActions) { ?>
+                                            <div class="fi-btn-group">
+                                                <?php foreach ($groupedActions as $action) { ?>
+                                                    <button
+                                                        aria-label="<?= e($action['label']) ?>"
+                                                        type="button"
+                                                        x-on:click.prevent.stop="<?= e($action['alpineClickHandler']) ?>"
+                                                        x-tooltip="{ content: <?= Js::from($action['label']) ?>, theme: $store.theme }"
+                                                        class="fi-btn"
+                                                    >
+                                                        <?= $action['iconHtml']?->toHtml() ?>
+                                                    </button>
+                                                <?php } ?>
+                                            </div>
+                                        <?php } ?>
+                                    </div>
+
+                                    <?php
+                                    $aspectRatios = $this->getImageEditorAspectRatioOptionsForJs();
+
+                                if (count($aspectRatios)) { ?>
+                                        <div class="fi-fo-file-upload-editor-control-panel-group">
+                                            <div class="fi-fo-file-upload-editor-control-panel-group-title">
+                                                <?= e(__('filament-forms::components.file_upload.editor.aspect_ratios.label')) ?>
+                                            </div>
+
+                                            <?php foreach (collect($aspectRatios)->chunk(5) as $ratiosChunk) { ?>
+                                                <div class="fi-btn-group">
+                                                    <?php foreach ($ratiosChunk as $label => $ratio) { ?>
+                                                        <button
+                                                            type="button"
+                                                            x-on:click.prevent.stop="
+                                                                currentRatio = <?= Js::from($label) ?>;
+                                                                editor.setAspectRatio(<?= Js::from($ratio) ?>)
+                                                            "
+                                                            x-tooltip="{ content: <?= Js::from(__('filament-forms::components.file_upload.editor.actions.set_aspect_ratio.label', ['ratio' => $label])) ?>, theme: $store.theme }"
+                                                            x-bind:class="{ 'fi-active': currentRatio === <?= Js::from($label) ?> }"
+                                                            class="fi-btn"
+                                                        >
+                                                            <?= e($label) ?>
+                                                        </button>
+                                                    <?php } ?>
+                                                </div>
+                                            <?php } ?>
+                                        </div>
+                                    <?php } ?>
+                                    <div class="fi-fo-file-upload-editor-control-panel-reset-action-ctn">
+                                        <button
+                                            type="button"
+                                            x-on:click.prevent.stop="editor.reset()"
+                                            <?= (new FilamentComponentAttributeBag)
+                                                ->color(LinkComponent::class, 'danger')
+                                                ->class(['fi-link fi-size-sm fi-fo-file-upload-editor-control-panel-reset-action'])
+                                                ->toHtml() ?>
+                                        >
+                                            <span class="fi-link-label">
+                                                <?= e(__('filament-forms::components.file_upload.editor.actions.reset.label')) ?>
+                                            </span>
+                                        </button>
+                                    </div>
+                                </div>
+                            <?php } ?>
+
+                            <div class="fi-fo-file-upload-editor-control-panel-footer">
+                                <?php if ($isImageEditorExplicitlyEnabled) { ?>
+                                    <button
+                                        type="button"
+                                        x-on:click.prevent="pond.imageEditEditor.oncancel"
+                                        class="fi-btn"
+                                    >
+                                        <?= e(__('filament-forms::components.file_upload.editor.actions.cancel.label')) ?>
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        x-on:click.prevent="saveEditor"
+                                        <?= (new FilamentComponentAttributeBag)
+                                            ->color(ButtonComponent::class, 'success')
+                                            ->class(['fi-btn'])
+                                            ->toHtml() ?>
+                                    >
+                                        <?= e(__('filament-forms::components.file_upload.editor.actions.save.label')) ?>
+                                    </button>
+                                <?php } else { ?>
+                                    <button
+                                        type="button"
+                                        x-on:click.prevent="saveEditor"
+                                        <?= (new FilamentComponentAttributeBag)
+                                            ->color(ButtonComponent::class, 'success')
+                                            ->class(['fi-btn'])
+                                            ->toHtml() ?>
+                                    >
+                                        <?= e(__('filament-forms::components.file_upload.editor.actions.save.label')) ?>
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        x-on:click.prevent="pond.imageEditEditor.oncancel"
+                                        class="fi-btn"
+                                    >
+                                        <?= e(__('filament-forms::components.file_upload.editor.actions.cancel.label')) ?>
+                                    </button>
+                                <?php } ?>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <?php } ?>
+        </div>
+
+        <?php return $this->wrapEmbeddedHtml(ob_get_clean(), labelTag: 'div');
     }
 }

@@ -7,6 +7,7 @@ use Illuminate\Contracts\Routing\UrlRoutable;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Stringable as SupportStringable;
 use Illuminate\Support\Traits\Conditionable;
 use Illuminate\Support\Traits\Dumpable;
 use Illuminate\Support\Traits\Macroable;
@@ -166,6 +167,18 @@ class Uri implements Htmlable, JsonSerializable, Responsable, Stringable
     }
 
     /**
+     * Get the URI's origin.
+     *
+     * Opaque origins, such as those of relative or "mailto:" URIs, are returned as null.
+     */
+    public function origin(): ?string
+    {
+        $uri = $this->uri instanceof LeagueUri ? $this->uri : LeagueUri::new($this->value());
+
+        return $uri->getOrigin();
+    }
+
+    /**
      * Get the URI's path.
      *
      * Empty or missing paths are returned as a single "/".
@@ -262,7 +275,7 @@ class Uri implements Htmlable, JsonSerializable, Responsable, Stringable
             $mergedQuery = $this->query()->all();
 
             foreach ($query as $key => $value) {
-                data_set($mergedQuery, $key, $value);
+                Arr::set($mergedQuery, $key, $value);
             }
 
             $newQuery = $mergedQuery;
@@ -270,7 +283,7 @@ class Uri implements Htmlable, JsonSerializable, Responsable, Stringable
             $newQuery = [];
 
             foreach ($query as $key => $value) {
-                data_set($newQuery, $key, $value);
+                Arr::set($newQuery, $key, $value);
             }
         }
 
@@ -357,7 +370,7 @@ class Uri implements Htmlable, JsonSerializable, Responsable, Stringable
      */
     public function toStringable()
     {
-        return Str::of($this->value());
+        return new SupportStringable($this->value());
     }
 
     /**

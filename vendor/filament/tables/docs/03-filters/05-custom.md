@@ -1,12 +1,10 @@
 ---
 title: Custom filters
 ---
-import AutoScreenshot from "@components/AutoScreenshot.astro"
-import UtilityInjection from "@components/UtilityInjection.astro"
 
 ## Custom filter schemas
 
-You may use [schema components](../../schemas) to create custom filters. The data from the custom filter schema is available in the `$data` array of the `query()` callback:
+You may use [form fields](../../forms) and [schema components](../../schemas) to create custom filters using the `form()` method. The data from the custom filter form is available in the `$data` array of the `query()` callback:
 
 ```php
 use Filament\Forms\Components\DatePicker;
@@ -14,7 +12,7 @@ use Filament\Tables\Filters\Filter;
 use Illuminate\Database\Eloquent\Builder;
 
 Filter::make('created_at')
-    ->schema([
+    ->form([
         DatePicker::make('created_from'),
         DatePicker::make('created_until'),
     ])
@@ -31,9 +29,9 @@ Filter::make('created_at')
     })
 ```
 
-<UtilityInjection set="formFields" version="5.x" extras="Query;;Illuminate\Database\Eloquent\Builder;;$query;;The Eloquent query builder to modify.||Data;;array<string, mixed>;;$data;;The data from the filter's form fields.">The `query()` function can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="tableFilters" extras="Query;;Illuminate\Database\Eloquent\Builder;;$query;;The Eloquent query builder to modify.||Data;;array<string, mixed>;;$data;;The data from the filter's form fields.">The `query()` function can inject various utilities into the function as parameters.</UtilityInjection>
 
-<AutoScreenshot name="tables/filters/custom-form" alt="Table with custom filter schema" version="5.x" />
+<AutoScreenshot name="tables/filters/custom-form" alt="Table with custom filter schema" />
 
 ### Setting default values for custom filter fields
 
@@ -44,7 +42,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Filters\Filter;
 
 Filter::make('created_at')
-    ->schema([
+    ->form([
         DatePicker::make('created_from'),
         DatePicker::make('created_until')
             ->default(now()),
@@ -55,7 +53,7 @@ Filter::make('created_at')
 
 When a filter is active, an indicator is displayed above the table content to signal that the table query has been scoped.
 
-<AutoScreenshot name="tables/filters/indicators" alt="Table with filter indicators" version="5.x" />
+<AutoScreenshot name="tables/filters/indicators" alt="Table with filter indicators" />
 
 By default, the label of the filter is used as the indicator. You can override this using the `indicator()` method:
 
@@ -83,7 +81,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Filters\Filter;
 
 Filter::make('created_at')
-    ->schema([DatePicker::make('date')])
+    ->form([DatePicker::make('date')])
     // ...
     ->indicateUsing(function (array $data): ?string {
         if (! $data['date']) {
@@ -105,7 +103,7 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\Indicator;
 
 Filter::make('created_at')
-    ->schema([
+    ->form([
         DatePicker::make('from'),
         DatePicker::make('until'),
     ])

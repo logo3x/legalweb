@@ -2,13 +2,16 @@
 
 namespace Filament\Widgets;
 
-use Filament\Support\Concerns\CanBeLazy;
+use Filament\Support\Components\Attributes\Unexposed;
+use Filament\Support\Concerns\CanBeLazyLoaded;
+use Filament\Widgets\Concerns\CanAuthorizeAccess;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 
 abstract class Widget extends Component
 {
-    use CanBeLazy;
+    use CanAuthorizeAccess;
+    use CanBeLazyLoaded;
 
     protected static bool $isDiscovered = true;
 
@@ -29,11 +32,13 @@ abstract class Widget extends Component
      */
     protected int | string | array $columnStart = [];
 
+    #[Unexposed]
     public static function canView(): bool
     {
         return true;
     }
 
+    #[Unexposed]
     public static function getSort(): int
     {
         return static::$sort ?? -1;
@@ -42,6 +47,7 @@ abstract class Widget extends Component
     /**
      * @return int | string | array<string, int | null>
      */
+    #[Unexposed]
     public function getColumnSpan(): int | string | array
     {
         return $this->columnSpan;
@@ -50,6 +56,7 @@ abstract class Widget extends Component
     /**
      * @return int | string | array<string, int | null>
      */
+    #[Unexposed]
     public function getColumnStart(): int | string | array
     {
         return $this->columnStart;
@@ -63,11 +70,13 @@ abstract class Widget extends Component
         return [];
     }
 
+    #[Unexposed]
     public static function isDiscovered(): bool
     {
         return static::$isDiscovered;
     }
 
+    #[Unexposed]
     public function render(): View
     {
         return view($this->view, $this->getViewData());
@@ -76,6 +85,7 @@ abstract class Widget extends Component
     /**
      * @param  array<string, mixed>  $properties
      */
+    #[Unexposed]
     public static function make(array $properties = []): WidgetConfiguration
     {
         return app(WidgetConfiguration::class, ['widget' => static::class, 'properties' => $properties]);
@@ -84,6 +94,7 @@ abstract class Widget extends Component
     /**
      * @return array<string, mixed>
      */
+    #[Unexposed]
     public function getPlaceholderData(): array
     {
         return [
@@ -95,11 +106,12 @@ abstract class Widget extends Component
     /**
      * @return array<string, mixed>
      */
+    #[Unexposed]
     public static function getDefaultProperties(): array
     {
         $properties = [];
 
-        if (static::isLazy()) {
+        if (static::isLazyLoaded()) {
             $properties['lazy'] = true;
         }
 

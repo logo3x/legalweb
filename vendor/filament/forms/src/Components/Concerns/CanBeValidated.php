@@ -180,6 +180,8 @@ trait CanBeValidated
                         ]) ?? $query;
                     }
 
+                    $query->useWritePdo();
+
                     if (! $query->exists()) {
                         $fail(__($component->getValidationMessages()['exists'] ?? 'validation.exists', ['attribute' => $component->getValidationAttribute()]));
                     }
@@ -217,11 +219,13 @@ trait CanBeValidated
                     ]) ?? $query;
                 }
 
+                $query->useWritePdo();
+
                 if (! $query->exists()) {
                     $fail(__($component->getValidationMessages()['exists'] ?? 'validation.exists', ['attribute' => $component->getValidationAttribute()]));
                 }
             };
-        }, static fn (Field $component, ?string $model): bool => (bool) ($component->evaluate($model) ?? $model));
+        }, static fn (Field $component): bool => (bool) ($component->evaluate($model) ?? $component->getModel()));
 
         return $this;
     }
@@ -248,18 +252,10 @@ trait CanBeValidated
         if (! $condition) {
             $values = null;
         } elseif ($condition instanceof Closure) {
-            $values = fn (Component $component): array | Arrayable | string | Closure | null => $component->evaluate($condition) ? $values : null;
+            $values = fn (Component $component): array | Arrayable | string | null => $component->evaluate($condition) ? $component->evaluate($values) : null;
         }
 
         $this->inValidationRuleValues = $values;
-
-        match ($condition) {
-            true => $this->inValidationRuleValues = $values,
-            false => null,
-            default => $this->inValidationRuleValues = fn (Component $component): array | Arrayable | string | Closure | null => $component->evaluate($condition) ?
-                $values :
-                null,
-        };
 
         return $this;
     }
@@ -625,11 +621,13 @@ trait CanBeValidated
                     ]) ?? $query;
                 }
 
+                $query->useWritePdo();
+
                 if ($query->exists()) {
                     $fail(__($component->getValidationMessages()['unique'] ?? 'validation.unique', ['attribute' => $component->getValidationAttribute()]));
                 }
             };
-        }, fn (Field $component, ?string $model): bool => (bool) ($component->evaluate($model) ?? $model));
+        }, fn (Field $component): bool => (bool) ($component->evaluate($model) ?? $component->getModel()));
 
         return $this;
     }
@@ -693,14 +691,23 @@ trait CanBeValidated
                         return;
                     }
 
-                    $fail(__($validationMessages['distinct.must_be_selected'] ?? 'filament-forms::validation.distinct.must_be_selected', ['attribute' => $component->getValidationAttribute()]));
+                    if ($component->isRequired()) {
+                        $fail(__($validationMessages['distinct.must_be_selected'] ?? 'filament-forms::validation.distinct.must_be_selected', ['attribute' => $component->getValidationAttribute()]));
+                    }
 
                     return;
                 }
 
                 if (is_array($rawState)) {
+                    $normalizeEnumValue = static fn (mixed $value): mixed => ($value instanceof BackedEnum) ? $value->value : $value;
+
+                    $rawState = array_map($normalizeEnumValue, $rawState);
+
                     $hasSiblingStateIntersections = collect($repeaterSiblingState)
-                        ->filter(fn (array $item): bool => filled(array_intersect(data_get($item, $componentItemStatePath, []), $rawState)))
+                        ->filter(fn (array $item): bool => filled(array_intersect(
+                            array_map($normalizeEnumValue, data_get($item, $componentItemStatePath, [])),
+                            $rawState,
+                        )))
                         ->isNotEmpty();
 
                     if (! $hasSiblingStateIntersections) {
@@ -746,6 +753,10 @@ trait CanBeValidated
 
     public function allowHtmlValidationMessages(bool | Closure $condition = true): static
     {
+        // Security: Enabling HTML in validation messages means they are
+        // rendered with `{!! !!}`. If messages include user input
+        // (e.g. via custom rules or placeholders), XSS is possible.
+
         $this->areHtmlValidationMessagesAllowed = $condition;
 
         return $this;
@@ -889,7 +900,7 @@ trait CanBeValidated
     }
 
     /**
-     * @param  array<string, array<string, string>>  $messages
+     * @param  array<string, string>  $messages
      */
     public function dehydrateValidationMessages(array &$messages): void
     {
@@ -1044,8 +1055,9 @@ trait CanBeValidated
             $state = parent::mutateStateForValidation($state);
         }
 
-        // Laravel's `in` validation rule expects state values to be scalar, so we need to convert any
-        // enum objects to their backed values before they are passed to the Laravel validator.
+        // Laravel's `in` validation rule expects state values to be
+        // scalar, so we need to convert any enum objects to their
+        // backed values before passing to the validator.
         if (is_array($state)) {
             foreach ($state as $key => $value) {
                 if ($value instanceof BackedEnum) {

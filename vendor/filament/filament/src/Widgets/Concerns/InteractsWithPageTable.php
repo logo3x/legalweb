@@ -2,6 +2,7 @@
 
 namespace Filament\Widgets\Concerns;
 
+use Filament\Resources\Pages\Page as ResourcePage;
 use Filament\Tables\Contracts\HasTable;
 use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -55,7 +56,7 @@ trait InteractsWithPageTable /** @phpstan-ignore trait.unused */
     #[Reactive] #[Locked]
     public ?Model $parentRecord = null;
 
-    protected HasTable $tablePage;
+    protected HasTable $cachedTablePageInstance;
 
     protected function getTablePage(): string
     {
@@ -72,16 +73,14 @@ trait InteractsWithPageTable /** @phpstan-ignore trait.unused */
 
     protected function getTablePageInstance(): HasTable
     {
-        if (isset($this->tablePage)) {
-            return $this->tablePage;
+        if (isset($this->cachedTablePageInstance)) {
+            return $this->cachedTablePageInstance;
         }
 
-        /** @var HasTable $tableComponent */
+        /** @var HasTable $page */
         $page = app('livewire')->new($this->getTablePage());
 
-        trigger('mount', $page, [], null, null, []);
-
-        foreach ([
+        $properties = [
             'activeTab' => $this->activeTab,
             'paginators' => $this->paginators,
             'parentRecord' => $this->parentRecord,
@@ -92,13 +91,23 @@ trait InteractsWithPageTable /** @phpstan-ignore trait.unused */
             'tableSearch' => $this->tableSearch,
             'tableSort' => $this->tableSort,
             ...$this->getTablePageMountParameters(),
-        ] as $property => $value) {
+        ];
+
+        if ($page instanceof ResourcePage) {
+            $page->parentRecord = $properties['parentRecord'];
+            $page->mountParentRecord();
+            $properties['parentRecord'] = $page->getParentRecord();
+        }
+
+        trigger('mount', $page, [], null, null, []);
+
+        foreach ($properties as $property => $value) {
             $page->{$property} = $value;
         }
 
         $page->bootedInteractsWithTable();
 
-        return $this->tablePage = $page;
+        return $this->cachedTablePageInstance = $page;
     }
 
     protected function getPageTableQuery(): Builder

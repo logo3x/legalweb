@@ -2,6 +2,10 @@
     'navigation',
 ])
 
+@php
+    use Illuminate\Contracts\Support\Htmlable;
+@endphp
+
 <x-filament::tabs
     :attributes="\Filament\Support\prepare_inherited_attributes($attributes)->class(['fi-page-sub-navigation-tabs'])"
 >
@@ -27,8 +31,8 @@
                     @foreach ($navigationGroup->getItems() as $navigationItem)
                         @php
                             $navigationItemBadge = $navigationItem->getBadge();
-                            $navigationItemBadgeColor = $navigationItem->getBadgeColor();
-                            $navigationItemBadgeTooltip = $navigationItem->getBadgeTooltip();
+                            $navigationItemBadgeColor = $navigationItem->getBadgeColor($navigationItemBadge);
+                            $navigationItemBadgeTooltip = $navigationItem->getBadgeTooltip($navigationItemBadge);
                             $navigationItemIcon = $navigationItem->isActive() ? ($navigationItem->getActiveIcon() ?? $navigationItem->getIcon()) : $navigationItem->getIcon();
                             $navigationItemUrl = $navigationItem->getUrl();
                             $shouldNavigationItemOpenUrlInNewTab = $navigationItem->shouldOpenUrlInNewTab();
@@ -47,7 +51,7 @@
                         >
                             {{ $navigationItem->getLabel() }}
 
-                            @if ($navigationItemIcon instanceof \Illuminate\Contracts\Support\Htmlable)
+                            @if ($navigationItemIcon instanceof Htmlable)
                                 <x-slot name="icon">
                                     {{ $navigationItemIcon }}
                                 </x-slot>
@@ -61,8 +65,8 @@
                 @php
                     $isNavigationItemActive = $navigationItem->isActive();
                     $navigationItemBadge = $navigationItem->getBadge();
-                    $navigationItemBadgeColor = $navigationItem->getBadgeColor();
-                    $navigationItemBadgeTooltip = $navigationItem->getBadgeTooltip();
+                    $navigationItemBadgeColor = $navigationItem->getBadgeColor($navigationItemBadge);
+                    $navigationItemBadgeTooltip = $navigationItem->getBadgeTooltip($navigationItemBadge);
                     $navigationItemIcon = $navigationItem->isActive() ? ($navigationItem->getActiveIcon() ?? $navigationItem->getIcon()) : $navigationItem->getIcon();
                     $navigationItemUrl = $navigationItem->getUrl();
                     $shouldNavigationItemOpenUrlInNewTab = $navigationItem->shouldOpenUrlInNewTab();
@@ -82,7 +86,7 @@
                 >
                     {{ $navigationItem->getLabel() }}
 
-                    @if ($navigationItemIcon instanceof \Illuminate\Contracts\Support\Htmlable)
+                    @if ($navigationItemIcon instanceof Htmlable)
                         <x-slot name="icon">
                             {{ $navigationItemIcon }}
                         </x-slot>

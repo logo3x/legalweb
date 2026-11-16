@@ -13,11 +13,17 @@ use Filament\Support\Concerns\HasAlignment;
 use Filament\Support\Concerns\HasDefaultDataFormattingSettings;
 use Filament\Support\Concerns\HasExtraAttributes;
 use Filament\Support\Enums\Alignment;
+use Filament\Support\Enums\IconSize;
+use Filament\Support\Icons\Heroicon;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Js;
 use Illuminate\View\ComponentAttributeBag;
 use Livewire\Component as LivewireComponent;
+use LogicException;
+
+use function Filament\Support\generate_icon_html;
+use function Filament\Support\generate_loading_indicator_html;
 
 class Schema extends ViewComponent implements HasEmbeddedView
 {
@@ -49,6 +55,8 @@ class Schema extends ViewComponent implements HasEmbeddedView
     protected string $evaluationIdentifier = 'schema';
 
     protected string $viewIdentifier = 'schema';
+
+    protected bool | Closure $isLazyLoaded = false;
 
     /**
      * @param  (LivewireComponent & HasSchemas) | null  $livewire
@@ -98,7 +106,6 @@ class Schema extends ViewComponent implements HasEmbeddedView
         }
 
         return match ($parameterType) {
-            static::class, self::class => [$this],
             Model::class, $record::class => [$record],
             default => parent::resolveDefaultClosureDependencyForEvaluationByType($parameterType),
         };
@@ -144,10 +151,49 @@ class Schema extends ViewComponent implements HasEmbeddedView
             ->alignBetween();
     }
 
+    public function lazyLoaded(bool | Closure $condition = true): static
+    {
+        $this->isLazyLoaded = $condition;
+
+        return $this;
+    }
+
+    /**
+     * @deprecated Use `lazyLoaded()` instead.
+     */
+    public function deferLoading(bool | Closure $condition = true): static
+    {
+        return $this->lazyLoaded($condition);
+    }
+
+    public function isLazyLoaded(): bool
+    {
+        return (bool) $this->evaluate($this->isLazyLoaded);
+    }
+
+    /**
+     * @deprecated Use `isLazyLoaded()` instead.
+     */
+    public function isLoadingDeferred(): bool
+    {
+        return $this->isLazyLoaded();
+    }
+
     public function toEmbeddedHtml(): string
+    {
+        return Component::withVisibilityCache(fn (): string => $this->renderEmbeddedHtml());
+    }
+
+    protected function renderEmbeddedHtml(): string
     {
         if ($this->isDirectlyHidden()) {
             return '';
+        }
+
+        $isLazyLoaded = $this->isLazyLoaded();
+
+        if ($isLazyLoaded && (! $this->isLazySchemaLoaded())) {
+            return $this->renderLazyLoadingHtml();
         }
 
         $hasVisibleComponents = false;
@@ -179,9 +225,10 @@ class Schema extends ViewComponent implements HasEmbeddedView
                 fn (ComponentAttributeBag $attributes) => $attributes->grid($this->getColumns()),
             )
             ->merge([
-                'wire:partial' => $this->shouldPartiallyRender() ? ('schema.' . $this->getKey()) : null,
-                'x-data' => $isRoot ? 'filamentSchema({ livewireId: ' . Js::from($this->getLivewire()->getId()) . ' })' : null,
+                'wire:partial' => ($this->shouldPartiallyRender() || $isLazyLoaded) ? ('schema.' . $this->getKey()) : null,
+                'x-data' => $isRoot ? 'filamentSchema({ livewireId: ' . Js::from($this->getLivewire()->getId()) . ', schemaKey: ' . Js::from($this->getKey()) . ' })' : null,
                 'x-on:form-validation-error.window' => $isRoot ? 'handleFormValidationError' : null,
+                'x-on:reset-schema-component-state.window' => $isRoot ? 'handleClientSideStateReset' : null,
             ], escape: false)
             ->class([
                 'fi-sc',
@@ -204,11 +251,83 @@ class Schema extends ViewComponent implements HasEmbeddedView
                 <?php } elseif (! $schemaComponent->isLiberatedFromContainerGrid()) { ?>
                     <?= $schemaComponent->toSchemaHtml(isVisible: $isSchemaComponentVisible) ?>
                 <?php } elseif ($isSchemaComponentVisible) { ?>
-                    <?= $schemaComponent->toHtml() ?>
+                    <div
+                        class="fi-sc-liberated"
+                        wire:key="<?= e($schemaComponent->getLivewireKey()) ?>"
+                        x-data="filamentSchemaComponent(<?= Js::from($schemaComponent->getAlpineScopeConfiguration()) ?>)"
+                    >
+                        <?= $schemaComponent->toHtml() ?>
+                    </div>
                 <?php } ?>
             <?php } ?>
         </div>
 
         <?php return ob_get_clean();
+    }
+
+    /**
+     * @internal This method is not part of the public API and should not be used. Its parameters may change at any time without notice.
+     */
+    protected function isLazySchemaLoaded(): bool
+    {
+        $livewire = $this->getLivewire();
+
+        if (! method_exists($livewire, 'isLazySchemaLoaded')) {
+            throw new LogicException('Lazy schema loading requires the Livewire component to use the [InteractsWithSchemas] trait.');
+        }
+
+        return $livewire->isLazySchemaLoaded($this);
+    }
+
+    /**
+     * @internal This method is not part of the public API and should not be used. Its parameters may change at any time without notice.
+     */
+    protected function renderLazyLoadingHtml(): string
+    {
+        $schemaKey = $this->getKey();
+
+        $attributes = $this->getExtraAttributeBag()
+            ->merge([
+                'wire:partial' => "schema.{$schemaKey}",
+                'x-data' => 'filamentSchema({ livewireId: ' . Js::from($this->getLivewire()->getId()) . ', schemaKey: ' . Js::from($schemaKey) . ', isLazyLoaded: true })',
+                'role' => 'status',
+                'x-bind:role' => "hasSchemaLoadingFailed ? 'alert' : 'status'",
+                'aria-busy' => 'true',
+                'x-bind:aria-busy' => "hasSchemaLoadingFailed ? 'false' : 'true'",
+            ], escape: false)
+            ->class([
+                'fi-sc',
+                'fi-sc-loading',
+            ]);
+
+        ob_start(); ?>
+
+        <div <?= $attributes->toHtml() ?>>
+            <span x-show="! hasSchemaLoadingFailed" class="fi-sc-loading-indicator">
+                <?= generate_loading_indicator_html(size: IconSize::Small)->toHtml() ?>
+
+                <span>
+                    <?= e(__('filament::loading.label')) ?>
+                </span>
+            </span>
+
+            <span x-cloak x-show="hasSchemaLoadingFailed" class="fi-sc-loading-error">
+                <?= generate_icon_html(Heroicon::ExclamationCircle, size: IconSize::Small)->toHtml() ?>
+                <span><?= e(__('filament::loading.error')) ?></span>
+            </span>
+        </div>
+
+        <?php return ob_get_clean();
+    }
+
+    public function dispatchClientSideStateReset(): void
+    {
+        $livewire = $this->getLivewire();
+
+        $livewire->dispatch(
+            'reset-schema-component-state',
+            livewireId: $livewire->getId(),
+            schemaKey: $this->getKey(),
+        );
     }
 }

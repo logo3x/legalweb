@@ -14,7 +14,11 @@ declare(strict_types=1);
 namespace League\Uri\Components;
 
 use BackedEnum;
+use DateTimeImmutable;
+use DateTimeInterface;
+use DateTimeZone;
 use Deprecated;
+use Exception;
 use Iterator;
 use League\Uri\Contracts\QueryInterface;
 use League\Uri\Contracts\UriComponentInterface;
@@ -24,10 +28,12 @@ use League\Uri\Encoder;
 use League\Uri\Exceptions\OffsetOutOfBounds;
 use League\Uri\Exceptions\SyntaxError;
 use League\Uri\KeyValuePair\Converter;
+use League\Uri\Occurrence;
 use League\Uri\QueryComposeMode;
 use League\Uri\QueryExtractMode;
 use League\Uri\QueryString;
 use League\Uri\StringCoercionMode;
+use League\Uri\TypeConverter;
 use League\Uri\UriString;
 use OutOfBoundsException;
 use Psr\Http\Message\UriInterface as Psr7UriInterface;
@@ -56,19 +62,18 @@ use function is_array;
 use function is_int;
 use function is_object;
 use function iterator_to_array;
+use function mb_check_encoding;
+use function mb_convert_encoding;
 use function preg_match;
 use function preg_quote;
 use function preg_replace;
-use function preg_split;
 use function strcmp;
-use function uksort;
+use function usort;
 
 use const ARRAY_FILTER_USE_BOTH;
-use const PREG_SPLIT_NO_EMPTY;
 
 final class Query extends Component implements QueryInterface
 {
-    private const REGEXP_NON_ASCII_PATTERN = '/[^\x20-\x7f]/';
     private const REGXP_FILTER_LIST = '/^
         [^\[\]]+        # base key (no [ or ])
         (?:\[[^\]]*\])+ # one or more bracket groups
@@ -334,6 +339,125 @@ final class Query extends Component implements QueryInterface
         return array_column(array_filter($this->pairs, fn (array $pair): bool => $key === $pair[0]), 1);
     }
 
+    private function getValue(int|string $key, Occurrence $occurrence): ?string
+    {
+        $key = (string) $key;
+
+        return match ($occurrence) {
+            Occurrence::First => $this->first($key),
+            Occurrence::Last => $this->last($key),
+        };
+    }
+
+    public function string(int|string $key, ?string $default = null, Occurrence $occurrence = Occurrence::First): ?string
+    {
+        return TypeConverter::toString($this->getValue($key, $occurrence)) ?? $default;
+    }
+
+    public function strings(int|string $key, ?string $default = null): array
+    {
+        return TypeConverter::toStrings($this->getAll((string) $key), $default);
+    }
+
+    public function integer(int|string $key, ?int $default = null, Occurrence $occurrence = Occurrence::First): ?int
+    {
+        return TypeConverter::toInteger($this->getValue($key, $occurrence)) ?? $default;
+    }
+
+    /**
+     * @return array<int>
+     */
+    public function integers(int|string $key, ?int $default = null): array
+    {
+        return TypeConverter::toIntegers($this->getAll((string) $key), $default);
+    }
+
+    public function float(int|string $key, ?float $default = null, Occurrence $occurrence = Occurrence::First): ?float
+    {
+        return TypeConverter::toFloat($this->getValue($key, $occurrence)) ?? $default;
+    }
+
+    /**
+     * @return array<float>
+     */
+    public function floats(int|string $key, ?float $default = null): array
+    {
+        return TypeConverter::toFloats($this->getAll((string) $key), $default);
+    }
+
+    public function boolean(int|string $key, ?bool $default = null, Occurrence $occurrence = Occurrence::First): ?bool
+    {
+        return TypeConverter::toBoolean($this->get((string) $key)) ?? $default;
+    }
+
+    /**
+     * @return array<bool>
+     */
+    public function booleans(int|string $key, ?bool $default = null): array
+    {
+        return TypeConverter::toBooleans($this->getAll((string) $key), $default);
+    }
+
+    /**
+     * @param class-string<UnitEnum> $enumClass
+     */
+    public function enum(int|string $key, string $enumClass, ?UnitEnum $default = null, Occurrence $occurrence = Occurrence::First): ?UnitEnum
+    {
+        null === $default || $default instanceof $enumClass || throw new ValueError('The default value must be an instance of '.$enumClass.'; '.get_debug_type($default).' given.');
+
+        return TypeConverter::toEnum($this->getValue($key, $occurrence), $enumClass) ?? $default;
+    }
+
+    /**
+     * @param class-string<UnitEnum> $enumClass
+     *
+     * @return array<UnitEnum>
+     */
+    public function enums(int|string $key, string $enumClass, ?UnitEnum $default = null): array
+    {
+        return TypeConverter::toEnums($this->getAll((string) $key), $enumClass, $default);
+    }
+
+    /**
+     * @param non-empty-string $format
+     *
+     * @throws Exception
+     */
+    public function date(
+        int|string $key,
+        string $format,
+        DateTimeZone|string $timezone = 'UTC',
+        ?DateTimeInterface $default = null,
+        Occurrence $occurrence = Occurrence::First
+    ): ?DateTimeImmutable {
+        return TypeConverter::toDateTimeImmutable($this->getValue($key, $occurrence), $format, $timezone) ?? (
+            null !== $default && !$default instanceof DateTimeImmutable
+            ? DateTimeImmutable::createFromInterface($default)
+            : null
+        );
+    }
+
+    /**
+     * @param non-empty-string $format
+     *
+     * @throws Exception
+     *
+     * @return array<DateTimeImmutable>
+     */
+    public function dates(
+        int|string $key,
+        string $format,
+        DateTimeZone|string $timezone = 'UTC',
+        ?DateTimeInterface $default = null,
+    ): array {
+        return TypeConverter::toDateTimeImmutables(
+            values: $this->getAll((string) $key),
+            format: $format,
+            timezone: $timezone,
+            default: $default,
+        );
+    }
+
     public function indexOf(string $key, int $nth = 0): ?int
     {
         if ([] === $this->pairs) {
@@ -475,34 +599,18 @@ final class Query extends Component implements QueryInterface
 
     public function sort(): self
     {
-        $codepoints = fn (?string $str): string => in_array($str, ['', null], true) ? '' : implode('.', array_map(
-            mb_ord(...), /* @phpstan-ignore-line */
-            (array) preg_split(pattern:'//u', subject: $str, flags: PREG_SPLIT_NO_EMPTY)
-        ));
-
-        $compare = fn (string $name1, string $name2): int => match (1) {
-            preg_match(self::REGEXP_NON_ASCII_PATTERN, $name1.$name2) => strcmp($codepoints($name1), $codepoints($name2)),
-            default => strcmp($name1, $name2),
-        };
-
-        $parameters = array_reduce($this->pairs, function (array $carry, array $pair) {
-            $carry[$pair[0]] ??= [];
-            $carry[$pair[0]][] = $pair[1];
-
-            return $carry;
-        }, []);
-
-        uksort($parameters, $compare);
-
-        $pairs = [];
-        foreach ($parameters as $key => $values) {
-            $pairs = [...$pairs, ...array_map(fn ($value) => [$key, $value], $values)];
+        if (2 > count($this->pairs)) {
+            return $this;
         }
 
-        return match ($this->pairs) {
-            $pairs  => $this,
-            default => self::fromPairs($pairs),
-        };
+        $toUtf16 = static fn (string $str): string => mb_check_encoding($str, 'UTF-8')
+            ? mb_convert_encoding($str, 'UTF-16BE', 'UTF-8')
+            : throw new ValueError('The parameter name (hex: '.bin2hex($str).') must contain valid UTF-8 characters.');
+        $parameters = array_map(static fn (array $pair): array => ['pair' => $pair, 'name' => $toUtf16($pair[0])], $this->pairs);
+        usort($parameters, static fn (array $a, array $b): int => strcmp($a['name'], $b['name']));
+        $pairs = array_column($parameters, 'pair');
+
+        return $pairs === $this->pairs ? $this : self::fromPairs($pairs, $this->separator);
     }
 
     public function withoutDuplicates(): self

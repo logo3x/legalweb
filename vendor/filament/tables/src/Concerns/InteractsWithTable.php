@@ -2,6 +2,9 @@
 
 namespace Filament\Tables\Concerns;
 
+use Filament\Facades\Filament;
+use Filament\Support\Components\Attributes\Exposed;
+use Filament\Support\Components\Attributes\Unexposed;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Contracts\View\View;
@@ -9,11 +12,14 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Livewire\WithPagination;
+use ReflectionMethod;
+
+use function Filament\Support\encode_key_segments;
 
 trait InteractsWithTable
 {
+    use CanBeLazyLoaded;
     use CanBeStriped;
-    use CanDeferLoading;
     use CanGroupRecords;
     use CanPaginateRecords;
     use CanPollRecords;
@@ -42,6 +48,7 @@ trait InteractsWithTable
 
     protected bool $shouldMountInteractsWithTable = false;
 
+    #[Unexposed]
     public function bootedInteractsWithTable(): void
     {
         $this->table = $this->table($this->makeTable());
@@ -57,6 +64,8 @@ trait InteractsWithTable
         if (! $this->shouldMountInteractsWithTable) {
             return;
         }
+
+        $this->initialTableRecordsPerPage ??= $this->tableRecordsPerPage ?? 10;
 
         $shouldPersistFiltersInSession = $this->getTable()->persistsFiltersInSession();
         $filtersSessionKey = $this->getTableFiltersSessionKey();
@@ -91,8 +100,24 @@ trait InteractsWithTable
             );
         }
 
-        if ($this->getTable()->isDefaultGroupSelectable()) {
-            $this->tableGrouping = "{$this->getTable()->getDefaultGroup()->getId()}:asc";
+        $shouldPersistGroupInSession = $this->getTable()->persistsGroupInSession();
+        $groupingSessionKey = $this->getTableGroupingSessionKey();
+        $hasPersistedGroupInSession = $shouldPersistGroupInSession && session()->exists($groupingSessionKey);
+
+        if (blank($this->tableGrouping)) {
+            if ($hasPersistedGroupInSession) {
+                $sessionGrouping = session()->get($groupingSessionKey);
+                $this->tableGrouping = is_string($sessionGrouping) ? $sessionGrouping : null;
+            } elseif ($this->getTable()->isDefaultGroupSelectable()) {
+                $this->tableGrouping = "{$this->getTable()->getDefaultGroup()->getId()}:{$this->getTable()->getDefaultGroupDirection()}";
+            }
+        }
+
+        if ($shouldPersistGroupInSession) {
+            session()->put(
+                $groupingSessionKey,
+                $this->tableGrouping,
+            );
         }
 
         $shouldPersistSearchInSession = $this->getTable()->persistsSearchInSession();
@@ -127,8 +152,11 @@ trait InteractsWithTable
         }
 
         $this->tableColumnSearches = $this->castTableColumnSearches(
-            $this->tableColumnSearches ?? [],
+            $this->tableColumnSearches,
         );
+
+        // Seed individually searchable columns named after a JavaScript array property (e.g. `length`), so `$tableColumnSearches` serializes to a JSON object instead of an array and `wire:model` reads the search value rather than the array property.
+        $this->fillReservedTableColumnSearchKeys();
 
         if ($shouldPersistColumnSearchesInSession) {
             session()->put(
@@ -157,20 +185,27 @@ trait InteractsWithTable
         }
 
         if ($this->getTable()->isPaginated()) {
-            $this->tableRecordsPerPage = $this->getDefaultTableRecordsPerPageSelectOption();
+            $this->tableRecordsPerPage ??= $this->getDefaultTableRecordsPerPageSelectOption();
+
+            if ($this->getTable()->enforcesPaginationPageOptions()) {
+                $this->tableRecordsPerPage = $this->getTableRecordsPerPage();
+            }
         }
     }
 
+    #[Unexposed]
     public function mountInteractsWithTable(): void
     {
         $this->shouldMountInteractsWithTable = true;
     }
 
+    #[Unexposed]
     public function table(Table $table): Table
     {
         return $table;
     }
 
+    #[Unexposed]
     public function getTable(): Table
     {
         return $this->table;
@@ -180,8 +215,8 @@ trait InteractsWithTable
     {
         return Table::make($this)
             ->query(fn (): Builder | Relation | null => $this->getTableQuery())
-            ->when($this->getTableActions(), fn (Table $table, array $actions): Table => $table->actions($actions))
-            ->when($this->getTableActionsColumnLabel(), fn (Table $table, string $actionsColumnLabel): Table => $table->actionsColumnLabel($actionsColumnLabel))
+            ->when($this->getTableActions(), fn (Table $table, array $actions): Table => $table->recordActions($actions))
+            ->when($this->getTableActionsColumnLabel(), fn (Table $table, string $actionsColumnLabel): Table => $table->recordActionsColumnLabel($actionsColumnLabel))
             ->when($this->getTableColumns(), fn (Table $table, array $columns): Table => $table->columns($columns))
             ->when(($columnManagerColumns = $this->getTableColumnToggleFormColumns()) !== 1, fn (Table $table): Table => $table->columnManagerColumns($columnManagerColumns))
             ->when($this->getTableColumnToggleFormMaxHeight(), fn (Table $table, string $columnManagerMaxHeight): Table => $table->columnManagerMaxHeight($columnManagerMaxHeight))
@@ -190,7 +225,7 @@ trait InteractsWithTable
             ->when($this->getTableContentFooter(), fn (Table $table, View $contentFooter): Table => $table->contentFooter($contentFooter))
             ->when($this->getTableContentGrid(), fn (Table $table, array $contentGrid): Table => $table->contentGrid($contentGrid))
             ->when($this->getDefaultTableSortColumn(), fn (Table $table, string $defaultSortColumn): Table => $table->defaultSort($defaultSortColumn, $this->getDefaultTableSortDirection()))
-            ->when($this->isTableLoadingDeferred(), fn (Table $table): Table => $table->deferLoading())
+            ->when($this->isTableLoadingDeferred(), fn (Table $table): Table => $table->lazyLoaded())
             ->when($this->getTableDescription(), fn (Table $table, string | Htmlable $description): Table => $table->description($description))
             ->when(! $this->shouldDeselectAllRecordsWhenTableFiltered(), fn (Table $table): Table => $table->deselectAllRecordsWhenFiltered(false))
             ->when($this->getTableEmptyState(), fn (Table $table, View $emptyState): Table => $table->emptyState($emptyState))
@@ -215,7 +250,10 @@ trait InteractsWithTable
             ->when($this->getTablePluralModelLabel(), fn (Table $table, string $pluralModelLabel): Table => $table->pluralModelLabel($pluralModelLabel))
             ->when($this->getTablePollingInterval(), fn (Table $table, string $pollingInterval): Table => $table->poll($pollingInterval))
             ->when($this->getTableRecordAction(), fn (Table $table, string $recordAction): Table => $table->recordAction($recordAction))
-            ->recordTitle(fn (Model $record): ?string => $this->getTableRecordTitle($record))
+            ->when(
+                (new ReflectionMethod($this, 'getTableRecordTitle'))->getFileName() !== (new ReflectionMethod(HasRecords::class, 'getTableRecordTitle'))->getFileName(),
+                fn (Table $table): Table => $table->recordTitle(fn (Model $record): ?string => $this->getTableRecordTitle($record)),
+            )
             ->when($this->getTableReorderColumn(), fn (Table $table, string $reorderColumn): Table => $table->reorderable($reorderColumn))
             ->when($this->shouldSelectCurrentPageOnly(), fn (Table $table): Table => $table->selectCurrentPageOnly())
             ->when($this->isTableStriped(), fn (Table $table): Table => $table->striped());
@@ -226,6 +264,7 @@ trait InteractsWithTable
         return null;
     }
 
+    #[Unexposed]
     public function getIdentifiedTableQueryStringPropertyNameFor(string $property): string
     {
         if (filled($identifier = $this->getTable()->getQueryStringIdentifier())) {
@@ -235,16 +274,37 @@ trait InteractsWithTable
         return $property;
     }
 
+    #[Unexposed]
+    public function getTableSessionKey(string $key, bool $isTenantScoped = false): string
+    {
+        $namespace = $this::class;
+
+        if ($isTenantScoped && class_exists(Filament::class) && filled($tenantKey = Filament::getTenant()?->getKey())) {
+            $namespace = encode_key_segments($namespace, (string) $tenantKey);
+        }
+
+        $table = hash('sha256', $namespace);
+
+        if (filled($identifier = $this->getTable()->getIdentifier())) {
+            $table .= '.' . hash('sha256', $identifier);
+        }
+
+        return "filament.tables.{$table}.{$key}";
+    }
+
+    #[Unexposed]
     public function getActiveTableLocale(): ?string
     {
         return null;
     }
 
+    #[Unexposed]
     public function resetPage(?string $pageName = null): void
     {
         $this->resetLivewirePage($pageName ?? $this->getTablePaginationPageName());
     }
 
+    #[Exposed]
     public function setPage(int | string $page, ?string $pageName = null): void
     {
         $defaultPageName = $this->getTablePaginationPageName();
@@ -284,6 +344,7 @@ trait InteractsWithTable
         }
     }
 
+    #[Unexposed]
     public function resetTable(): void
     {
         $this->bootedInteractsWithTable();

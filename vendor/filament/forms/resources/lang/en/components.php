@@ -4,6 +4,12 @@ return [
 
     'builder' => [
 
+        'reordering' => [
+            'item' => 'Block',
+            'position' => ':label, position :position of :count',
+            'moved' => ':label moved to position :position of :count',
+        ],
+
         'actions' => [
 
             'clone' => [
@@ -104,9 +110,19 @@ return [
 
         ],
 
+        'block_picker' => [
+
+            'no_search_results_message' => 'No blocks match your search.',
+
+            'search_prompt' => 'Search blocks',
+
+        ],
+
     ],
 
     'checkbox_list' => [
+
+        'required_description' => 'Select at least one option.',
 
         'actions' => [
 
@@ -122,9 +138,55 @@ return [
 
     ],
 
+    'color_picker' => [
+
+        'panel_label' => 'Color picker',
+
+    ],
+
+    'date_time_picker' => [
+
+        'month_select' => [
+            'label' => 'Month',
+        ],
+
+        'year_input' => [
+            'label' => 'Year',
+        ],
+
+        'hour_input' => [
+            'label' => 'Hour',
+        ],
+
+        'minute_input' => [
+            'label' => 'Minute',
+        ],
+
+        'second_input' => [
+            'label' => 'Second',
+        ],
+
+    ],
+
     'file_upload' => [
 
+        'placeholder' => 'No files uploaded',
+
+        'actions' => [
+
+            'download' => [
+                'label' => 'Download',
+            ],
+
+            'open' => [
+                'label' => 'Open in new tab',
+            ],
+
+        ],
+
         'editor' => [
+
+            'label' => 'Image editor',
 
             'actions' => [
 
@@ -250,6 +312,10 @@ return [
 
     ],
 
+    'js_field' => [
+        'failed_to_load' => 'This field could not be loaded. Please reload the page to try again.',
+    ],
+
     'key_value' => [
 
         'actions' => [
@@ -262,8 +328,28 @@ return [
                 'label' => 'Delete row',
             ],
 
+            'move_down' => [
+                'label' => 'Move down',
+            ],
+
+            'move_up' => [
+                'label' => 'Move up',
+            ],
+
             'reorder' => [
                 'label' => 'Reorder row',
+            ],
+
+        ],
+
+        'columns' => [
+
+            'actions' => [
+                'label' => 'Actions',
+            ],
+
+            'reorder' => [
+                'label' => 'Reorder',
             ],
 
         ],
@@ -278,6 +364,12 @@ return [
                 'label' => 'Value',
             ],
 
+        ],
+
+        'reordering' => [
+            'row' => 'Row',
+            'position' => ':label, position :position of :count',
+            'moved' => ':label moved to position :position of :count',
         ],
 
     ],
@@ -338,6 +430,24 @@ return [
     ],
 
     'repeater' => [
+
+        'reordering' => [
+            'item' => 'Item',
+            'position' => ':label, position :position of :count',
+            'moved' => ':label moved to position :position of :count',
+        ],
+
+        'columns' => [
+
+            'actions' => [
+                'label' => 'Actions',
+            ],
+
+            'reorder' => [
+                'label' => 'Reorder',
+            ],
+
+        ],
 
         'actions' => [
 
@@ -425,6 +535,10 @@ return [
 
                 ],
 
+            ],
+
+            'close_panel' => [
+                'label' => 'Close panel',
             ],
 
             'custom_block' => [
@@ -548,6 +662,35 @@ return [
 
                         'color' => [
                             'label' => 'Color',
+
+                            'options' => [
+                                'slate' => 'Slate',
+                                'gray' => 'Gray',
+                                'zinc' => 'Zinc',
+                                'neutral' => 'Neutral',
+                                'stone' => 'Stone',
+                                'mauve' => 'Mauve',
+                                'olive' => 'Olive',
+                                'mist' => 'Mist',
+                                'taupe' => 'Taupe',
+                                'red' => 'Red',
+                                'orange' => 'Orange',
+                                'amber' => 'Amber',
+                                'yellow' => 'Yellow',
+                                'lime' => 'Lime',
+                                'green' => 'Green',
+                                'emerald' => 'Emerald',
+                                'teal' => 'Teal',
+                                'cyan' => 'Cyan',
+                                'sky' => 'Sky',
+                                'blue' => 'Blue',
+                                'indigo' => 'Indigo',
+                                'violet' => 'Violet',
+                                'purple' => 'Purple',
+                                'fuchsia' => 'Fuchsia',
+                                'pink' => 'Pink',
+                                'rose' => 'Rose',
+                            ],
                         ],
 
                         'custom_color' => [
@@ -562,6 +705,28 @@ return [
 
         ],
 
+        'custom_blocks' => [
+
+            'actions' => [
+
+                'delete' => [
+                    'label' => 'Delete block',
+                ],
+
+                'edit' => [
+                    'label' => 'Edit block',
+                ],
+
+            ],
+
+            'no_search_results_message' => 'No blocks match your search.',
+
+            'search_label' => 'Search blocks',
+
+            'search_prompt' => 'Search blocks',
+
+        ],
+
         'file_attachments_accepted_file_types_message' => 'Uploaded files must be of type: :values.',
 
         'file_attachments_max_size_message' => 'Uploaded files must not be greater than :max kilobytes.',
@@ -571,8 +736,12 @@ return [
         'mentions' => [
             'no_options_message' => 'No options available.',
             'no_search_results_message' => 'No results match your search.',
-            'search_prompt' => 'Start typing to search...',
+            'search_prompt' => 'Start typing to search',
             'searching_message' => 'Searching...',
+        ],
+
+        'toolbar' => [
+            'label' => 'Editor toolbar',
         ],
 
         'tools' => [
@@ -635,6 +804,10 @@ return [
 
         'actions' => [
 
+            'clear' => [
+                'label' => 'Clear selection',
+            ],
+
             'create_option' => [
 
                 'label' => 'Create',
@@ -679,12 +852,18 @@ return [
 
             ],
 
+            'remove_option' => [
+                'label' => 'Remove :label',
+            ],
+
         ],
 
         'boolean' => [
             'true' => 'Yes',
             'false' => 'No',
         ],
+
+        'error_message' => 'The options could not be loaded. Please try again.',
 
         'loading_message' => 'Loading...',
 
@@ -696,9 +875,13 @@ return [
 
         'placeholder' => 'Select an option',
 
+        'required_description' => 'Select an option.',
+
         'searching_message' => 'Searching...',
 
-        'search_prompt' => 'Start typing to search...',
+        'search_label' => 'Search',
+
+        'search_prompt' => 'Start typing to search',
 
     ],
 
@@ -713,6 +896,10 @@ return [
         ],
 
         'placeholder' => 'New tag',
+
+        'tag_added' => 'Added: :tag',
+
+        'tag_removed' => 'Removed: :tag',
 
     ],
 
@@ -738,6 +925,8 @@ return [
     ],
 
     'toggle_buttons' => [
+
+        'required_description' => 'Select at least one option.',
 
         'boolean' => [
             'true' => 'Yes',

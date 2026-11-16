@@ -11,7 +11,9 @@ class EmailChangeVerificationRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        if (! cache()->has($this->query('signature'))) {
+        $signature = $this->query('signature');
+
+        if ((! cache()->has("filament:auth:email_change:verification:{$signature}")) && (! cache()->has($signature))) {
             return false;
         }
 
@@ -34,20 +36,49 @@ class EmailChangeVerificationRequest extends FormRequest
         return [];
     }
 
-    public function fulfill(): void
+    public function fulfill(): bool
     {
         /** @var Model $user */
         $user = $this->user();
 
-        $user->update([
-            'email' => decrypt($this->route('email')),
-        ]);
+        $newEmail = decrypt($this->route('email'));
 
-        cache()->forget($this->query('signature'));
+        $isEmailTaken = $user::query()
+            ->whereKeyNot($user->getKey())
+            ->where('email', $newEmail)
+            ->useWritePdo()
+            ->exists();
+
+        $signature = $this->query('signature');
+        $cache = cache();
+        $wasPending = false;
+        $wasRemoved = true;
+
+        foreach (["filament:auth:email_change:verification:{$signature}", $signature] as $cacheKey) {
+            if (! $cache->has($cacheKey)) {
+                continue;
+            }
+
+            $wasPending = true;
+
+            if ((! $cache->forget($cacheKey)) && ($cache->get($cacheKey) !== null)) {
+                $wasRemoved = false;
+            }
+        }
+
+        if ($isEmailTaken || (! $wasPending) || (! $wasRemoved)) {
+            return false;
+        }
+
+        $user->update([
+            'email' => $newEmail,
+        ]);
 
         if (method_exists($user, 'markEmailAsVerified')) {
             $user->markEmailAsVerified();
         }
+
+        return true;
     }
 
     public function withValidator(Validator $validator): Validator

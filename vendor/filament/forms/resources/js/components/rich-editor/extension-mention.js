@@ -3,6 +3,7 @@ import { Node as ProseMirrorNode } from '@tiptap/pm/model'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
 import Suggestion from '@tiptap/suggestion'
 import getMentionSuggestion from './mention-suggestion.js'
+import normalizeSearchString from '../../../../../support/resources/js/utilities/normalize-search-string.js'
 
 const getSuggestionOptions = function ({
     editor: tiptapEditor,
@@ -11,12 +12,12 @@ const getSuggestionOptions = function ({
 }) {
     const pluginKey = new PluginKey()
 
-    const triggerChar = overrideSuggestionOptions?.char ?? '@'
+    const triggerCharacter = overrideSuggestionOptions?.triggerCharacter ?? '@'
     const extraAttributes = overrideSuggestionOptions?.extraAttributes ?? {}
 
     return {
         editor: tiptapEditor,
-        char: triggerChar,
+        char: triggerCharacter,
         pluginKey,
         command: ({ editor, range, props }) => {
             const nodeAfter = editor.view.state.selection.$to.nodeAfter
@@ -28,7 +29,7 @@ const getSuggestionOptions = function ({
 
             const mentionAttrs = {
                 ...props,
-                char: triggerChar,
+                char: triggerCharacter,
                 extra: extraAttributes,
             }
 
@@ -70,7 +71,7 @@ export default Node.create({
     addStorage() {
         return {
             suggestions: [],
-            getSuggestionFromChar: () => null,
+            getSuggestionFromTriggerCharacter: () => null,
         }
     },
 
@@ -78,8 +79,8 @@ export default Node.create({
         return {
             HTMLAttributes: {},
             renderText({ node }) {
-                const char = node.attrs.char ?? '@'
-                return `${char}`
+                const triggerCharacter = node.attrs.char ?? '@'
+                return `${triggerCharacter}`
             },
             deleteTriggerWithBackspace: true,
             renderHTML({ options, node }) {
@@ -173,7 +174,7 @@ export default Node.create({
     renderHTML({ node, HTMLAttributes }) {
         const suggestion = this.editor?.extensionStorage?.[
             this.name
-        ]?.getSuggestionFromChar(node?.attrs?.char ?? '@')
+        ]?.getSuggestionFromTriggerCharacter(node?.attrs?.char ?? '@')
 
         const mergedOptions = { ...this.options }
 
@@ -209,7 +210,7 @@ export default Node.create({
             node,
             suggestion: this.editor?.extensionStorage?.[
                 this.name
-            ]?.getSuggestionFromChar(node?.attrs?.char ?? '@'),
+            ]?.getSuggestionFromTriggerCharacter(node?.attrs?.char ?? '@'),
         }
         return this.options.renderText(args)
     },
@@ -239,11 +240,11 @@ export default Node.create({
                     })
 
                     if (isMention) {
-                        const trigger = mentionNode?.attrs?.char ?? '@'
+                        const triggerCharacter = mentionNode?.attrs?.char ?? '@'
                         transaction.insertText(
                             this.options.deleteTriggerWithBackspace
                                 ? ''
-                                : trigger,
+                                : triggerCharacter,
                             mentionPos,
                             mentionPos + mentionNode.nodeSize,
                         )
@@ -256,16 +257,18 @@ export default Node.create({
 
     addProseMirrorPlugins() {
         const hydrateMentions = async (view) => {
+            if (this.editor.isDestroyed) return
+
             const { state, dispatch } = view
             const pending = []
 
-            state.doc.descendants((node, pos) => {
+            state.doc.descendants((node) => {
                 if (node.type.name !== this.name) return
                 if (node.attrs?.label) return
                 const id = node.attrs?.id
-                const char = node.attrs?.char ?? '@'
+                const triggerCharacter = node.attrs?.char ?? '@'
                 if (!id) return
-                pending.push({ id, char, pos })
+                pending.push({ id, triggerCharacter })
             })
 
             if (pending.length === 0) return
@@ -274,22 +277,35 @@ export default Node.create({
             if (typeof getMentionLabelsUsing !== 'function') return
 
             try {
-                const mentions = pending.map(({ id, char }) => ({ id, char }))
-                const labels = await getMentionLabelsUsing(mentions)
+                const labels = await getMentionLabelsUsing(pending)
+                if (this.editor.isDestroyed) return
 
-                pending.forEach(({ id, pos }) => {
-                    const label = labels[id]
-                    if (!label) return
-                    const current = view.state.doc.nodeAt(pos)
-                    if (!current || current.type.name !== this.name) return
-                    const attrs = { ...current.attrs, label }
-                    const transaction = view.state.tr.setNodeMarkup(
-                        pos,
-                        undefined,
-                        attrs,
+                // Positions can now belong to other mentions, or the same mention may have moved.
+                const transaction = view.state.tr
+
+                view.state.doc.descendants((node, position) => {
+                    if (
+                        node.type.name !== this.name ||
+                        node.attrs.label ||
+                        !pending.some(
+                            ({ id, triggerCharacter }) =>
+                                id === node.attrs.id &&
+                                triggerCharacter === (node.attrs.char ?? '@'),
+                        )
                     )
-                    dispatch(transaction)
+                        return
+
+                    const label =
+                        labels[node.attrs.char ?? '@']?.[node.attrs.id]
+                    if (!label) return
+
+                    transaction.setNodeMarkup(position, undefined, {
+                        ...node.attrs,
+                        label,
+                    })
                 })
+
+                if (transaction.docChanged) dispatch(transaction)
             } catch {}
         }
 
@@ -327,7 +343,7 @@ export default Node.create({
             : [this.options.suggestion]
 
         this.storage.suggestions = configured.map((suggestionConfig) => {
-            const char = suggestionConfig?.char ?? '@'
+            const triggerCharacter = suggestionConfig?.triggerCharacter ?? '@'
             const baseItems = suggestionConfig?.items ?? []
             const noOptionsMessage = suggestionConfig?.noOptionsMessage ?? null
             const noSearchResultsMessage =
@@ -336,7 +352,7 @@ export default Node.create({
             const getMentionSearchResultsUsing =
                 this.options.getMentionSearchResultsUsing
 
-            let suggestion = suggestionConfig
+            let suggestion
 
             if (typeof suggestionConfig?.items === 'function') {
                 const originalItems = suggestionConfig.items
@@ -352,7 +368,7 @@ export default Node.create({
                                 const results =
                                     await getMentionSearchResultsUsing(
                                         context?.query,
-                                        char,
+                                        triggerCharacter,
                                     )
 
                                 return toItemsArray(results)
@@ -385,6 +401,7 @@ export default Node.create({
 
                             if (
                                 query &&
+                                isSearchable &&
                                 typeof getMentionSearchResultsUsing ===
                                     'function'
                             ) {
@@ -392,7 +409,7 @@ export default Node.create({
                                     const results =
                                         await getMentionSearchResultsUsing(
                                             query,
-                                            char,
+                                            triggerCharacter,
                                         )
 
                                     return toItemsArray(results)
@@ -403,7 +420,9 @@ export default Node.create({
                                 return items
                             }
 
-                            const searchQuery = String(query).toLowerCase()
+                            const searchQuery = normalizeSearchString(
+                                String(query),
+                            )
 
                             return items.filter((item) => {
                                 const label =
@@ -411,9 +430,9 @@ export default Node.create({
                                         ? item
                                         : (item?.label ?? item?.name ?? '')
 
-                                return String(label)
-                                    .toLowerCase()
-                                    .includes(searchQuery)
+                                return normalizeSearchString(
+                                    String(label),
+                                ).includes(searchQuery)
                             })
                         },
                         isSearchable,
@@ -422,7 +441,7 @@ export default Node.create({
                         searchPrompt,
                         searchingMessage,
                     }),
-                    char,
+                    triggerCharacter,
                     ...(extraAttributes ? { extraAttributes } : {}),
                 }
             }
@@ -434,9 +453,11 @@ export default Node.create({
             })
         })
 
-        this.storage.getSuggestionFromChar = (char) => {
+        this.storage.getSuggestionFromTriggerCharacter = (triggerCharacter) => {
             return (
-                this.storage.suggestions.find((item) => item.char === char) ??
+                this.storage.suggestions.find(
+                    (item) => item.char === triggerCharacter,
+                ) ??
                 this.storage.suggestions[0] ??
                 null
             )

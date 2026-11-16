@@ -5,6 +5,41 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 5.1.4
+
+### Added
+
+- Add the `sunburst` chart type, with stubs and examples (basic, semi-circle and drilldown-based).
+
+### Fixed
+
+- Refresh chart options on every render, so charts driven by reactive/Livewire state no longer keep drawing stale data.
+
+### Changed
+
+- Update Apexcharts to 6.10.0, esbuild to 0.28.2 and npm-check-updates to 23.0.2.
+
+## 5.1.3
+
+### Security
+
+- Add Dependabot updates for npm dependencies with a seven-day cooldown.
+
+## 5.1.2
+
+### Security
+
+- Pin GitHub Actions to immutable commit SHAs.
+- Add Dependabot updates for Composer with a seven-day cooldown.
+- Add a security policy with private vulnerability reporting instructions.
+
+## 5.1.1
+- Extend Testbench support to versions 10 and 11.
+- Update Apexcharts to 5.15.2.
+- Update esbuild to 0.28.1.
+- Simplify the widget render view resolution.
+- Refresh the PHPUnit configuration.
+
 ## 5.1.0
 - Fix for Laravel 13 support.
 - Update Apexcharts 5.10.4.

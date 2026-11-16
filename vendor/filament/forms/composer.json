@@ -1,6 +1,6 @@
 {
     "name": "filament/forms",
-    "description": "Easily add beautiful forms to any Livewire component.",
+    "description": "Build reactive forms with reusable fields and validation for Livewire.",
     "license": "MIT",
     "homepage": "https://github.com/filamentphp/filament",
     "support": {
@@ -14,6 +14,9 @@
         "filament/schemas": "self.version",
         "filament/support": "self.version",
         "ueberdosis/tiptap-php": "^2.0"
+    },
+    "suggest": {
+        "fakerphp/faker": "Required to generate fake rich content and Markdown."
     },
     "autoload": {
         "files": [

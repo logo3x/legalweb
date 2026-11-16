@@ -8,6 +8,8 @@ use Filament\Facades\Filament;
 use Filament\Http\Controllers\RedirectToHomeController;
 use Filament\Http\Controllers\RedirectToTenantController;
 use Filament\Panel;
+use Illuminate\Foundation\Application;
+use Illuminate\Routing\RouteUri;
 use Illuminate\Support\Facades\Route;
 
 Route::name('filament.')
@@ -39,7 +41,7 @@ Route::name('filament.')
 
                             if ($panel->hasPasswordReset()) {
                                 Route::name('password-reset.')
-                                    ->prefix($panel->getResetPasswordRoutePrefix())
+                                    ->prefix($panel->getPasswordResetRoutePrefix())
                                     ->group(function () use ($panel): void {
                                         Route::get($panel->getRequestPasswordResetRouteSlug(), $panel->getRequestPasswordResetRouteAction())
                                             ->name('request');
@@ -77,7 +79,7 @@ Route::name('filament.')
                                             Route::get($panel->getEmailVerificationPromptRouteSlug(), $panel->getEmailVerificationPromptRouteAction())
                                                 ->name('prompt');
                                             Route::get($panel->getEmailVerificationRouteSlug('/{id}/{hash}'), EmailVerificationController::class)
-                                                ->middleware(['signed', 'throttle:6,1'])
+                                                ->middleware(['signed', 'throttle:filament:auth'])
                                                 ->name('verify');
                                         });
                                 }
@@ -87,11 +89,11 @@ Route::name('filament.')
                                         ->prefix($panel->getEmailChangeVerificationRoutePrefix())
                                         ->group(function () use ($panel): void {
                                             Route::get($panel->getEmailChangeVerificationRouteSlug('/{id}/{email}'), EmailChangeVerificationController::class)
-                                                ->middleware(['signed', 'throttle:6,1'])
+                                                ->middleware(['signed', 'throttle:filament:auth'])
                                                 ->name('verify');
 
                                             Route::get($panel->getEmailChangeVerificationRouteSlug('/{id}/{email}/block'), BlockEmailChangeVerificationController::class)
-                                                ->middleware(['signed', 'throttle:6,1'])
+                                                ->middleware(['signed', 'throttle:filament:auth'])
                                                 ->name('block-verification');
                                         });
                                 }
@@ -135,9 +137,17 @@ Route::name('filament.')
                                 }
 
                                 $routeGroup
-                                    ->group(function () use ($panel): void {
+                                    ->group(function () use ($hasTenancy, $panel, $tenantDomain): void {
                                         foreach ($panel->getAuthenticatedTenantRoutes() as $routes) {
                                             $routes($panel);
+                                        }
+
+                                        if (version_compare(Application::VERSION, '13.0.0', '<')) { /** @phpstan-ignore if.alwaysFalse, if.alwaysTrue */
+                                            $route = Route::get('/', RedirectToHomeController::class)->name('home');
+
+                                            if ($hasTenancy && blank($tenantDomain)) {
+                                                $route->fallback();
+                                            }
                                         }
 
                                         Route::name('tenant.')->group(function () use ($panel): void {
@@ -175,12 +185,19 @@ Route::name('filament.')
                                             Filament::setCurrentResourceConfigurationKey(null);
                                         }
 
-                                        $rootUri = preg_replace('/\{(\w+):\w+\}/', '{$1}', trim(Route::getLastGroupPrefix(), '/')) ?: '/';
-                                        $groupStack = Route::getGroupStack();
-                                        $rootKey = (end($groupStack)['domain'] ?? '') . $rootUri;
+                                        if (version_compare(Application::VERSION, '13.0.0', '>=')) { /** @phpstan-ignore if.alwaysTrue, if.alwaysFalse */
+                                            $groupStack = Route::getGroupStack();
+                                            $rootDomain = RouteUri::parse(str_replace(['http://', 'https://'], '', end($groupStack)['domain'] ?? ''))->uri;
+                                            $rootUri = RouteUri::parse(trim(Route::getLastGroupPrefix(), '/') ?: '/')->uri;
+                                            $rootKey = $rootDomain . $rootUri;
 
-                                        if (! isset(Route::getRoutes()->getRoutesByMethod()['GET'][$rootKey])) {
-                                            Route::get('/', RedirectToHomeController::class)->name('home');
+                                            if (! isset(Route::getRoutes()->getRoutesByMethod()['GET'][$rootKey])) {
+                                                $route = Route::get('/', RedirectToHomeController::class)->name('home');
+
+                                                if ($hasTenancy && blank($tenantDomain)) {
+                                                    $route->fallback();
+                                                }
+                                            }
                                         }
                                     });
 

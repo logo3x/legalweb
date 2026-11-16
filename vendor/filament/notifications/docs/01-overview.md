@@ -1,12 +1,10 @@
 ---
 title: Overview
 ---
-import Aside from "@components/Aside.astro"
-import AutoScreenshot from "@components/AutoScreenshot.astro"
 
 ## Introduction
 
-Notifications are sent using a `Notification` object that's constructed through a fluent API. Calling the `send()` method on the `Notification` object will dispatch the notification and display it in your application. As the session is used to flash notifications, they can be sent from anywhere in your code, including JavaScript, not just Livewire components.
+Notifications are sent using a `Notification` object that's constructed through a fluent API. Calling the `send()` method on the `Notification` object will dispatch the notification and display it in your application. Notifications can be sent from PHP or JavaScript, not just Livewire components.
 
 ```php
 <?php
@@ -30,7 +28,7 @@ class EditPost extends Component
 }
 ```
 
-<AutoScreenshot name="notifications/success" alt="Success notification" version="5.x" />
+<AutoScreenshot name="notifications/success" alt="Success notification" />
 
 ## Setting a title
 
@@ -46,9 +44,8 @@ Notification::make()
 
 The title text can contain basic, safe HTML elements. To generate safe HTML with Markdown, you can use the [`Str::markdown()` helper](https://laravel.com/docs/strings#method-str-markdown): `title(Str::markdown('Saved **successfully**'))`
 
-<Aside variant="danger">
-    Filament's built-in HTML sanitizer permits inline `style` attributes in order to support rich text formatting features such as font colors, text highlighting, and image sizing. This means that CSS properties like `background: url(...)` or `position: fixed` will not be stripped from sanitized HTML. If your content comes from untrusted users, you should consider implementing a more restrictive custom sanitizer. See the [security documentation](../advanced/security#html-sanitization) for details on how to customize the sanitizer.
-</Aside>
+> [!CAUTION]
+> Filament's built-in HTML sanitizer permits inline `style` attributes in order to support rich text formatting features such as font colors, text highlighting, and image sizing. This means that CSS properties like `background: url(...)` or `position: fixed` will not be stripped from sanitized HTML. If your content comes from untrusted users, you should consider restricting the default configuration. See the [security documentation](../advanced/security#customizing-the-sanitizer) for details on how to customize the sanitizer.
 
 Or with JavaScript:
 
@@ -82,7 +79,7 @@ new FilamentNotification()
     .send()
 ```
 
-<AutoScreenshot name="notifications/icon" alt="Notification with icon" version="5.x" />
+<AutoScreenshot name="notifications/icon" alt="Notification with icon" />
 
 Notifications often have a status like `success`, `warning`, `danger` or `info`. Instead of manually setting the corresponding [icons](../styling/icons) and [colors](../styling/colors), there's a `status()` method which you can pass the status. You may also use the dedicated `success()`, `warning()`, `danger()` and `info()` methods instead. So, cleaning up the above example would look like this:
 
@@ -104,7 +101,7 @@ new FilamentNotification()
     .send()
 ```
 
-<AutoScreenshot name="notifications/statuses" alt="Notifications with various statuses" version="5.x" />
+<AutoScreenshot name="notifications/statuses" alt="Notifications with various statuses" />
 
 ## Setting a background color
 
@@ -128,7 +125,7 @@ new FilamentNotification()
     .send()
 ```
 
-<AutoScreenshot name="notifications/color" alt="Notification with background color" version="5.x" />
+<AutoScreenshot name="notifications/color" alt="Notification with background color" />
 
 ## Setting a duration
 
@@ -198,6 +195,8 @@ new FilamentNotification()
     .send()
 ```
 
+If a notification contains information or a function that is not available elsewhere on the page, make it persistent so that users can choose when to close it.
+
 ## Setting body text
 
 Additional notification text can be shown in the `body()`:
@@ -224,7 +223,7 @@ new FilamentNotification()
     .send()
 ```
 
-<AutoScreenshot name="notifications/body" alt="Notification with body text" version="5.x" />
+<AutoScreenshot name="notifications/body" alt="Notification with body text" />
 
 ## Adding actions to notifications
 
@@ -263,7 +262,7 @@ new FilamentNotification()
     .send()
 ```
 
-<AutoScreenshot name="notifications/actions" alt="Notification with actions" version="5.x" />
+<AutoScreenshot name="notifications/actions" alt="Notification with actions" />
 
 You can learn more about how to style action buttons [here](../actions/overview).
 
@@ -307,9 +306,8 @@ new FilamentNotification()
     .send()
 ```
 
-<Aside variant="danger">
-    If you are passing user-controlled data to the `url()` method, you should validate that the URL does not use a dangerous scheme such as `javascript:` or `data:`. Failing to do so could expose your application to XSS attacks.
-</Aside>
+> [!CAUTION]
+> If you are passing user-controlled data to the `url()` method, you should validate that the URL does not use a dangerous scheme such as `javascript:` or `data:`. Failing to do so could expose your application to XSS attacks. The simplest way to guard against this is to wrap the value in Filament's [`Str::sanitizeUrl()`](../advanced/security#validating-user-input) helper, which returns `null` for any URL that does not use `http`/`https` (or a relative path).
 
 ### Dispatching Livewire events from notification actions
 
@@ -428,7 +426,7 @@ The JavaScript objects (`FilamentNotification` and `FilamentNotificationAction`)
 You may also import them in a bundled JavaScript file:
 
 ```js
-import { Notification, NotificationAction } from '../../vendor/filament/notifications/dist/index.js'
+import { Notification, Action as NotificationAction } from '../../vendor/filament/notifications/resources/js/notification.js'
 
 // ...
 ```
@@ -445,9 +443,9 @@ use Filament\Notifications\Notification;
 $notification = Notification::make()
     ->title('Hello')
     ->persistent()
-    ->send()
+    ->send();
 
-$notificationId = $notification->getId()
+$notificationId = $notification->getId();
 ```
 
 To close the notification, you can dispatch the event from Livewire:
@@ -498,4 +496,4 @@ Notifications::alignment(Alignment::Start);
 Notifications::verticalAlignment(VerticalAlignment::End);
 ```
 
-<AutoScreenshot name="notifications/positioning" alt="Notification positioned at the bottom start of the page" version="5.x" />
+<AutoScreenshot name="notifications/positioning" alt="Notification positioned at the bottom start of the page" />

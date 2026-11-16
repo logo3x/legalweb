@@ -1,8 +1,6 @@
 ---
 title: Grouping actions
 ---
-import AutoScreenshot from "@components/AutoScreenshot.astro"
-import UtilityInjection from "@components/UtilityInjection.astro"
 
 ## Introduction
 
@@ -19,7 +17,7 @@ ActionGroup::make([
 ])
 ```
 
-<AutoScreenshot name="actions/group/simple" alt="Action group" version="5.x" />
+<AutoScreenshot name="actions/group/simple" alt="Action group" />
 
 This page is about customizing the look of the group's trigger button and dropdown.
 
@@ -41,9 +39,11 @@ ActionGroup::make([
     ->button()
 ```
 
-<AutoScreenshot name="actions/group/customized" alt="Action group with custom trigger style" version="5.x" />
+<AutoScreenshot name="actions/group/customized" alt="Action group with custom trigger style" />
 
-<AutoScreenshot name="tables/actions/group-button" alt="Table with button action group" version="5.x" />
+<AutoScreenshot name="tables/actions/group-button" alt="Table with button action group" />
+
+When you render multiple groups together, use distinct `label()` values so users can distinguish their triggers, including when only icons are visible.
 
 ### Adding a tooltip to the group trigger button
 
@@ -58,7 +58,7 @@ ActionGroup::make([
     ->tooltip('Actions')
 ```
 
-<AutoScreenshot name="tables/actions/group-tooltip" alt="Table with action group tooltip" version="5.x" />
+<AutoScreenshot name="tables/actions/group-tooltip" alt="Table with action group tooltip" />
 
 ### Using a grouped button design
 
@@ -82,7 +82,7 @@ ActionGroup::make([
     ->buttonGroup()
 ```
 
-<AutoScreenshot name="actions/group/button-group" alt="Action group using the button group design" version="5.x" />
+<AutoScreenshot name="actions/group/button-group" alt="Action group using the button group design" />
 
 ## Setting the placement of the dropdown
 
@@ -97,9 +97,9 @@ ActionGroup::make([
     ->dropdownPlacement('top-start')
 ```
 
-<UtilityInjection set="actionGroups" version="5.x">The `dropdownPlacement()` method also accepts a function to dynamically calculate the value. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="actionGroups">The `dropdownPlacement()` method also accepts a function to dynamically calculate the value. You can inject various utilities into the function as parameters.</UtilityInjection>
 
-<AutoScreenshot name="actions/group/placement" alt="Action group with top placement style" version="5.x" />
+<AutoScreenshot name="actions/group/placement" alt="Action group with top placement style" />
 
 Alternatively, you may let the dropdown position be automatically determined based on the available space using the `dropdownAutoPlacement()` method:
 
@@ -129,9 +129,9 @@ ActionGroup::make([
 
 The `dropdown(false)` method puts the actions inside the parent dropdown, instead of a new nested dropdown.
 
-<UtilityInjection set="actionGroups" version="5.x">The `dropdown()` method also accepts a function to dynamically calculate the value. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="actionGroups">The `dropdown()` method also accepts a function to dynamically calculate the value. You can inject various utilities into the function as parameters.</UtilityInjection>
 
-<AutoScreenshot name="actions/group/nested" alt="Action groups nested with dividers" version="5.x" />
+<AutoScreenshot name="actions/group/nested" alt="Action groups nested with dividers" />
 
 ## Setting the width of the dropdown
 
@@ -147,9 +147,9 @@ ActionGroup::make([
     ->dropdownWidth(Width::ExtraSmall)
 ```
 
-<AutoScreenshot name="actions/group/dropdown-width" alt="Action group with custom dropdown width" version="5.x" />
+<AutoScreenshot name="actions/group/dropdown-width" alt="Action group with custom dropdown width" />
 
-<UtilityInjection set="actionGroups" version="5.x">The `dropdownWidth()` method also accepts a function to dynamically calculate the value. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="actionGroups">The `dropdownWidth()` method also accepts a function to dynamically calculate the value. You can inject various utilities into the function as parameters.</UtilityInjection>
 
 ## Controlling the dropdown offset
 
@@ -164,11 +164,11 @@ ActionGroup::make([
     ->dropdownOffset(16)
 ```
 
-<UtilityInjection set="actionGroups" version="5.x">The `dropdownOffset()` method also accepts a function to dynamically calculate the value. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="actionGroups">The `dropdownOffset()` method also accepts a function to dynamically calculate the value. You can inject various utilities into the function as parameters.</UtilityInjection>
 
 ## Controlling the maximum height of the dropdown
 
-The dropdown content can have a maximum height using the `maxHeight()` method, so that it scrolls. You can pass a [CSS length](https://developer.mozilla.org/en-US/docs/Web/CSS/length):
+The dropdown content can have a maximum height using the `dropdownMaxHeight()` method, so that it scrolls. You can pass a [CSS length](https://developer.mozilla.org/en-US/docs/Web/CSS/length):
 
 ```php
 use Filament\Actions\ActionGroup;
@@ -176,7 +176,7 @@ use Filament\Actions\ActionGroup;
 ActionGroup::make([
     // Array of actions
 ])
-    ->maxHeight('400px')
+    ->dropdownMaxHeight('400px')
 ```
 
-<UtilityInjection set="actionGroups" version="5.x">The `maxHeight()` method also accepts a function to dynamically calculate the value. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="actionGroups">The `dropdownMaxHeight()` method also accepts a function to dynamically calculate the value. You can inject various utilities into the function as parameters.</UtilityInjection>

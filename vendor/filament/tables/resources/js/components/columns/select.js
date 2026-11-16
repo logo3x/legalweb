@@ -1,11 +1,13 @@
 import { Select } from '../../../../../support/resources/js/utilities/select.js'
+import editableTableColumn from '../../utilities/editable-table-column.js'
 
 export default function selectTableColumn({
+    accessibilityAttributes,
+    ariaLabel,
     canOptionLabelsWrap,
     canSelectPlaceholder,
-    getOptionLabelUsing,
-    getOptionsUsing,
-    getSearchResultsUsing,
+    clearButtonLabel,
+    errorMessage,
     hasDynamicOptions,
     hasDynamicSearchResults,
     hasInitialNoOptionsMessage,
@@ -15,6 +17,7 @@ export default function selectTableColumn({
     isNative,
     isSearchable,
     loadingMessage,
+    messages,
     name,
     noOptionsMessage,
     noSearchResultsMessage,
@@ -26,33 +29,62 @@ export default function selectTableColumn({
     searchableOptionFields,
     searchDebounce,
     searchingMessage,
+    searchLabel,
     searchPrompt,
     state,
 }) {
-    return {
-        error: undefined,
+    const editableColumn = editableTableColumn({
+        name,
+        recordKey,
+        state,
+        messages,
+    })
 
-        isLoading: false,
+    return {
+        ...editableColumn,
 
         select: null,
-
-        state,
-
-        unsubscribeLivewireHook: null,
 
         init() {
             if (!isNative) {
                 this.select = new Select({
+                    accessibilityAttributes,
+                    ariaLabel,
                     canOptionLabelsWrap,
                     canSelectPlaceholder,
+                    clearButtonLabel,
                     element: this.$refs.select,
-                    getOptionLabelUsing,
-                    getOptionsUsing,
-                    getSearchResultsUsing,
+                    errorMessage,
+                    getOptionLabelUsing: () =>
+                        this.$wire.callTableColumnMethod(
+                            name,
+                            recordKey,
+                            'getOptionLabel',
+                        ),
+                    getOptionsUsing: () =>
+                        Livewire.fireAction(
+                            this.$wire.__instance,
+                            'callTableColumnMethod',
+                            [name, recordKey, 'getOptionsForJs'],
+                            { async: true },
+                        ),
+                    getSearchResultsUsing: (search) =>
+                        Livewire.fireAction(
+                            this.$wire.__instance,
+                            'callTableColumnMethod',
+                            [
+                                name,
+                                recordKey,
+                                'getOptionsSearchResultsForJs',
+                                { search },
+                            ],
+                            { async: true },
+                        ),
                     hasDynamicOptions,
                     hasDynamicSearchResults,
                     hasInitialNoOptionsMessage,
                     initialOptionLabel,
+                    initialState: this.state,
                     isDisabled,
                     isHtmlAllowed,
                     isSearchable,
@@ -60,6 +92,7 @@ export default function selectTableColumn({
                     noOptionsMessage,
                     noSearchResultsMessage,
                     onStateChange: (newState) => {
+                        this.clearError()
                         this.state = newState
                     },
                     options,
@@ -69,44 +102,33 @@ export default function selectTableColumn({
                     searchableOptionFields,
                     searchDebounce,
                     searchingMessage,
+                    searchLabel,
                     searchPrompt,
                     state: this.state,
                 })
+
+                const syncAccessibilityAttributes = () => {
+                    this.select.setAccessibilityAttributes(
+                        this.getAccessibilityAttributes(
+                            accessibilityAttributes,
+                        ),
+                    )
+
+                    this.select.selectButton.setAttribute(
+                        'aria-disabled',
+                        this.isLoading || this.select.isDisabled
+                            ? 'true'
+                            : 'false',
+                    )
+                }
+
+                this.$watch('error', syncAccessibilityAttributes)
+                this.$watch('isLoading', syncAccessibilityAttributes)
             }
 
-            this.unsubscribeLivewireHook = Livewire.interceptMessage(
-                ({ message, onSuccess }) => {
-                    onSuccess(() => {
-                        this.$nextTick(() => {
-                            if (this.isLoading) {
-                                return
-                            }
+            this.initEditableColumn()
 
-                            if (
-                                message.component.id !==
-                                this.$root.closest('[wire\\:id]')?.attributes[
-                                    'wire:id'
-                                ].value
-                            ) {
-                                return
-                            }
-
-                            const serverState = this.getServerState()
-
-                            if (
-                                serverState === undefined ||
-                                this.getNormalizedState() === serverState
-                            ) {
-                                return
-                            }
-
-                            this.state = serverState
-                        })
-                    })
-                },
-            )
-
-            this.$watch('state', async (newState) => {
+            this.$watch('state', (newState) => {
                 if (
                     !isNative &&
                     this.select &&
@@ -116,32 +138,40 @@ export default function selectTableColumn({
                     this.select.updateSelectedDisplay()
                     this.select.renderOptions()
                 }
-
-                const serverState = this.getServerState()
-
-                if (
-                    serverState === undefined ||
-                    this.getNormalizedState() === serverState
-                ) {
-                    return
-                }
-
-                this.isLoading = true
-
-                const response = await this.$wire.updateTableColumnState(
-                    name,
-                    recordKey,
-                    this.state,
-                )
-
-                this.error = response?.error ?? undefined
-
-                if (!this.error && this.$refs.serverState) {
-                    this.$refs.serverState.value = this.getNormalizedState()
-                }
-
-                this.isLoading = false
             })
+        },
+
+        syncServerState() {
+            if (
+                !isNative &&
+                this.select &&
+                this.$refs.serverState?.hasAttribute('data-option-label')
+            ) {
+                const state = this.getServerState()
+                const label = this.$refs.serverState.dataset.optionLabel
+
+                if (this.select.labelRepository[state] !== label) {
+                    this.select.updateOptionLabelInList(state, label)
+
+                    if (this.select.state === state) {
+                        this.select.updateSelectedDisplay()
+                    }
+                }
+            }
+
+            editableColumn.syncServerState.call(this)
+
+            if (
+                !isNative &&
+                this.select &&
+                this.$refs.serverState?.hasAttribute('data-disabled')
+            ) {
+                if (this.$refs.serverState.dataset.disabled === 'true') {
+                    this.select.disable()
+                } else {
+                    this.select.enable()
+                }
+            }
         },
 
         getServerState() {
@@ -157,18 +187,8 @@ export default function selectTableColumn({
                   )
         },
 
-        getNormalizedState() {
-            const state = Alpine.raw(this.state)
-
-            if ([null, undefined].includes(state)) {
-                return ''
-            }
-
-            return state
-        },
-
         destroy() {
-            this.unsubscribeLivewireHook?.()
+            editableColumn.destroy.call(this)
 
             if (this.select) {
                 this.select.destroy()

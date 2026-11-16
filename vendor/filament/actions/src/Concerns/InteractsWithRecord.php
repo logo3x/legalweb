@@ -2,12 +2,17 @@
 
 namespace Filament\Actions\Concerns;
 
+use BackedEnum;
 use Closure;
 use Filament\Actions\Action;
 use Filament\Support\ArrayRecord;
+use Filament\Support\Contracts\HasLabel;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use LogicException;
+use Stringable;
+use UnitEnum;
 
 use function Filament\Support\get_model_label;
 use function Filament\Support\locale_has_pluralization;
@@ -15,7 +20,7 @@ use function Filament\Support\locale_has_pluralization;
 trait InteractsWithRecord
 {
     /**
-     * @var Model | class-string<Model> | array<string, mixed> | Closure | null
+     * @var Model | string | array<string, mixed> | Closure | null
      */
     protected Model | string | array | Closure | null $record = null;
 
@@ -40,6 +45,8 @@ trait InteractsWithRecord
     public function record(Model | string | array | Closure | null $record): static
     {
         $this->record = $record;
+
+        $this->clearVisibilityCache();
 
         return $this;
     }
@@ -160,6 +167,19 @@ trait InteractsWithRecord
             $record = null;
         }
 
+        if (is_array($record)) {
+            $originalRecord = $this->record;
+            $this->record = $record;
+
+            try {
+                $title = $this->getCustomRecordTitle();
+            } finally {
+                $this->record = $originalRecord;
+            }
+
+            return filled($title) ? $title : $this->getDefaultRecordTitle();
+        }
+
         if ($record) {
             if (filled($title = $this->getCustomRecordTitle($record))) {
                 return $title;
@@ -170,6 +190,28 @@ trait InteractsWithRecord
             }
         }
 
+        return $this->getDefaultRecordTitle();
+    }
+
+    protected function formatRecordTitle(mixed $title): ?string
+    {
+        if ($title instanceof HasLabel) {
+            $title = $title->getLabel();
+
+            if (($title instanceof Htmlable) && (! $title instanceof Stringable)) {
+                $title = $title->toHtml();
+            }
+        } elseif ($title instanceof BackedEnum) {
+            $title = $title->value;
+        }
+
+        $title = (string) ($title ?? $this->getTable()?->getModelLabel());
+
+        return filled($title) ? $title : $this->getDefaultRecordTitle();
+    }
+
+    protected function getDefaultRecordTitle(): ?string
+    {
         if ($this instanceof Action && filled($title = $this->getHasActionsLivewire()?->getDefaultActionRecordTitle($this))) {
             return $title;
         }
@@ -211,7 +253,7 @@ trait InteractsWithRecord
         );
 
         if (filled($title)) {
-            return $title;
+            return $title instanceof UnitEnum ? $this->formatRecordTitle($title) : $title;
         }
 
         $titleAttribute = $this->getCustomRecordTitleAttribute();
@@ -224,7 +266,9 @@ trait InteractsWithRecord
             $titleAttribute = str_replace('->', '.', $titleAttribute);
         }
 
-        return data_get($record, $titleAttribute);
+        $title = data_get($record, $titleAttribute);
+
+        return $title instanceof UnitEnum ? $this->formatRecordTitle($title) : $title;
     }
 
     public function getRecordTitleAttribute(): ?string
@@ -313,15 +357,14 @@ trait InteractsWithRecord
         }
 
         $model = $this->getModel();
+        $hasActionsLivewire = ($this instanceof Action) ? $this->getHasActionsLivewire() : null;
 
         if (! $model) {
-            return $this instanceof Action ? $this->getHasActionsLivewire()?->getDefaultActionModelLabel($this) : null;
+            return $hasActionsLivewire?->getDefaultActionModelLabel($this);
         }
 
-        $defaultModel = $this instanceof Action ? $this->getHasActionsLivewire()?->getDefaultActionModel($this) : null;
-
-        if (($this instanceof Action) && ($model === $defaultModel)) {
-            return $this->getHasActionsLivewire()?->getDefaultActionModelLabel($this);
+        if ($hasActionsLivewire && ($model === $hasActionsLivewire->getDefaultActionModel($this))) {
+            return $hasActionsLivewire->getDefaultActionModelLabel($this);
         }
 
         return get_model_label($model);

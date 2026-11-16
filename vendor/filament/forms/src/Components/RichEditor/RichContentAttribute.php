@@ -39,7 +39,7 @@ class RichContentAttribute implements Htmlable
     protected ?array $mentionProviders = null;
 
     /**
-     * @var ?array<class-string<RichContentCustomBlock> | array<string, mixed> | Closure>
+     * @var ?array<class-string<RichContentCustomBlock> | array<int | string, mixed> | Closure>
      */
     protected ?array $customBlocks = null;
 
@@ -51,6 +51,11 @@ class RichContentAttribute implements Htmlable
     protected ?array $textColors = null;
 
     protected bool $hasCustomTextColors = false;
+
+    /**
+     * @var ?array<string>
+     */
+    protected ?array $linkProtocols = null;
 
     public function __construct(protected Model $model, protected string $name) {}
 
@@ -140,6 +145,23 @@ class RichContentAttribute implements Htmlable
         return $this->name;
     }
 
+    public function isEmpty(): bool
+    {
+        if (blank($this->model->getAttribute($this->name))) {
+            return true;
+        }
+
+        $document = $this->getRenderer()->getEditor()->getDocument();
+
+        foreach ($document['content'] ?? [] as $node) {
+            if (($node['type'] !== 'paragraph') || filled($node['content'] ?? [])) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public function toHtml(): string
     {
         $content = $this->model->getAttribute($this->name);
@@ -172,7 +194,8 @@ class RichContentAttribute implements Htmlable
             ->fileAttachmentsDisk($this->getFileAttachmentsDiskName())
             ->fileAttachmentsVisibility($this->getFileAttachmentsVisibility())
             ->fileAttachmentProvider($this->getFileAttachmentProvider())
-            ->textColors($this->getTextColors());
+            ->textColors($this->getTextColors())
+            ->linkProtocols($this->getLinkProtocols());
     }
 
     /**
@@ -229,7 +252,7 @@ class RichContentAttribute implements Htmlable
     }
 
     /**
-     * @param  ?array<class-string<RichContentCustomBlock> | array<string, mixed> | Closure>  $blocks
+     * @param  ?array<class-string<RichContentCustomBlock> | array<class-string<RichContentCustomBlock>> | array<string, mixed> | Closure>  $blocks
      */
     public function customBlocks(?array $blocks): static
     {
@@ -250,10 +273,38 @@ class RichContentAttribute implements Htmlable
         $blocks = [];
 
         foreach ($this->customBlocks as $key => $block) {
-            $blocks[] = is_string($key) ? $key : $block;
+            if (is_string($key) && is_a($key, RichContentCustomBlock::class, allow_string: true)) {
+                // Data association: `BlockClass::class => $data`
+                $blocks[] = $key;
+            } elseif (is_array($block)) {
+                // Group or ungrouped section: `'Label' => [...]` or `[...]`
+                foreach ($block as $innerKey => $innerValue) {
+                    $blocks[] = is_string($innerKey) ? $innerKey : $innerValue;
+                }
+            } else {
+                $blocks[] = $block;
+            }
         }
 
         return $blocks;
+    }
+
+    /**
+     * @deprecated Use `getCustomBlocksConfiguration()` instead.
+     *
+     * @return array<class-string<RichContentCustomBlock> | array<class-string<RichContentCustomBlock>>>
+     */
+    public function getCustomBlocksConfig(): array
+    {
+        return $this->getCustomBlocksConfiguration();
+    }
+
+    /**
+     * @return array<class-string<RichContentCustomBlock> | array<class-string<RichContentCustomBlock>>>
+     */
+    public function getCustomBlocksConfiguration(): array
+    {
+        return $this->customBlocks ?? [];
     }
 
     public function json(bool $condition = true): static
@@ -301,5 +352,23 @@ class RichContentAttribute implements Htmlable
     public function hasCustomTextColors(): bool
     {
         return $this->hasCustomTextColors;
+    }
+
+    /**
+     * @param  ?array<string>  $protocols
+     */
+    public function linkProtocols(?array $protocols): static
+    {
+        $this->linkProtocols = $protocols;
+
+        return $this;
+    }
+
+    /**
+     * @return ?array<string>
+     */
+    public function getLinkProtocols(): ?array
+    {
+        return $this->linkProtocols;
     }
 }

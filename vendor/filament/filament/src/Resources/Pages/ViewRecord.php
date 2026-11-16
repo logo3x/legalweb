@@ -13,6 +13,7 @@ use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\EmbeddedSchema;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
+use Filament\Support\Components\Attributes\Unexposed;
 use Filament\Support\Facades\FilamentIcon;
 use Filament\Support\Icons\Heroicon;
 use Filament\View\PanelsIconAlias;
@@ -38,6 +39,7 @@ class ViewRecord extends Page
      */
     public ?array $data = [];
 
+    #[Unexposed]
     public static function getNavigationIcon(): string | BackedEnum | Htmlable | null
     {
         return static::$navigationIcon
@@ -45,12 +47,14 @@ class ViewRecord extends Page
             ?? Heroicon::OutlinedEye;
     }
 
+    #[Unexposed]
     public function getBreadcrumb(): string
     {
         return static::$breadcrumb ?? __('filament-panels::resources/pages/view-record.breadcrumb');
     }
 
-    public static function getNavigationLabel(): string
+    #[Unexposed]
+    public static function getNavigationLabel(): string | Htmlable
     {
         if (filled(static::$navigationLabel)) {
             return static::$navigationLabel;
@@ -59,11 +63,13 @@ class ViewRecord extends Page
         return __('filament-panels::resources/pages/view-record.navigation_label');
     }
 
+    #[Unexposed]
     public function getContentTabLabel(): ?string
     {
         return __('filament-panels::resources/pages/view-record.content.tab.label');
     }
 
+    #[Unexposed]
     public function mount(int | string $record): void
     {
         $this->record = $this->resolveRecord($record);
@@ -77,7 +83,13 @@ class ViewRecord extends Page
 
     protected function authorizeAccess(): void
     {
-        abort_unless(static::getResource()::canView($this->getRecord()), 403);
+        static::getResource()::authorizeView($this->getRecord());
+    }
+
+    #[Unexposed]
+    public function hydrate(): void
+    {
+        $this->authorizeAccess();
     }
 
     protected function hasInfolist(): bool
@@ -113,6 +125,7 @@ class ViewRecord extends Page
     /**
      * @param  array<string>  $statePaths
      */
+    #[Unexposed]
     public function refreshFormData(array $statePaths): void
     {
         $this->form->fillPartially(
@@ -127,9 +140,15 @@ class ViewRecord extends Page
      */
     protected function mutateFormDataBeforeFill(array $data): array
     {
+        // Security: All non-`$hidden` model attributes are sent to the
+        // browser via Livewire. Override this to `unset()` sensitive
+        // attributes (API keys, etc.) that should not be exposed
+        // to client-side JavaScript.
+
         return $data;
     }
 
+    #[Unexposed]
     public function getDefaultActionSchemaResolver(Action $action): ?Closure
     {
         return match (true) {
@@ -139,6 +158,7 @@ class ViewRecord extends Page
         };
     }
 
+    #[Unexposed]
     public function getTitle(): string | Htmlable
     {
         if (filled(static::$title)) {
@@ -150,6 +170,7 @@ class ViewRecord extends Page
         ]);
     }
 
+    #[Unexposed]
     public function defaultForm(Schema $schema): Schema
     {
         if (! $schema->hasCustomColumns()) {
@@ -164,11 +185,13 @@ class ViewRecord extends Page
             ->statePath('data');
     }
 
+    #[Unexposed]
     public function form(Schema $schema): Schema
     {
         return static::getResource()::form($schema);
     }
 
+    #[Unexposed]
     public function defaultInfolist(Schema $schema): Schema
     {
         if (! $schema->hasCustomColumns()) {
@@ -180,16 +203,19 @@ class ViewRecord extends Page
             ->record($this->getRecord());
     }
 
+    #[Unexposed]
     public function infolist(Schema $schema): Schema
     {
         return static::getResource()::infolist($schema);
     }
 
+    #[Unexposed]
     public static function shouldRegisterNavigation(array $parameters = []): bool
     {
         return parent::shouldRegisterNavigation($parameters) && static::getResource()::canView($parameters['record']);
     }
 
+    #[Unexposed]
     public function content(Schema $schema): Schema
     {
         if ($this->hasCombinedRelationManagerTabsWithContent()) {
@@ -208,16 +234,19 @@ class ViewRecord extends Page
             ]);
     }
 
+    #[Unexposed]
     public function getFormContentComponent(): Component
     {
         return EmbeddedSchema::make('form');
     }
 
+    #[Unexposed]
     public function getInfolistContentComponent(): Component
     {
         return EmbeddedSchema::make('infolist');
     }
 
+    #[Unexposed]
     public function getContentTabComponent(): Tab
     {
         return $this->getBaseContentTabComponent()
@@ -231,6 +260,7 @@ class ViewRecord extends Page
     /**
      * @return array<string>
      */
+    #[Unexposed]
     public function getPageClasses(): array
     {
         return [
@@ -240,6 +270,7 @@ class ViewRecord extends Page
         ];
     }
 
+    #[Unexposed]
     public function getDefaultTestingSchemaName(): ?string
     {
         return $this->hasInfolist() ? 'infolist' : parent::getDefaultTestingSchemaName();
@@ -248,6 +279,7 @@ class ViewRecord extends Page
     /**
      * @return TModel
      */
+    #[Unexposed]
     public function getRecord(): Model
     {
         return $this->getBaseRecord();

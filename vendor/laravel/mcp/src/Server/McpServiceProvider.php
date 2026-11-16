@@ -4,15 +4,21 @@ declare(strict_types=1);
 
 namespace Laravel\Mcp\Server;
 
+use Illuminate\Contracts\Http\Kernel as HttpKernelContract;
+use Illuminate\Foundation\Http\Kernel as HttpKernel;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Mcp\Client\ClientManager;
 use Laravel\Mcp\Console\Commands\InspectorCommand;
+use Laravel\Mcp\Console\Commands\MakeAppResourceCommand;
 use Laravel\Mcp\Console\Commands\MakePromptCommand;
 use Laravel\Mcp\Console\Commands\MakeResourceCommand;
 use Laravel\Mcp\Console\Commands\MakeServerCommand;
 use Laravel\Mcp\Console\Commands\MakeToolCommand;
 use Laravel\Mcp\Console\Commands\StartCommand;
 use Laravel\Mcp\Request;
+use Laravel\Mcp\Server\Middleware\AddAuthorizationFramingHeaders;
+use Laravel\Mcp\Server\Middleware\AddWwwAuthenticateHeader;
 
 class McpServiceProvider extends ServiceProvider
 {
@@ -20,19 +26,36 @@ class McpServiceProvider extends ServiceProvider
     {
         $this->app->singleton(Registrar::class, fn (): Registrar => new Registrar);
 
+        $this->app->singleton(ClientManager::class, fn (): ClientManager => new ClientManager);
+
+        $this->app->singleton('mcp.sdk', fn (): string => (string) file_get_contents(__DIR__.'/../../resources/js/mcp-sdk.min.js'));
+
         $this->mergeConfigFrom(__DIR__.'/../../config/mcp.php', 'mcp');
     }
 
     public function boot(): void
     {
         $this->registerMcpScope();
+        $this->registerGlobalMiddleware();
         $this->registerRoutes();
         $this->registerContainerCallbacks();
+        $this->registerClientDisconnect();
+        $this->registerViews();
 
         if ($this->app->runningInConsole()) {
             $this->registerCommands();
             $this->registerPublishing();
         }
+    }
+
+    protected function registerGlobalMiddleware(): void
+    {
+        $this->callAfterResolving(HttpKernelContract::class, function (mixed $kernel): void {
+            if ($kernel instanceof HttpKernel) {
+                $kernel->pushMiddleware(AddWwwAuthenticateHeader::class);
+                $kernel->pushMiddleware(AddAuthorizationFramingHeaders::class);
+            }
+        });
     }
 
     protected function registerPublishing(): void
@@ -43,6 +66,7 @@ class McpServiceProvider extends ServiceProvider
 
         $this->publishes([
             __DIR__.'/../../resources/views/mcp/authorize.blade.php' => resource_path('views/mcp/authorize.blade.php'),
+            __DIR__.'/../../resources/views/mcp/components/app.blade.php' => resource_path('views/vendor/mcp/components/app.blade.php'),
         ], 'mcp-views');
 
         $this->publishes([
@@ -50,6 +74,8 @@ class McpServiceProvider extends ServiceProvider
             __DIR__.'/../../stubs/mcp-resource.stub' => base_path('stubs/mcp-resource.stub'),
             __DIR__.'/../../stubs/mcp-server.stub' => base_path('stubs/mcp-server.stub'),
             __DIR__.'/../../stubs/mcp-tool.stub' => base_path('stubs/mcp-tool.stub'),
+            __DIR__.'/../../stubs/mcp-app-resource.stub' => base_path('stubs/mcp-app-resource.stub'),
+            __DIR__.'/../../stubs/mcp-app-resource.view.stub' => base_path('stubs/mcp-app-resource.view.stub'),
         ], 'mcp-stubs');
 
         $this->publishes([
@@ -80,8 +106,16 @@ class McpServiceProvider extends ServiceProvider
                 $currentRequest = $app->make('mcp.request');
 
                 $request->setArguments($currentRequest->all());
-                $request->setSessionId($currentRequest->sessionId());
                 $request->setMeta($currentRequest->meta());
+            }
+        });
+    }
+
+    protected function registerClientDisconnect(): void
+    {
+        $this->app->terminating(function (): void {
+            if ($this->app->resolved(ClientManager::class)) {
+                $this->app->make(ClientManager::class)->disconnectAll();
             }
         });
     }
@@ -94,8 +128,14 @@ class McpServiceProvider extends ServiceProvider
             MakeToolCommand::class,
             MakePromptCommand::class,
             MakeResourceCommand::class,
+            MakeAppResourceCommand::class,
             InspectorCommand::class,
         ]);
+    }
+
+    protected function registerViews(): void
+    {
+        $this->loadViewsFrom(__DIR__.'/../../resources/views/mcp', 'mcp');
     }
 
     protected function registerMcpScope(): void

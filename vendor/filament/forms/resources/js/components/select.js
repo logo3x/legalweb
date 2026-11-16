@@ -3,13 +3,12 @@ import { Select } from '../../../../support/resources/js/utilities/select.js'
 export default function selectFormComponent({
     canOptionLabelsWrap,
     canSelectPlaceholder,
-    getOptionLabelUsing,
-    getOptionLabelsUsing,
-    getOptionsUsing,
-    getSearchResultsUsing,
+    clearButtonLabel,
+    errorMessage,
     hasDynamicOptions,
     hasDynamicSearchResults,
     hasInitialNoOptionsMessage,
+    id,
     initialOptionLabel,
     initialOptionLabels,
     initialState,
@@ -29,8 +28,10 @@ export default function selectFormComponent({
     optionsLimit,
     placeholder,
     position,
+    removeButtonLabel,
     searchDebounce,
     searchingMessage,
+    searchLabel,
     searchPrompt,
     searchableOptionFields,
     state,
@@ -39,20 +40,45 @@ export default function selectFormComponent({
     return {
         select: null,
 
+        accessibilityObserver: null,
+
         state,
 
         init() {
             this.select = new Select({
                 canOptionLabelsWrap,
                 canSelectPlaceholder,
+                clearButtonLabel,
                 element: this.$refs.select,
-                getOptionLabelUsing,
-                getOptionLabelsUsing,
-                getOptionsUsing,
-                getSearchResultsUsing,
+                errorMessage,
+                getOptionLabelUsing: () =>
+                    this.$callSchemaComponentMethod(
+                        'getOptionLabel',
+                        {},
+                        { async: true },
+                    ),
+                getOptionLabelsUsing: () =>
+                    this.$callSchemaComponentMethod(
+                        'getOptionLabelsForJs',
+                        {},
+                        { async: true },
+                    ),
+                getOptionsUsing: () =>
+                    this.$callSchemaComponentMethod(
+                        'getOptionsForJs',
+                        {},
+                        { async: true },
+                    ),
+                getSearchResultsUsing: (search) =>
+                    this.$callSchemaComponentMethod(
+                        'getSearchResultsForJs',
+                        { search },
+                        { async: true },
+                    ),
                 hasDynamicOptions,
                 hasDynamicSearchResults,
                 hasInitialNoOptionsMessage,
+                id,
                 initialOptionLabel,
                 initialOptionLabels,
                 initialState,
@@ -75,13 +101,33 @@ export default function selectFormComponent({
                 optionsLimit,
                 placeholder,
                 position,
+                removeButtonLabel,
                 searchableOptionFields,
                 searchDebounce,
                 searchingMessage,
+                searchLabel,
                 searchPrompt,
                 state: this.state,
                 statePath,
             })
+
+            const attributesElement = this.$el.previousElementSibling
+            if (attributesElement?.hasAttribute('data-select-accessibility')) {
+                const syncAccessibility = () =>
+                    this.select?.setAccessibilityAttributes(
+                        JSON.parse(
+                            attributesElement.dataset.selectAccessibility,
+                        ),
+                    )
+                syncAccessibility()
+                this.accessibilityObserver = new MutationObserver(
+                    syncAccessibility,
+                )
+                this.accessibilityObserver.observe(attributesElement, {
+                    attributes: true,
+                    attributeFilter: ['data-select-accessibility'],
+                })
+            }
 
             this.$watch('state', (newState) => {
                 this.$nextTick(() => {
@@ -95,6 +141,7 @@ export default function selectFormComponent({
         },
 
         destroy() {
+            this.accessibilityObserver?.disconnect()
             if (this.select) {
                 this.select.destroy()
                 this.select = null

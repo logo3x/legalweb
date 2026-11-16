@@ -11,6 +11,8 @@ use Laravel\Boost\Install\Enums\McpInstallationStrategy;
 use Laravel\Boost\Install\Enums\Platform;
 use Laravel\Boost\Install\Mcp\FileWriter;
 use Laravel\Boost\Install\Mcp\TomlFileWriter;
+use Laravel\Boost\Support\CommandNormalizer;
+use Symfony\Component\Process\Exception\ProcessSignaledException;
 
 abstract class Agent
 {
@@ -30,7 +32,7 @@ abstract class Agent
 
     public function getPhpPath(bool $forceAbsolutePath = false): string
     {
-        $phpBinaryPath = config('boost.executable_paths.php') ?? 'php';
+        $phpBinaryPath = config('boost.executable_paths.php') ?: 'php';
 
         if ($phpBinaryPath === 'php' && ($this->useAbsolutePathForMcp() || $forceAbsolutePath)) {
             return PHP_BINARY;
@@ -224,7 +226,11 @@ abstract class Agent
             trim($envString),
         ], $shellCommand);
 
-        $result = Process::run($command);
+        try {
+            $result = Process::run($command);
+        } catch (ProcessSignaledException) {
+            return false;
+        }
 
         if ($result->successful()) {
             return true;
@@ -270,19 +276,7 @@ abstract class Agent
      */
     protected function normalizeCommand(string $command, array $args = []): array
     {
-        if (str_starts_with($command, '/') || preg_match('#^[a-zA-Z]:[/\\\\]#', $command)) {
-            return [
-                'command' => $command,
-                'args' => $args,
-            ];
-        }
-
-        $parts = str($command)->explode(' ');
-
-        return [
-            'command' => $parts->first(),
-            'args' => $parts->skip(1)->values()->merge($args)->all(),
-        ];
+        return CommandNormalizer::normalize($command, $args);
     }
 
     /**

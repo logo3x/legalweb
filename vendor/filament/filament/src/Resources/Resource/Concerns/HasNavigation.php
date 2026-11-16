@@ -68,11 +68,12 @@ trait HasNavigation
 
         return [
             NavigationItem::make(static::getNavigationLabel())
+                ->key(static::class)
                 ->group(static::getNavigationGroup())
                 ->parentItem(static::getNavigationParentItem())
                 ->icon(static::getNavigationIcon())
                 ->activeIcon(static::getActiveNavigationIcon())
-                ->isActiveWhen(fn (): bool => original_request()->routeIs($activeRoutePattern))
+                ->activeWhen(fn (): bool => original_request()->routeIs($activeRoutePattern))
                 ->badge(static::getNavigationBadge(), color: static::getNavigationBadgeColor())
                 ->badgeTooltip(static::getNavigationBadgeTooltip())
                 ->sort(static::getNavigationSort())
@@ -136,7 +137,7 @@ trait HasNavigation
         return static::$activeNavigationIcon ?? static::getNavigationIcon();
     }
 
-    public static function getNavigationLabel(): string
+    public static function getNavigationLabel(): string | Htmlable
     {
         return static::$navigationLabel ?? static::getTitleCasePluralModelLabel();
     }
@@ -181,6 +182,10 @@ trait HasNavigation
 
     public static function shouldRegisterNavigation(): bool
     {
+        // Security: Hiding a resource from navigation does NOT prevent
+        // direct URL access. Use resource authorization (Model
+        // Policies) to control who can access pages.
+
         return static::$shouldRegisterNavigation;
     }
 

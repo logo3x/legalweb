@@ -5,17 +5,24 @@ namespace Filament\Schemas\Concerns;
 use Closure;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
+use Filament\Forms\Components\BaseFileUpload;
+use Filament\Forms\Components\Concerns\HasFileAttachments;
+use Filament\Forms\Components\Field;
 use Filament\Schemas\Components\Component;
 use Filament\Schemas\Schema;
-use Filament\Support\Components\Attributes\ExposedLivewireMethod;
+use Filament\Support\Components\Attributes\Exposed;
+use Filament\Support\Components\Attributes\Unexposed;
 use Filament\Support\Contracts\TranslatableContentDriver;
 use Filament\Support\Livewire\Partials\PartialsComponentHook;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\Renderless;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
+use LogicException;
+use ReflectionAttribute;
 use ReflectionMethod;
 use ReflectionNamedType;
 
@@ -44,6 +51,17 @@ trait InteractsWithSchemas
     public array $discoveredSchemaNames = [];
 
     /**
+     * @var array<string, bool>
+     */
+    #[Locked]
+    public array $loadedLazySchemas = [];
+
+    /**
+     * @var array<string, Schema>
+     */
+    protected array $renderedLazySchemas = [];
+
+    /**
      * @var array<string, ?Schema>
      */
     protected array $cachedSchemas = [];
@@ -52,6 +70,13 @@ trait InteractsWithSchemas
 
     protected ?Schema $currentlyValidatingSchema = null;
 
+    #[Unexposed]
+    public function renderingInteractsWithSchemas(): void
+    {
+        $this->renderedLazySchemas = [];
+    }
+
+    #[Unexposed]
     public function isCachingSchemas(): bool
     {
         return $this->isCachingSchemas;
@@ -60,8 +85,13 @@ trait InteractsWithSchemas
     /**
      * @param  array<string, mixed>  $arguments
      */
+    #[Exposed]
     public function callSchemaComponentMethod(string $componentKey, string $method, array $arguments = []): mixed
     {
+        // Security: This method is callable from the frontend and dispatches
+        // to `#[Exposed]` methods on schema components.
+        // Only methods marked with that attribute are allowed.
+
         $component = $this->getSchemaComponent($componentKey);
 
         if (! $component) {
@@ -74,12 +104,12 @@ trait InteractsWithSchemas
 
         $methodReflection = new ReflectionMethod($component, $method);
 
-        if (! $methodReflection->getAttributes(ExposedLivewireMethod::class)) {
+        if (! $methodReflection->getAttributes(Exposed::class, ReflectionAttribute::IS_INSTANCEOF)) {
             return null;
         }
 
         if ($methodReflection->getAttributes(Renderless::class)) {
-            $this->skipRender();
+            app(PartialsComponentHook::class)->skipPartialRender($this);
         } else {
             $schema = $component->getContainer();
             $schemaToPartiallyRender = null;
@@ -102,19 +132,154 @@ trait InteractsWithSchemas
         return $component->{$method}(...$arguments);
     }
 
+    #[Exposed]
     public function partiallyRenderSchemaComponent(string $componentKey): void
     {
         $this->getSchemaComponent($componentKey)?->partiallyRender();
     }
 
     /**
+     * @internal Do not use this method outside the internals of Filament. It is subject to breaking changes in minor and patch releases.
+     */
+    #[Exposed]
+    public function loadLazySchema(string $schemaKey): void
+    {
+        if ($this->loadedLazySchemas[$schemaKey] ?? false) {
+            app(PartialsComponentHook::class)->skipPartialRender($this);
+
+            return;
+        }
+
+        $rootSchema = $this->getSchema((string) str($schemaKey)->before('.'));
+
+        if (! $rootSchema) {
+            app(PartialsComponentHook::class)->skipPartialRender($this);
+
+            return;
+        }
+
+        $findSchema = function (Schema $schema) use (&$findSchema, $schemaKey): ?Schema {
+            if ($schema->isHidden()) {
+                return null;
+            }
+
+            if (($schema->getKey() === $schemaKey) && $schema->isLazyLoaded()) {
+                return $schema;
+            }
+
+            foreach ($schema->getComponents(withActions: false) as $component) {
+                $componentInheritanceKey = $component->getInheritanceKey();
+
+                if (
+                    filled($componentInheritanceKey) &&
+                    ($componentInheritanceKey !== $schemaKey) &&
+                    (! str_starts_with($schemaKey, "{$componentInheritanceKey}."))
+                ) {
+                    continue;
+                }
+
+                foreach ($component->getChildSchemas() as $childSchema) {
+                    $childSchemaKey = $childSchema->getKey();
+
+                    if (
+                        filled($childSchemaKey) &&
+                        ($childSchemaKey !== $schemaKey) &&
+                        (! str_starts_with($schemaKey, "{$childSchemaKey}."))
+                    ) {
+                        continue;
+                    }
+
+                    if ($foundSchema = $findSchema($childSchema)) {
+                        return $foundSchema;
+                    }
+                }
+            }
+
+            return null;
+        };
+
+        $schema = $findSchema($rootSchema);
+
+        if (! $schema) {
+            app(PartialsComponentHook::class)->skipPartialRender($this);
+
+            return;
+        }
+
+        $this->loadedLazySchemas[$schemaKey] = true;
+
+        app(PartialsComponentHook::class)->renderPartial($this, fn (): array => [
+            "schema.{$schemaKey}" => function () use ($schema, $schemaKey): string {
+                $html = $schema->toHtml();
+
+                if (filled($html)) {
+                    return $html;
+                }
+
+                return '<div wire:partial="' . e("schema.{$schemaKey}") . '" hidden></div>';
+            },
+        ]);
+    }
+
+    /**
+     * @internal Do not use this method outside the internals of Filament. It is subject to breaking changes in minor and patch releases.
+     */
+    #[Unexposed]
+    public function isLazySchemaLoaded(Schema $schema): bool
+    {
+        $schemaKey = $schema->getKey();
+
+        if (blank($schemaKey) || ($schemaKey === $schema->getParentComponent()?->getContainer()->getKey())) {
+            throw new LogicException('A lazy-loaded schema must have a unique key. Set a key on its parent component or on the schema itself.');
+        }
+
+        if (isset($this->renderedLazySchemas[$schemaKey])) {
+            throw new LogicException("Multiple lazy-loaded schemas are using the key [{$schemaKey}]. Set a unique key on each lazy-loaded schema.");
+        }
+
+        $this->renderedLazySchemas[$schemaKey] = $schema;
+
+        if ($this->loadedLazySchemas[$schemaKey] ?? false) {
+            return true;
+        }
+
+        $errorKeys = array_keys($this->getErrorBag()->getMessages());
+
+        if ($errorKeys === []) {
+            return false;
+        }
+
+        foreach ($schema->getFlatComponents(withActions: false, withHidden: true) as $component) {
+            $componentStatePath = $component->getStatePath();
+
+            if (blank($componentStatePath)) {
+                continue;
+            }
+
+            foreach ($errorKeys as $errorKey) {
+                if (($errorKey !== $componentStatePath) && (! str_starts_with($errorKey, "{$componentStatePath}."))) {
+                    continue;
+                }
+
+                $this->loadedLazySchemas[$schemaKey] = true;
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * @return class-string<TranslatableContentDriver> | null
      */
+    #[Unexposed]
     public function getFilamentTranslatableContentDriver(): ?string
     {
         return null;
     }
 
+    #[Unexposed]
     public function makeFilamentTranslatableContentDriver(): ?TranslatableContentDriver
     {
         $driver = $this->getFilamentTranslatableContentDriver();
@@ -126,16 +291,19 @@ trait InteractsWithSchemas
         return app($driver, ['activeLocale' => $this->getActiveSchemaLocale() ?? app()->getLocale()]);
     }
 
+    #[Unexposed]
     public function getActiveSchemaLocale(): ?string
     {
         return null;
     }
 
+    #[Unexposed]
     public function getOldSchemaState(string $statePath): mixed
     {
         return data_get($this->oldSchemaState, $statePath);
     }
 
+    #[Unexposed]
     public function updatingInteractsWithSchemas(string $statePath): void
     {
         $statePath = (string) str($statePath)->before('.');
@@ -143,6 +311,7 @@ trait InteractsWithSchemas
         $this->oldSchemaState[$statePath] ??= data_get($this, $statePath);
     }
 
+    #[Unexposed]
     public function updatedInteractsWithSchemas(string $statePath): void
     {
         if (app()->runningUnitTests() && $this->areSchemaStateUpdateHooksDisabledForTesting) {
@@ -154,6 +323,7 @@ trait InteractsWithSchemas
         }
     }
 
+    #[Exposed]
     public function disableSchemaStateUpdateHooksForTesting(): void
     {
         if (! app()->runningUnitTests()) {
@@ -165,6 +335,7 @@ trait InteractsWithSchemas
         $this->skipRender();
     }
 
+    #[Exposed]
     public function enableSchemaStateUpdateHooksForTesting(): void
     {
         if (! app()->runningUnitTests()) {
@@ -179,6 +350,7 @@ trait InteractsWithSchemas
     /**
      * @param  array<Component>  $skipComponentsChildContainersWhileSearching
      */
+    #[Unexposed]
     public function getSchemaComponent(string $key, bool $withHidden = false, array $skipComponentsChildContainersWhileSearching = []): Component | Action | ActionGroup | null
     {
         if (! str($key)->contains('.')) {
@@ -203,7 +375,8 @@ trait InteractsWithSchemas
                 return $this->cachedSchemas[$name] = $schema->key($name);
             }
 
-            // If null was explicitly passed as the schema, unset the cached schema.
+            // If null was explicitly passed as the schema,
+            // unset the cached schema.
             if (func_num_args() === 2) {
                 unset($this->cachedSchemas[$name]);
 
@@ -250,11 +423,13 @@ trait InteractsWithSchemas
                     $this->discoveredSchemaNames[] = $name;
                 }
 
+                $schema = $this->{$methodName}();
+
                 if (method_exists($this, 'default' . ucfirst($name))) {
-                    $this->{'default' . ucfirst($name)}($schema);
+                    $schema = $this->{'default' . ucfirst($name)}($schema);
                 }
 
-                return $this->cachedSchemas[$name] = ($this->{$methodName}())->key($name);
+                return $this->cachedSchemas[$name] = $schema->key($name);
             }
 
             $typeReflection = $parameterReflection->getType();
@@ -311,6 +486,7 @@ trait InteractsWithSchemas
         return array_key_exists($name, $this->getCachedSchemas());
     }
 
+    #[Unexposed]
     public function getSchema(string $name): ?Schema
     {
         if ($this->hasCachedSchema($name)) {
@@ -323,6 +499,7 @@ trait InteractsWithSchemas
     /**
      * @return array<string, ?Schema>
      */
+    #[Unexposed]
     public function getCachedSchemas(): array
     {
         if (! $this->isCachingSchemas) {
@@ -344,6 +521,7 @@ trait InteractsWithSchemas
      * @param  array<string, string>  $attributes
      * @return array<string, mixed>
      */
+    #[Unexposed]
     public function validate($rules = null, $messages = [], $attributes = []): array
     {
         try {
@@ -365,6 +543,7 @@ trait InteractsWithSchemas
      * @param  array<string, string>  $dataOverrides
      * @return array<string, mixed>
      */
+    #[Unexposed]
     public function validateOnly($field, $rules = null, $messages = [], $attributes = [], $dataOverrides = [])
     {
         try {
@@ -400,6 +579,7 @@ trait InteractsWithSchemas
     /**
      * @return array<string, array<mixed>>
      */
+    #[Unexposed]
     public function getRules(): array
     {
         $rules = parent::getRules();
@@ -434,6 +614,7 @@ trait InteractsWithSchemas
     /**
      * @param  array<mixed>  $state
      */
+    #[Exposed]
     public function fillFormDataForTesting(array $state = [], ?string $schemaStatePath = null): void
     {
         if (! app()->runningUnitTests()) {
@@ -466,12 +647,12 @@ trait InteractsWithSchemas
     protected function unsetMissingNumericArrayKeys(array &$target, array $state, string $currentStatePath, ?string $schemaStatePath = null): void
     {
         foreach ($target as $key => $value) {
-            $currentStatePath .= ".{$key}";
+            $keyStatePath = "{$currentStatePath}.{$key}";
 
             if (
                 (is_numeric($key) || array_is_list($state)) &&
                 (! array_key_exists($key, $state)) &&
-                str($currentStatePath)->startsWith($schemaStatePath)
+                str($keyStatePath)->startsWith($schemaStatePath)
             ) {
                 unset($target[$key]);
 
@@ -479,18 +660,107 @@ trait InteractsWithSchemas
             }
 
             if (is_array($value) && is_array($state[$key] ?? null)) {
-                $this->unsetMissingNumericArrayKeys($target[$key], $state[$key], $currentStatePath, $schemaStatePath);
+                $this->unsetMissingNumericArrayKeys($target[$key], $state[$key], $keyStatePath, $schemaStatePath);
             }
         }
     }
 
+    #[Unexposed]
     public function currentlyValidatingSchema(?Schema $schema): void
     {
         $this->currentlyValidatingSchema = $schema;
     }
 
+    #[Unexposed]
     public function getDefaultTestingSchemaName(): ?string
     {
         return array_key_first($this->getCachedSchemas());
+    }
+
+    #[Unexposed]
+    public function handleFileUploadValidationError(string $name): void
+    {
+        $statePath = str_starts_with($name, 'componentFileAttachments.')
+            ? substr($name, strlen('componentFileAttachments.'))
+            : $name;
+
+        $component = $this->getSchemaComponentForFileUpload($statePath)
+            ?? $this->getSchemaComponentForFileUpload((string) str($statePath)->beforeLast('.'));
+
+        if (! $component instanceof Field) {
+            return;
+        }
+
+        $validationAttribute = $component->getValidationAttribute();
+        $errorBag = $this->getErrorBag();
+
+        foreach ($errorBag->messages() as $attribute => $attributeMessages) {
+            if (($attribute !== $name) && ! str_starts_with($attribute, "{$name}.")) {
+                continue;
+            }
+
+            $errorBag->forget($attribute);
+
+            foreach ($attributeMessages as $message) {
+                $errorBag->add($attribute, strtr($message, [
+                    Str::upper($attribute) => Str::upper($validationAttribute),
+                    Str::ucfirst($attribute) => Str::ucfirst($validationAttribute),
+                    $attribute => $validationAttribute,
+                ]));
+            }
+        }
+    }
+
+    #[Unexposed]
+    public function isFileUploadForSchemaComponent(string $name): bool
+    {
+        if (str_starts_with($name, 'componentFileAttachments.')) {
+            $name = substr($name, strlen('componentFileAttachments.'));
+        }
+
+        if ($this->getSchemaComponentForFileUpload($name) !== null) {
+            return true;
+        }
+
+        $lastDotPosition = strrpos($name, '.');
+
+        if ($lastDotPosition === false) {
+            return false;
+        }
+
+        return $this->getSchemaComponentForFileUpload(substr($name, 0, $lastDotPosition)) !== null;
+    }
+
+    protected function getSchemaComponentForFileUpload(string $statePath): ?Component
+    {
+        foreach ($this->getCachedSchemas() as $schema) {
+            if (! $schema instanceof Schema) {
+                continue;
+            }
+
+            foreach ($schema->getFlatComponents() as $component) {
+                if (! $component instanceof Field) {
+                    continue;
+                }
+
+                if ($component->getStatePath() !== $statePath) {
+                    continue;
+                }
+
+                if ($component instanceof BaseFileUpload) {
+                    return $component;
+                }
+
+                if (
+                    in_array(HasFileAttachments::class, class_uses_recursive($component), strict: true) &&
+                    method_exists($component, 'hasFileAttachments') &&
+                    $component->hasFileAttachments()
+                ) {
+                    return $component;
+                }
+            }
+        }
+
+        return null;
     }
 }

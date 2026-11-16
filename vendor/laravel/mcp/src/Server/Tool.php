@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Laravel\Mcp\Server;
 
+use Illuminate\Container\Container;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\JsonSchema\JsonSchema as JsonSchemaFactory;
+use Laravel\Mcp\Server\Attributes\RendersApp;
 use Laravel\Mcp\Server\Concerns\HasAnnotations;
 use Laravel\Mcp\Server\Tools\Annotations\ToolAnnotation;
+use Laravel\Mcp\Server\Ui\Enums\Visibility;
 
 abstract class Tool extends Primitive
 {
@@ -48,13 +51,16 @@ abstract class Tool extends Primitive
      *     description?: string|null,
      *     inputSchema?: array<string, mixed>,
      *     outputSchema?: array<string, mixed>,
-     *     annotations?: array<string, mixed>|object,
+     *     annotations?: array<string, mixed>,
      *     _meta?: array<string, mixed>
      * }
      */
     public function toArray(): array
     {
-        $annotations = $this->annotations();
+        $annotations = [
+            'title' => $this->title(),
+            ...$this->annotations(),
+        ];
 
         $schema = JsonSchemaFactory::object(
             $this->schema(...),
@@ -71,15 +77,27 @@ abstract class Tool extends Primitive
             'title' => $this->title(),
             'description' => $this->description(),
             'inputSchema' => $schema,
-            'annotations' => $annotations === [] ? (object) [] : $annotations,
+            'annotations' => $annotations,
         ];
 
         if (isset($outputSchema['properties'])) {
             $result['outputSchema'] = $outputSchema;
         }
 
+        $rendersApp = $this->resolveAttribute(RendersApp::class);
+
+        if ($rendersApp !== null) {
+            /** @var AppResource $appResource */
+            $appResource = Container::getInstance()->make($rendersApp->resource);
+
+            $this->setMeta('ui', [
+                'resourceUri' => $appResource->uri(),
+                'visibility' => array_map(fn (Visibility $visiblity) => $visiblity->value, $rendersApp->visibility),
+            ]);
+        }
+
         // @phpstan-ignore return.type
-        return $this->mergeMeta($result);
+        return $this->mergeMeta($this->mergeIcons($result));
     }
 
     /**

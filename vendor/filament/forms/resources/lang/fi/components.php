@@ -4,6 +4,12 @@ return [
 
     'builder' => [
 
+        'reordering' => [
+            'item' => 'Lohko',
+            'position' => ':label, sijainti :position / :count',
+            'moved' => ':label siirretty kohtaan :position / :count',
+        ],
+
         'actions' => [
 
             'clone' => [
@@ -104,9 +110,19 @@ return [
 
         ],
 
+        'block_picker' => [
+
+            'no_search_results_message' => 'Haun perusteella ei löytynyt lohkoja.',
+
+            'search_prompt' => 'Hae lohkoja',
+
+        ],
+
     ],
 
     'checkbox_list' => [
+
+        'required_description' => 'Valitse vähintään yksi vaihtoehto.',
 
         'actions' => [
 
@@ -122,9 +138,55 @@ return [
 
     ],
 
+    'color_picker' => [
+
+        'panel_label' => 'Värinpoimija',
+
+    ],
+
+    'date_time_picker' => [
+
+        'month_select' => [
+            'label' => 'Kuukausi',
+        ],
+
+        'year_input' => [
+            'label' => 'Vuosi',
+        ],
+
+        'hour_input' => [
+            'label' => 'Tunti',
+        ],
+
+        'minute_input' => [
+            'label' => 'Minuutti',
+        ],
+
+        'second_input' => [
+            'label' => 'Sekuntti',
+        ],
+
+    ],
+
     'file_upload' => [
 
+        'placeholder' => 'Ei ladattuja tiedostoja',
+
+        'actions' => [
+
+            'download' => [
+                'label' => 'Lataa',
+            ],
+
+            'open' => [
+                'label' => 'Avaa uudessa välilehdessä',
+            ],
+
+        ],
+
         'editor' => [
+
+            'label' => 'Kuvan muokkaus',
 
             'actions' => [
 
@@ -262,8 +324,28 @@ return [
                 'label' => 'Poista rivi',
             ],
 
+            'move_down' => [
+                'label' => 'Siirrä alas',
+            ],
+
+            'move_up' => [
+                'label' => 'Siirrä ylös',
+            ],
+
             'reorder' => [
                 'label' => 'Järjestele rivi',
+            ],
+
+        ],
+
+        'columns' => [
+
+            'actions' => [
+                'label' => 'Toiminnot',
+            ],
+
+            'reorder' => [
+                'label' => 'Uudelleenjärjestä',
             ],
 
         ],
@@ -278,6 +360,12 @@ return [
                 'label' => 'Arvo',
             ],
 
+        ],
+
+        'reordering' => [
+            'row' => 'Rivi',
+            'position' => ':label, sijainti :position / :count',
+            'moved' => ':label siirretty kohtaan :position / :count',
         ],
 
     ],
@@ -338,6 +426,24 @@ return [
     ],
 
     'repeater' => [
+
+        'reordering' => [
+            'item' => 'Kohde',
+            'position' => ':label, sijainti :position / :count',
+            'moved' => ':label siirretty kohtaan :position / :count',
+        ],
+
+        'columns' => [
+
+            'actions' => [
+                'label' => 'Toiminnot',
+            ],
+
+            'reorder' => [
+                'label' => 'Uudelleenjärjestä',
+            ],
+
+        ],
 
         'actions' => [
 
@@ -425,6 +531,10 @@ return [
 
                 ],
 
+            ],
+
+            'close_panel' => [
+                'label' => 'Sulje paneeli',
             ],
 
             'custom_block' => [
@@ -548,6 +658,35 @@ return [
 
                         'color' => [
                             'label' => 'Väri',
+
+                            'options' => [
+                                'slate' => 'Liuskekivi',
+                                'gray' => 'Harmaa',
+                                'zinc' => 'Sinkki',
+                                'neutral' => 'Neutraali',
+                                'stone' => 'Kivi',
+                                'mauve' => 'Malva',
+                                'olive' => 'Oliivi',
+                                'mist' => 'Sumu',
+                                'taupe' => 'Ruskeanharmaa',
+                                'red' => 'Punainen',
+                                'orange' => 'Oranssi',
+                                'amber' => 'Meripihka',
+                                'yellow' => 'Keltainen',
+                                'lime' => 'Lime',
+                                'green' => 'Vihreä',
+                                'emerald' => 'Smaragdi',
+                                'teal' => 'Sinivihreä',
+                                'cyan' => 'Syaani',
+                                'sky' => 'Taivas',
+                                'blue' => 'Sininen',
+                                'indigo' => 'Indigo',
+                                'violet' => 'Violetti',
+                                'purple' => 'Purppura',
+                                'fuchsia' => 'Fuksia',
+                                'pink' => 'Pinkki',
+                                'rose' => 'Ruusu',
+                            ],
                         ],
 
                         'custom_color' => [
@@ -559,6 +698,28 @@ return [
                 ],
 
             ],
+
+        ],
+
+        'custom_blocks' => [
+
+            'actions' => [
+
+                'delete' => [
+                    'label' => 'Poista lohko',
+                ],
+
+                'edit' => [
+                    'label' => 'Muokkaa lohkoa',
+                ],
+
+            ],
+
+            'no_search_results_message' => 'Haun perusteella ei löytynyt lohkoja.',
+
+            'search_label' => 'Hae lohkoja',
+
+            'search_prompt' => 'Hae lohkoja',
 
         ],
 
@@ -574,6 +735,11 @@ return [
             'search_prompt' => 'Aloita kirjoittaminen hakeaksesi...',
             'searching_message' => 'Haetaan...',
         ],
+
+        'toolbar' => [
+            'label' => 'Muokkauspalkki',
+        ],
+
         'tools' => [
             'align_center' => 'Keskitä',
             'align_end' => 'Tasaa oikealle',
@@ -588,9 +754,12 @@ return [
             'code_block' => 'Koodialue',
             'custom_blocks' => 'Lohkot',
             'details' => 'Lisätiedot',
-            'h1' => 'Pääotsikko',
-            'h2' => 'Otsikko',
-            'h3' => 'Aliotsikko',
+            'h1' => 'Otsikko',
+            'h2' => 'Otsikko 2',
+            'h3' => 'Otsikko 3',
+            'h4' => 'Otsikko 4',
+            'h5' => 'Otsikko 5',
+            'h6' => 'Otsikko 6',
             'grid' => 'Ruudukko',
             'grid_delete' => 'Poista ruudukko',
             'highlight' => 'Korostus',
@@ -600,6 +769,7 @@ return [
             'link' => 'Linkki',
             'merge_tags' => 'Yhdistä tunniste',
             'ordered_list' => 'Luettelo',
+            'paragraph' => 'Kappale',
             'redo' => 'Toista',
             'small' => 'Pieni teksti',
             'strike' => 'Yliviivaus',
@@ -629,6 +799,10 @@ return [
     'select' => [
 
         'actions' => [
+
+            'clear' => [
+                'label' => 'Tyhjennä valinta',
+            ],
 
             'create_option' => [
 
@@ -674,12 +848,18 @@ return [
 
             ],
 
+            'remove_option' => [
+                'label' => 'Poista :label',
+            ],
+
         ],
 
         'boolean' => [
             'true' => 'Kyllä',
             'false' => 'Ei',
         ],
+
+        'error_message' => 'Valintoja ei voitu ladata. Yritä uudelleen.',
 
         'loading_message' => 'Ladataan...',
 
@@ -691,7 +871,11 @@ return [
 
         'placeholder' => 'Valitse vaihtoehto',
 
+        'required_description' => 'Valitse vaihtoehto.',
+
         'searching_message' => 'Haetaan...',
+
+        'search_label' => 'Haku',
 
         'search_prompt' => 'Kirjoita hakeaksesi...',
 
@@ -708,6 +892,10 @@ return [
         ],
 
         'placeholder' => 'Uusi tunniste',
+
+        'tag_added' => 'Lisätty: :tag',
+
+        'tag_removed' => 'Poistettu: :tag',
 
     ],
 
@@ -733,6 +921,8 @@ return [
     ],
 
     'toggle_buttons' => [
+
+        'required_description' => 'Valitse vähintään yksi vaihtoehto.',
 
         'boolean' => [
             'true' => 'Kyllä',

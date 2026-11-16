@@ -18,7 +18,10 @@ use function preg_match;
 use function preg_quote;
 use function preg_replace;
 use function sprintf;
+use function strlen;
+use function strpos;
 use function strtr;
+use function substr;
 use PHPUnit\Framework\Exception as FrameworkException;
 use SebastianBergmann\Diff\Differ;
 use SebastianBergmann\Diff\Output\UnifiedDiffOutputBuilder;
@@ -115,22 +118,48 @@ final class StringMatchesFormatDescription extends Constraint
 
     private function regularExpressionForFormatDescription(string $string): string
     {
+        $quoted      = '';
+        $startOffset = 0;
+        $length      = strlen($string);
+
+        while ($startOffset < $length) {
+            $start = strpos($string, '%r', $startOffset);
+
+            if ($start !== false) {
+                $end = strpos($string, '%r', $start + 2);
+
+                if ($end === false) {
+                    $end = $start = $length;
+                }
+            } else {
+                $start = $end = $length;
+            }
+
+            $quoted .= preg_quote(substr($string, $startOffset, $start - $startOffset), '/');
+
+            if ($end > $start) {
+                $quoted .= '(' . substr($string, $start + 2, $end - $start - 2) . ')';
+            }
+
+            $startOffset = $end + 2;
+        }
+
         $string = strtr(
-            preg_quote($string, '/'),
+            $quoted,
             [
-                '%%' => '%',
-                '%e' => preg_quote(DIRECTORY_SEPARATOR, '/'),
-                '%s' => '[^\r\n]+',
-                '%S' => '[^\r\n]*',
-                '%a' => '.+?',
-                '%A' => '.*?',
-                '%w' => '\s*',
-                '%i' => '[+-]?\d+',
-                '%d' => '\d+',
-                '%x' => '[0-9a-fA-F]+',
-                '%f' => '[+-]?(?:\d+|(?=\.\d))(?:\.\d+)?(?:[Ee][+-]?\d+)?',
-                '%c' => '.',
-                '%0' => '\x00',
+                '%%' => '%', // A literal percent character
+                '%e' => preg_quote(DIRECTORY_SEPARATOR, '/'), // a directory separator
+                '%s' => '[^\r\n]+', // One or more of anything except the end of line character
+                '%S' => '[^\r\n]*', // Zero or more of anything except the end of line character
+                '%a' => '.+?', // One or more of anything including the end of line character
+                '%A' => '.*?', // Zero or more of anything including the end of line character
+                '%w' => '\s*', // Zero or more white space characters
+                '%i' => '[+-]?\d+', // A signed integer value
+                '%d' => '\d+', // An unsigned integer value
+                '%x' => '[0-9a-fA-F]+', // One or more hexadecimal character
+                '%f' => '[+-]?(?:\d+|(?=\.\d))(?:\.\d+)?(?:[Ee][+-]?\d+)?', // A floating point number
+                '%c' => '.', // A single character of any sort
+                '%0' => '\x00', // A null byte
             ],
         );
 

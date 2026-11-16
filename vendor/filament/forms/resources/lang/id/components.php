@@ -4,6 +4,12 @@ return [
 
     'builder' => [
 
+        'reordering' => [
+            'item' => 'Blok',
+            'position' => ':label, posisi :position dari :count',
+            'moved' => ':label dipindahkan ke posisi :position dari :count',
+        ],
+
         'actions' => [
 
             'clone' => [
@@ -104,9 +110,19 @@ return [
 
         ],
 
+        'block_picker' => [
+
+            'no_search_results_message' => 'Tidak ada blok yang sesuai dengan pencarian Anda.',
+
+            'search_prompt' => 'Cari blok',
+
+        ],
+
     ],
 
     'checkbox_list' => [
+
+        'required_description' => 'Pilih minimal satu opsi.',
 
         'actions' => [
 
@@ -122,9 +138,55 @@ return [
 
     ],
 
+    'color_picker' => [
+
+        'panel_label' => 'Pemilih warna',
+
+    ],
+
+    'date_time_picker' => [
+
+        'month_select' => [
+            'label' => 'Bulan',
+        ],
+
+        'year_input' => [
+            'label' => 'Tahun',
+        ],
+
+        'hour_input' => [
+            'label' => 'Jam',
+        ],
+
+        'minute_input' => [
+            'label' => 'Menit',
+        ],
+
+        'second_input' => [
+            'label' => 'Detik',
+        ],
+
+    ],
+
     'file_upload' => [
 
+        'placeholder' => 'Belum ada berkas yang diunggah',
+
+        'actions' => [
+
+            'download' => [
+                'label' => 'Unduh',
+            ],
+
+            'open' => [
+                'label' => 'Buka pada tab baru',
+            ],
+
+        ],
+
         'editor' => [
+
+            'label' => 'Editor gambar',
 
             'actions' => [
 
@@ -250,6 +312,10 @@ return [
 
     ],
 
+    'js_field' => [
+        'failed_to_load' => 'Field ini tidak dapat dimuat. Silakan muat ulang halaman untuk mencoba lagi.',
+    ],
+
     'key_value' => [
 
         'actions' => [
@@ -262,8 +328,28 @@ return [
                 'label' => 'Hapus baris',
             ],
 
+            'move_down' => [
+                'label' => 'Turunkan',
+            ],
+
+            'move_up' => [
+                'label' => 'Naikkan',
+            ],
+
             'reorder' => [
                 'label' => 'Ubah urutan baris',
+            ],
+
+        ],
+
+        'columns' => [
+
+            'actions' => [
+                'label' => 'Tindakan',
+            ],
+
+            'reorder' => [
+                'label' => 'Ubah urutan',
             ],
 
         ],
@@ -278,6 +364,12 @@ return [
                 'label' => 'Nilai',
             ],
 
+        ],
+
+        'reordering' => [
+            'row' => 'Baris',
+            'position' => ':label, posisi :position dari :count',
+            'moved' => ':label dipindahkan ke posisi :position dari :count',
         ],
 
     ],
@@ -338,6 +430,24 @@ return [
     ],
 
     'repeater' => [
+
+        'reordering' => [
+            'item' => 'Item',
+            'position' => ':label, posisi :position dari :count',
+            'moved' => ':label dipindahkan ke posisi :position dari :count',
+        ],
+
+        'columns' => [
+
+            'actions' => [
+                'label' => 'Tindakan',
+            ],
+
+            'reorder' => [
+                'label' => 'Ubah urutan',
+            ],
+
+        ],
 
         'actions' => [
 
@@ -425,6 +535,10 @@ return [
 
                 ],
 
+            ],
+
+            'close_panel' => [
+                'label' => 'Tutup panel',
             ],
 
             'custom_block' => [
@@ -548,6 +662,35 @@ return [
 
                         'color' => [
                             'label' => 'Warna',
+
+                            'options' => [
+                                'slate' => 'Slate',
+                                'gray' => 'Abu-abu',
+                                'zinc' => 'Zinc',
+                                'neutral' => 'Netral',
+                                'stone' => 'Stone',
+                                'mauve' => 'Mauve',
+                                'olive' => 'Olive',
+                                'mist' => 'Mist',
+                                'taupe' => 'Taupe',
+                                'red' => 'Merah',
+                                'orange' => 'Oranye',
+                                'amber' => 'Amber',
+                                'yellow' => 'Kuning',
+                                'lime' => 'Lime',
+                                'green' => 'Hijau',
+                                'emerald' => 'Emerald',
+                                'teal' => 'Teal',
+                                'cyan' => 'Cyan',
+                                'sky' => 'Sky',
+                                'blue' => 'Biru',
+                                'indigo' => 'Indigo',
+                                'violet' => 'Violet',
+                                'purple' => 'Ungu',
+                                'fuchsia' => 'Fuchsia',
+                                'pink' => 'Pink',
+                                'rose' => 'Rose',
+                            ],
                         ],
 
                         'custom_color' => [
@@ -562,11 +705,44 @@ return [
 
         ],
 
+        'custom_blocks' => [
+
+            'actions' => [
+
+                'delete' => [
+                    'label' => 'Hapus blok',
+                ],
+
+                'edit' => [
+                    'label' => 'Ubah blok',
+                ],
+
+            ],
+
+            'no_search_results_message' => 'Tidak ada blok yang sesuai dengan pencarian Anda.',
+
+            'search_label' => 'Cari blok',
+
+            'search_prompt' => 'Cari blok',
+
+        ],
+
         'file_attachments_accepted_file_types_message' => 'Berkas yang diunggah harus bertipe: :values.',
 
         'file_attachments_max_size_message' => 'Berkas yang diunggah tidak boleh lebih besar dari :max kilobyte.',
 
         'no_merge_tag_search_results_message' => 'Tidak ada tag gabungan yang ditemukan.',
+
+        'mentions' => [
+            'no_options_message' => 'Tidak ada pilihan yang tersedia.',
+            'no_search_results_message' => 'Tidak ada hasil yang sesuai dengan pencarian Anda.',
+            'search_prompt' => 'Ketik untuk mencari...',
+            'searching_message' => 'Sedang mencari...',
+        ],
+
+        'toolbar' => [
+            'label' => 'Bilah alat editor',
+        ],
 
         'tools' => [
             'align_center' => 'Rata tengah',
@@ -585,6 +761,9 @@ return [
             'h1' => 'Judul',
             'h2' => 'Sub judul',
             'h3' => 'Anak judul',
+            'h4' => 'Judul 4',
+            'h5' => 'Judul 5',
+            'h6' => 'Judul 6',
             'grid' => 'Grid',
             'grid_delete' => 'Hapus grid',
             'highlight' => 'Sorot',
@@ -594,6 +773,7 @@ return [
             'link' => 'Tautan',
             'merge_tags' => 'Tag gabungan',
             'ordered_list' => 'Daftar berurut',
+            'paragraph' => 'Paragraf',
             'redo' => 'Kembalikan',
             'small' => 'Teks kecil',
             'strike' => 'Coret',
@@ -610,6 +790,7 @@ return [
             'table_merge_cells' => 'Gabungkan sel',
             'table_split_cell' => 'Pisahkan sel',
             'table_toggle_header_row' => 'Alihkan Baris Judul',
+            'table_toggle_header_cell' => 'Alihkan sel judul',
             'text_color' => 'Warna teks',
             'underline' => 'Garis bawah',
             'undo' => 'Batalkan',
@@ -622,6 +803,10 @@ return [
     'select' => [
 
         'actions' => [
+
+            'clear' => [
+                'label' => 'Hapus pilihan',
+            ],
 
             'create_option' => [
 
@@ -667,6 +852,10 @@ return [
 
             ],
 
+            'remove_option' => [
+                'label' => 'Hapus :label',
+            ],
+
         ],
 
         'boolean' => [
@@ -674,22 +863,44 @@ return [
             'false' => 'Tidak',
         ],
 
+        'error_message' => 'Opsi tidak dapat dimuat. Silakan coba lagi.',
+
         'loading_message' => 'Memuat...',
 
         'max_items_message' => 'Hanya :count yang dapat dipilih.',
+
+        'no_options_message' => 'Tidak ada pilihan yang tersedia.',
 
         'no_search_results_message' => 'Tidak ada hasil yang sesuai dengan pencarian Anda.',
 
         'placeholder' => 'Pilih salah satu opsi',
 
+        'required_description' => 'Pilih salah satu opsi.',
+
         'searching_message' => 'Sedang mencari...',
+
+        'search_label' => 'Cari',
 
         'search_prompt' => 'Ketik untuk mencari...',
 
     ],
 
     'tags_input' => [
+
+        'actions' => [
+
+            'delete' => [
+                'label' => 'Hapus',
+            ],
+
+        ],
+
         'placeholder' => 'Tag baru',
+
+        'tag_added' => 'Ditambahkan: :tag',
+
+        'tag_removed' => 'Dihapus: :tag',
+
     ],
 
     'text_input' => [
@@ -714,6 +925,8 @@ return [
     ],
 
     'toggle_buttons' => [
+
+        'required_description' => 'Pilih minimal satu opsi.',
 
         'boolean' => [
             'true' => 'Ya',

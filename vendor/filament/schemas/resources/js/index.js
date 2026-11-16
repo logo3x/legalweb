@@ -1,35 +1,5 @@
 import actions from './components/actions.js'
-
-const resolveRelativeStatePath = function (containerPath, path, isAbsolute) {
-    let containerPathCopy = containerPath
-
-    if (path.startsWith('/')) {
-        isAbsolute = true
-        path = path.slice(1)
-    }
-
-    if (isAbsolute) {
-        return path
-    }
-
-    while (path.startsWith('../')) {
-        containerPathCopy = containerPathCopy.includes('.')
-            ? containerPathCopy.slice(0, containerPathCopy.lastIndexOf('.'))
-            : null
-
-        path = path.slice(3)
-    }
-
-    if (['', null, undefined].includes(containerPathCopy)) {
-        return path
-    }
-
-    if (['', null, undefined].includes(path)) {
-        return containerPathCopy
-    }
-
-    return `${containerPathCopy}.${path}`
-}
+import schemaComponent from './components/component.js'
 
 const findClosestLivewireComponent = (el) => {
     let closestRoot = Alpine.findClosest(el, (i) => i.__livewire)
@@ -41,79 +11,268 @@ const findClosestLivewireComponent = (el) => {
     return closestRoot.__livewire
 }
 
+let isRetryingConcealedValidation = false
+
+// `invalid` events do not bubble, so they are only observable at the document
+// level in the capture phase.
+document.addEventListener(
+    'invalid',
+    (event) => {
+        const control = event.target
+
+        // Only controls that belong to a Filament field are handled, so that
+        // other forms on the page keep their own validation behavior.
+        if (!control.closest('[data-field-wrapper]')) {
+            return
+        }
+
+        // Visible controls use the default native validation UI.
+        if (
+            control.offsetParent !== null &&
+            getComputedStyle(control).visibility !== 'hidden'
+        ) {
+            return
+        }
+
+        // The browser cannot focus a concealed control or anchor a validation
+        // bubble to it, so suppress the native UI for it.
+        event.preventDefault()
+
+        // Only attempt one reveal per validation burst, so a control that
+        // stays concealed cannot cause an infinite retry loop.
+        if (isRetryingConcealedValidation) {
+            return
+        }
+
+        // Keep visible errors available to fix before revealing another
+        // container. Read validity without dispatching more `invalid` events.
+        if (
+            Array.from(control.form?.elements ?? []).some(
+                (element) =>
+                    element.willValidate &&
+                    !element.validity.valid &&
+                    element.offsetParent !== null &&
+                    getComputedStyle(element).visibility !== 'hidden',
+            )
+        ) {
+            return
+        }
+
+        isRetryingConcealedValidation = true
+
+        // Reveal the concealing containers, using the same `expand` event
+        // contract as `handleFormValidationError()` below.
+        let elementToExpand = control
+
+        while (elementToExpand) {
+            elementToExpand.dispatchEvent(new CustomEvent('expand'))
+
+            elementToExpand = elementToExpand.parentNode
+        }
+
+        // Re-run native validation once Alpine has applied the reveal, so the
+        // browser can focus the control and show its validation bubble.
+        requestAnimationFrame(() =>
+            requestAnimationFrame(() => {
+                control.form?.reportValidity()
+
+                setTimeout(() => (isRetryingConcealedValidation = false), 100)
+            }),
+        )
+    },
+    true,
+)
+
 document.addEventListener('alpine:init', () => {
-    window.Alpine.data('filamentSchema', ({ livewireId }) => ({
-        handleFormValidationError(event) {
-            if (event.detail.livewireId !== livewireId) {
-                return
-            }
+    window.Alpine.data(
+        'filamentSchema',
+        ({ livewireId, schemaKey, isLazyLoaded = false }) => ({
+            intersectionObserver: null,
+            stopInterceptingSchemaRequest: null,
+            isLoadingSchema: false,
+            hasSchemaLoadingFailed: false,
+            isDestroyed: false,
 
-            this.$nextTick(() => {
-                let error = this.$el.querySelector('[data-validation-error]')
-
-                if (!error) {
+            init() {
+                if (!isLazyLoaded) {
                     return
                 }
 
-                let elementToExpand = error
+                this.intersectionObserver = new IntersectionObserver(
+                    async (entries) => {
+                        if (
+                            !entries[0]?.isIntersecting ||
+                            this.isLoadingSchema ||
+                            this.isDestroyed
+                        ) {
+                            return
+                        }
 
-                while (elementToExpand) {
-                    elementToExpand.dispatchEvent(new CustomEvent('expand'))
+                        this.isLoadingSchema = true
+                        this.intersectionObserver.disconnect()
 
-                    elementToExpand = elementToExpand.parentNode
+                        this.stopInterceptingSchemaRequest =
+                            Livewire.interceptRequest(
+                                ({ request, onError }) => {
+                                    const { components } = request.payload
+
+                                    if (
+                                        !components.some(
+                                            (component) =>
+                                                JSON.parse(component.snapshot)
+                                                    .memo.id === livewireId &&
+                                                component.calls.some(
+                                                    (call) =>
+                                                        call.method ===
+                                                            'loadLazySchema' &&
+                                                        call.params[0] ===
+                                                            schemaKey,
+                                                ),
+                                        )
+                                    ) {
+                                        return
+                                    }
+
+                                    onError(({ response, preventDefault }) => {
+                                        if (
+                                            response.status !== 419 &&
+                                            components.every(
+                                                (component) =>
+                                                    !Object.keys(
+                                                        component.updates,
+                                                    ).length &&
+                                                    component.calls.length &&
+                                                    component.calls.every(
+                                                        (call) =>
+                                                            call.method ===
+                                                            'loadLazySchema',
+                                                    ),
+                                            )
+                                        ) {
+                                            preventDefault()
+                                        }
+                                    })
+                                },
+                            )
+
+                        try {
+                            await this.$wire.loadLazySchema(schemaKey)
+                        } catch {
+                            if (!this.isDestroyed) {
+                                this.hasSchemaLoadingFailed = true
+                            }
+                        } finally {
+                            if (!this.isDestroyed) {
+                                this.isLoadingSchema = false
+                            }
+
+                            this.stopInterceptingSchemaRequest?.()
+                            this.stopInterceptingSchemaRequest = null
+                        }
+                    },
+                )
+
+                this.intersectionObserver.observe(this.$el)
+            },
+
+            handleFormValidationError(event) {
+                if (event.detail.livewireId !== livewireId) {
+                    return
                 }
 
-                setTimeout(
-                    () =>
-                        error.closest('[data-field-wrapper]').scrollIntoView({
+                this.$nextTick(() => {
+                    let error = this.$el.querySelector(
+                        '[data-validation-error]',
+                    )
+
+                    if (!error) {
+                        return
+                    }
+
+                    let elementToExpand = error
+
+                    while (elementToExpand) {
+                        elementToExpand.dispatchEvent(new CustomEvent('expand'))
+
+                        elementToExpand = elementToExpand.parentNode
+                    }
+
+                    setTimeout(() => {
+                        if (!error.isConnected) {
+                            return
+                        }
+
+                        error.closest('[data-field-wrapper]')?.scrollIntoView({
                             behavior: 'smooth',
                             block: 'start',
                             inline: 'start',
-                        }),
-                    200,
-                )
-            })
-        },
-
-        isStateChanged(state, old) {
-            if (state === undefined) {
-                return false
-            }
-
-            try {
-                return JSON.stringify(state) !== JSON.stringify(old)
-            } catch {
-                return state !== old
-            }
-        },
-    }))
-
-    window.Alpine.data(
-        'filamentSchemaComponent',
-        ({ path, containerPath, $wire }) => ({
-            $statePath: path,
-            $get: (path, isAbsolute) => {
-                return $wire.$get(
-                    resolveRelativeStatePath(containerPath, path, isAbsolute),
-                )
+                        })
+                    }, 200)
+                })
             },
-            $set: (path, state, isAbsolute, isLive = false) => {
-                return $wire.$set(
-                    resolveRelativeStatePath(containerPath, path, isAbsolute),
-                    state,
-                    isLive,
-                )
+
+            handleClientSideStateReset(event) {
+                if (
+                    event.detail.livewireId !== livewireId ||
+                    event.detail.schemaKey !== schemaKey
+                ) {
+                    return
+                }
+
+                this.$nextTick(() => {
+                    const fields = this.$el.querySelectorAll('[autofocus]')
+
+                    for (const field of fields) {
+                        // Skip fields hidden by an ancestor (e.g. an inactive
+                        // wizard step or tab) — the wizard/tab Alpine scope owns
+                        // its own `$watch` that refocuses once the active step
+                        // or tab is restored.
+                        if (field.offsetParent === null) {
+                            continue
+                        }
+
+                        field.focus()
+
+                        if (document.activeElement === field) {
+                            break
+                        }
+                    }
+                })
             },
-            get $state() {
-                return $wire.$get(path)
+
+            isStateChanged(state, old) {
+                if (state === undefined) {
+                    return false
+                }
+
+                try {
+                    return JSON.stringify(state) !== JSON.stringify(old)
+                } catch {
+                    return state !== old
+                }
+            },
+
+            destroy() {
+                this.isDestroyed = true
+                this.intersectionObserver?.disconnect()
+                this.stopInterceptingSchemaRequest?.()
+                this.stopInterceptingSchemaRequest = null
             },
         }),
     )
+
+    window.Alpine.data('filamentSchemaComponent', schemaComponent)
 
     window.Alpine.data('filamentActionsSchemaComponent', actions)
 
     Livewire.interceptMessage(({ message, onSuccess }) => {
         onSuccess(({ payload }) => {
+            const component = message.component
+
+            if (!component.el.isConnected) {
+                return
+            }
+
             payload.effects?.dispatches?.forEach((dispatch) => {
                 if (!dispatch.params?.awaitSchemaComponent) {
                     return
@@ -136,16 +295,21 @@ document.addEventListener('alpine:init', () => {
                     throw `Multiple schema components found with key [${dispatch.params.awaitSchemaComponent}].`
                 }
 
-                window.addEventListener(
-                    `schema-component-${component.id}-${dispatch.params.awaitSchemaComponent}-loaded`,
-                    () => {
-                        window.dispatchEvent(
-                            new CustomEvent(dispatch.name, {
-                                detail: dispatch.params,
-                            }),
-                        )
-                    },
-                    { once: true },
+                const loadedEvent = `schema-component-${component.id}-${dispatch.params.awaitSchemaComponent}-loaded`
+                const dispatchWhenLoaded = () => {
+                    window.dispatchEvent(
+                        new CustomEvent(dispatch.name, {
+                            detail: dispatch.params,
+                        }),
+                    )
+                }
+
+                window.addEventListener(loadedEvent, dispatchWhenLoaded, {
+                    once: true,
+                })
+
+                component.addCleanup(() =>
+                    window.removeEventListener(loadedEvent, dispatchWhenLoaded),
                 )
             })
         })

@@ -1,8 +1,9 @@
 import { Extension } from '@tiptap/core'
+import { DOMParser as ProseMirrorDOMParser } from '@tiptap/pm/model'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
 
-const dispatchFormEvent = (editorView, name, detail = {}) => {
-    editorView.dom.closest('form')?.dispatchEvent(
+const dispatchFormEvent = (form, name, detail = {}) => {
+    form?.dispatchEvent(
         new CustomEvent(name, {
             composed: true,
             cancelable: true,
@@ -31,36 +32,145 @@ const validateFiles = ({
     return null
 }
 
+const generateFileKey = () =>
+    ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
+        (
+            c ^
+            (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))
+        ).toString(16),
+    )
+
 const LocalFilesPlugin = ({
     editor,
     acceptedTypes,
     acceptedTypesValidationMessage,
     get$WireUsing,
+    getFileAttachmentUrlUsing,
     key,
     maxSize,
     maxSizeValidationMessage,
     statePath,
     uploadingMessage,
 }) => {
-    const getFileAttachmentUrl = (fileKey) => {
-        return Livewire.fireAction(
-            get$WireUsing().__instance,
-            'callSchemaComponentMethod',
-            [
-                key,
-                'getUploadedFileAttachmentTemporaryUrl',
-                {
-                    attachment: fileKey,
-                },
-            ],
-            { async: true },
+    const pendingUploads = new Set()
+    let wasEditable
+    let isDestroyed = false
+
+    editor.on('destroy', () => {
+        isDestroyed = true
+        pendingUploads.forEach((finish) => finish())
+    })
+
+    const startUpload = (editorView) => {
+        const form = editorView.dom.closest('form')
+
+        if (!pendingUploads.size) {
+            wasEditable = editor.isEditable
+        }
+
+        const finish = () => {
+            if (!pendingUploads.delete(finish)) return
+
+            if (!isDestroyed && !pendingUploads.size) {
+                editor.setEditable(wasEditable)
+                editorView.dom.dispatchEvent(
+                    new CustomEvent('rich-editor-uploaded-file', {
+                        bubbles: true,
+                        detail: { key, livewireId: get$WireUsing().id },
+                    }),
+                )
+            }
+
+            // The editor may have been removed while its form and submit button survive.
+            dispatchFormEvent(form, 'form-processing-finished')
+        }
+
+        pendingUploads.add(finish)
+        editor.setEditable(false)
+        dispatchFormEvent(form, 'form-processing-started', {
+            message: uploadingMessage,
+        })
+        editorView.dom.dispatchEvent(
+            new CustomEvent('rich-editor-uploading-file', {
+                bubbles: true,
+                detail: { key, livewireId: get$WireUsing().id },
+            }),
         )
+
+        return {
+            finish,
+            isCurrent: () => !isDestroyed && pendingUploads.has(finish),
+        }
+    }
+
+    const uploadFile = (file, operation) =>
+        new Promise((resolve) => {
+            const fileKey = generateFileKey()
+
+            get$WireUsing().upload(
+                `componentFileAttachments.${statePath}.${fileKey}`,
+                file,
+                async () => {
+                    if (!operation.isCurrent()) {
+                        resolve(null)
+                        return
+                    }
+
+                    try {
+                        const url = await getFileAttachmentUrlUsing(fileKey)
+                        resolve(url ? { id: fileKey, src: url } : null)
+                    } catch {
+                        resolve(null)
+                    }
+                },
+                () => resolve(null),
+                () => {},
+                () => resolve(null),
+            )
+        }).catch(() => null)
+
+    const uploadFiles = async (editorView, files, getPosition) => {
+        const operation = startUpload(editorView)
+
+        try {
+            const results = await Promise.allSettled(
+                files.map(async (file) => {
+                    const attachment = await uploadFile(file, operation)
+                    if (!attachment || !operation.isCurrent()) return
+
+                    editor
+                        .chain()
+                        .insertContentAt(getPosition(), {
+                            type: 'image',
+                            attrs: attachment,
+                        })
+                        .run()
+                }),
+            )
+
+            results.forEach((result) => {
+                if (result.status === 'rejected') {
+                    console.error(
+                        'Failed to insert uploaded file attachment',
+                        result.reason,
+                    )
+                }
+            })
+        } finally {
+            operation.finish()
+        }
     }
 
     return new Plugin({
         key: new PluginKey('localFiles'),
         props: {
-            handleDrop(editorView, event) {
+            handleDrop(editorView, event, slice, moved) {
+                // Browsers attach a dragged image as a file, so leave a move
+                // within the editor to ProseMirror instead of uploading it again.
+                if (moved) {
+                    return false
+                }
+
                 if (!event.dataTransfer?.files.length) {
                     return false
                 }
@@ -94,10 +204,6 @@ const LocalFilesPlugin = ({
                     return false
                 }
 
-                dispatchFormEvent(editorView, 'form-processing-started', {
-                    message: uploadingMessage,
-                })
-
                 event.preventDefault()
                 event.stopPropagation()
 
@@ -106,191 +212,182 @@ const LocalFilesPlugin = ({
                     top: event.clientY,
                 })
 
-                files.forEach((file, fileIndex) => {
-                    editor.setEditable(false)
-                    editorView.dom.dispatchEvent(
-                        new CustomEvent('rich-editor-uploading-file', {
-                            bubbles: true,
-                            detail: {
-                                key,
-                                livewireId: get$WireUsing().id,
-                            },
-                        }),
-                    )
-
-                    let fileKey = ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(
-                        /[018]/g,
-                        (c) =>
-                            (
-                                c ^
-                                (crypto.getRandomValues(new Uint8Array(1))[0] &
-                                    (15 >> (c / 4)))
-                            ).toString(16),
-                    )
-
-                    get$WireUsing().upload(
-                        `componentFileAttachments.${statePath}.${fileKey}`,
-                        file,
-                        () => {
-                            getFileAttachmentUrl(fileKey).then((url) => {
-                                if (!url) {
-                                    return
-                                }
-
-                                editor
-                                    .chain()
-                                    .insertContentAt(position?.pos ?? 0, {
-                                        type: 'image',
-                                        attrs: {
-                                            id: fileKey,
-                                            src: url,
-                                        },
-                                    })
-                                    .run()
-
-                                editor.setEditable(true)
-                                editorView.dom.dispatchEvent(
-                                    new CustomEvent(
-                                        'rich-editor-uploaded-file',
-                                        {
-                                            bubbles: true,
-                                            detail: {
-                                                key,
-                                                livewireId: get$WireUsing().id,
-                                            },
-                                        },
-                                    ),
-                                )
-
-                                if (fileIndex === files.length - 1) {
-                                    dispatchFormEvent(
-                                        editorView,
-                                        'form-processing-finished',
-                                    )
-                                }
-                            })
-                        },
-                    )
-                })
+                uploadFiles(editorView, files, () => position?.pos ?? 0)
 
                 return true
             },
             handlePaste(editorView, event) {
-                if (!event.clipboardData?.files.length) {
-                    return false
-                }
+                const files = event.clipboardData?.files?.length
+                    ? Array.from(event.clipboardData.files)
+                    : []
+                const hasText = event.clipboardData?.getData('text')?.length > 0
+                const html = event.clipboardData?.getData('text/html') || ''
 
-                if (event.clipboardData?.getData('text').length) {
-                    return false
-                }
+                if (files.length && !hasText) {
+                    const validationMessage = validateFiles({
+                        files,
+                        acceptedTypes,
+                        acceptedTypesValidationMessage,
+                        maxSize,
+                        maxSizeValidationMessage,
+                    })
 
-                const files = Array.from(event.clipboardData.files)
+                    if (validationMessage) {
+                        editorView.dom.dispatchEvent(
+                            new CustomEvent(
+                                'rich-editor-file-validation-message',
+                                {
+                                    bubbles: true,
+                                    detail: {
+                                        key,
+                                        livewireId: get$WireUsing().id,
+                                        validationMessage,
+                                    },
+                                },
+                            ),
+                        )
 
-                const validationMessage = validateFiles({
-                    files,
-                    acceptedTypes,
-                    acceptedTypesValidationMessage,
-                    maxSize,
-                    maxSizeValidationMessage,
-                })
+                        return false
+                    }
 
-                if (validationMessage) {
-                    editorView.dom.dispatchEvent(
-                        new CustomEvent('rich-editor-file-validation-message', {
-                            bubbles: true,
-                            detail: {
-                                key,
-                                livewireId: get$WireUsing().id,
-                                validationMessage,
-                            },
-                        }),
+                    event.preventDefault()
+                    event.stopPropagation()
+
+                    uploadFiles(
+                        editorView,
+                        files,
+                        () => editor.state.selection.anchor,
                     )
 
-                    return false
+                    return true
                 }
 
-                if (!files.length) {
-                    return false
-                }
+                if (html) {
+                    const domParser = new DOMParser()
+                    const parsed = domParser.parseFromString(html, 'text/html')
+                    const images = parsed.querySelectorAll('img[src]')
 
-                event.preventDefault()
-                event.stopPropagation()
+                    if (images.length) {
+                        event.stopPropagation()
 
-                dispatchFormEvent(editorView, 'form-processing-started', {
-                    message: uploadingMessage,
-                })
+                        const { from, to } = editor.state.selection
+                        const operation = startUpload(editorView)
+                        ;(async () => {
+                            try {
+                                for (const image of images) {
+                                    if (!operation.isCurrent()) return
+                                    const src = image.getAttribute('src')
 
-                files.forEach((file, fileIndex) => {
-                    editor.setEditable(false)
-                    editorView.dom.dispatchEvent(
-                        new CustomEvent('rich-editor-uploading-file', {
-                            bubbles: true,
-                            detail: {
-                                key,
-                                livewireId: get$WireUsing().id,
-                            },
-                        }),
-                    )
+                                    if (!src.startsWith('data:image/')) {
+                                        continue
+                                    }
 
-                    let fileKey = ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(
-                        /[018]/g,
-                        (c) =>
-                            (
-                                c ^
-                                (crypto.getRandomValues(new Uint8Array(1))[0] &
-                                    (15 >> (c / 4)))
-                            ).toString(16),
-                    )
+                                    let blob
 
-                    get$WireUsing().upload(
-                        `componentFileAttachments.${statePath}.${fileKey}`,
-                        file,
-                        () => {
-                            getFileAttachmentUrl(fileKey).then((url) => {
-                                if (!url) {
-                                    return
+                                    try {
+                                        const [header, base64] = src.split(',')
+                                        const mimeType =
+                                            header.match(/:(.*?);/)[1]
+                                        const bytes = atob(base64)
+                                        const array = new Uint8Array(
+                                            bytes.length,
+                                        )
+
+                                        for (let i = 0; i < bytes.length; i++) {
+                                            array[i] = bytes.charCodeAt(i)
+                                        }
+
+                                        blob = new Blob([array], {
+                                            type: mimeType,
+                                        })
+                                    } catch {
+                                        continue
+                                    }
+
+                                    const extension =
+                                        blob.type
+                                            .split('/')[1]
+                                            ?.split('+')[0] || 'png'
+                                    const file = new File(
+                                        [blob],
+                                        `image.${extension}`,
+                                        { type: blob.type },
+                                    )
+
+                                    const validationMessage = validateFiles({
+                                        files: [file],
+                                        acceptedTypes,
+                                        acceptedTypesValidationMessage,
+                                        maxSize,
+                                        maxSizeValidationMessage,
+                                    })
+
+                                    if (validationMessage) {
+                                        continue
+                                    }
+
+                                    const attachment = await uploadFile(
+                                        file,
+                                        operation,
+                                    )
+
+                                    if (attachment) {
+                                        image.setAttribute(
+                                            'src',
+                                            attachment.src,
+                                        )
+                                        image.setAttribute(
+                                            'data-id',
+                                            attachment.id,
+                                        )
+                                    }
                                 }
 
-                                editor
-                                    .chain()
-                                    .insertContentAt(
-                                        editor.state.selection.anchor,
-                                        {
-                                            type: 'image',
-                                            attrs: {
-                                                id: fileKey,
-                                                src: url,
-                                            },
-                                        },
-                                    )
-                                    .run()
+                                if (!operation.isCurrent()) return
 
-                                editor.setEditable(true)
-                                editorView.dom.dispatchEvent(
-                                    new CustomEvent(
-                                        'rich-editor-uploaded-file',
-                                        {
-                                            bubbles: true,
-                                            detail: {
-                                                key,
-                                                livewireId: get$WireUsing().id,
-                                            },
-                                        },
-                                    ),
+                                for (const image of Array.from(
+                                    parsed.querySelectorAll('img[src]'),
+                                )) {
+                                    const p = parsed.createElement('p')
+                                    image.replaceWith(p)
+                                    p.appendChild(image)
+                                }
+
+                                let cleanedHtml = parsed.body.innerHTML
+
+                                editor.view.someProp(
+                                    'transformPastedHTML',
+                                    (f) => {
+                                        cleanedHtml = f(cleanedHtml)
+                                    },
                                 )
 
-                                if (fileIndex === files.length - 1) {
-                                    dispatchFormEvent(
-                                        editorView,
-                                        'form-processing-finished',
-                                    )
-                                }
-                            })
-                        },
-                    )
-                })
+                                const wrapper = document.createElement('div')
+                                wrapper.innerHTML = cleanedHtml
 
-                return true
+                                const slice = ProseMirrorDOMParser.fromSchema(
+                                    editor.state.schema,
+                                ).parseSlice(wrapper, {
+                                    preserveWhitespace: false,
+                                })
+
+                                editor.view.dispatch(
+                                    editor.state.tr.replaceRange(
+                                        from,
+                                        to,
+                                        slice,
+                                    ),
+                                )
+                            } finally {
+                                operation.finish()
+                            }
+                        })()
+
+                        return true
+                    }
+                }
+
+                return false
             },
         },
     })
@@ -309,6 +406,7 @@ export default Extension.create({
             statePath: null,
             uploadingMessage: null,
             get$WireUsing: null,
+            getFileAttachmentUrlUsing: null,
         }
     },
 

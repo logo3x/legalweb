@@ -11,12 +11,16 @@ return [
         'description' => 'Ar tikrai norite sustabdyti autentifikavimo programos naudojimą? Išjungus šią funkciją, jūsų paskyrai bus pašalintas papildomas saugos lygis.',
 
         'form' => [
+            'password' => [
+                'label' => 'Dabartinis slaptažodis',
+                'validation_attribute' => 'dabartinis slaptažodis',
+            ],
 
             'code' => [
 
                 'label' => 'Įveskite 6 skaitmenų kodą iš autentifikavimo programos',
 
-                'validation_attribute' => 'code',
+                'validation_attribute' => 'kodas',
 
                 'actions' => [
 
@@ -40,7 +44,7 @@ return [
 
                 'label' => 'Arba įveskite atsarginį kodą',
 
-                'validation_attribute' => 'recovery code',
+                'validation_attribute' => 'atsarginis kodas',
 
                 'messages' => [
 

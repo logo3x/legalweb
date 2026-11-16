@@ -12,11 +12,15 @@ class GuidelineConfig
 
     public bool $usesSail = false;
 
+    public bool $usesCloud = false;
+
     public bool $caresAboutLocalization = false;
 
     public bool $hasAnApi = false;
 
     public bool $hasSkills = false;
+
+    public bool $hasMcp = false;
 
     /**
      * @var array<int, string>

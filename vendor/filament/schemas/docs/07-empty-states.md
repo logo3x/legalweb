@@ -1,8 +1,6 @@
 ---
 title: Empty states
 ---
-import AutoScreenshot from "@components/AutoScreenshot.astro"
-import UtilityInjection from "@components/UtilityInjection.astro"
 
 ## Introduction
 
@@ -22,9 +20,9 @@ EmptyState::make('No users yet')
     ])
 ```
 
-<UtilityInjection set="schemaComponents" version="5.x">As well as allowing static values, the `make()` and `description()` methods also accept functions to dynamically calculate them. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="schemaComponents">As well as allowing static values, the `make()` and `description()` methods also accept functions to dynamically calculate them. You can inject various utilities into the function as parameters.</UtilityInjection>
 
-<AutoScreenshot name="schemas/layout/empty-state/simple" alt="Empty state" version="5.x" />
+<AutoScreenshot name="schemas/layout/empty-state/simple" alt="Empty state" />
 
 ## Adding an icon to the empty state
 
@@ -39,7 +37,7 @@ EmptyState::make('No users yet')
     ->icon(Heroicon::OutlinedUser)
 ```
 
-<UtilityInjection set="schemaComponents" version="5.x">As well as allowing a static value, the `icon()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="schemaComponents">As well as allowing a static value, the `icon()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
 
 ## Inserting actions and other components in the footer of an empty state
 
@@ -48,6 +46,7 @@ You may insert [actions](../actions) and any other schema component (usually [pr
 ```php
 use Filament\Actions\Action;
 use Filament\Schemas\Components\EmptyState;
+use Filament\Support\Icons\Heroicon;
 
 EmptyState::make('No users yet')
     ->description('Get started by creating a new user.')
@@ -57,7 +56,7 @@ EmptyState::make('No users yet')
     ])
 ```
 
-<UtilityInjection set="schemaComponents" version="5.x">As well as allowing a static value, the `footer()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="schemaComponents">As well as allowing a static value, the `footer()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
 
 ## Removing the empty state container
 
@@ -71,6 +70,6 @@ EmptyState::make('No users yet')
     ->contained(false)
 ```
 
-<UtilityInjection set="schemaComponents" version="5.x">As well as allowing a static value, the `contained()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="schemaComponents">As well as allowing a static value, the `contained()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
 
-<AutoScreenshot name="schemas/layout/empty-state/contained-false" alt="Empty state without container" version="5.x" />
+<AutoScreenshot name="schemas/layout/empty-state/contained-false" alt="Empty state without container" />

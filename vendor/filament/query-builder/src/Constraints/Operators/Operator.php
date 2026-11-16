@@ -3,6 +3,8 @@
 namespace Filament\QueryBuilder\Constraints\Operators;
 
 use Closure;
+use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\QueryBuilder\Constraints\Constraint;
 use Filament\QueryBuilder\Constraints\Operators\Concerns\CanBeHidden;
 use Filament\Support\Components\Component;
@@ -173,7 +175,7 @@ class Operator extends Component
     }
 
     /**
-     * @return array<\Filament\Schemas\Components\Component>
+     * @return array<\Filament\Schemas\Components\Component | Action | ActionGroup>
      */
     public function getFormSchema(): array
     {
@@ -215,6 +217,48 @@ class Operator extends Component
     public function getSettings(): ?array
     {
         return $this->settings;
+    }
+
+    protected function getStringSetting(string $key): ?string
+    {
+        $value = $this->getSettings()[$key] ?? null;
+
+        // Security: settings arrive from the request payload and can be tampered with,
+        // so a non-scalar value (e.g. an array) must not reach `trim()` / string casts
+        // where it would throw a `TypeError`. Fail closed by returning `null` instead.
+        if (! is_scalar($value)) {
+            return null;
+        }
+
+        return trim((string) $value);
+    }
+
+    protected function getNumericSetting(string $key): ?float
+    {
+        $value = $this->getSettings()[$key] ?? null;
+
+        // Security: settings arrive from the request payload and can be tampered with, so a
+        // non-numeric value (e.g. an array) must not reach `floatval()` / `Number::format()`
+        // where it would throw a `TypeError`. Fail closed by returning `null` instead.
+        if (! is_numeric($value)) {
+            return null;
+        }
+
+        return (float) $value;
+    }
+
+    protected function getDateSetting(string $key): ?string
+    {
+        $value = $this->getSettings()[$key] ?? null;
+
+        // Security: settings arrive from the request payload and can be tampered with, so a
+        // non-scalar value (e.g. an array) must not reach `Carbon::parse()` / `whereDate()`
+        // where it would throw a `TypeError`. Fail closed by returning `null` instead.
+        if (! is_scalar($value)) {
+            return null;
+        }
+
+        return (string) $value;
     }
 
     public function isInverse(): ?bool

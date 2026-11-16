@@ -17,6 +17,8 @@ class NavigationItem extends Component
     use HasBadgeTooltip;
     use HasExtraAttributes;
 
+    protected string | Closure | null $key = null;
+
     protected string | UnitEnum | Closure | null $group = null;
 
     protected string | Closure | null $parentItem = null;
@@ -27,7 +29,7 @@ class NavigationItem extends Component
 
     protected string | BackedEnum | Htmlable | Closure | null $activeIcon = null;
 
-    protected string | Closure $label;
+    protected string | Htmlable | Closure $label;
 
     protected string | Closure | null $badge = null;
 
@@ -51,19 +53,26 @@ class NavigationItem extends Component
      */
     protected array | Arrayable $childItems = [];
 
-    final public function __construct(string | Closure | null $label = null)
+    final public function __construct(string | Htmlable | Closure | null $label = null)
     {
         if (filled($label)) {
             $this->label($label);
         }
     }
 
-    public static function make(string | Closure | null $label = null): static
+    public static function make(string | Htmlable | Closure | null $label = null): static
     {
         $static = app(static::class, ['label' => $label]);
         $static->configure();
 
         return $static;
+    }
+
+    public function key(string | Closure | null $key): static
+    {
+        $this->key = $key;
+
+        return $this;
     }
 
     /**
@@ -119,14 +128,22 @@ class NavigationItem extends Component
         return $this;
     }
 
-    public function isActiveWhen(?Closure $callback): static
+    public function activeWhen(?Closure $callback): static
     {
         $this->isActive = $callback;
 
         return $this;
     }
 
-    public function label(string | Closure $label): static
+    /**
+     * @deprecated Use `activeWhen()` instead.
+     */
+    public function isActiveWhen(?Closure $callback): static
+    {
+        return $this->activeWhen($callback);
+    }
+
+    public function label(string | Htmlable | Closure $label): static
     {
         $this->label = $label;
 
@@ -149,6 +166,10 @@ class NavigationItem extends Component
 
     public function url(string | Closure | null $url, bool | Closure | null $shouldOpenInNewTab = null): static
     {
+        // Security: If this URL is derived from user input, validate it
+        // to prevent XSS via `javascript:` protocol URLs rendered
+        // in `href` attributes.
+
         $this->url = $url;
 
         if ($shouldOpenInNewTab !== null) {
@@ -156,6 +177,13 @@ class NavigationItem extends Component
         }
 
         return $this;
+    }
+
+    public function getKey(): string
+    {
+        $key = $this->evaluate($this->key) ?? $this->getLabel();
+
+        return ($key instanceof Htmlable) ? $key->toHtml() : $key;
     }
 
     public function getBadge(): ?string
@@ -166,9 +194,11 @@ class NavigationItem extends Component
     /**
      * @return string | array<string> | null
      */
-    public function getBadgeColor(): string | array | null
+    public function getBadgeColor(?string $badge = null): string | array | null
     {
-        return $this->evaluate($this->badgeColor);
+        return $this->evaluate($this->badgeColor, [
+            'badge' => $badge,
+        ]);
     }
 
     public function getGroup(): string | UnitEnum | null
@@ -186,7 +216,10 @@ class NavigationItem extends Component
         $icon = $this->evaluate($this->icon);
 
         if (blank($icon) && $this->getChildItems()) {
-            throw new LogicException("Navigation item [{$this->getLabel()}] has child items but no icon. Parent items must have an icon to ensure a proper user experience.");
+            $label = $this->getLabel();
+            $label = ($label instanceof Htmlable) ? $label->toHtml() : $label;
+
+            throw new LogicException("Navigation item [{$label}] has child items but no icon. Parent items must have an icon to ensure a proper user experience.");
         }
 
         return $icon;
@@ -211,7 +244,7 @@ class NavigationItem extends Component
         return $this->evaluate($this->activeIcon);
     }
 
-    public function getLabel(): string
+    public function getLabel(): string | Htmlable
     {
         return $this->evaluate($this->label);
     }
@@ -235,7 +268,7 @@ class NavigationItem extends Component
         return (bool) $this->isActive;
     }
 
-    public function isChildItemsActive(): bool
+    public function hasActiveChildItems(): bool
     {
         foreach ($this->getChildItems() as $childItem) {
             if ($childItem->isActive()) {
@@ -244,6 +277,14 @@ class NavigationItem extends Component
         }
 
         return false;
+    }
+
+    /**
+     * @deprecated Use `hasActiveChildItems()` instead.
+     */
+    public function isChildItemsActive(): bool
+    {
+        return $this->hasActiveChildItems();
     }
 
     public function shouldOpenUrlInNewTab(): bool

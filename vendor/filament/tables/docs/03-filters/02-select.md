@@ -1,8 +1,6 @@
 ---
 title: Select filters
 ---
-import AutoScreenshot from "@components/AutoScreenshot.astro"
-import UtilityInjection from "@components/UtilityInjection.astro"
 
 ## Introduction
 
@@ -21,9 +19,14 @@ SelectFilter::make('status')
 
 The `options()` that are passed to the filter are the same as those that are passed to the [select field](../../forms/select).
 
-<AutoScreenshot name="tables/filters/select" alt="Table with select filter" version="5.x" />
+<AutoScreenshot name="tables/filters/select" alt="Table with select filter" />
 
-<UtilityInjection set="tableFilters" version="5.x">As well as allowing a static value, the `options()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="tableFilters">As well as allowing a static value, the `options()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
+
+> [!CAUTION]
+> `options()` is a UI affordance, not an authorization boundary. The list constrains what the dropdown displays, but the submitted value is not checked against it before the filter runs. A user tampering with the Livewire request can submit any value to the filter's state — `apply()` will pass it straight into `whereIn`/`where` on the query.
+>
+> If you are using `options()` to hide certain values from a group of users (for example, hiding `archived` from non-admins), scope the table query itself instead — for example with [`modifyQueryUsing()`](../../resources/listing-records#customizing-the-table-eloquent-query) or a global scope on the resource — so the restricted rows are never reachable regardless of what the filter submits.
 
 ## Customizing the column used by a select filter
 
@@ -41,7 +44,7 @@ SelectFilter::make('status')
     ->attribute('status_id')
 ```
 
-<UtilityInjection set="tableFilters" version="5.x">As well as allowing a static value, the `attribute()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
+<UtilityInjection set="tableFilters">As well as allowing a static value, the `attribute()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
 
 ## Multi-select filters
 
@@ -59,7 +62,7 @@ SelectFilter::make('status')
     ])
 ```
 
-<AutoScreenshot name="tables/filters/multi-select" alt="Table with a multi-select filter" version="5.x" />
+<AutoScreenshot name="tables/filters/multi-select" alt="Table with a multi-select filter" />
 
 ## Relationship select filters
 
@@ -70,6 +73,18 @@ use Filament\Tables\Filters\SelectFilter;
 
 SelectFilter::make('author')
     ->relationship('author', 'name')
+```
+
+### Searching select filter options
+
+You may enable a search input to allow easier access to many options, using the `searchable()` method:
+
+```php
+use Filament\Tables\Filters\SelectFilter;
+
+SelectFilter::make('author')
+    ->relationship('author', 'name')
+    ->searchable()
 ```
 
 ### Preloading the select filter relationship options
@@ -106,6 +121,21 @@ SelectFilter::make('author')
     ->emptyRelationshipOptionLabel('No author')
 ```
 
+### Customizing relationship option labels
+
+You can use `getOptionLabelFromRecordUsing()` to customize each option's label using its related record. The default active-filter indicator uses the same labels:
+
+```php
+use App\Models\User;
+use Filament\Tables\Filters\SelectFilter;
+
+SelectFilter::make('author')
+    ->relationship('author', 'name')
+    ->getOptionLabelFromRecordUsing(fn (User $record): string => "{$record->name} ({$record->email})")
+```
+
+This also works with `multiple()`. The callback is evaluated by the filter's [select field](../../forms/select#customizing-the-relationship-option-labels), so it can use the same utility injection as other select fields.
+
 ### Customizing the select filter relationship query
 
 You may customize the database query that retrieves options using the third parameter of the `relationship()` method:
@@ -118,17 +148,9 @@ SelectFilter::make('author')
     ->relationship('author', 'name', fn (Builder $query) => $query->withTrashed())
 ```
 
-### Searching select filter options
+### Inspecting the configured relationship
 
-You may enable a search input to allow easier access to many options, using the `searchable()` method:
-
-```php
-use Filament\Tables\Filters\SelectFilter;
-
-SelectFilter::make('author')
-    ->relationship('author', 'name')
-    ->searchable()
-```
+You can use `$filter->hasRelationship()` to check whether a relationship name is configured. To retrieve its qualified key column, use `$filter->getQualifiedRelatedKeyNameForRelationship()`. For a relationship type without a specialized key column, this returns `null`, allowing the filter to use the related model's primary key. For belongs-to, belongs-to-many, and has-one/many-through relationships, you may pass the related query using the optional `query` argument to qualify the column using that query model's table, including when filtering self-related records.
 
 ## Disable placeholder selection
 
@@ -172,5 +194,4 @@ SelectFilter::make('status')
     ->default(['draft', 'reviewing'])
 ```
 
-<UtilityInjection set="tableFilters" version="5.x">As well as allowing a static value, the `default()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>
-
+<UtilityInjection set="tableFilters">As well as allowing a static value, the `default()` method also accepts a function to dynamically calculate it. You can inject various utilities into the function as parameters.</UtilityInjection>

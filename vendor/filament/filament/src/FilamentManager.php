@@ -29,6 +29,7 @@ use Filament\Support\Enums\Width;
 use Filament\Support\Facades\FilamentAsset;
 use Filament\Support\Facades\FilamentView;
 use Filament\Widgets\Widget;
+use Filament\Widgets\WidgetConfiguration;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\CanResetPassword;
 use Illuminate\Contracts\Auth\Guard;
@@ -40,6 +41,8 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
 use Livewire\Component;
 use LogicException;
+
+use function Filament\Support\encode_key_segments;
 
 class FilamentManager
 {
@@ -323,7 +326,9 @@ class FilamentManager
     public function getNameForDefaultAvatar(Model | Authenticatable $record): string
     {
         if ($this->getTenantModel() === $record::class) {
-            return $this->getTenantName($record);
+            $name = $this->getTenantName($record);
+
+            return ($name instanceof Htmlable) ? html_entity_decode(strip_tags($name->toHtml()), ENT_QUOTES | ENT_HTML5, 'UTF-8') : $name;
         }
 
         return $this->getUserName($record);
@@ -504,7 +509,7 @@ class FilamentManager
         return $this->getCurrentOrDefaultPanel()->getTenantModel();
     }
 
-    public function getTenantName(Model $tenant): string
+    public function getTenantName(Model $tenant): string | Htmlable
     {
         if ($tenant instanceof HasName) {
             return $tenant->getFilamentName();
@@ -614,10 +619,27 @@ class FilamentManager
     public function getUserName(Model | Authenticatable $user): string
     {
         if ($user instanceof HasName) {
-            return $user->getFilamentName();
+            $name = $user->getFilamentName();
+
+            return ($name instanceof Htmlable) ? html_entity_decode(strip_tags($name->toHtml()), ENT_QUOTES | ENT_HTML5, 'UTF-8') : $name;
         }
 
         return $user->getAttributeValue('name');
+    }
+
+    public function getUserScopedAuthIdentifier(?Authenticatable $user = null): string
+    {
+        $user ??= $this->auth()->user();
+
+        if (! $user) {
+            throw new LogicException('A user must be authenticated to generate a scoped identifier.');
+        }
+
+        $guard = $this->getAuthGuard();
+        $userClass = $user::class;
+        $authIdentifier = (string) $user->getAuthIdentifier();
+
+        return hash('sha256', encode_key_segments($guard, $userClass, $authIdentifier));
     }
 
     /**
@@ -664,7 +686,7 @@ class FilamentManager
     }
 
     /**
-     * @return array<class-string<Widget>>
+     * @return array<class-string<Widget> | WidgetConfiguration>
      */
     public function getWidgets(): array
     {
@@ -691,9 +713,22 @@ class FilamentManager
         return $this->getCurrentOrDefaultPanel()->hasDarkMode();
     }
 
+    /**
+     * @deprecated Use `isDarkModeForced()` instead.
+     */
     public function hasDarkModeForced(): bool
     {
-        return $this->getCurrentOrDefaultPanel()->hasDarkModeForced();
+        return $this->isDarkModeForced();
+    }
+
+    public function isDarkModeForced(): bool
+    {
+        return $this->getCurrentOrDefaultPanel()->isDarkModeForced();
+    }
+
+    public function hasThemeSwitcher(): bool
+    {
+        return $this->getCurrentOrDefaultPanel()->hasThemeSwitcher();
     }
 
     public function hasDatabaseNotifications(): bool
@@ -872,7 +907,15 @@ class FilamentManager
         Event::listen(ServingFilament::class, $callback);
     }
 
+    /**
+     * @deprecated Use `setCurrentDomain()` instead.
+     */
     public function currentDomain(?string $domain): void
+    {
+        $this->setCurrentDomain($domain);
+    }
+
+    public function setCurrentDomain(?string $domain): void
     {
         $this->currentDomain = $domain;
     }
@@ -1133,7 +1176,7 @@ class FilamentManager
         }
 
         if (app()->runningInConsole()) {
-            throw new LogicException('The current domain is not set, but multiple domains are registered for the panel. Please use [Filament::currentDomain(\'example.com\')] to set the current domain to ensure that panel URLs are generated correctly.');
+            throw new LogicException('The current domain is not set, but multiple domains are registered for the panel. Please use [Filament::setCurrentDomain(\'example.com\')] to set the current domain to ensure that panel URLs are generated correctly.');
         }
 
         return request()->getHost();
@@ -1168,7 +1211,7 @@ class FilamentManager
     }
 
     /**
-     * @return array<array{ title: string | Closure, body: string | Closure | null }>
+     * @return array<array{ title: ?string, body: ?string, isHidden: bool, isDisabled: bool }>
      */
     public function getErrorNotifications(): array
     {

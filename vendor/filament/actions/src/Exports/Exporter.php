@@ -5,9 +5,12 @@ namespace Filament\Actions\Exports;
 use Carbon\CarbonInterface;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
+use Filament\Actions\Exports\Downloaders\Contracts\Downloader;
 use Filament\Actions\Exports\Enums\Contracts\ExportFormat as ExportFormatInterface;
 use Filament\Actions\Exports\Enums\ExportFormat;
 use Filament\Actions\Exports\Models\Export;
+use Filament\Actions\Testing\TestableExport;
+use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Component;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -19,6 +22,15 @@ use OpenSpout\Writer\XLSX\Writer;
 
 abstract class Exporter
 {
+    // Security: Exports do not perform per-record authorization checks.
+    // All records matching the query are included without consulting
+    // Laravel policies. Use `modifyQueryUsing()` on the export action
+    // to scope the query. Data is written to CSV/XLSX as-is — values
+    // starting with `=`, `+`, `-`, or `@` may be interpreted as
+    // formulas by spreadsheet software (CSV formula injection).
+    // Sanitize via `formatStateUsing()` if exporting
+    // untrusted user content.
+
     /** @var array<ExportColumn> */
     protected array $cachedColumns;
 
@@ -38,6 +50,15 @@ abstract class Exporter
         protected array $columnMap,
         protected array $options,
     ) {}
+
+    /**
+     * @param  array<string, string> | null  $columnMap
+     * @param  array<string, mixed>  $options
+     */
+    public static function test(?array $columnMap = null, array $options = [], ?Export $export = null): TestableExport
+    {
+        return TestableExport::make(static::class, $columnMap, $options, $export);
+    }
 
     /**
      * @return array<mixed>
@@ -61,6 +82,17 @@ abstract class Exporter
      * @return array<ExportColumn>
      */
     abstract public static function getColumns(): array;
+
+    /**
+     * @return array<ExportColumn>
+     */
+    public static function getVisibleColumns(): array
+    {
+        return array_filter(
+            static::getColumns(),
+            fn (ExportColumn $column): bool => $column->isVisible(),
+        );
+    }
 
     /**
      * @return array<Component | Action | ActionGroup>
@@ -87,13 +119,19 @@ abstract class Exporter
         return __('filament-actions::export.notifications.completed.title');
     }
 
+    public static function modifyCompletedNotification(Notification $notification, Export $export): Notification
+    {
+        return $notification;
+    }
+
     /**
      * @return array<int, object>
      */
     public function getJobMiddleware(): array
     {
         return [
-            (new WithoutOverlapping("export{$this->export->getKey()}"))->expireAfter(600),
+            (new WithoutOverlapping("export{$this->export->getKey()}"))->expireAfter(600), // Legacy
+            (new WithoutOverlapping("filament:exports:{$this->export->getKey()}"))->expireAfter(600),
         ];
     }
 
@@ -158,6 +196,14 @@ abstract class Exporter
         return $this->options;
     }
 
+    public function getFileDiskName(): string
+    {
+        return $this->getFileDisk();
+    }
+
+    /**
+     * @deprecated Use `getFileDiskName()` instead.
+     */
     public function getFileDisk(): string
     {
         $disk = config('filament.default_filesystem_disk');
@@ -196,6 +242,11 @@ abstract class Exporter
         return [ExportFormat::Csv, ExportFormat::Xlsx];
     }
 
+    public static function getDownloader(ExportFormatInterface $format): Downloader
+    {
+        return $format->getDownloader();
+    }
+
     public function getXlsxCellStyle(): ?Style
     {
         return null;
@@ -225,6 +276,11 @@ abstract class Exporter
     public function makeXlsxRow(array $values, ?Style $style = null): Row
     {
         return Row::fromValues($values, $style);
+    }
+
+    public function configureXlsxWriterAfterOpen(Writer $writer): Writer
+    {
+        return $writer;
     }
 
     public function configureXlsxWriterBeforeClose(Writer $writer): Writer

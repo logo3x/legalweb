@@ -6,10 +6,34 @@ return [
 
         'heading' => 'Colunas',
 
+        'position' => 'Posição :position de :count.',
+
+        'position_in_group' => 'Posição :position de :count em :group.',
+
+        'reordered' => 'A coluna :column agora está na posição :position de :count.',
+
+        'reordered_deferred' => 'A coluna :column agora está na posição :position de :count. Aplique as colunas para salvar suas alterações.',
+
+        'reordered_in_group' => 'A coluna :column agora está na posição :position de :count em :group.',
+
+        'reordered_in_group_deferred' => 'A coluna :column agora está na posição :position de :count em :group. Aplique as colunas para salvar suas alterações.',
+
         'actions' => [
 
             'apply' => [
                 'label' => 'Aplicar colunas',
+            ],
+
+            'move_up' => [
+                'label' => 'Mover :column para cima',
+            ],
+
+            'move_down' => [
+                'label' => 'Mover :column para baixo',
+            ],
+
+            'reorder' => [
+                'label' => 'Reordenar coluna',
             ],
 
             'reset' => [
@@ -26,9 +50,27 @@ return [
             'label' => 'Ação|Ações',
         ],
 
+        'editable' => [
+            'saving' => 'Salvando alteração...',
+            'saved' => 'Alteração salva.',
+            'failure' => 'Não foi possível confirmar o salvamento. Atualize a página antes de tentar novamente.',
+            'unavailable' => 'Este item não pode mais ser editado.',
+        ],
+
+        'icon' => [
+
+            'boolean' => [
+                'true' => 'Sim',
+                'false' => 'Não',
+            ],
+
+        ],
+
         'select' => [
 
             'loading_message' => 'Carregando...',
+
+            'no_options_message' => 'Nenhuma opção disponível.',
 
             'no_search_results_message' => 'Nenhuma opção corresponde à sua busca.',
 
@@ -113,6 +155,18 @@ return [
             'label' => 'Reordenar registros',
         ],
 
+        'reorder_record' => [
+            'label' => 'Reordenar item :key',
+        ],
+
+        'move_record_up' => [
+            'label' => 'Mover :label para cima',
+        ],
+
+        'move_record_down' => [
+            'label' => 'Mover :label para baixo',
+        ],
+
         'filter' => [
             'label' => 'Filtrar',
         ],
@@ -127,6 +181,10 @@ return [
 
         'column_manager' => [
             'label' => 'Alternar colunas',
+        ],
+
+        'toggle_record_content' => [
+            'label' => 'Expandir/recolher item :key',
         ],
 
     ],
@@ -217,7 +275,16 @@ return [
 
     ],
 
+    'loading' => 'Carregando...',
+
     'reorder_indicator' => 'Arraste e solte os registros na ordem.',
+
+    'reordering' => [
+        'position' => ':label, posição :position de :count.',
+        'moved' => ':label agora está na posição :position de :count.',
+    ],
+
+    'result_count' => '{0} Nenhum resultado|{1} :count resultado|[2,*] :count resultados',
 
     'selection_indicator' => [
 

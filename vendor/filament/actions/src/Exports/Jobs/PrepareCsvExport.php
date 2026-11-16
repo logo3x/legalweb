@@ -2,9 +2,9 @@
 
 namespace Filament\Actions\Exports\Jobs;
 
+use AnourValar\EloquentSerialize\Facades\EloquentSerializeFacade;
 use Filament\Actions\Exports\Exporter;
 use Filament\Actions\Exports\Models\Export;
-use Filament\Support\EloquentSerializer\EloquentSerializer;
 use Illuminate\Bus\Batchable;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Filesystem\Filesystem;
@@ -17,6 +17,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use League\Csv\Bom;
 use League\Csv\Writer;
+use League\Flysystem\UnableToWriteFile;
 use SplTempFileObject;
 
 class PrepareCsvExport implements ShouldQueue
@@ -28,6 +29,10 @@ class PrepareCsvExport implements ShouldQueue
     use SerializesModels;
 
     public bool $deleteWhenMissingModels = true;
+
+    public ?int $tries = 1;
+
+    public ?int $maxExceptions = 0;
 
     protected Exporter $exporter;
 
@@ -52,15 +57,22 @@ class PrepareCsvExport implements ShouldQueue
 
     public function handle(): void
     {
+        if ($this->batch()?->cancelled()) {
+            return;
+        }
+
         $csv = Writer::from(new SplTempFileObject);
         $csv->setOutputBOM(Bom::Utf8);
         $csv->setDelimiter($this->exporter::getCsvDelimiter());
         $csv->insertOne(array_values($this->columnMap));
 
         $filePath = $this->export->getFileDirectory() . DIRECTORY_SEPARATOR . 'headers.csv';
-        $this->export->getFileDisk()->put($filePath, $csv->toString(), Filesystem::VISIBILITY_PRIVATE);
 
-        $query = app(EloquentSerializer::class)->unserialize($this->query);
+        if (! $this->export->getFileDisk()->put($filePath, $csv->toString(), Filesystem::VISIBILITY_PRIVATE)) {
+            throw UnableToWriteFile::atLocation($filePath);
+        }
+
+        $query = EloquentSerializeFacade::unserialize($this->query);
         $keyName = $query->getModel()->getKeyName();
         $qualifiedKeyName = $query->getModel()->getQualifiedKeyName();
 
@@ -213,7 +225,7 @@ class PrepareCsvExport implements ShouldQueue
                 fn (Collection $records) => $dispatchRecords(
                     Arr::pluck($records->all(), $keyName),
                 ),
-                column: $qualifiedKeyName,
+                column: $baseQueryOrders[0]['column'] ?? $qualifiedKeyName,
                 alias: $keyName,
                 descending: ($baseQueryOrders[0]['direction'] ?? 'asc') === 'desc',
             );

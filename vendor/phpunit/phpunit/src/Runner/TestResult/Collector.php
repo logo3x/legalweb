@@ -64,6 +64,14 @@ final class Collector
     private bool $childProcessErrored = false;
 
     /**
+     * When a before-first-test method errors or fails, none of the tests of
+     * its test class, the test class that was started last, are run.
+     *
+     * @var non-negative-int
+     */
+    private int $numberOfTestsOfTestClass = 0;
+
+    /**
      * @var non-negative-int
      */
     private int $numberOfIssuesIgnoredByBaseline = 0;
@@ -261,6 +269,8 @@ final class Collector
         if (!$testSuite->isForTestClass()) {
             return;
         }
+
+        $this->numberOfTestsOfTestClass = $testSuite->count();
     }
 
     public function testSuiteFinished(TestSuiteFinished $event): void
@@ -280,6 +290,10 @@ final class Collector
             assert($test instanceof TestMethod);
 
             foreach ($this->testFailedEvents as $testFailedEvent) {
+                if ($testFailedEvent instanceof AfterLastTestMethodFailed || $testFailedEvent instanceof BeforeFirstTestMethodFailed) {
+                    continue;
+                }
+
                 if ($testFailedEvent->test()->isTestMethod() && $testFailedEvent->test()->methodName() === $test->methodName()) {
                     return;
                 }
@@ -314,14 +328,14 @@ final class Collector
     {
         $this->testErroredEvents[] = $event;
 
-        $this->numberOfTestsRun++;
+        $this->numberOfTestsRun += $this->numberOfTestsOfTestClass;
     }
 
     public function beforeTestClassMethodFailed(BeforeFirstTestMethodFailed $event): void
     {
         $this->testFailedEvents[] = $event;
 
-        $this->numberOfTestsRun++;
+        $this->numberOfTestsRun += $this->numberOfTestsOfTestClass;
     }
 
     public function afterTestClassMethodErrored(AfterLastTestMethodErrored $event): void
@@ -355,6 +369,10 @@ final class Collector
     public function testMarkedIncomplete(MarkedIncomplete $event): void
     {
         $this->testMarkedIncompleteEvents[] = $event;
+
+        if (!$this->prepared) {
+            $this->numberOfTestsRun++;
+        }
     }
 
     public function testSkipped(TestSkipped $event): void
@@ -641,9 +659,13 @@ final class Collector
         return $this->testConsideredRiskyEvents !== [];
     }
 
+    /**
+     * The tests of a test suite that is skipped, for instance because a
+     * before-first-test method calls markTestSkipped(), are skipped tests, too.
+     */
     public function hasSkippedTests(): bool
     {
-        return $this->testSkippedEvents !== [];
+        return $this->testSuiteSkippedEvents !== [] || $this->testSkippedEvents !== [];
     }
 
     public function hasIncompleteTests(): bool

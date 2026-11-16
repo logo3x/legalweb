@@ -15,8 +15,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use UnitEnum;
 
+use function Filament\Support\apply_search_constraint;
 use function Filament\Support\generate_search_column_expression;
+use function Filament\Support\generate_search_pattern;
 use function Filament\Support\generate_search_term_expression;
 
 class AssociateAction extends Action
@@ -58,7 +61,7 @@ class AssociateAction extends Action
         $this->modalWidth(Width::Large);
 
         $this->extraModalFooterActions(function (): array {
-            return $this->canAssociateAnother ? [
+            return $this->canAssociateAnother() ? [
                 $this->makeModalSubmitAction('associateAnother', arguments: ['another' => true])
                     ->label(__('filament-actions::associate.single.modal.actions.associate_another.label')),
             ] : [];
@@ -74,23 +77,47 @@ class AssociateAction extends Action
             /** @var HasMany | MorphMany $relationship */
             $relationship = Relation::noConstraints(fn () => $table->getRelationship());
 
-            $record = $relationship->getQuery()->find($data['recordId']);
+            $relationshipQuery = $relationship->getQuery();
 
-            foreach (($this->isMultiple ? $record : [$record]) as $record) {
-                if ($record instanceof Model) {
-                    $this->record($record);
+            if ($this->modifyRecordSelectOptionsQueryUsing) {
+                $relationshipQuery = $this->evaluate($this->modifyRecordSelectOptionsQueryUsing, [
+                    'query' => $relationshipQuery,
+                    'search' => null,
+                ]) ?? $relationshipQuery;
+            }
+
+            $record = $relationshipQuery->find($data['recordId']);
+
+            $hasFailed = false;
+
+            foreach (($this->isMultiple() ? $record : [$record]) as $record) {
+                if (! $record instanceof Model) {
+                    continue;
                 }
+
+                $this->record($record);
 
                 /** @var BelongsTo $inverseRelationship */
                 $inverseRelationship = $table->getInverseRelationshipFor($record);
 
-                $this->process(function () use ($inverseRelationship, $record, $relationship): void {
+                $result = $this->process(function () use ($inverseRelationship, $record, $relationship): bool {
                     $inverseRelationship->associate($relationship->getParent());
-                    $record->save();
+
+                    return $record->save();
                 }, [
                     'inverseRelationship' => $inverseRelationship,
                     'relationship' => $relationship,
                 ]);
+
+                if ($result === false) {
+                    $hasFailed = true;
+                }
+            }
+
+            if ($hasFailed) {
+                $this->failure();
+
+                return;
             }
 
             if ($arguments['another'] ?? false) {
@@ -219,18 +246,20 @@ class AssociateAction extends Action
                 $isForcedCaseInsensitive = $this->isSearchForcedCaseInsensitive();
 
                 $search = generate_search_term_expression($search, $isForcedCaseInsensitive, $databaseConnection);
+                $searchPattern = generate_search_pattern($search, hasLeadingWildcard: true, hasTrailingWildcard: true);
                 $searchColumns ??= [$titleAttribute];
 
                 $isFirst = true;
 
-                $relationshipQuery->where(function (Builder $query) use ($databaseConnection, $isFirst, $isForcedCaseInsensitive, $searchColumns, $search): Builder {
+                $relationshipQuery->where(function (Builder $query) use ($databaseConnection, $isFirst, $isForcedCaseInsensitive, $searchColumns, $searchPattern): Builder {
                     foreach ($searchColumns as $searchColumn) {
                         $whereClause = $isFirst ? 'where' : 'orWhere';
 
-                        $query->{$whereClause}(
+                        apply_search_constraint(
+                            $query,
                             generate_search_column_expression($query->qualifyColumn($searchColumn), $isForcedCaseInsensitive, $databaseConnection),
-                            'like',
-                            "%{$search}%",
+                            $searchPattern,
+                            ($whereClause === 'where') ? 'and' : 'or',
                         );
 
                         $isFirst = false;
@@ -243,10 +272,10 @@ class AssociateAction extends Action
             $relationCountHash = $relationship->getRelationCountHash(incrementJoinCount: false);
 
             if ($relationship instanceof MorphMany) {
-                $relationshipQuery->whereNotMorphedTo($table->getInverseRelationship(), $relationship->getParent());
+                $relationshipQuery->whereNotMorphedTo($table->getInverseRelationshipName(), $relationship->getParent());
             } else {
                 $relationshipQuery
-                    ->whereDoesntHave($table->getInverseRelationship(), fn (Builder $query): Builder => $query->where(
+                    ->whereDoesntHave($table->getInverseRelationshipName(), fn (Builder $query): Builder => $query->where(
                         // https://github.com/filamentphp/filament/issues/8067
                         $relationship->getParent()->getTable() === $relationship->getRelated()->getTable() ?
                             "{$relationCountHash}.{$relationship->getParent()->getKeyName()}" :
@@ -266,6 +295,7 @@ class AssociateAction extends Action
 
                 return $relationshipQuery
                     ->pluck($titleAttribute, $relationship->getModel()->getQualifiedKeyName())
+                    ->map(fn (mixed $title): mixed => ($this->hasCustomRecordTitleAttribute() && (! $title instanceof UnitEnum)) ? $title : $this->formatRecordTitle($title))
                     ->all();
             }
 
@@ -281,15 +311,35 @@ class AssociateAction extends Action
             ->multiple($this->isMultiple())
             ->searchable($this->getRecordSelectSearchColumns() ?? true)
             ->getSearchResultsUsing(static fn (Select $component, string $search): array => $getOptions(optionsLimit: $component->getOptionsLimit(), search: $search, searchColumns: $component->getSearchColumns()))
-            ->getOptionLabelUsing(function ($value) use ($table): string {
+            ->getOptionLabelUsing(function ($value) use ($table): ?string {
                 $relationship = Relation::noConstraints(fn () => $table->getRelationship());
 
-                return $this->getRecordTitle($relationship->getQuery()->find($value));
+                $relationshipQuery = $relationship->getQuery();
+
+                if ($this->modifyRecordSelectOptionsQueryUsing) {
+                    $relationshipQuery = $this->evaluate($this->modifyRecordSelectOptionsQueryUsing, [
+                        'query' => $relationshipQuery,
+                        'search' => null,
+                    ]) ?? $relationshipQuery;
+                }
+
+                $record = $relationshipQuery->find($value);
+
+                return $record ? $this->getRecordTitle($record) : null;
             })
             ->getOptionLabelsUsing(function (array $values) use ($table): array {
                 $relationship = Relation::noConstraints(fn () => $table->getRelationship());
 
-                return $relationship->getQuery()->findMany($values)
+                $relationshipQuery = $relationship->getQuery();
+
+                if ($this->modifyRecordSelectOptionsQueryUsing) {
+                    $relationshipQuery = $this->evaluate($this->modifyRecordSelectOptionsQueryUsing, [
+                        'query' => $relationshipQuery,
+                        'search' => null,
+                    ]) ?? $relationshipQuery;
+                }
+
+                return $relationshipQuery->findMany($values)
                     ->mapWithKeys(fn (Model $record): array => [$record->getKey() => $this->getRecordTitle($record)])
                     ->all();
             })

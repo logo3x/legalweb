@@ -14,8 +14,13 @@ return [
 
             'label' => 'Grupos',
 
+            'group' => [
+                'label' => 'Grupo',
+            ],
+
             'block' => [
                 'label' => 'Disyunción (O)',
+                'picker_group' => 'Lógico',
                 'or' => 'O',
             ],
 
@@ -34,6 +39,8 @@ return [
     ],
 
     'no_rules' => '(Sin reglas)',
+
+    'max_rules_reached_tooltip' => 'Usted ha alcanzado el límite de :count reglas.',
 
     'item_separators' => [
         'and' => 'Y',

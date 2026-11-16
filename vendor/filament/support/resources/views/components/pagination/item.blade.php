@@ -5,11 +5,20 @@
     'icon' => null,
     'iconAlias' => null,
     'label' => null,
+    'loadingTargets' => [],
 ])
+
+@php
+    use Filament\Support\View\ComponentAttributeBag;
+    use Illuminate\Support\Number;
+
+    $wireClickAction = $attributes->whereStartsWith('wire:click')->first();
+    $hasLoadingState = filled($wireClickAction) && (! $disabled);
+@endphp
 
 <li
     {{
-        $attributes->class([
+        $attributes->whereDoesntStartWith('wire:click')->class([
             'fi-pagination-item',
             'fi-disabled' => $disabled,
             'fi-active' => $active,
@@ -17,14 +26,31 @@
     }}
 >
     <button
-        aria-label="{{ $ariaLabel }}"
+        @if (filled($ariaLabel))
+            aria-label="{{ $ariaLabel }}"
+        @endif
+        @if ($active)
+            aria-current="page"
+        @endif
+        @if ($disabled)
+            aria-hidden="true"
+        @endif
         @disabled($disabled)
+        data-prevent-disabled-clicks
         type="button"
-        class="fi-pagination-item-btn"
+        {{
+            $attributes->whereStartsWith('wire:click')
+                ->merge([
+                    'wire:loading.attr' => $hasLoadingState ? 'aria-disabled' : null,
+                    'wire:loading.class' => $hasLoadingState ? 'fi-disabled' : null,
+                    'wire:target' => $hasLoadingState ? (implode(',', $loadingTargets) ?: $wireClickAction) : null,
+                ], escape: false)
+                ->class(['fi-pagination-item-btn'])
+        }}
     >
-        @if (filled($icon))
+        @if ($icon || $iconAlias)
             {{
-                \Filament\Support\generate_icon_html($icon, $iconAlias, attributes: (new \Illuminate\View\ComponentAttributeBag)->class([
+                \Filament\Support\generate_icon_html($icon, $iconAlias, attributes: (new ComponentAttributeBag)->merge(['aria-hidden' => 'true'], escape: false)->class([
                     'fi-pagination-item-icon',
                 ]))
             }}
@@ -32,7 +58,7 @@
 
         @if (filled($label))
             <span class="fi-pagination-item-label">
-                {{ is_numeric($label) ? \Illuminate\Support\Number::format($label) : ($label ?? '...') }}
+                {{ is_numeric($label) ? Number::format($label) : ($label ?? '...') }}
             </span>
         @endif
     </button>

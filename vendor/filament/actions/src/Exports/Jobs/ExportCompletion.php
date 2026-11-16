@@ -14,6 +14,9 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 
+/**
+ * @deprecated Use `CompleteExport` instead.
+ */
 class ExportCompletion implements ShouldQueue
 {
     use Dispatchable;
@@ -22,6 +25,10 @@ class ExportCompletion implements ShouldQueue
     use SerializesModels;
 
     public bool $deleteWhenMissingModels = true;
+
+    public ?int $tries = 1;
+
+    public ?int $maxExceptions = 0;
 
     protected Exporter $exporter;
 
@@ -51,9 +58,14 @@ class ExportCompletion implements ShouldQueue
             return;
         }
 
+        $this->export->columnMap($this->columnMap);
+        $this->export->options($this->options);
+
         $failedRowsCount = $this->export->getFailedRowsCount();
 
-        Notification::make()
+        $isSynchronous = ($this->connection === 'sync') || (blank($this->connection) && (config('queue.default') === 'sync'));
+
+        $notification = Notification::make()
             ->title($this->exporter::getCompletedNotificationTitle($this->export))
             ->body($this->exporter::getCompletedNotificationBody($this->export))
             ->when(
@@ -76,12 +88,16 @@ class ExportCompletion implements ShouldQueue
                 )),
             )
             ->when(
-                ($this->connection === 'sync') ||
-                    (blank($this->connection) && (config('queue.default') === 'sync')),
-                fn (Notification $notification) => $notification
-                    ->persistent()
-                    ->send(),
-                fn (Notification $notification) => $notification->sendToDatabase($this->export->user, isEventDispatched: true),
+                $isSynchronous,
+                fn (Notification $notification) => $notification->persistent(),
             );
+
+        $notification = $this->exporter::modifyCompletedNotification($notification, $this->export);
+
+        if ($isSynchronous) {
+            $notification->send();
+        } else {
+            $notification->sendToDatabase($this->export->user, isEventDispatched: true);
+        }
     }
 }

@@ -49,15 +49,24 @@ class DetachBulkAction extends BulkAction
                 $relationship = $table->getRelationship();
 
                 if (! $action->shouldFetchSelectedRecords()) {
-                    try {
-                        $action->reportBulkProcessingSuccessfulRecordsCount(
-                            $relationship->detach($records),
-                        );
-                    } catch (Throwable $exception) {
-                        $action->reportCompleteBulkProcessingFailure();
+                    $detachedRecordsCount = 0;
 
+                    try {
+                        if ($table->allowsDuplicates()) {
+                            $pivotKeyName = app($relationship->getPivotClass())->getKeyName();
+                            $pivotKeys = $action->getSelectedRecordsQuery()->toBase()->pluck('filament_pivot_key');
+
+                            foreach ($pivotKeys->chunk(1000) as $pivotKeysChunk) {
+                                $detachedRecordsCount += (clone $relationship)->wherePivotIn($pivotKeyName, $pivotKeysChunk)->detach();
+                            }
+                        } else {
+                            $detachedRecordsCount = $relationship->detach($records);
+                        }
+                    } catch (Throwable $exception) {
                         report($exception);
                     }
+
+                    $action->reportBulkProcessingSuccessfulRecordsCount($detachedRecordsCount);
 
                     return;
                 }
@@ -69,7 +78,7 @@ class DetachBulkAction extends BulkAction
                 $records->each(
                     function (Model $record) use ($action, &$isFirstException, $relationshipPivotAccessor): void {
                         try {
-                            $record->getRelationValue($relationshipPivotAccessor)->delete();
+                            $record->getRelationValue($relationshipPivotAccessor)->delete() || $action->reportBulkProcessingFailure();
                         } catch (Throwable $exception) {
                             $action->reportBulkProcessingFailure();
 

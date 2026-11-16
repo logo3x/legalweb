@@ -3,6 +3,7 @@
     'availableWidth' => null,
     'flip' => true,
     'maxHeight' => null,
+    'menu' => true,
     'offset' => 8,
     'placement' => null,
     'shift' => false,
@@ -28,12 +29,10 @@
 @endphp
 
 <div
-    x-data="filamentDropdown"
+    x-data="filamentDropdown({ isMenu: @js($menu) })"
     {{ $attributes->class(['fi-dropdown']) }}
 >
     <div
-        x-on:keyup.enter="toggle($event)"
-        x-on:keyup.space="toggle($event)"
         x-on:mousedown="if ($event.button === 0) toggle($event)"
         {{ $trigger->attributes->class(['fi-dropdown-trigger']) }}
     >
@@ -47,6 +46,9 @@
             x-ref="panel"
             x-transition:enter-start="fi-opacity-0"
             x-transition:leave-end="fi-opacity-0"
+            @if ($menu)
+                role="menu"
+            @endif
             @if ($attributes->has('wire:key'))
                 wire:ignore.self
                 wire:key="{{ $attributes->get('wire:key') }}.panel"
@@ -57,7 +59,7 @@
                 'fi-scrollable' => $maxHeight || $size,
             ])
             @style([
-                "max-height: {$maxHeight}" => $maxHeight,
+                ('max-height: ' . e($maxHeight)) => $maxHeight,
             ])
         >
             {{ $slot }}

@@ -14,8 +14,13 @@ return [
 
             'label' => 'Grupos',
 
+            'group' => [
+                'label' => 'Grupo',
+            ],
+
             'block' => [
                 'label' => 'Condição OU',
+                'picker_group' => 'Lógica',
                 'or' => 'OU',
             ],
 
@@ -34,6 +39,8 @@ return [
     ],
 
     'no_rules' => '(Sem regras)',
+
+    'max_rules_reached_tooltip' => 'Você atingiu o máximo de :count regras.',
 
     'item_separators' => [
         'and' => 'E',

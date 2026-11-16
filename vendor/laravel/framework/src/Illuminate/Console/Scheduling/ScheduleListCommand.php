@@ -6,6 +6,7 @@ use Closure;
 use Cron\CronExpression;
 use DateTimeZone;
 use Illuminate\Console\Command;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use ReflectionClass;
@@ -23,6 +24,7 @@ class ScheduleListCommand extends Command
      */
     protected $signature = 'schedule:list
         {--timezone= : The timezone that times should be displayed in}
+        {--environment=* : Display the tasks scheduled to run on this environment}
         {--next : Sort the listed tasks by their next due date}
         {--json : Output the scheduled tasks as JSON}
     ';
@@ -51,7 +53,13 @@ class ScheduleListCommand extends Command
      */
     public function handle(Schedule $schedule)
     {
-        $events = new Collection($schedule->events());
+        $environments = Arr::wrap($this->option('environment'));
+
+        $events = new Collection(
+            empty($environments)
+                ? $schedule->events()
+                : $schedule->eventsForEnvironments($environments)
+        );
 
         if ($events->isEmpty()) {
             if ($this->option('json')) {
@@ -80,6 +88,8 @@ class ScheduleListCommand extends Command
     protected function displayJson(Collection $events, DateTimeZone $timezone)
     {
         $this->output->writeln($events->flatMap(function ($event) use ($timezone) {
+            $timezone = is_null($this->option('timezone')) ? $this->getTimezoneForEvent($event) : $timezone;
+
             $nextDueDate = $this->getNextDueDateForEvent($event, $timezone);
 
             $command = $event->command ?? '';
@@ -106,6 +116,7 @@ class ScheduleListCommand extends Command
                 'has_mutex' => $event->mutex->exists($event),
                 'repeat_seconds' => $event->isRepeatable() ? $event->repeatSeconds : null,
                 'environments' => $event->environments,
+                'on_one_server' => $event->onOneServer,
             ]);
         })->values()->toJson());
     }
@@ -301,6 +312,21 @@ class ScheduleListCommand extends Command
         return $now
             ->endOfSecond()
             ->ceilSeconds($event->repeatSeconds);
+    }
+
+    /**
+     * Get the timezone the event's cron expression is evaluated in.
+     *
+     * @param  \Illuminate\Console\Scheduling\Event  $event
+     * @return \DateTimeZone
+     */
+    private function getTimezoneForEvent($event)
+    {
+        if ($event->timezone instanceof DateTimeZone) {
+            return $event->timezone;
+        }
+
+        return new DateTimeZone($event->timezone ?? date_default_timezone_get());
     }
 
     /**

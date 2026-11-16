@@ -19,6 +19,10 @@ return [
                 'or' => 'VEYA',
             ],
 
+            'group' => [
+                'label' => 'Grup',
+            ],
+
         ],
 
         'rules' => [
@@ -34,6 +38,8 @@ return [
     ],
 
     'no_rules' => '(Kural yok)',
+
+    'max_rules_reached_tooltip' => 'Maksimum :count kural sınırına ulaştınız.',
 
     'item_separators' => [
         'and' => 'VE',
@@ -146,6 +152,50 @@ return [
 
             ],
 
+            'unit_labels' => [
+                'second' => 'Saniye',
+                'minute' => 'Dakika',
+                'hour' => 'Saat',
+                'day' => 'Gün',
+                'week' => 'Hafta',
+                'month' => 'Ay',
+                'quarter' => 'Çeyrek',
+                'year' => 'Yıl',
+            ],
+
+            'presets' => [
+                'past_decade' => 'Geçtiğimiz 10 yıl',
+                'past_5_years' => 'Geçtiğimiz 5 yıl',
+                'past_2_years' => 'Geçtiğimiz 2 yıl',
+                'past_year' => 'Geçtiğimiz yıl',
+                'past_6_months' => 'Geçtiğimiz 6 ay',
+                'past_quarter' => 'Geçtiğimiz çeyrek',
+                'past_month' => 'Geçtiğimiz ay',
+                'past_2_weeks' => 'Geçtiğimiz 2 hafta',
+                'past_week' => 'Geçtiğimiz hafta',
+                'past_hour' => 'Geçtiğimiz saat',
+                'past_minute' => 'Geçtiğimiz dakika',
+                'this_decade' => 'Bu 10 yıl',
+                'this_year' => 'Bu yıl',
+                'this_quarter' => 'Bu çeyrek',
+                'this_month' => 'Bu ay',
+                'today' => 'Bugün',
+                'this_hour' => 'Bu saat',
+                'this_minute' => 'Bu dakika',
+                'next_minute' => 'Gelecek dakika',
+                'next_hour' => 'Gelecek saat',
+                'next_week' => 'Gelecek hafta',
+                'next_2_weeks' => 'Gelecek 2 hafta',
+                'next_month' => 'Gelecek ay',
+                'next_quarter' => 'Gelecek çeyrek',
+                'next_6_months' => 'Gelecek 6 ay',
+                'next_year' => 'Gelecek yıl',
+                'next_2_years' => 'Gelecek 2 yıl',
+                'next_5_years' => 'Gelecek 5 yıl',
+                'next_decade' => 'Gelecek 10 yıl',
+                'custom' => 'Özel',
+            ],
+
             'form' => [
 
                 'date' => [
@@ -158,6 +208,34 @@ return [
 
                 'year' => [
                     'label' => 'Yıl',
+                ],
+
+                'mode' => [
+                    'label' => 'Tarih türü',
+                    'options' => [
+                        'absolute' => 'Belirli tarih',
+                        'relative' => 'Dinamik zaman aralığı',
+                    ],
+                ],
+
+                'preset' => [
+                    'label' => 'Zaman aralığı',
+                ],
+
+                'relative_value' => [
+                    'label' => 'Miktar',
+                ],
+
+                'relative_unit' => [
+                    'label' => 'Zaman birimi',
+                ],
+
+                'tense' => [
+                    'label' => 'Zaman yönü',
+                    'options' => [
+                        'past' => 'Geçmiş',
+                        'future' => 'Gelecek',
+                    ],
                 ],
 
             ],
@@ -174,8 +252,8 @@ return [
                 ],
 
                 'summary' => [
-                    'direct' => ':attribute :number\'a eşittir',
-                    'inverse' => ':attribute :number\'a eşit değildir',
+                    'direct' => ':attribute :number değerine eşittir',
+                    'inverse' => ':attribute :number değerine eşit değildir',
                 ],
 
             ],
@@ -189,7 +267,7 @@ return [
 
                 'summary' => [
                     'direct' => ':attribute maksimum :number',
-                    'inverse' => ':attribute :number\'dan büyük',
+                    'inverse' => ':attribute :number değerinden büyük',
                 ],
 
             ],
@@ -203,7 +281,7 @@ return [
 
                 'summary' => [
                     'direct' => ':attribute minimum :number',
-                    'inverse' => ':attribute :number\'dan küçük',
+                    'inverse' => ':attribute :number değerinden küçük',
                 ],
 
             ],
@@ -435,8 +513,8 @@ return [
                 ],
 
                 'summary' => [
-                    'direct' => ':attribute :text\'e eşittir',
-                    'inverse' => ':attribute :text\'e eşit değildir',
+                    'direct' => ':attribute :text değerine eşittir',
+                    'inverse' => ':attribute :text değerine eşit değildir',
                 ],
 
             ],

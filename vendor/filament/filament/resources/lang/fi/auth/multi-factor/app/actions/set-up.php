@@ -42,6 +42,11 @@ return [
 
         'form' => [
 
+            'password' => [
+                'label' => 'Nykyinen salasana',
+                'validation_attribute' => 'nykyinen salasana',
+            ],
+
             'code' => [
 
                 'label' => 'Syötä todennussovelluksen antama koodi',
@@ -53,6 +58,8 @@ return [
                 'messages' => [
 
                     'invalid' => 'Antamasi koodi on viallinen.',
+
+                    'rate_limited' => 'Liian monta yritystä. Yritä myöhemmin uudelleen.',
 
                 ],
 

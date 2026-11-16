@@ -45,12 +45,35 @@
         @apply bg-transparent;
     }
 
+    & .filepond--file-info-sub {
+        @apply opacity-100;
+    }
+
+    & .filepond--drop-label {
+        @apply h-auto! p-3!;
+    }
+
+    &
+        .filepond--root[data-disabled]:has(.filepond--item)
+        .filepond--drop-label:has(> label:empty) {
+        @apply hidden;
+    }
+
+    & .filepond--drop-label[style*='visibility: hidden'] {
+        @apply min-h-0!;
+    }
+
     & .filepond--drop-label label {
-        @apply p-3! text-sm text-gray-600 dark:text-gray-400;
+        @apply p-0!;
+    }
+
+    & .filepond--drop-label,
+    & .filepond--drop-label label {
+        @apply text-sm text-gray-600! opacity-100! dark:text-gray-400!;
     }
 
     & .filepond--label-action {
-        @apply text-primary-600 hover:text-primary-500 dark:hover:text-primary-500 font-medium no-underline transition duration-75 dark:text-white;
+        @apply text-primary-700 hover:text-primary-600 dark:hover:text-primary-400 dark:text-primary-400 font-medium no-underline transition duration-75;
     }
 
     & .filepond--drip-blob {
@@ -136,11 +159,11 @@
             }
 
             & .fi-fo-file-upload-editor-control-panel-footer {
-                @apply flex items-center gap-3 px-4 py-3;
+                @apply flex items-center justify-end gap-3 px-4 py-3;
             }
 
-            & .fi-fo-file-upload-editor-control-panel-reset-action {
-                @apply ml-auto;
+            & .fi-fo-file-upload-editor-control-panel-reset-action-ctn {
+                @apply flex justify-end;
             }
         }
 

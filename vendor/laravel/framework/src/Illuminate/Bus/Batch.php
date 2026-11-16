@@ -137,7 +137,7 @@ class Batch implements Arrayable, JsonSerializable
     /**
      * Get a fresh instance of the batch represented by this ID.
      *
-     * @return self
+     * @return self|null
      */
     public function fresh()
     {
@@ -148,7 +148,7 @@ class Batch implements Arrayable, JsonSerializable
      * Add additional jobs to the batch.
      *
      * @param  \Illuminate\Support\Enumerable|object|array  $jobs
-     * @return self
+     * @return self|null
      */
     public function add($jobs)
     {
@@ -187,8 +187,8 @@ class Batch implements Arrayable, JsonSerializable
 
             $this->queue->connection($this->options['connection'] ?? null)->bulk(
                 $jobs->all(),
-                $data = '',
-                $this->options['queue'] ?? null
+                data: '',
+                queue: $this->options['queue'] ?? null
             );
         });
 
@@ -256,7 +256,7 @@ class Batch implements Arrayable, JsonSerializable
             $container = Container::getInstance();
 
             if ($container->bound(Dispatcher::class)) {
-                $container->make(Dispatcher::class)->dispatch(new BatchFinished($this));
+                $container->make(Dispatcher::class)->dispatch(new BatchFinished($this->fresh() ?? $this));
             }
         }
 
@@ -443,7 +443,7 @@ class Batch implements Arrayable, JsonSerializable
         $container = Container::getInstance();
 
         if ($container->bound(Dispatcher::class)) {
-            $container->make(Dispatcher::class)->dispatch(new BatchCanceled($this, $exception));
+            $container->make(Dispatcher::class)->dispatch(new BatchCanceled($this->fresh() ?? $this, $exception));
         }
     }
 

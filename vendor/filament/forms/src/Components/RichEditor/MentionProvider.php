@@ -31,9 +31,13 @@ class MentionProvider
 
     protected ?string $searchPrompt = null;
 
+    protected string $triggerCharacter;
+
     final public function __construct(
-        protected string $char,
-    ) {}
+        string $char,
+    ) {
+        $this->triggerCharacter = $char;
+    }
 
     public static function make(string $char): static
     {
@@ -72,6 +76,10 @@ class MentionProvider
      */
     public function url(?Closure $callback): static
     {
+        // Security: If this URL is derived from user input, validate it
+        // to prevent XSS via `javascript:` protocol URLs rendered
+        // in `href` attributes.
+
         $this->getUrlUsing = $callback;
 
         return $this;
@@ -82,6 +90,9 @@ class MentionProvider
      */
     public function extraAttributes(array | Closure $attributes): static
     {
+        // Security: Attribute values are not escaped when rendered. Never
+        // pass unsanitized user input as attribute names or values.
+
         $this->extraAttributes = $attributes;
 
         return $this;
@@ -115,9 +126,17 @@ class MentionProvider
         return $this;
     }
 
+    public function getTriggerCharacter(): string
+    {
+        return $this->triggerCharacter;
+    }
+
+    /**
+     * @deprecated Use `getTriggerCharacter()` instead.
+     */
     public function getChar(): string
     {
-        return $this->char;
+        return $this->getTriggerCharacter();
     }
 
     /**
@@ -189,7 +208,15 @@ class MentionProvider
         return $result;
     }
 
+    /**
+     * @deprecated Use `hasSearchResultsUsingCallback()` instead.
+     */
     public function hasSearchResultsUsing(): bool
+    {
+        return $this->hasSearchResultsUsingCallback();
+    }
+
+    public function hasSearchResultsUsingCallback(): bool
     {
         return $this->getSearchResultsUsing instanceof Closure;
     }

@@ -1,13 +1,12 @@
 ---
 title: Overview
 ---
-import AutoScreenshot from "@components/AutoScreenshot.astro"
 
 ## Introduction
 
 Filament allows you to build dynamic dashboards, comprised of "widgets". Each widget is an element on the dashboard that displays data in a specific way. For example, you can display [stats](stats-overview), [chart](charts), or a [table](#table-widgets).
 
-<AutoScreenshot name="panels/dashboard" alt="Dashboard with widgets" version="5.x" />
+<AutoScreenshot name="panels/dashboard" alt="Dashboard with widgets" />
 
 ## Creating a widget
 
@@ -155,7 +154,7 @@ protected int | string | array $columnSpan = [
 
 This is especially useful when using a [responsive widgets grid](#responsive-widgets-grid).
 
-<AutoScreenshot name="panels/dashboard-column-spans" alt="Dashboard with customized widget column spans" version="5.x" />
+<AutoScreenshot name="panels/dashboard-column-spans" alt="Dashboard with customized widget column spans" />
 
 ## Conditionally hiding widgets
 
@@ -167,6 +166,10 @@ public static function canView(): bool
     return auth()->user()->isAdmin();
 }
 ```
+
+Filament also checks `canView()` before a widget's `mount()` method runs, including when a lazy widget loads, and before subsequent Livewire updates. If access is denied, the request returns a 403 response. Dashboard and resource pages filter out denied widgets before mounting them.
+
+Keep sensitive work out of the widget's `boot()` and lazy `placeholder()` methods, which can run before this authorization check. If you need sensitive work in these methods, authorize it separately.
 
 ## Table widgets
 
@@ -189,6 +192,8 @@ php artisan make:filament-widget BlogPostsOverview
 This command will create two files - a widget class in the `/Widgets` directory of the Filament directory, and a view in the `/widgets` directory of the Filament views directory.
 
 The class is a [Livewire component](https://livewire.laravel.com/docs/components), so any Livewire features are available to you. The Blade view can contain any HTML you like, and you can access any public Livewire properties in the view. You can also access the Livewire component instance in the view using `$this`.
+
+You can also render widgets with React, Vue, Svelte, or framework-free JavaScript. Add `--react`, `--vue`, `--svelte`, or `--js` to the command to generate a renderer instead of a Blade view. See [custom widgets](custom-widgets) for the renderer lifecycle, PHP props, and dashboard filter synchronization.
 
 ## Filtering widget data
 
@@ -225,15 +230,16 @@ class Dashboard extends BaseDashboard
 }
 ```
 
-<AutoScreenshot name="panels/dashboard-filters" alt="Dashboard with filter form" version="5.x" />
+<AutoScreenshot name="panels/dashboard-filters" alt="Dashboard with filter form" />
 
 In widget classes that require data from the filters, you need to add the `InteractsWithPageFilters` trait, which will allow you to use the `$this->pageFilters` property to access the raw data from the filters form:
 
 ```php
 use App\Models\BlogPost;
 use Carbon\CarbonImmutable;
-use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
+use Filament\Widgets\StatsOverviewWidget;
+use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Database\Eloquent\Builder;
 
 class BlogPostsOverview extends StatsOverviewWidget
@@ -246,7 +252,7 @@ class BlogPostsOverview extends StatsOverviewWidget
         $endDate = $this->pageFilters['endDate'] ?? null;
 
         return [
-            StatsOverviewWidget\Stat::make(
+            Stat::make(
                 label: 'Total posts',
                 value: BlogPost::query()
                     ->when($startDate, fn (Builder $query) => $query->whereDate('created_at', '>=', $startDate))
@@ -297,11 +303,11 @@ class Dashboard extends BaseDashboard
 
 Handling data from the filter action is the same as handling data from the filters header form, except that the data is validated before being passed to the widget. The `InteractsWithPageFilters` trait still applies.
 
-<AutoScreenshot name="panels/dashboard-filter-action" alt="Dashboard with filter action modal" version="5.x" />
+<AutoScreenshot name="panels/dashboard-filter-action" alt="Dashboard with filter action modal" />
 
 ### Persisting widget filters in the user's session
 
-By default, the dashboard filters applied will persist in the user's session between page loads. To disable this, override the `$persistsFiltersInSession` property in the dashboard page class:
+By default, the dashboard filters applied will persist in the user's session between page loads. If you use [tenancy](../users/tenancy), filters are persisted separately for each tenant. To disable persistence, override the `$persistsFiltersInSession` property in the dashboard page class:
 
 ```php
 use Filament\Pages\Dashboard as BaseDashboard;

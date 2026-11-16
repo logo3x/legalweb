@@ -2,6 +2,7 @@
 
 namespace Filament\Tables\Concerns;
 
+use Filament\Support\Components\Attributes\Unexposed;
 use Filament\Tables\Grouping\Group;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -9,6 +10,7 @@ trait CanGroupRecords
 {
     public ?string $tableGrouping = null;
 
+    #[Unexposed]
     public function getTableGrouping(): ?Group
     {
         if ($this->isTableReordering()) {
@@ -29,11 +31,29 @@ trait CanGroupRecords
         return $this->getTable()->getDefaultGroup();
     }
 
-    public function updatedTableGroupColumn(): void
+    #[Unexposed]
+    public function updatedTableGrouping(): void
     {
+        if ($this->getTable()->persistsGroupInSession()) {
+            session()->put(
+                $this->getTableGroupingSessionKey(),
+                $this->tableGrouping,
+            );
+        }
+
         $this->resetPage();
     }
 
+    /**
+     * @deprecated Use `updatedTableGrouping()` instead.
+     */
+    #[Unexposed]
+    public function updatedTableGroupColumn(): void
+    {
+        $this->updatedTableGrouping();
+    }
+
+    #[Unexposed]
     public function getTableGroupingDirection(): ?string
     {
         if (blank($this->tableGrouping)) {
@@ -61,8 +81,14 @@ trait CanGroupRecords
 
         $group->applyEagerLoading($query);
 
-        $group->orderQuery($query, $this->getTableGroupingDirection() ?? 'asc');
+        $group->orderQuery($query, $this->getTableGroupingDirection() ?? $this->getTable()->getDefaultGroupDirection());
 
         return $query;
+    }
+
+    #[Unexposed]
+    public function getTableGroupingSessionKey(): string
+    {
+        return $this->getTableSessionKey('grouping');
     }
 }

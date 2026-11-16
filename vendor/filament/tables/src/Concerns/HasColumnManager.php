@@ -2,15 +2,13 @@
 
 namespace Filament\Tables\Concerns;
 
-use Filament\Schemas\Schema;
+use Filament\Support\Components\Attributes\Exposed;
+use Filament\Support\Components\Attributes\Unexposed;
 use Filament\Support\Components\Component;
 use Filament\Tables\Columns\Column;
 use Filament\Tables\Columns\ColumnGroup;
 use LogicException;
 
-/**
- * @property-read Schema $toggleTableColumnForm
- */
 trait HasColumnManager
 {
     public const TABLE_COLUMN_MANAGER_GROUP_TYPE = 'group';
@@ -27,8 +25,14 @@ trait HasColumnManager
      */
     protected ?array $cachedDefaultTableColumnState = null;
 
-    protected ?bool $hasReorderableTableColumns = null;
+    /**
+     * @var array<string, bool> | null
+     */
+    protected ?array $tableColumnsToggleStateByName = null;
 
+    protected ?bool $cachedHasReorderableTableColumns = null;
+
+    #[Unexposed]
     public function initTableColumnManager(): void
     {
         if ($this->getTable()->hasColumnsLayout()) {
@@ -36,7 +40,7 @@ trait HasColumnManager
         }
 
         if (blank($this->tableColumns)) {
-            $this->tableColumns = $this->loadTableColumnsFromSession();
+            $this->setTableColumns($this->loadTableColumnsFromSession());
         }
 
         $this->applyTableColumnManager();
@@ -45,6 +49,7 @@ trait HasColumnManager
     /**
      * @return array<int, array{type: string, name: string, label: string, isHidden: bool, isToggled: bool, isToggleable: bool, isToggledHiddenByDefault: ?bool, columns?: array<int, array{type: string, name: string, label: string, isHidden: bool, isToggled: bool, isToggleable: bool, isToggledHiddenByDefault: ?bool}>}>
      */
+    #[Unexposed]
     public function getDefaultTableColumnState(): array
     {
         return $this->cachedDefaultTableColumnState ??= collect($this->getTable()->getColumnsLayout())
@@ -61,6 +66,7 @@ trait HasColumnManager
     /**
      * @deprecated Use `applyTableColumnManager()` instead.
      */
+    #[Unexposed]
     public function updatedToggledTableColumns(): void
     {
         $this->applyTableColumnManager();
@@ -69,26 +75,37 @@ trait HasColumnManager
     /**
      * @param  array<int, array{type: string, name: string, label: string, isHidden: bool, isToggled: bool, isToggleable: bool, isToggledHiddenByDefault: ?bool, columns?: array<int, array{type: string, name: string, label: string, isHidden: bool, isToggled: bool, isToggleable: bool, isToggledHiddenByDefault: ?bool}>}>|null  $state
      */
+    #[Exposed]
     public function applyTableColumnManager(?array $state = null, bool $wasReordered = false): void
     {
         if (filled($state)) {
-            $this->tableColumns = $state;
+            $this->setTableColumns($state);
 
             if ($this->hasReorderableTableColumns()) {
                 $this->persistHasReorderedTableColumns($wasReordered);
             }
         }
 
-        $this->hasReorderableTableColumns() && session()->get($this->getHasReorderedTableColumnsSessionKey())
-            ? $this->syncReorderableColumnsFromDefaultTableColumnState()
-            : $this->syncStaticColumnsFromTableColumnState();
+        if (
+            $this->hasReorderableTableColumns() &&
+            (
+                $this->getTable()->persistsColumnsInSession()
+                    ? session()->get($this->getHasReorderedTableColumnsSessionKey())
+                    : ($wasReordered || $this->hasReorderedTableColumns())
+            )
+        ) {
+            $this->syncReorderableColumnsFromDefaultTableColumnState();
+        } else {
+            $this->syncStaticColumnsFromTableColumnState();
+        }
 
         $this->persistTableColumns();
     }
 
+    #[Exposed]
     public function resetTableColumnManager(): void
     {
-        $this->tableColumns = $this->getDefaultTableColumnState();
+        $this->setTableColumns($this->getDefaultTableColumnState());
 
         if ($this->hasReorderableTableColumns()) {
             $this->updateTableColumns();
@@ -98,45 +115,69 @@ trait HasColumnManager
         $this->persistTableColumns();
     }
 
-    public function isTableColumnToggledHidden(string $name): bool
+    /**
+     * @param  array<int, array{type: string, name: string, label: string, isHidden: bool, isToggled: bool, isToggleable: bool, isToggledHiddenByDefault: ?bool, columns?: array<int, array{type: string, name: string, label: string, isHidden: bool, isToggled: bool, isToggleable: bool, isToggledHiddenByDefault: ?bool}>}>  $tableColumns
+     */
+    protected function setTableColumns(array $tableColumns): void
     {
+        $this->tableColumns = $tableColumns;
+        $this->tableColumnsToggleStateByName = null;
+
+        $this->getTable()->flushCachedVisibleColumns();
+    }
+
+    /**
+     * @return array<string, bool>
+     */
+    protected function getTableColumnsToggleStateByName(): array
+    {
+        if ($this->tableColumnsToggleStateByName !== null) {
+            return $this->tableColumnsToggleStateByName;
+        }
+
+        $map = [];
+
         foreach ($this->tableColumns as $item) {
-            if ($item['type'] === self::TABLE_COLUMN_MANAGER_COLUMN_TYPE && $item['name'] === $name) {
-                return ! $item['isToggled'];
+            if ($item['type'] === self::TABLE_COLUMN_MANAGER_COLUMN_TYPE) {
+                $map[$item['name']] = (bool) $item['isToggled'];
+
+                continue;
             }
 
             if ($item['type'] === self::TABLE_COLUMN_MANAGER_GROUP_TYPE && isset($item['columns'])) {
                 foreach ($item['columns'] as $column) {
-                    if ($column['name'] === $name) {
-                        return ! $column['isToggled'];
-                    }
+                    $map[$column['name']] = (bool) $column['isToggled'];
                 }
             }
         }
 
-        return true;
+        return $this->tableColumnsToggleStateByName = $map;
+    }
+
+    #[Unexposed]
+    public function isTableColumnToggledHidden(string $name): bool
+    {
+        return ! ($this->getTableColumnsToggleStateByName()[$name] ?? false);
     }
 
     /**
-     * @deprecated Use `getTableColumnManagerSessionKey()` instead.
+     * @deprecated Use `getTableColumnsSessionKey()` instead.
      */
     protected function getToggledTableColumnsSessionKey(): string
     {
         return $this->getTableColumnsSessionKey();
     }
 
+    #[Unexposed]
     public function getTableColumnsSessionKey(): string
     {
-        $table = md5($this::class);
-
-        return "tables.{$table}_columns";
+        return $this->getTableSessionKey('columns');
     }
 
+    #[Unexposed]
     public function getHasReorderedTableColumnsSessionKey(): string
     {
-        $table = md5($this::class);
-
-        return "tables.{$table}_has_reordered_columns";
+        return $this->getTableSessionKey('has_reordered_columns');
     }
 
     /**
@@ -144,6 +185,10 @@ trait HasColumnManager
      */
     protected function loadTableColumnsFromSession(): array
     {
+        if (! $this->getTable()->persistsColumnsInSession()) {
+            return $this->getDefaultTableColumnState();
+        }
+
         return session()->get(
             $this->getTableColumnsSessionKey(),
             $this->getDefaultTableColumnState(),
@@ -162,6 +207,10 @@ trait HasColumnManager
 
     protected function persistHasReorderedTableColumns(bool $wasReordered = false): void
     {
+        if (! $this->getTable()->persistsColumnsInSession()) {
+            return;
+        }
+
         session()->put(
             $this->getHasReorderedTableColumnsSessionKey(),
             $wasReordered || $this->hasReorderedTableColumns()
@@ -244,12 +293,12 @@ trait HasColumnManager
     {
         $defaultColumnState = $this->getDefaultTableColumnState();
 
-        $this->tableColumns = collect($this->tableColumns)
+        $this->setTableColumns(collect($this->tableColumns)
             ->map(fn (array $item) => $this->syncItemFromDefaultTableColumnState($item, $defaultColumnState))
             ->filter()
             ->values()
             ->merge($this->getNewDefaultColumnStateItems($defaultColumnState))
-            ->all();
+            ->all());
 
         $this->updateTableColumns();
     }
@@ -287,9 +336,9 @@ trait HasColumnManager
 
     protected function syncStaticColumnsFromTableColumnState(): void
     {
-        $this->tableColumns = collect($this->getDefaultTableColumnState())
+        $this->setTableColumns(collect($this->getDefaultTableColumnState())
             ->map(fn (array $item) => $this->syncItemFromTableColumnState($item, $this->tableColumns))
-            ->all();
+            ->all());
     }
 
     /**
@@ -447,7 +496,7 @@ trait HasColumnManager
 
     protected function hasReorderableTableColumns(): bool
     {
-        return $this->hasReorderableTableColumns ??= $this->getTable()->hasReorderableColumns();
+        return $this->cachedHasReorderableTableColumns ??= $this->getTable()->hasReorderableColumns();
     }
 
     protected function hasReorderedTableColumns(): bool

@@ -2,6 +2,7 @@
 
 namespace Filament\Resources\Pages\Concerns;
 
+use Filament\Support\Components\Attributes\Unexposed;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -9,11 +10,16 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Livewire\Attributes\Locked;
 use Livewire\Livewire;
 
+use function Filament\Support\original_request;
+
 trait InteractsWithParentRecord
 {
+    protected bool $hasResolvedParentRecordForRequest = false;
+
     #[Locked]
     public ?Model $parentRecord = null;
 
+    #[Unexposed]
     public function bootInteractsWithParentRecord(): void
     {
         if (Livewire::isLivewireRequest()) {
@@ -23,26 +29,57 @@ trait InteractsWithParentRecord
         $this->mountParentRecord();
     }
 
+    #[Unexposed]
+    public function hydrateInteractsWithParentRecord(): void
+    {
+        if (! static::getParentResource()) {
+            return;
+        }
+
+        $this->authorizeParentRecordAccess();
+    }
+
+    #[Unexposed]
     public function mountParentRecord(): void
     {
-        if ($this->parentRecord) {
+        if ($this->hasResolvedParentRecordForRequest) {
             return;
         }
 
         $parentResourceRegistration = static::getResource()::getParentResourceRegistration();
 
         if (! $parentResourceRegistration) {
+            $this->hasResolvedParentRecordForRequest = true;
+
             return;
         }
 
-        $this->parentRecord = $this->resolveParentRecord(request()->route()->parameters());
+        $this->parentRecord = $this->resolveParentRecord($this->getParentRecordRouteParameters());
+
+        $this->hasResolvedParentRecordForRequest = true;
 
         $this->authorizeParentRecordAccess();
     }
 
+    /**
+     * @return array<string, mixed>
+     */
+    protected function getParentRecordRouteParameters(): array
+    {
+        return original_request()->route()?->parameters() ?? [];
+    }
+
     protected function authorizeParentRecordAccess(): void
     {
-        abort_unless(static::getParentResource()::canView($this->getParentRecord()) || static::getParentResource()::canEdit($this->getParentRecord()), 403);
+        $parentResourceRegistration = static::getResource()::getParentResourceRegistration();
+
+        while ($parentResourceRegistration) {
+            $parentResource = $parentResourceRegistration->getParentResource();
+
+            abort_unless($parentResource::canAccess(), 403);
+
+            $parentResourceRegistration = $parentResource::getParentResourceRegistration();
+        }
     }
 
     /**
@@ -50,16 +87,45 @@ trait InteractsWithParentRecord
      */
     protected function resolveParentRecord(array $parameters): Model
     {
-        $modifyQuery = null;
+        $modifyQuery = fn (Builder $query): Builder => $query->useWritePdo();
 
         $parentResourceRegistration = static::getResource()::getParentResourceRegistration();
         $parentRecord = null;
         $parentResourceRegistrations = [];
+        $hasParentRecordRouteParameters = false;
 
         while ($parentResourceRegistration) {
             $parentResourceRegistrations[] = $parentResourceRegistration;
 
+            if (array_key_exists($parentResourceRegistration->getParentRouteParameterName(), $parameters)) {
+                $hasParentRecordRouteParameters = true;
+            }
+
             $parentResourceRegistration = $parentResourceRegistration->getParentResource()::getParentResourceRegistration();
+        }
+
+        if ((! $hasParentRecordRouteParameters) && $this->parentRecord) {
+            $parentResource = $parentResourceRegistrations[0]->getParentResource();
+            $parentRecordKey = filled($routeKeyName = $parentResource::getRecordRouteKeyName())
+                ? $this->parentRecord->getAttribute($routeKeyName)
+                : $this->parentRecord->getRouteKey();
+
+            if ((! is_int($parentRecordKey)) && (! is_string($parentRecordKey))) {
+                throw (new ModelNotFoundException)->setModel($parentResource::getModel());
+            }
+
+            $parentRecord = $parentResource::resolveRecordRouteBinding(
+                $parentRecordKey,
+                fn (Builder $query): Builder => $query->useWritePdo()->whereKey($this->parentRecord->getKey()),
+            );
+
+            if (($parentRecord === null)
+                || ($parentRecord::class !== $this->parentRecord::class)
+                || ((string) $parentRecord->getKey() !== (string) $this->parentRecord->getKey())) {
+                throw (new ModelNotFoundException)->setModel($parentResource::getModel(), [$parentRecordKey]);
+            }
+
+            return $parentRecord;
         }
 
         if (count($parentResourceRegistrations)) {
@@ -71,10 +137,20 @@ trait InteractsWithParentRecord
                 $previousParentRecord = $parentRecord;
 
                 $parentResource = $parentResourceRegistration->getParentResource();
+                $parentRecordKey = $parameters[$parentResourceRegistration->getParentRouteParameterName()] ?? null;
+
+                if ($parentRecordKey instanceof Model) {
+                    $parentRecordKey = filled($routeKeyName = $parentResource::getRecordRouteKeyName())
+                        ? $parentRecordKey->getAttribute($routeKeyName)
+                        : $parentRecordKey->getRouteKey();
+                }
+
+                if ((! is_int($parentRecordKey)) && (! is_string($parentRecordKey))) {
+                    throw (new ModelNotFoundException)->setModel($parentResource::getModel());
+                }
+
                 $parentRecord = $parentResource::resolveRecordRouteBinding(
-                    $parentRecordKey = $parameters[
-                        $parentResourceRegistration->getParentRouteParameterName()
-                    ] ?? null,
+                    $parentRecordKey,
                     $modifyQuery,
                 );
 
@@ -89,7 +165,7 @@ trait InteractsWithParentRecord
                     );
                 }
 
-                $modifyQuery = fn (Builder $query) => $parentResourceRegistration->getChildResource()::scopeEloquentQueryToParent($query, $parentRecord);
+                $modifyQuery = fn (Builder $query): Builder => $parentResourceRegistration->getChildResource()::scopeEloquentQueryToParent($query->useWritePdo(), $parentRecord);
 
                 $previousParentResourceRegistration = $parentResourceRegistration;
             }
@@ -98,11 +174,13 @@ trait InteractsWithParentRecord
         return $parentRecord;
     }
 
+    #[Unexposed]
     public function getParentRecord(): ?Model
     {
         return $this->parentRecord;
     }
 
+    #[Unexposed]
     public function getParentRecordTitle(): string | Htmlable | null
     {
         $resource = static::getParentResource();
@@ -114,6 +192,7 @@ trait InteractsWithParentRecord
         return $resource::getRecordTitle($this->getParentRecord());
     }
 
+    #[Unexposed]
     public static function getParentResource(): ?string
     {
         return static::getResource()::getParentResourceRegistration()?->getParentResource();

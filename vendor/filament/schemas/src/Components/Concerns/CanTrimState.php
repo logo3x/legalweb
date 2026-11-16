@@ -3,16 +3,19 @@
 namespace Filament\Schemas\Components\Concerns;
 
 use Closure;
+use Illuminate\Support\Str;
 
 trait CanTrimState
 {
     protected bool | Closure $isTrimmed = false;
 
-    protected bool $cachedIsTrimmed;
+    protected ?bool $cachedIsTrimmed = null;
 
     public function trim(bool | Closure $condition = true): static
     {
         $this->isTrimmed = $condition;
+
+        $this->cachedIsTrimmed = null;
 
         return $this;
     }
@@ -32,6 +35,6 @@ trait CanTrimState
             return $state;
         }
 
-        return trim($state);
+        return Str::trim($state);
     }
 }

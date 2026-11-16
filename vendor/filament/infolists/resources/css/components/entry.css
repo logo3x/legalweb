@@ -19,10 +19,6 @@
 
     & .fi-in-entry-label {
         @apply text-sm font-medium text-gray-950 dark:text-white;
-
-        &.fi-hidden {
-            @apply hidden;
-        }
     }
 
     & .fi-in-entry-label-col {
@@ -31,6 +27,10 @@
 
     & .fi-in-entry-content-col {
         @apply grid auto-cols-fr gap-y-2;
+    }
+
+    & .fi-in-entry-content-slot {
+        @apply contents;
     }
 
     & .fi-in-entry-content-ctn {

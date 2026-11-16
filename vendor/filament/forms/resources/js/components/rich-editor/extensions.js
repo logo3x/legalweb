@@ -45,11 +45,16 @@ export default async ({
     canAttachFiles,
     customExtensionUrls,
     deleteCustomBlockButtonIconHtml,
+    deleteCustomBlockButtonLabel,
     editCustomBlockButtonIconHtml,
+    editCustomBlockButtonLabel,
     editCustomBlockUsing,
+    getCustomBlockPreviewsUsing,
+    getFileAttachmentUrlUsing,
     getMentionLabelsUsing,
     getMentionSearchResultsUsing,
     hasResizableImages,
+    hasMinimalCustomBlockControls = false,
     insertCustomBlockUsing,
     key,
     linkProtocols,
@@ -71,8 +76,12 @@ export default async ({
         CodeBlock,
         CustomBlock.configure({
             deleteCustomBlockButtonIconHtml,
+            deleteCustomBlockButtonLabel,
             editCustomBlockButtonIconHtml,
+            editCustomBlockButtonLabel,
             editCustomBlockUsing,
+            getCustomBlockPreviewsUsing,
+            hasMinimalCustomBlockControls,
             insertCustomBlockUsing,
         }),
         Details,
@@ -101,6 +110,10 @@ export default async ({
         Lead,
         Link.configure({
             autolink: true,
+            HTMLAttributes: {
+                target: null,
+                rel: null,
+            },
             openOnClick: false,
             protocols: linkProtocols,
         }),
@@ -112,6 +125,7 @@ export default async ({
                       acceptedTypesValidationMessage:
                           acceptedFileTypesValidationMessage,
                       get$WireUsing: () => $wire,
+                      getFileAttachmentUrlUsing,
                       key,
                       maxSize: maxFileSize,
                       maxSizeValidationMessage: maxFileSizeValidationMessage,
@@ -146,6 +160,7 @@ export default async ({
         Paragraph,
         Placeholder.configure({
             placeholder,
+            showOnlyWhenEditable: false,
         }),
         TextColor.configure({
             textColors,

@@ -60,6 +60,8 @@
 }
 
 .fi-sidebar {
+    --sidebar-footer-margin-x: calc(var(--spacing) * 4);
+
     @apply fixed inset-y-0 start-0 z-30 flex h-dvh flex-col content-start bg-white transition-all lg:z-20 lg:bg-transparent lg:transition-none dark:bg-gray-900 dark:lg:bg-transparent;
 
     &.fi-sidebar-open {
@@ -72,7 +74,7 @@
 }
 
 .fi-body-has-topbar .fi-sidebar {
-    @apply lg:top-[4rem] lg:h-[calc(100dvh-4rem)];
+    @apply lg:top-(--topbar-height) lg:h-[calc(100dvh-var(--topbar-height))];
 }
 
 .fi-sidebar-close-overlay {
@@ -96,7 +98,22 @@
         &.fi-body-has-sidebar-collapsible-on-desktop {
             & .fi-sidebar {
                 &:not(.fi-sidebar-open) {
-                    @apply lg:sticky lg:translate-x-0 lg:rtl:-translate-x-0;
+                    @apply lg:sticky lg:w-(--sidebar-collapsed-width) lg:translate-x-0 lg:rtl:-translate-x-0;
+
+                    & .fi-sidebar-database-notifications-btn,
+                    & .fi-sidebar-group-dropdown-trigger-btn,
+                    & .fi-sidebar-item-btn,
+                    & .fi-user-menu-trigger {
+                        @apply lg:px-0;
+                    }
+
+                    & .fi-sidebar-nav {
+                        @apply lg:[scrollbar-gutter:stable_both-edges] lg:px-0;
+                    }
+
+                    & .fi-sidebar-nav-groups {
+                        @apply lg:mx-auto lg:w-full lg:max-w-10;
+                    }
                 }
             }
         }
@@ -120,7 +137,7 @@
 }
 
 .fi-sidebar-header {
-    @apply flex h-16 items-center justify-center;
+    @apply flex h-(--topbar-height) items-center justify-center;
 }
 
 .fi-sidebar-header-logo-ctn {
@@ -137,6 +154,10 @@
     .fi-logo {
         @apply ms-3;
     }
+}
+
+.fi-sidebar-header-controls {
+    @apply flex shrink-0 flex-col after:mx-4 after:mt-3 after:border-t after:border-gray-950/5 after:content-[''] dark:after:border-white/10;
 }
 
 .fi-sidebar-nav {
@@ -189,7 +210,7 @@
     @apply relative flex items-center justify-center gap-x-3 rounded-lg p-2 outline-hidden transition duration-75;
 
     & > .fi-icon {
-        @apply text-gray-400 dark:text-gray-500;
+        @apply shrink-0 text-gray-400 dark:text-gray-500;
     }
 }
 
@@ -229,7 +250,7 @@
 }
 
 .fi-sidebar-footer {
-    @apply mx-4 my-3 grid gap-y-3;
+    @apply mx-(--sidebar-footer-margin-x) mb-3 grid gap-y-3 border-t border-gray-950/5 pt-3 dark:border-white/10;
 
     & > .fi-no-database {
         @apply block;

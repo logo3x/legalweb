@@ -104,6 +104,14 @@ return [
 
         ],
 
+        'block_picker' => [
+
+            'no_search_results_message' => 'Geen blokken gevonden.',
+
+            'search_prompt' => 'Blokken zoeken',
+
+        ],
+
     ],
 
     'checkbox_list' => [
@@ -592,6 +600,9 @@ return [
             'h1' => 'Titel',
             'h2' => 'Kop',
             'h3' => 'Subkop',
+            'h4' => 'Kop 4',
+            'h5' => 'Kop 5',
+            'h6' => 'Kop 6',
             'grid' => 'Raster',
             'grid_delete' => 'Raster verwijderen',
             'highlight' => 'Markeren',
@@ -601,6 +612,7 @@ return [
             'link' => 'Link',
             'merge_tags' => 'Merge tags',
             'ordered_list' => 'Genummerde lijst',
+            'paragraph' => 'Paragraaf',
             'redo' => 'Opnieuw',
             'small' => 'Kleine tekst',
             'strike' => 'Doorhalen',

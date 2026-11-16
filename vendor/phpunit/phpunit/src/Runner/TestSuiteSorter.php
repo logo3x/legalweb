@@ -140,9 +140,7 @@ final class TestSuiteSorter
         $max = 0;
 
         foreach ($suite->tests() as $test) {
-            if (!$test instanceof Reorderable) {
-                continue;
-            }
+            assert($test instanceof Reorderable);
 
             $sortId = $test->sortId();
 

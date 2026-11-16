@@ -80,9 +80,11 @@ final class Generator
      * @param ?list<non-empty-string> $methods
      * @param array<mixed>            $arguments
      *
+     * @throws ClassIsAnonymousException
      * @throws ClassIsEnumerationException
      * @throws ClassIsFinalException
      * @throws DuplicateMethodException
+     * @throws InvalidClassNameException
      * @throws InvalidMethodNameException
      * @throws NameAlreadyInUseException
      * @throws ReflectionException
@@ -97,6 +99,7 @@ final class Generator
 
         $this->ensureKnownType($type);
         $this->ensureValidMethods($methods);
+        $this->ensureValidNameForTestDoubleClass($mockClassName);
         $this->ensureNameForTestDoubleClassIsAvailable($mockClassName);
 
         $mock = $this->generate(
@@ -156,40 +159,15 @@ final class Generator
             throw new RuntimeException('Interfaces must not declare the same method');
         }
 
-        $unqualifiedNames = [];
-
-        foreach ($interfaces as $interface) {
-            $parts              = explode('\\', $interface);
-            $unqualifiedNames[] = array_pop($parts);
-        }
-
-        sort($unqualifiedNames);
-
-        do {
-            $intersectionName = sprintf(
-                'Intersection_%s_%s',
-                implode('_', $unqualifiedNames),
-                substr(md5((string) mt_rand()), 0, 8),
-            );
-        } while (interface_exists($intersectionName, false));
-
-        $template = $this->loadTemplate('intersection.tpl');
-
-        $template->setVar(
-            [
-                'intersection' => $intersectionName,
-                'interfaces'   => implode(', ', $interfaces),
-            ],
-        );
-
-        eval($template->render());
-
-        assert(interface_exists($intersectionName));
-
         return $this->testDouble(
-            $intersectionName,
+            $this->declareIntersectionInterface($interfaces),
             $mockObject,
-            returnValueGeneration: $returnValueGeneration,
+            [],
+            [],
+            '',
+            true,
+            true,
+            $returnValueGeneration,
         );
     }
 
@@ -197,6 +175,7 @@ final class Generator
      * @param class-string            $type
      * @param ?list<non-empty-string> $methods
      *
+     * @throws ClassIsAnonymousException
      * @throws ClassIsEnumerationException
      * @throws ClassIsFinalException
      * @throws ReflectionException
@@ -335,6 +314,7 @@ final class Generator
      * @param class-string            $type
      * @param ?list<non-empty-string> $explicitMethods
      *
+     * @throws ClassIsAnonymousException
      * @throws ClassIsEnumerationException
      * @throws ClassIsFinalException
      * @throws MethodNamedMethodException
@@ -366,6 +346,10 @@ final class Generator
         }
 
         $class = $this->reflectClass($_mockClassName['fullClassName']);
+
+        if ($class->isAnonymous()) {
+            throw new ClassIsAnonymousException($_mockClassName['fullClassName']);
+        }
 
         if ($class->isEnum()) {
             throw new ClassIsEnumerationException($_mockClassName['fullClassName']);
@@ -687,13 +671,27 @@ final class Generator
         }
 
         foreach ($methods as $method) {
-            if (!preg_match('~[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*~', (string) $method)) {
+            if (!preg_match('~\A[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*\z~', (string) $method)) {
                 throw new InvalidMethodNameException((string) $method);
             }
         }
 
         if ($methods !== array_unique($methods)) {
             throw new DuplicateMethodException($methods);
+        }
+    }
+
+    /**
+     * @throws InvalidClassNameException
+     */
+    private function ensureValidNameForTestDoubleClass(string $className): void
+    {
+        if ($className === '') {
+            return;
+        }
+
+        if (!preg_match('~\A[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*\z~', $className)) {
+            throw new InvalidClassNameException($className);
         }
     }
 
@@ -763,6 +761,46 @@ final class Generator
         }
 
         return $methods;
+    }
+
+    /**
+     * @param list<class-string> $interfaces
+     *
+     * @return class-string
+     */
+    private function declareIntersectionInterface(array $interfaces): string
+    {
+        $unqualifiedNames = [];
+
+        foreach ($interfaces as $interface) {
+            $parts              = explode('\\', $interface);
+            $unqualifiedNames[] = array_pop($parts);
+        }
+
+        sort($unqualifiedNames);
+
+        do {
+            $intersectionName = sprintf(
+                'Intersection_%s_%s',
+                implode('_', $unqualifiedNames),
+                substr(md5((string) mt_rand()), 0, 8),
+            );
+        } while (interface_exists($intersectionName, false));
+
+        $template = $this->loadTemplate('intersection.tpl');
+
+        $template->setVar(
+            [
+                'intersection' => $intersectionName,
+                'interfaces'   => implode(', ', $interfaces),
+            ],
+        );
+
+        eval($template->render());
+
+        assert(interface_exists($intersectionName));
+
+        return $intersectionName;
     }
 
     /**

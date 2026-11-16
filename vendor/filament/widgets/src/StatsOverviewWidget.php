@@ -7,11 +7,14 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Schemas\Schema;
+use Filament\Support\Components\Attributes\Unexposed;
+use Filament\Widgets\StatsOverviewWidget\Concerns\HasChartData;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class StatsOverviewWidget extends Widget implements HasSchemas
 {
     use Concerns\CanPoll;
+    use HasChartData;
     use InteractsWithSchemas;
 
     /**
@@ -35,6 +38,7 @@ class StatsOverviewWidget extends Widget implements HasSchemas
      */
     protected string $view = 'filament-widgets::stats-overview-widget';
 
+    #[Unexposed]
     public function content(Schema $schema): Schema
     {
         return $schema
@@ -43,6 +47,7 @@ class StatsOverviewWidget extends Widget implements HasSchemas
             ]);
     }
 
+    #[Unexposed]
     public function getSectionContentComponent(): Component
     {
         return Section::make()
@@ -91,7 +96,19 @@ class StatsOverviewWidget extends Widget implements HasSchemas
      */
     protected function getCachedStats(): array
     {
-        return $this->cachedStats ??= $this->getStats();
+        if ($this->cachedStats !== null) {
+            return $this->cachedStats;
+        }
+
+        $stats = array_values($this->getStats());
+
+        foreach ($stats as $index => $stat) {
+            if (($stat->getChart() !== null) && blank($stat->getKey(isAbsolute: false))) {
+                $stat->key('stats-overview-stat-' . $index);
+            }
+        }
+
+        return $this->cachedStats = $stats;
     }
 
     /**

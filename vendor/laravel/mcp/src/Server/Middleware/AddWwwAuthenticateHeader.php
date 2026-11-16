@@ -6,6 +6,7 @@ namespace Laravel\Mcp\Server\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Route;
 use Symfony\Component\HttpFoundation\Response;
 
 class AddWwwAuthenticateHeader
@@ -22,11 +23,16 @@ class AddWwwAuthenticateHeader
             return $response;
         }
 
-        $isOauth = app('router')->has('mcp.oauth.protected-resource');
+        $route = $request->route();
+        if (! $route instanceof Route || ! in_array(self::class, app('router')->gatherRouteMiddleware($route), true)) {
+            return $response;
+        }
+
+        $isOauth = app('router')->has('mcp.oauth.protected-resource.nested');
         if ($isOauth) {
             $response->header(
                 'WWW-Authenticate',
-                'Bearer realm="mcp", resource_metadata="'.route('mcp.oauth.protected-resource', ['path' => $request->path()]).'"'
+                'Bearer realm="mcp", resource_metadata="'.route('mcp.oauth.protected-resource.nested', ['path' => $request->path()]).'"'
             );
 
             return $response;

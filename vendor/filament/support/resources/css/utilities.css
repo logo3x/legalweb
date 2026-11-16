@@ -466,9 +466,9 @@
         transparent
     );
     --prose-link-underline-color: var(--color-primary-400);
-    --prose-th-borders: var(--color-gray-300);
-    --prose-td-borders: var(--color-gray-200);
-    --prose-hr-color: color-mix(
+    --prose-table-border-color: var(--color-gray-300);
+    --prose-tr-border-color: var(--color-gray-200);
+    --prose-hr-border-color: color-mix(
         in oklab,
         var(--color-gray-950) 5%,
         transparent
@@ -488,9 +488,9 @@
             transparent
         );
         --prose-link-underline-color: var(--color-sky-400);
-        --prose-th-borders: var(--color-gray-600);
-        --prose-td-borders: var(--color-gray-700);
-        --prose-hr-color: color-mix(
+        --prose-table-border-color: var(--color-gray-600);
+        --prose-tr-border-color: var(--color-gray-700);
+        --prose-hr-border-color: color-mix(
             in oklab,
             var(--color-white) 10%,
             transparent
@@ -507,7 +507,15 @@
     font-size: var(--text-sm);
     line-height: 1.5;
 
+    img:where(:not(.fi-not-prose, .fi-not-prose *)) {
+        display: inline-block;
+    }
+
     img + img {
+        margin-top: 0;
+    }
+
+    p img:where(:not(.fi-not-prose, .fi-not-prose *)) {
         margin-top: 0;
     }
 
@@ -521,53 +529,57 @@
     }
 
     h1:where(:not(.fi-not-prose, .fi-not-prose *)) {
-        font-size: var(--text-xl);
-        line-height: calc(28 / 18);
+        font-size: var(--text-3xl);
+        line-height: calc(36 / 30);
         letter-spacing: -0.025em;
-        color: var(--prose-code-color);
-        font-weight: var(--font-weight-extrabold);
+        color: var(--prose-heading-color);
+        font-weight: var(--font-weight-bold);
     }
 
     h2:where(:not(.fi-not-prose, .fi-not-prose *)) {
-        font-size: var(--text-lg);
-        line-height: calc(28 / 18);
+        font-size: var(--text-2xl);
+        line-height: calc(32 / 24);
         letter-spacing: -0.025em;
-        color: var(--prose-code-color);
+        color: var(--prose-heading-color);
         font-weight: var(--font-weight-bold);
     }
 
     h3:where(:not(.fi-not-prose, .fi-not-prose *)) {
-        font-size: var(--text-base);
-        line-height: calc(28 / 18);
+        font-size: var(--text-xl);
+        line-height: calc(28 / 20);
         color: var(--prose-heading-color);
         font-weight: var(--font-weight-bold);
     }
 
     h4:where(:not(.fi-not-prose, .fi-not-prose *)) {
-        font-size: var(--text-sm);
-        line-height: calc(28 / 14);
+        font-size: var(--text-lg);
+        line-height: calc(28 / 18);
         color: var(--prose-heading-color);
         font-weight: var(--font-weight-bold);
     }
 
     h5:where(:not(.fi-not-prose, .fi-not-prose *)) {
-        font-size: var(--text-sm);
-        line-height: calc(28 / 14);
+        font-size: var(--text-base);
+        line-height: calc(24 / 16);
         color: var(--prose-heading-color);
-        font-weight: var(--font-weight-semibold);
+        font-weight: var(--font-weight-bold);
     }
 
     h6:where(:not(.fi-not-prose, .fi-not-prose *)) {
         font-size: var(--text-sm);
-        line-height: calc(28 / 14);
+        line-height: calc(20 / 14);
         color: var(--prose-heading-color);
-        font-weight: var(--font-weight-medium);
+        font-weight: var(--font-weight-bold);
     }
 
     :is(h2, h3, h4, h5, h6):where(:not(.fi-not-prose, .fi-not-prose *)) {
-        scroll-margin-top: calc(var(--spacing) * 32);
+        scroll-margin-top: calc(
+            var(--topbar-height, 4rem) + var(--spacing) * 16
+        );
         @variant lg {
-            scroll-margin-top: calc(var(--spacing) * 18);
+            scroll-margin-top: calc(
+                var(--topbar-height, 4rem) + var(--spacing) * 2
+            );
         }
     }
 
@@ -587,7 +599,28 @@
     }
 
     ol li + li:where(:not(.fi-not-prose, .fi-not-prose *)),
-    ul li + li:where(:not(.fi-not-prose, .fi-not-prose *)) {
+    ul li + li:where(:not(.fi-not-prose, .fi-not-prose *)),
+    li > ol:where(:not(.fi-not-prose, .fi-not-prose *)),
+    li > ul:where(:not(.fi-not-prose, .fi-not-prose *)),
+    li > * + p:where(:not(.fi-not-prose, .fi-not-prose *)),
+    li > * + blockquote:where(:not(.fi-not-prose, .fi-not-prose *)),
+    li blockquote > p + p:where(:not(.fi-not-prose, .fi-not-prose *)) {
+        margin-top: var(--spacing);
+    }
+
+    li > :is(pre, table, hr):where(:not(.fi-not-prose, .fi-not-prose *)) {
+        margin-block: calc(var(--spacing) * 4);
+
+        &:first-child {
+            margin-top: 0;
+        }
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    li > hr + h2:where(:not(.fi-not-prose, .fi-not-prose *)) {
         margin-top: calc(var(--spacing) * 4);
     }
 
@@ -675,7 +708,7 @@
 
     thead:where(:not(.fi-not-prose, .fi-not-prose *)) {
         border-bottom-width: 1px;
-        border-bottom-color: var(--prose-th-borders);
+        border-bottom-color: var(--prose-table-border-color);
     }
 
     thead th:where(:not(.fi-not-prose, .fi-not-prose *)) {
@@ -697,7 +730,7 @@
 
     tbody tr:where(:not(.fi-not-prose, .fi-not-prose *)) {
         border-bottom-width: 1px;
-        border-bottom-color: var(--prose-td-borders);
+        border-bottom-color: var(--prose-tr-border-color);
     }
 
     tbody tr:last-child:where(:not(.fi-not-prose, .fi-not-prose *)) {
@@ -710,13 +743,14 @@
 
     tfoot:where(:not(.fi-not-prose, .fi-not-prose *)) {
         border-top-width: 1px;
-        border-top-color: var(--prose-th-borders);
+        border-top-color: var(--prose-table-border-color);
     }
 
     tfoot td:where(:not(.fi-not-prose, .fi-not-prose *)) {
         vertical-align: top;
     }
 
+    tbody th:where(:not(.fi-not-prose, .fi-not-prose *)),
     tbody td:where(:not(.fi-not-prose, .fi-not-prose *)),
     tfoot td:where(:not(.fi-not-prose, .fi-not-prose *)) {
         padding-top: 0.8em;
@@ -725,11 +759,13 @@
         padding-inline-start: 0.6em;
     }
 
+    tbody th:first-child:where(:not(.fi-not-prose, .fi-not-prose *)),
     tbody td:first-child:where(:not(.fi-not-prose, .fi-not-prose *)),
     tfoot td:first-child:where(:not(.fi-not-prose, .fi-not-prose *)) {
         padding-inline-start: 0;
     }
 
+    tbody th:last-child:where(:not(.fi-not-prose, .fi-not-prose *)),
     tbody td:last-child:where(:not(.fi-not-prose, .fi-not-prose *)),
     tfoot td:last-child:where(:not(.fi-not-prose, .fi-not-prose *)) {
         padding-inline-end: 0;
@@ -745,7 +781,7 @@
     }
 
     hr:where(:not(.fi-not-prose, .fi-not-prose *)) {
-        border-color: var(--prose-hr-color);
+        border-color: var(--prose-hr-border-color);
         margin-block: --spacing(8);
         & + h2 {
             margin-top: --spacing(8);

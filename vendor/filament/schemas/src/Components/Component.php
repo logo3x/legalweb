@@ -4,7 +4,6 @@ namespace Filament\Schemas\Components;
 
 use Filament\Schemas\Components\Concerns\BelongsToContainer;
 use Filament\Schemas\Components\Concerns\BelongsToModel;
-use Filament\Schemas\Components\Concerns\CanBeConcealed;
 use Filament\Schemas\Components\Concerns\CanBeDisabled;
 use Filament\Schemas\Components\Concerns\CanBeGridContainer;
 use Filament\Schemas\Components\Concerns\CanBeHidden;
@@ -29,22 +28,26 @@ use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Concerns\HasColumns;
 use Filament\Schemas\Concerns\HasGap;
 use Filament\Schemas\Concerns\HasStateBindingModifiers;
+use Filament\Support\Components\Attributes\Exposed;
+use Filament\Support\Components\ComponentManager;
 use Filament\Support\Components\ViewComponent;
 use Filament\Support\Concerns\CanGrow;
 use Filament\Support\Concerns\CanOrderColumns;
 use Filament\Support\Concerns\CanSpanColumns;
 use Filament\Support\Concerns\HasExtraAttributes;
 use Filament\Support\Enums\Width;
+use Filament\Support\View\ComponentAttributeBag as FilamentComponentAttributeBag;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Js;
 use Illuminate\View\ComponentAttributeBag;
+use Illuminate\View\ComponentSlot;
 
 class Component extends ViewComponent
 {
     use BelongsToContainer;
     use BelongsToModel;
-    use CanBeConcealed;
     use CanBeDisabled;
     use CanBeGridContainer;
     use CanBeHidden;
@@ -75,6 +78,31 @@ class Component extends ViewComponent
     protected string $evaluationIdentifier = 'component';
 
     protected string $viewIdentifier = 'schemaComponent';
+
+    /** @var array<class-string, array<string>> */
+    protected static array $exposedMethodNames = [];
+
+    /** @return array<string> */
+    public function getExposedMethodNames(): array
+    {
+        if (isset(static::$exposedMethodNames[static::class])) {
+            return static::$exposedMethodNames[static::class];
+        }
+
+        $names = [];
+
+        foreach (ComponentManager::getPublicMethodReflections(static::class) as $method) {
+            if ($method->isStatic() || str_starts_with($method->getName(), '__')) {
+                continue;
+            }
+
+            if ($method->getAttributes(Exposed::class, \ReflectionAttribute::IS_INSTANCEOF)) {
+                $names[] = $method->getName();
+            }
+        }
+
+        return static::$exposedMethodNames[static::class] = $names;
+    }
 
     /**
      * @return array<mixed>
@@ -130,20 +158,33 @@ class Component extends ViewComponent
 
     /**
      * @internal Do not use this method outside the internals of Filament. It is subject to breaking changes in minor and patch releases.
+     *
+     * @return array{key: ?string, exposedMethods: array<string>, path: ?string, containerPath: ?string}
+     */
+    public function getAlpineScopeConfiguration(): array
+    {
+        $container = $this->getContainer();
+        $parentComponent = $container->isEmbeddedInParentComponent()
+            ? $container->getParentComponent()
+            : null;
+
+        return [
+            'key' => $this->getKey(),
+            'exposedMethods' => $this->getExposedMethodNames(),
+            'path' => $parentComponent ? $parentComponent->getStatePath() : $this->getStatePath(),
+            'containerPath' => $parentComponent ? $parentComponent->getContainer()->getStatePath() : $container->getStatePath(),
+        ];
+    }
+
+    /**
+     * @internal Do not use this method outside the internals of Filament. It is subject to breaking changes in minor and patch releases.
      */
     public function toSchemaHtml(?bool $isVisible = null): string
     {
         $isVisible ??= $this->isVisible();
 
         $container = $this->getContainer();
-
-        $isContainerEmbeddedInParentComponent = $container->isEmbeddedInParentComponent();
-        $containerParentComponent = $isContainerEmbeddedInParentComponent
-            ? $container->getParentComponent()
-            : null;
-        $containerStatePath = $isContainerEmbeddedInParentComponent
-            ? $containerParentComponent->getContainer()->getStatePath()
-            : $container->getStatePath();
+        $alpineScopeConfiguration = $this->getAlpineScopeConfiguration();
 
         /**
          * Instead of only rendering the hidden components, we should
@@ -158,15 +199,30 @@ class Component extends ViewComponent
         $hiddenJs = $this->getHiddenJs();
         $visibleJs = $this->getVisibleJs();
 
+        $visibilityJs = match ([filled($hiddenJs), filled($visibleJs)]) {
+            [true, true] => "(! ({$hiddenJs})) && ({$visibleJs})",
+            [true, false] => "! ({$hiddenJs})",
+            [false, true] => $visibleJs,
+            default => null,
+        };
+
+        // A component with a client-side visibility condition is wrapped in a `<fieldset>`
+        // that is `disabled` while hidden, which bars its controls from native browser
+        // validation. Otherwise, the browser would silently block form submission over an
+        // invalid control that it cannot focus or anchor a validation bubble to. Unlike
+        // concealing containers such as collapsed sections, these components cannot be
+        // revealed on demand when they contain an invalid control. The `disabled` attribute
+        // is rendered so that the controls are also barred before Alpine.js applies
+        // `x-bind:disabled`.
+        $wrapperTag = ($isVisible && filled($visibilityJs)) ? 'fieldset' : 'div';
+
         $maxWidth = $this->getMaxWidth();
 
-        $statePath = $isContainerEmbeddedInParentComponent
-            ? $containerParentComponent->getStatePath()
-            : $this->getStatePath();
+        $statePath = $alpineScopeConfiguration['path'];
 
         $key = $this->getKey();
 
-        $attributes = (new ComponentAttributeBag)
+        $attributes = (new FilamentComponentAttributeBag)
             ->when(
                 ! $container->isInline(),
                 fn (ComponentAttributeBag $attributes) => $attributes->gridColumn($this->getColumnSpan(), $this->getColumnStart(), $this->getColumnOrder(), ! $isVisible),
@@ -177,33 +233,31 @@ class Component extends ViewComponent
             ], escape: false)
             ->class([
                 ($maxWidth instanceof Width) ? "fi-width-{$maxWidth->value}" : $maxWidth,
+                'fi-growable' => $container->isInline() && $this->canGrow(default: false),
+                'fi-sc-visibility-fieldset' => $wrapperTag === 'fieldset',
             ]);
 
         ob_start(); ?>
 
-        <div
+        <<?= $wrapperTag ?>
+            <?php if ($wrapperTag === 'fieldset') { ?>
+                disabled
+                role="none"
+            <?php } ?>
             <?php if (filled($key)) { ?>
                 wire:partial="schema-component::<?= $key ?>"
             <?php } ?>
             <?php if ($isVisible) { ?>
-                x-data="filamentSchemaComponent({
-                    path: <?= Js::from($statePath) ?>,
-                    containerPath: <?= Js::from($containerStatePath) ?>,
-                    $wire,
-                })"
+                x-data="filamentSchemaComponent(<?= Js::from($alpineScopeConfiguration) ?>)"
                 <?php if ($afterStateUpdatedJs = $this->getAfterStateUpdatedJs()) { ?>
                     x-init="<?= implode(';', array_map(
                         fn (string $js): string => '$wire; $wire.watch(' . Js::from($statePath) . ', ($state, $old) => isStateChanged($state, $old) && eval(' . Js::from($js) . '))',
                         $afterStateUpdatedJs,
                     )) ?>"
                 <?php } ?>
-                <?php if (filled($visibilityJs = match ([filled($hiddenJs), filled($visibleJs)]) {
-                    [true, true] => "(! ({$hiddenJs})) && ({$visibleJs})",
-                    [true, false] => "! ({$hiddenJs})",
-                    [false, true] => $visibleJs,
-                    default => null,
-                })) { ?>
+                <?php if (filled($visibilityJs)) { ?>
                     x-bind:class="{ 'fi-hidden': ! (<?= $visibilityJs ?>) }"
+                    x-bind:disabled="! (<?= $visibilityJs ?>)"
                     x-cloak
                 <?php } ?>
             <?php } ?>
@@ -219,8 +273,34 @@ class Component extends ViewComponent
                     <?= $this->toHtml() ?>
                 </div>
             <?php } ?>
-        </div>
+        </<?= $wrapperTag ?>>
 
         <?php return ob_get_clean();
+    }
+
+    /**
+     * @internal This method is not part of the public API and should not be used. Its parameters may change at any time without notice.
+     */
+    protected function renderWrapperBladeComponent(string $component, ComponentSlot $slot, ComponentAttributeBag $attributes): string
+    {
+        // Wrappers were originally rendered using the `<x-dynamic-component>` Blade component,
+        // so `fieldWrapperView()` and `entryWrapperView()` accepted any Blade component name,
+        // which is still supported for backwards compatibility.
+        return Blade::render(
+            '<x-dynamic-component :component="$component" {{ $attributes }}>{{ $slot }}</x-dynamic-component>',
+            [
+                'component' => $component,
+                'attributes' => $attributes,
+                'slot' => $slot,
+            ],
+        );
+    }
+
+    /**
+     * @deprecated Fields no longer strip their native validation attributes when concealed. Concealing containers reveal themselves around an invalid control, using the `invalid` event listener in the `filament/schemas` package, and components with a client-side visibility condition are wrapped in a `<fieldset>` that is `disabled` while hidden.
+     */
+    public function isConcealed(): bool
+    {
+        return false;
     }
 }

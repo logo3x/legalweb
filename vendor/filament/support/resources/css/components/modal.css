@@ -1,4 +1,6 @@
 .fi-modal {
+    @apply outline-none;
+
     &.fi-modal-slide-over,
     &.fi-width-screen {
         & > .fi-modal-window-ctn > .fi-modal-window {
@@ -10,14 +12,31 @@
         }
     }
 
-    &.fi-modal-slide-over {
+    &.fi-modal-slide-over.fi-modal-slide-over-from-start {
         & > .fi-modal-window-ctn > .fi-modal-window {
-            @apply ms-auto overflow-y-auto;
+            @apply me-auto;
+
+            &.fi-transition-enter-start,
+            &.fi-transition-leave-end {
+                @apply -translate-x-full rtl:translate-x-full;
+            }
+        }
+    }
+
+    &.fi-modal-slide-over.fi-modal-slide-over-from-end {
+        & > .fi-modal-window-ctn > .fi-modal-window {
+            @apply ms-auto;
 
             &.fi-transition-enter-start,
             &.fi-transition-leave-end {
                 @apply translate-x-full rtl:-translate-x-full;
             }
+        }
+    }
+
+    &.fi-modal-slide-over {
+        & > .fi-modal-window-ctn > .fi-modal-window {
+            @apply overflow-y-auto;
 
             &.fi-transition-enter-end,
             &.fi-transition-leave-start {
@@ -25,7 +44,7 @@
             }
 
             & .fi-modal-header {
-                @apply gap-x-3;
+                @apply gap-x-3 pt-5;
             }
 
             & .fi-modal-icon-bg {
@@ -33,7 +52,7 @@
             }
 
             & .fi-modal-close-btn {
-                @apply end-6 top-6;
+                @apply end-6 top-5;
             }
         }
     }
@@ -111,19 +130,24 @@
         }
     }
 
+    /* Like the modal itself, the window container does not show a focus outline when it receives focus from the focus trap, such as when the modal has no tabbable content. */
     & > .fi-modal-window-ctn {
-        @apply fixed inset-0 z-40 grid min-h-full grid-rows-[1fr_auto_1fr] justify-items-center sm:grid-rows-[1fr_auto_3fr];
+        @apply fixed inset-0 z-40 grid min-h-full grid-rows-[1fr_auto_1fr] justify-items-center outline-none sm:grid-rows-[1fr_auto_3fr];
 
         &.fi-clickable {
             @apply cursor-pointer;
         }
     }
 
+    &.fi-modal-click-through {
+        @apply pointer-events-none;
+    }
+
     &:not(.fi-modal-slide-over):not(.fi-width-screen) {
         & > .fi-modal-window-ctn {
             @apply p-4;
 
-            & .fi-modal-window {
+            & > .fi-modal-window {
                 @apply mx-auto rounded-xl;
             }
         }
@@ -141,8 +165,9 @@
         }
     }
 
+    /* Like the modal itself, the window does not show a focus outline when it receives focus from the focus trap, such as when it carries the `autofocus` attribute. */
     & > .fi-modal-window-ctn > .fi-modal-window {
-        @apply pointer-events-auto relative row-start-2 flex w-full cursor-default flex-col bg-white shadow-xl ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10;
+        @apply pointer-events-auto relative row-start-2 flex w-full cursor-default flex-col bg-white shadow-xl ring-1 ring-gray-950/5 outline-none dark:bg-gray-900 dark:ring-white/10;
 
         & .fi-modal-header {
             @apply flex px-6 pt-6;
@@ -150,6 +175,10 @@
             &.fi-vertical-align-center {
                 @apply items-center;
             }
+        }
+
+        & .fi-modal-eyebrow {
+            @apply mb-1 text-xs font-medium text-gray-500 dark:text-gray-400;
         }
 
         & .fi-modal-heading {
@@ -191,6 +220,14 @@
 
         &.fi-hidden {
             @apply hidden;
+        }
+
+        &.fi-width-3xs {
+            @apply max-w-3xs;
+        }
+
+        &.fi-width-2xs {
+            @apply max-w-2xs;
         }
 
         &.fi-width-xs {
@@ -237,6 +274,10 @@
             @apply max-w-7xl;
         }
 
+        &.fi-width-none {
+            @apply max-w-none;
+        }
+
         &.fi-width-full {
             @apply max-w-full;
         }
@@ -255,6 +296,10 @@
 
         &.fi-width-prose {
             @apply max-w-prose;
+        }
+
+        &.fi-width-container {
+            @apply container;
         }
 
         &.fi-width-screen-sm {
@@ -288,6 +333,7 @@
 
         &.fi-modal-window-has-close-btn {
             &.fi-align-center:not(.fi-modal-window-has-icon) {
+                & .fi-modal-eyebrow,
                 & .fi-modal-heading {
                     @apply ms-6;
                 }
@@ -296,6 +342,7 @@
             &:not(.fi-modal-window-has-icon),
             &.fi-align-start,
             &.fi-align-left {
+                & .fi-modal-eyebrow,
                 & .fi-modal-heading {
                     @apply me-6;
                 }
@@ -366,9 +413,15 @@
         }
     }
 
+    &.fi-modal-slide-over.fi-modal-has-sticky-header {
+        & > .fi-modal-window-ctn > .fi-modal-window > .fi-modal-header {
+            @apply pb-5;
+        }
+    }
+
     &.fi-modal-has-sticky-footer {
         & > .fi-modal-window-ctn > .fi-modal-window > .fi-modal-footer {
-            @apply sticky bottom-0 border-t border-gray-200 bg-white py-5 dark:border-white/10 dark:bg-gray-900;
+            @apply sticky bottom-0 z-10 border-t border-gray-200 bg-white py-5 dark:border-white/10 dark:bg-gray-900;
         }
     }
 

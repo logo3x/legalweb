@@ -21,18 +21,20 @@
         "php": "^8.2",
         "ext-json": "*",
         "ext-mbstring": "*",
-        "illuminate/container": "^11.45.3|^12.41.1|^13.0",
-        "illuminate/console": "^11.45.3|^12.41.1|^13.0",
-        "illuminate/contracts": "^11.45.3|^12.41.1|^13.0",
-        "illuminate/http": "^11.45.3|^12.41.1|^13.0",
-        "illuminate/routing": "^11.45.3|^12.41.1|^13.0",
-        "illuminate/support": "^11.45.3|^12.41.1|^13.0",
-        "illuminate/validation": "^11.45.3|^12.41.1|^13.0",
-        "illuminate/json-schema": "^12.41.1|^13.0"
+        "illuminate/container": "^12.41.1|^13.0",
+        "illuminate/console": "^12.41.1|^13.0",
+        "illuminate/contracts": "^12.41.1|^13.0",
+        "illuminate/http": "^12.41.1|^13.0",
+        "illuminate/routing": "^12.41.1|^13.0",
+        "illuminate/support": "^12.41.1|^13.0",
+        "illuminate/validation": "^12.41.1|^13.0",
+        "illuminate/json-schema": "^12.41.1|^13.0",
+        "symfony/process": "^7.4.5|^8.0.5"
     },
     "require-dev": {
+        "jasonmccreary/double": "^1.0",
         "laravel/pint": "^1.20",
-        "orchestra/testbench": "^9.15|^10.8|^11.0",
+        "orchestra/testbench": "^10.8|^11.0",
         "pestphp/pest": "^3.8.5|^4.3.2",
         "phpstan/phpstan": "^2.1.27",
         "rector/rector": "^2.2.4"
@@ -55,7 +57,7 @@
                 "Laravel\\Mcp\\Server\\McpServiceProvider"
             ],
             "aliases": {
-                "Mcp": "Laravel\\Mcp\\Server\\Facades\\Mcp"
+                "Mcp": "Laravel\\Mcp\\Facades\\Mcp"
             }
         }
     },
@@ -72,6 +74,7 @@
             "@build",
             "@php vendor/bin/testbench serve --ansi"
         ],
+        "minify": "npx terser resources/js/mcp-sdk.js --compress --mangle --output resources/js/mcp-sdk.min.js",
         "lint": [
             "pint",
             "rector"
@@ -82,6 +85,9 @@
         ],
         "test:unit": "pest --ci --coverage --min=92.5",
         "test:types": "phpstan --no-progress",
+        "test:conformance": "bash tests/Conformance/run.sh all",
+        "test:conformance:server": "bash tests/Conformance/run.sh server",
+        "test:conformance:client": "bash tests/Conformance/run.sh client",
         "test": [
             "@test:lint",
             "@test:unit",

@@ -91,9 +91,11 @@ use PHPUnit\Runner\ShutdownHandler;
 use PHPUnit\TestRunner\TestResult\PassedTests;
 use PHPUnit\TextUI\Configuration\Registry as ConfigurationRegistry;
 use PHPUnit\Util\Exporter;
+use PHPUnit\Util\Sanitizer;
 use PHPUnit\Util\Test as TestUtil;
 use ReflectionClass;
 use ReflectionException;
+use ReflectionMethod;
 use ReflectionObject;
 use SebastianBergmann\CodeCoverage\UnintentionallyCoveredCodeException;
 use SebastianBergmann\Comparator\Comparator;
@@ -364,7 +366,7 @@ abstract class TestCase extends Assert implements Reorderable, SelfDescribing, T
             return;
         }
 
-        IsolatedTestRunnerRegistry::run(
+        (new SeparateProcessTestRunner)->run(
             $this,
             $this->runClassInSeparateProcess && !$this->runTestInSeparateProcess,
             $this->preserveGlobalState,
@@ -499,7 +501,7 @@ abstract class TestCase extends Assert implements Reorderable, SelfDescribing, T
 
             if ($this->inIsolation) {
                 // @codeCoverageIgnoreStart
-                $this->invokeBeforeClassHookMethods($hookMethods, $emitter);
+                $this->invokeBeforeClassHookMethods($hookMethods);
                 // @codeCoverageIgnoreEnd
             }
 
@@ -599,7 +601,10 @@ abstract class TestCase extends Assert implements Reorderable, SelfDescribing, T
             $this->stopOutputBuffering()) {
             $outputBufferingStopped = true;
 
-            $this->performAssertionsOnOutput();
+            try {
+                $this->performAssertionsOnOutput();
+            } catch (ExpectationFailedException $e) {
+            }
         }
 
         try {
@@ -607,6 +612,8 @@ abstract class TestCase extends Assert implements Reorderable, SelfDescribing, T
 
             /** @phpstan-ignore catch.neverThrown */
         } catch (Throwable $e) {
+            $this->status = TestStatus::error($e->getMessage());
+
             Event\Facade::emitter()->testErrored(
                 $this->valueObjectForEvents(),
                 Event\Code\ThrowableBuilder::from($e),
@@ -621,20 +628,43 @@ abstract class TestCase extends Assert implements Reorderable, SelfDescribing, T
 
                 if ($this->inIsolation) {
                     // @codeCoverageIgnoreStart
-                    $this->invokeAfterClassHookMethods($hookMethods, $emitter);
+                    $this->invokeAfterClassHookMethods($hookMethods);
                     // @codeCoverageIgnoreEnd
                 }
             }
-        } catch (AssertionError|AssertionFailedError $e) {
-            $this->status = TestStatus::failure($e->getMessage());
+        } catch (IncompleteTest $markedIncompleteDuringTearDown) {
+            if (!isset($e) && !isset($_e)) {
+                $this->status = TestStatus::incomplete($markedIncompleteDuringTearDown->getMessage());
+                $e            = $markedIncompleteDuringTearDown;
 
-            $emitter->testFailed(
-                $this->valueObjectForEvents(),
-                Event\Code\ThrowableBuilder::from($e),
-                Event\Code\ComparisonFailureBuilder::from($e),
-            );
+                $emitter->testMarkedAsIncomplete(
+                    $this->valueObjectForEvents(),
+                    Event\Code\ThrowableBuilder::from($markedIncompleteDuringTearDown),
+                );
+            }
+        } catch (SkippedTest $skippedDuringTearDown) {
+            if (!isset($e) && !isset($_e)) {
+                $this->status = TestStatus::skipped($skippedDuringTearDown->getMessage());
+                $e            = $skippedDuringTearDown;
+
+                $emitter->testSkipped(
+                    $this->valueObjectForEvents(),
+                    $skippedDuringTearDown->getMessage(),
+                );
+            }
+        } catch (AssertionError|AssertionFailedError $assertionFailedDuringTearDown) {
+            if (!isset($_e) && (!isset($e) || $e instanceof SkippedWithMessageException)) {
+                $this->status = TestStatus::failure($assertionFailedDuringTearDown->getMessage());
+                $e            = $assertionFailedDuringTearDown;
+
+                $emitter->testFailed(
+                    $this->valueObjectForEvents(),
+                    Event\Code\ThrowableBuilder::from($assertionFailedDuringTearDown),
+                    Event\Code\ComparisonFailureBuilder::from($assertionFailedDuringTearDown),
+                );
+            }
         } catch (Throwable $exceptionRaisedDuringTearDown) {
-            if (!isset($e) || $e instanceof SkippedWithMessageException) {
+            if (!isset($_e) && (!isset($e) || $e instanceof SkippedWithMessageException)) {
                 $this->status = TestStatus::error($exceptionRaisedDuringTearDown->getMessage());
                 $e            = $exceptionRaisedDuringTearDown;
 
@@ -876,7 +906,10 @@ abstract class TestCase extends Assert implements Reorderable, SelfDescribing, T
                 return sprintf(' with data set #%s', $this->dataName);
             }
 
-            return sprintf(' with data set "%s"', $this->dataName);
+            return sprintf(
+                ' with data set "%s"',
+                Sanitizer::sanitizeControlCharacters($this->dataName),
+            );
         }
 
         return '';
@@ -1057,11 +1090,15 @@ abstract class TestCase extends Assert implements Reorderable, SelfDescribing, T
 
     final protected function expectOutputRegex(string $expectedRegex): void
     {
+        $this->warnAboutMultipleOutputExpectations();
+
         $this->outputExpectedRegex = $expectedRegex;
     }
 
     final protected function expectOutputString(string $expectedString): void
     {
+        $this->warnAboutMultipleOutputExpectations();
+
         $this->outputExpectedString = $expectedString;
     }
 
@@ -1175,9 +1212,12 @@ abstract class TestCase extends Assert implements Reorderable, SelfDescribing, T
         $mock = (new MockGenerator)->testDouble(
             $type,
             true,
-            callOriginalConstructor: false,
-            callOriginalClone: false,
-            returnValueGeneration: self::generateReturnValuesForTestDoubles(),
+            [],
+            [],
+            '',
+            false,
+            false,
+            self::generateReturnValuesForTestDoubles(),
         );
 
         assert($mock instanceof $type);
@@ -1200,7 +1240,7 @@ abstract class TestCase extends Assert implements Reorderable, SelfDescribing, T
         $mock = (new MockGenerator)->testDoubleForInterfaceIntersection(
             $interfaces,
             true,
-            returnValueGeneration: self::generateReturnValuesForTestDoubles(),
+            self::generateReturnValuesForTestDoubles(),
         );
 
         assert($mock instanceof MockObject);
@@ -1298,6 +1338,15 @@ abstract class TestCase extends Assert implements Reorderable, SelfDescribing, T
     }
 
     /**
+     * @param array<mixed> $testArguments
+     */
+    protected function invokeTestMethod(string $methodName, array $testArguments): mixed
+    {
+        /** @phpstan-ignore method.dynamicName */
+        return $this->{$methodName}(...$testArguments);
+    }
+
+    /**
      * Returns the data set as a string compatible with the --filter CLI option.
      *
      * @internal This method is not covered by the backward compatibility promise for PHPUnit
@@ -1309,7 +1358,10 @@ abstract class TestCase extends Assert implements Reorderable, SelfDescribing, T
                 return sprintf('#%d', $this->dataName);
             }
 
-            return sprintf('@%s', $this->dataName);
+            return sprintf(
+                '@%s',
+                Sanitizer::sanitizeControlCharacters($this->dataName),
+            );
         }
 
         return '';
@@ -1328,8 +1380,7 @@ abstract class TestCase extends Assert implements Reorderable, SelfDescribing, T
         $this->startErrorLogCapture();
 
         try {
-            /** @phpstan-ignore method.dynamicName */
-            $testResult = $this->{$this->methodName}(...$testArguments);
+            $testResult = $this->invokeTestMethod($this->methodName, $testArguments);
 
             $this->verifyErrorLogExpectation();
         } catch (Throwable $exception) {
@@ -1346,6 +1397,7 @@ abstract class TestCase extends Assert implements Reorderable, SelfDescribing, T
             $this->stopErrorLogCapture();
         }
 
+        $this->emitEventForCustomTestMethodInvocation();
         $this->expectedExceptionWasNotRaised();
 
         return $testResult;
@@ -1459,7 +1511,8 @@ abstract class TestCase extends Assert implements Reorderable, SelfDescribing, T
             return true;
         }
 
-        $passedTests = PassedTests::instance();
+        $passedTests         = PassedTests::instance();
+        $dependsOnLargerTest = false;
 
         foreach ($this->dependencies as $dependency) {
             if (!$dependency->isValid()) {
@@ -1499,16 +1552,11 @@ abstract class TestCase extends Assert implements Reorderable, SelfDescribing, T
             }
 
             if ($passedTests->isGreaterThan($dependencyTarget, $this->size())) {
-                Event\Facade::emitter()->testConsideredRisky(
-                    $this->valueObjectForEvents(),
-                    'This test depends on a test that is larger than itself',
-                );
-
-                return true;
+                $dependsOnLargerTest = true;
             }
 
             if (!$passedTests->hasReturnValue($dependencyTarget)) {
-                return true;
+                continue;
             }
 
             $returnValue = $passedTests->returnValue($dependencyTarget);
@@ -1526,6 +1574,17 @@ abstract class TestCase extends Assert implements Reorderable, SelfDescribing, T
         }
 
         $this->testValueObjectForEvents = null;
+
+        // This is done after all dependencies have been resolved so that a
+        // test that is skipped because another of its dependencies did not
+        // pass is not also considered risky, and so that a test that depends
+        // on more than one larger test is only considered risky once
+        if ($dependsOnLargerTest) {
+            Event\Facade::emitter()->testConsideredRisky(
+                $this->valueObjectForEvents(),
+                'This test depends on a test that is larger than itself',
+            );
+        }
 
         return true;
     }
@@ -1631,7 +1690,9 @@ abstract class TestCase extends Assert implements Reorderable, SelfDescribing, T
                 $message = 'Test code or tested code removed error handlers other than its own';
             }
 
-            foreach ($activeErrorHandlers as $handler) {
+            $numberOfActiveErrorHandlers = count($activeErrorHandlers);
+
+            for ($i = 0; $i < $numberOfActiveErrorHandlers; $i++) {
                 restore_error_handler();
             }
 
@@ -1658,7 +1719,9 @@ abstract class TestCase extends Assert implements Reorderable, SelfDescribing, T
                 $message = 'Test code or tested code removed exception handlers other than its own';
             }
 
-            foreach ($activeExceptionHandlers as $handler) {
+            $numberOfActiveExceptionHandlers = count($activeExceptionHandlers);
+
+            for ($i = 0; $i < $numberOfActiveExceptionHandlers; $i++) {
                 restore_exception_handler();
             }
 
@@ -1803,6 +1866,13 @@ abstract class TestCase extends Assert implements Reorderable, SelfDescribing, T
             $excludeList->addClassNamePrefix('SebastianBergmann\Invoker');
             $excludeList->addClassNamePrefix('SebastianBergmann\Template');
             $excludeList->addClassNamePrefix('SebastianBergmann\Timer');
+
+            foreach (array_keys($GLOBALS) as $key) {
+                if (str_starts_with($key, '__phpunit_')) {
+                    $excludeList->addGlobalVariable($key);
+                }
+            }
+
             $excludeList->addStaticProperty(ComparatorFactory::class, 'instance');
 
             foreach ($this->backupStaticPropertiesExcludeList as $class => $properties) {
@@ -2062,17 +2132,9 @@ abstract class TestCase extends Assert implements Reorderable, SelfDescribing, T
      *
      * @codeCoverageIgnore
      */
-    private function invokeBeforeClassHookMethods(array $hookMethods, Event\Emitter $emitter): void
+    private function invokeBeforeClassHookMethods(array $hookMethods): void
     {
-        $this->invokeHookMethods(
-            $hookMethods['beforeClass'],
-            $emitter,
-            'beforeFirstTestMethodCalled',
-            'beforeFirstTestMethodErrored',
-            'beforeFirstTestMethodFailed',
-            'beforeFirstTestMethodFinished',
-            false,
-        );
+        $this->invokeHookMethodsWithoutEmittingEvents($hookMethods['beforeClass']);
     }
 
     /**
@@ -2150,34 +2212,35 @@ abstract class TestCase extends Assert implements Reorderable, SelfDescribing, T
      *
      * @codeCoverageIgnore
      */
-    private function invokeAfterClassHookMethods(array $hookMethods, Event\Emitter $emitter): void
+    private function invokeAfterClassHookMethods(array $hookMethods): void
     {
-        $this->invokeHookMethods(
-            $hookMethods['afterClass'],
-            $emitter,
-            'afterLastTestMethodCalled',
-            'afterLastTestMethodErrored',
-            'afterLastTestMethodFailed',
-            'afterLastTestMethodFinished',
-            false,
-        );
+        foreach ($hookMethods['afterClass']->methodNamesSortedByPriority() as $methodName) {
+            if ($this->methodDoesNotExistOrIsDeclaredInTestCase($methodName)) {
+                continue;
+            }
+
+            try {
+                /** @phpstan-ignore method.dynamicName */
+                $this->{$methodName}();
+            } catch (IncompleteTest|SkippedTest) {
+                // an after-last-test method cannot mark the test as incomplete
+                // or skip it, just as it cannot when it is called for the test
+                // class in the process that runs the test suite
+            }
+        }
     }
 
     /**
-     * @param 'afterLastTestMethodCalled'|'afterTestMethodCalled'|'beforeFirstTestMethodCalled'|'beforeTestMethodCalled'|'postConditionCalled'|'preConditionCalled'             $calledMethod
-     * @param 'afterLastTestMethodErrored'|'afterTestMethodErrored'|'beforeFirstTestMethodErrored'|'beforeTestMethodErrored'|'postConditionErrored'|'preConditionErrored'       $erroredMethod
-     * @param 'afterLastTestMethodFailed'|'afterTestMethodFailed'|'beforeFirstTestMethodFailed'|'beforeTestMethodFailed'|'postConditionFailed'|'preConditionFailed'             $failedMethod
-     * @param 'afterLastTestMethodFinished'|'afterTestMethodFinished'|'beforeFirstTestMethodFinished'|'beforeTestMethodFinished'|'postConditionFinished'|'preConditionFinished' $finishedMethod
+     * @param 'afterTestMethodCalled'|'beforeTestMethodCalled'|'postConditionCalled'|'preConditionCalled'         $calledMethod
+     * @param 'afterTestMethodErrored'|'beforeTestMethodErrored'|'postConditionErrored'|'preConditionErrored'     $erroredMethod
+     * @param 'afterTestMethodFailed'|'beforeTestMethodFailed'|'postConditionFailed'|'preConditionFailed'         $failedMethod
+     * @param 'afterTestMethodFinished'|'beforeTestMethodFinished'|'postConditionFinished'|'preConditionFinished' $finishedMethod
      *
      * @throws Throwable
      */
-    private function invokeHookMethods(HookMethodCollection $hookMethods, Event\Emitter $emitter, string $calledMethod, string $erroredMethod, string $failedMethod, string $finishedMethod, bool $forTestCase = true): void
+    private function invokeHookMethods(HookMethodCollection $hookMethods, Event\Emitter $emitter, string $calledMethod, string $erroredMethod, string $failedMethod, string $finishedMethod): void
     {
-        if ($forTestCase) {
-            $test = $this->valueObjectForEvents();
-        } else {
-            $test = static::class;
-        }
+        $test = $this->valueObjectForEvents();
 
         $methodsInvoked = [];
 
@@ -2205,19 +2268,21 @@ abstract class TestCase extends Assert implements Reorderable, SelfDescribing, T
 
             $methodsInvoked[] = $methodInvoked;
 
-            if (isset($t) && !$t instanceof SkippedTest) {
-                if ($t instanceof AssertionFailedError) {
-                    $method = $failedMethod;
-                } else {
-                    $method = $erroredMethod;
-                }
+            if (isset($t)) {
+                if (!$t instanceof IncompleteTest && !$t instanceof SkippedTest) {
+                    if ($t instanceof AssertionError || $t instanceof AssertionFailedError) {
+                        $method = $failedMethod;
+                    } else {
+                        $method = $erroredMethod;
+                    }
 
-                /** @phpstan-ignore method.dynamicName */
-                $emitter->{$method}(
-                    $test,
-                    $methodInvoked,
-                    Event\Code\ThrowableBuilder::from($t),
-                );
+                    /** @phpstan-ignore method.dynamicName */
+                    $emitter->{$method}(
+                        $test,
+                        $methodInvoked,
+                        Event\Code\ThrowableBuilder::from($t),
+                    );
+                }
 
                 break;
             }
@@ -2233,6 +2298,29 @@ abstract class TestCase extends Assert implements Reorderable, SelfDescribing, T
 
         if (isset($t)) {
             throw $t;
+        }
+    }
+
+    /**
+     * The before-first-test methods and after-last-test methods of a test that
+     * runs in process isolation are called again in the child process, as part
+     * of running that test. The test runner calls them for the test class in
+     * its own process and reports that it does. In the child process, they are
+     * part of the test, so their outcome is the outcome of the test.
+     *
+     * @throws Throwable
+     *
+     * @codeCoverageIgnore
+     */
+    private function invokeHookMethodsWithoutEmittingEvents(HookMethodCollection $hookMethods): void
+    {
+        foreach ($hookMethods->methodNamesSortedByPriority() as $methodName) {
+            if ($this->methodDoesNotExistOrIsDeclaredInTestCase($methodName)) {
+                continue;
+            }
+
+            /** @phpstan-ignore method.dynamicName */
+            $this->{$methodName}();
         }
     }
 
@@ -2469,6 +2557,33 @@ abstract class TestCase extends Assert implements Reorderable, SelfDescribing, T
         return MetadataRegistry::parser()->forClassAndMethod(static::class, $this->methodName)->isAllowMockObjectsWithoutExpectations()->isNotEmpty();
     }
 
+    private function emitEventForCustomTestMethodInvocation(): void
+    {
+        $reflector = new ReflectionMethod($this, 'invokeTestMethod');
+
+        if (self::class === $reflector->getDeclaringClass()->getName()) {
+            return;
+        }
+
+        Event\Facade::emitter()->testUsedCustomMethodInvocation(
+            $this->valueObjectForEvents(),
+            new Event\Code\ClassMethod(
+                $reflector->getDeclaringClass()->getName(),
+                'invokeTestMethod',
+            ),
+        );
+    }
+
+    private function warnAboutMultipleOutputExpectations(): void
+    {
+        if ($this->hasExpectationOnOutput()) {
+            Event\Facade::emitter()->testTriggeredPhpunitWarning(
+                $this->valueObjectForEvents(),
+                'Only one expectation on output can be configured: expectOutputString() and expectOutputRegex() cannot be combined and must not be called more than once',
+            );
+        }
+    }
+
     /**
      * Returns a builder object to create test stubs using a fluent interface.
      *
@@ -2501,9 +2616,12 @@ abstract class TestCase extends Assert implements Reorderable, SelfDescribing, T
         $stub = (new MockGenerator)->testDouble(
             $type,
             false,
-            callOriginalConstructor: false,
-            callOriginalClone: false,
-            returnValueGeneration: self::generateReturnValuesForTestDoubles(),
+            [],
+            [],
+            '',
+            false,
+            false,
+            self::generateReturnValuesForTestDoubles(),
         );
 
         Event\Facade::emitter()->testCreatedStub($type);
@@ -2524,7 +2642,7 @@ abstract class TestCase extends Assert implements Reorderable, SelfDescribing, T
         $stub = (new MockGenerator)->testDoubleForInterfaceIntersection(
             $interfaces,
             false,
-            returnValueGeneration: self::generateReturnValuesForTestDoubles(),
+            self::generateReturnValuesForTestDoubles(),
         );
 
         Event\Facade::emitter()->testCreatedStubForIntersectionOfInterfaces($interfaces);

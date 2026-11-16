@@ -12,6 +12,7 @@ use Filament\Auth\MultiFactor\App\Actions\RegenerateAppAuthenticationRecoveryCod
 use Filament\Auth\MultiFactor\App\Actions\SetUpAppAuthenticationAction;
 use Filament\Auth\MultiFactor\App\Contracts\HasAppAuthentication;
 use Filament\Auth\MultiFactor\App\Contracts\HasAppAuthenticationRecovery;
+use Filament\Auth\MultiFactor\Concerns\HasCacheStore;
 use Filament\Auth\MultiFactor\Contracts\MultiFactorAuthenticationProvider;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\OneTimeCodeInput;
@@ -21,15 +22,22 @@ use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
+use Illuminate\Cache\Lock;
+use Illuminate\Cache\Repository;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use LogicException;
 use PragmaRX\Google2FAQRCode\Google2FA;
+use SensitiveParameter;
+
+use function Filament\Support\encode_key_segments;
 
 class AppAuthentication implements MultiFactorAuthenticationProvider
 {
+    use HasCacheStore;
+
     protected bool $isRecoverable = false;
 
     protected bool $canRegenerateRecoveryCodes = true;
@@ -87,7 +95,7 @@ class AppAuthentication implements MultiFactorAuthenticationProvider
         return $secret;
     }
 
-    public function saveSecret(HasAppAuthentication $user, ?string $secret): void
+    public function saveSecret(HasAppAuthentication $user, #[SensitiveParameter] ?string $secret): void
     {
         $user->saveAppAuthenticationSecret($secret);
     }
@@ -109,7 +117,7 @@ class AppAuthentication implements MultiFactorAuthenticationProvider
     /**
      * @param  array<string> | null  $codes
      */
-    public function saveRecoveryCodes(HasAppAuthenticationRecovery $user, ?array $codes): void
+    public function saveRecoveryCodes(HasAppAuthenticationRecovery $user, #[SensitiveParameter] ?array $codes): void
     {
         if (! is_array($codes)) {
             $user->saveAppAuthenticationRecoveryCodes(null);
@@ -118,7 +126,7 @@ class AppAuthentication implements MultiFactorAuthenticationProvider
         }
 
         $user->saveAppAuthenticationRecoveryCodes(array_map(
-            fn (string $code): string => Hash::make($code),
+            fn (#[SensitiveParameter] string $code): string => Hash::make($code),
             $codes,
         ));
     }
@@ -128,12 +136,12 @@ class AppAuthentication implements MultiFactorAuthenticationProvider
         return $this->google2FA->generateSecretKey(16);
     }
 
-    public function getCurrentCode(HasAppAuthentication $user, ?string $secret = null): string
+    public function getCurrentCode(HasAppAuthentication $user, #[SensitiveParameter] ?string $secret = null): string
     {
         return $this->google2FA->getCurrentOtp($secret ?? $this->getSecret($user));
     }
 
-    public function generateQrCodeDataUri(string $secret): string
+    public function generateQrCodeDataUri(#[SensitiveParameter] string $secret): string
     {
         /** @var HasAppAuthentication $user */
         $user = Filament::auth()->user();
@@ -149,6 +157,7 @@ class AppAuthentication implements MultiFactorAuthenticationProvider
             class_exists(Writer::class)
             && class_exists(ImageRenderer::class)
             && (! extension_loaded('imagick'))
+            && (! str_starts_with($inlineQrCode, 'data:'))
         ) {
             $inlineQrCode = 'data:image/svg+xml;base64,' . base64_encode($inlineQrCode);
         }
@@ -164,51 +173,132 @@ class AppAuthentication implements MultiFactorAuthenticationProvider
         return Collection::times($this->getRecoveryCodeCount(), fn (): string => Str::random(10) . '-' . Str::random(10))->all();
     }
 
-    public function verifyCode(string $code, ?string $secret = null): bool
+    public function verifyCode(#[SensitiveParameter] string $code, #[SensitiveParameter] ?string $secret = null, bool $shouldPreventCodeReuse = false): bool
     {
         /** @var HasAppAuthentication $user */
         $user = Filament::auth()->user();
 
         $secret = $secret ?? $this->getSecret($user);
-        $cacheKey = 'filament.app_authentication_codes.' . md5($secret . $code);
 
-        $timestamp = $this->google2FA->verifyKeyNewer($secret, $code, cache()->get($cacheKey), $this->getCodeWindow());
-
-        if ($timestamp !== false) {
-            if ($timestamp === true) {
-                $timestamp = $this->google2FA->getTimestamp();
-            }
-
-            cache()->put($cacheKey, $timestamp, ($this->getCodeWindow() + 1) * 60);
-
-            return true;
+        if (! $shouldPreventCodeReuse) {
+            return $this->google2FA->verifyKey($secret, $code, $this->getCodeWindow());
         }
 
-        return false;
+        // The key deliberately excludes the code itself, so that it records the timestep of the
+        // last accepted code rather than a marker for one specific code. RFC 6238 requires that
+        // a successful verification rejects that code and every earlier one, not just a repeat
+        // of the same code.
+        $cacheKey = 'filament:auth:app_authentication:code:' . hash('sha256', $secret);
+        $legacyCacheKey = 'filament.app_authentication_codes.' . md5($secret);
+        $cache = $this->getCacheRepository();
+
+        $verifyCode = function (?Lock $lock, Repository $cache) use ($cacheKey, $legacyCacheKey, $code, $secret): bool {
+            // Passing an initial `$lastAcceptedTimestamp` makes `verifyKeyNewer()` return the
+            // matched period instead of `true`, so future codes are cached correctly.
+            $lastAcceptedTimestamp = $this->getLastAcceptedCodeTimestamp($cache, $cacheKey, $legacyCacheKey);
+
+            if ($lastAcceptedTimestamp === false) {
+                return false;
+            }
+
+            $lastAcceptedTimestamp ??= $this->google2FA->getTimestamp() - $this->getCodeWindow() - 1;
+
+            $timestamp = $this->google2FA->verifyKeyNewer($secret, $code, $lastAcceptedTimestamp, $this->getCodeWindow());
+
+            if ($timestamp === false) {
+                return false;
+            }
+
+            $lastAcceptedTimestamp = $this->getLastAcceptedCodeTimestamp($cache, $cacheKey, $legacyCacheKey);
+
+            if (
+                ($lastAcceptedTimestamp === false)
+                || (($lastAcceptedTimestamp !== null) && ($timestamp <= $lastAcceptedTimestamp))
+                || (($lock !== null) && (! $lock->isOwnedByCurrentProcess()))
+            ) {
+                return false;
+            }
+
+            // Preserve replay protection for workers still using the old key during deployment.
+            return $cache->forever($legacyCacheKey, $timestamp) && $cache->forever($cacheKey, $timestamp);
+        };
+
+        return $this->executeWithCacheLock($cache, "{$cacheKey}:lock", $verifyCode);
     }
 
-    public function verifyRecoveryCode(string $recoveryCode, ?HasAppAuthenticationRecovery $user = null): bool
+    protected function getLastAcceptedCodeTimestamp(Repository $cache, string $cacheKey, string $legacyCacheKey): int | false | null
     {
-        $user ??= Filament::auth()->user();
+        $lastAcceptedTimestamp = null;
 
-        $remainingCodes = [];
-        $isValid = false;
+        foreach ([$cacheKey, $legacyCacheKey] as $key) {
+            $timestamp = $cache->get($key);
 
-        foreach ($this->getRecoveryCodes($user) as $hashedRecoveryCode) { /** @phpstan-ignore-line */
-            if (Hash::check($recoveryCode, $hashedRecoveryCode)) {
-                $isValid = true;
+            if (is_string($timestamp) && ctype_digit($timestamp)) {
+                $timestamp = (int) $timestamp;
+            }
 
+            if ($timestamp === null) {
                 continue;
             }
 
-            $remainingCodes[] = $hashedRecoveryCode;
+            if (! is_int($timestamp)) {
+                return false;
+            }
+
+            $lastAcceptedTimestamp = ($lastAcceptedTimestamp === null) ? $timestamp : max($lastAcceptedTimestamp, $timestamp);
         }
 
-        if ($isValid) {
-            $user->saveAppAuthenticationRecoveryCodes($remainingCodes);
-        }
+        return $lastAcceptedTimestamp;
+    }
 
-        return $isValid;
+    public function verifyRecoveryCode(#[SensitiveParameter] string $recoveryCode, ?HasAppAuthenticationRecovery $user = null): bool
+    {
+        $user ??= Filament::auth()->user();
+
+        $lockKey = 'filament:auth:app_authentication:recovery_codes:' . hash(
+            'sha256',
+            encode_key_segments($user::class, (string) (($user instanceof Authenticatable) ? $user->getAuthIdentifier() : spl_object_id($user))),
+        ) . ':lock';
+
+        $cache = $this->getCacheRepository();
+        $connection = $user->getConnection(); /** @phpstan-ignore-line */
+
+        return $this->executeWithCacheLock($cache, $lockKey, fn (?Lock $lock): bool => $connection->transaction(function () use ($lock, $user, $recoveryCode): bool {
+            $lockedUser = $user
+                ->newQuery() /** @phpstan-ignore-line */
+                ->whereKey($user->getKey()) /** @phpstan-ignore-line */
+                ->lockForUpdate()
+                ->first();
+
+            if ($lockedUser === null) {
+                return false;
+            }
+
+            $remainingCodes = [];
+            $isValid = false;
+
+            foreach ($this->getRecoveryCodes($lockedUser) as $hashedRecoveryCode) { /** @phpstan-ignore-line */
+                if (Hash::check($recoveryCode, $hashedRecoveryCode)) {
+                    $isValid = true;
+
+                    continue;
+                }
+
+                $remainingCodes[] = $hashedRecoveryCode;
+            }
+
+            if (! $isValid) {
+                return false;
+            }
+
+            if (($lock !== null) && (! $lock->isOwnedByCurrentProcess())) {
+                return false;
+            }
+
+            $lockedUser->saveAppAuthenticationRecoveryCodes($remainingCodes); /** @phpstan-ignore-line */
+
+            return true;
+        }));
     }
 
     /**
@@ -318,16 +408,17 @@ class AppAuthentication implements MultiFactorAuthenticationProvider
         return [
             OneTimeCodeInput::make('code')
                 ->label(__('filament-panels::auth/multi-factor/app/provider.login_form.code.label'))
+                ->submitOnCompletion()
                 ->belowContent(fn (Get $get): Action => Action::make('useRecoveryCode')
                     ->label(__('filament-panels::auth/multi-factor/app/provider.login_form.code.actions.use_recovery_code.label'))
                     ->link()
                     ->action(fn (Set $set) => $set('useRecoveryCode', true))
                     ->visible(fn (): bool => $isRecoverable && (! $get('useRecoveryCode'))))
                 ->validationAttribute(__('filament-panels::auth/multi-factor/app/provider.login_form.code.validation_attribute'))
-                ->required(fn (Get $get): bool => (! $isRecoverable) || blank($get('recoveryCode')))
+                ->required(fn (Get $get): bool => (! $isRecoverable) || (! $get('useRecoveryCode')) || blank($get('recoveryCode')))
                 ->rule(function () use ($user): Closure {
-                    return function (string $attribute, $value, Closure $fail) use ($user): void {
-                        if ($this->verifyCode($value, $this->getSecret($user))) {
+                    return function (string $attribute, #[SensitiveParameter] $value, Closure $fail) use ($user): void {
+                        if ($this->verifyCode($value, $this->getSecret($user), shouldPreventCodeReuse: true)) {
                             return;
                         }
 
@@ -339,8 +430,9 @@ class AppAuthentication implements MultiFactorAuthenticationProvider
                 ->validationAttribute(__('filament-panels::auth/multi-factor/app/provider.login_form.recovery_code.validation_attribute'))
                 ->password()
                 ->revealable(Filament::arePasswordsRevealable())
+                ->autocomplete('one-time-code')
                 ->rule(function () use ($user): Closure {
-                    return function (string $attribute, mixed $value, Closure $fail) use ($user): void {
+                    return function (string $attribute, #[SensitiveParameter] mixed $value, Closure $fail) use ($user): void {
                         if (blank($value)) {
                             return;
                         }

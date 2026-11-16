@@ -254,11 +254,20 @@ final class Style
         $this->output->writeln(['']);
 
         if (! empty($tests)) {
+            $extra = '';
+            foreach (DefaultPrinter::recapCallbacks() as $callback) {
+                $output = $callback($state, $telemetry, $result);
+                if ($output !== '') {
+                    $extra .= '<fg=gray>,</> '.$output;
+                }
+            }
+
             $this->output->writeln([
                 sprintf(
-                    '  <fg=gray>Tests:</>    <fg=default>%s</><fg=gray> (%s assertions)</>',
+                    '  <fg=gray>Tests:</>    <fg=default>%s</><fg=gray> (%s assertions%s)</>',
                     implode('<fg=gray>,</> ', $tests),
                     $result->numberOfAssertions(),
+                    $extra,
                 ),
             ]);
         }
@@ -352,6 +361,7 @@ final class Style
             '/vendor\/brianium\/paratest/',
             '/vendor\/pestphp\/pest/',
             '/vendor\/pestphp\/pest-plugin-arch/',
+            '/vendor\/pestphp\/pest-plugin-evals/',
             '/vendor\/pestphp\/pest-plugin-browser/',
             '/vendor\/phpspec\/prophecy-phpunit/',
             '/vendor\/phpspec\/prophecy/',

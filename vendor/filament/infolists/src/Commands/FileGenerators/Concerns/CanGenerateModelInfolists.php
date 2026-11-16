@@ -18,7 +18,7 @@ trait CanGenerateModelInfolists
     {
         return <<<PHP
             return \$schema
-                ->columns([
+                ->components([
                     {$this->outputInfolistComponents($model)}
                 ]);
             PHP;
@@ -54,6 +54,12 @@ trait CanGenerateModelInfolists
             }
 
             $type = $this->parseColumnType($column);
+
+            if (! $this->canGenerateSchemaComponentForColumnType($type)) {
+                $this->recordSkippedColumn($model, $column);
+
+                continue;
+            }
 
             if (in_array($type['name'], [
                 'json',

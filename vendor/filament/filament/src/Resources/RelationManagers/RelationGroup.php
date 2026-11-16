@@ -23,6 +23,8 @@ class RelationGroup extends Component
      */
     protected string | array | Closure | null $badgeColor = null;
 
+    protected bool | Closure $isBadgeLazyLoaded = false;
+
     protected ?Model $ownerRecord = null;
 
     protected ?string $pageClass = null;
@@ -79,6 +81,21 @@ class RelationGroup extends Component
         return $this;
     }
 
+    public function lazyLoadedBadge(bool | Closure $condition = true): static
+    {
+        $this->isBadgeLazyLoaded = $condition;
+
+        return $this;
+    }
+
+    /**
+     * @deprecated Use `lazyLoadedBadge()` instead.
+     */
+    public function deferBadge(bool | Closure $condition = true): static
+    {
+        return $this->lazyLoadedBadge($condition);
+    }
+
     public function getLabel(): string
     {
         return $this->evaluate($this->label);
@@ -130,9 +147,24 @@ class RelationGroup extends Component
     /**
      * @return string | array<string> | null
      */
-    public function getBadgeColor(): string | array | null
+    public function getBadgeColor(?string $badge = null): string | array | null
     {
-        return $this->evaluate($this->badgeColor);
+        return $this->evaluate($this->badgeColor, [
+            'badge' => $badge,
+        ]);
+    }
+
+    public function isBadgeLazyLoaded(): bool
+    {
+        return (bool) $this->evaluate($this->isBadgeLazyLoaded);
+    }
+
+    /**
+     * @deprecated Use `isBadgeLazyLoaded()` instead.
+     */
+    public function isBadgeDeferred(): bool
+    {
+        return $this->isBadgeLazyLoaded();
     }
 
     public function getOwnerRecord(): ?Model
@@ -176,10 +208,15 @@ class RelationGroup extends Component
 
     public function getTabComponent(): Tab
     {
+        $isTabBadgeLazyLoaded = $this->isBadgeLazyLoaded();
+
         $tab = Tab::make($this->getLabel())
-            ->badge($this->getBadge())
-            ->badgeColor($this->getBadgeColor())
-            ->badgeTooltip($this->getBadgeTooltip())
+            ->badge($isTabBadgeLazyLoaded
+                ? fn (): ?string => $this->getBadge()
+                : ($badge = $this->getBadge()))
+            ->lazyLoadedBadge($isTabBadgeLazyLoaded)
+            ->badgeColor($this->getBadgeColor($badge ?? null))
+            ->badgeTooltip($this->getBadgeTooltip($badge ?? null))
             ->icon($this->getIcon())
             ->iconPosition($this->getIconPosition());
 

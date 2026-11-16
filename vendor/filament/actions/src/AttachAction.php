@@ -17,8 +17,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
+use UnitEnum;
 
+use function Filament\Support\apply_search_constraint;
 use function Filament\Support\generate_search_column_expression;
+use function Filament\Support\generate_search_pattern;
 use function Filament\Support\generate_search_term_expression;
 
 class AttachAction extends Action
@@ -91,6 +94,13 @@ class AttachAction extends Action
             $relationship = Relation::noConstraints(fn () => $table->getRelationship());
 
             $relationshipQuery = app(RelationshipJoiner::class)->prepareQueryForNoConstraints($relationship);
+
+            if ($this->modifyRecordSelectOptionsQueryUsing) {
+                $relationshipQuery = $this->evaluate($this->modifyRecordSelectOptionsQueryUsing, [
+                    'query' => $relationshipQuery,
+                    'search' => null,
+                ]) ?? $relationshipQuery;
+            }
 
             $isMultiple = is_array($data['recordId']);
 
@@ -241,18 +251,20 @@ class AttachAction extends Action
                 $isForcedCaseInsensitive = $this->isSearchForcedCaseInsensitive();
 
                 $search = generate_search_term_expression($search, $isForcedCaseInsensitive, $databaseConnection);
+                $searchPattern = generate_search_pattern($search, hasLeadingWildcard: true, hasTrailingWildcard: true);
                 $searchColumns ??= [$titleAttribute];
 
                 $isFirst = true;
 
-                $relationshipQuery->where(function (Builder $query) use ($databaseConnection, $isFirst, $isForcedCaseInsensitive, $searchColumns, $search): Builder {
+                $relationshipQuery->where(function (Builder $query) use ($databaseConnection, $isFirst, $isForcedCaseInsensitive, $searchColumns, $searchPattern): Builder {
                     foreach ($searchColumns as $searchColumn) {
                         $whereClause = $isFirst ? 'where' : 'orWhere';
 
-                        $query->{$whereClause}(
+                        apply_search_constraint(
+                            $query,
                             generate_search_column_expression($query->qualifyColumn($searchColumn), $isForcedCaseInsensitive, $databaseConnection),
-                            'like',
-                            "%{$search}%",
+                            $searchPattern,
+                            ($whereClause === 'where') ? 'and' : 'or',
                         );
 
                         $isFirst = false;
@@ -268,7 +280,7 @@ class AttachAction extends Action
                 ->when(
                     ! $table->allowsDuplicates(),
                     fn (Builder $query): Builder => $query->whereDoesntHave(
-                        $table->getInverseRelationship(),
+                        $table->getInverseRelationshipName(),
                         fn (Builder $query): Builder => $query->where(
                             // https://github.com/filamentphp/filament/issues/8067
                             $relationship->getParent()->getTable() === $relationship->getRelated()->getTable() ?
@@ -290,6 +302,7 @@ class AttachAction extends Action
 
                 return $relationshipQuery
                     ->pluck($titleAttribute, $relationship->getQualifiedRelatedKeyName())
+                    ->map(fn (mixed $title): mixed => ($this->hasCustomRecordTitleAttribute() && (! $title instanceof UnitEnum)) ? $title : $this->formatRecordTitle($title))
                     ->all();
             }
 
@@ -307,17 +320,33 @@ class AttachAction extends Action
             ->multiple($this->isMultiple())
             ->searchable($this->getRecordSelectSearchColumns() ?? true)
             ->getSearchResultsUsing(static fn (Select $component, string $search): array => $getOptions(optionsLimit: $component->getOptionsLimit(), search: $search, searchColumns: $component->getSearchColumns()))
-            ->getOptionLabelUsing(function ($value) use ($table): string {
+            ->getOptionLabelUsing(function ($value) use ($table): ?string {
                 $relationship = Relation::noConstraints(fn () => $table->getRelationship());
 
                 $relationshipQuery = app(RelationshipJoiner::class)->prepareQueryForNoConstraints($relationship);
 
-                return $this->getRecordTitle($relationshipQuery->find($value));
+                if ($this->modifyRecordSelectOptionsQueryUsing) {
+                    $relationshipQuery = $this->evaluate($this->modifyRecordSelectOptionsQueryUsing, [
+                        'query' => $relationshipQuery,
+                        'search' => null,
+                    ]) ?? $relationshipQuery;
+                }
+
+                $record = $relationshipQuery->find($value);
+
+                return $record ? $this->getRecordTitle($record) : null;
             })
             ->getOptionLabelsUsing(function (array $values) use ($table): array {
                 $relationship = Relation::noConstraints(fn () => $table->getRelationship());
 
                 $relationshipQuery = app(RelationshipJoiner::class)->prepareQueryForNoConstraints($relationship);
+
+                if ($this->modifyRecordSelectOptionsQueryUsing) {
+                    $relationshipQuery = $this->evaluate($this->modifyRecordSelectOptionsQueryUsing, [
+                        'query' => $relationshipQuery,
+                        'search' => null,
+                    ]) ?? $relationshipQuery;
+                }
 
                 return $relationshipQuery->find($values)
                     ->mapWithKeys(fn (Model $record): array => [$record->getKey() => $this->getRecordTitle($record)])

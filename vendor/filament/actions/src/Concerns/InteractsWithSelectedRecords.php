@@ -44,6 +44,11 @@ trait InteractsWithSelectedRecords
         return (bool) $this->evaluate($this->canAccessSelectedRecords);
     }
 
+    public function hasCanAccessSelectedRecords(): bool
+    {
+        return $this->canAccessSelectedRecords !== false;
+    }
+
     public function getSelectedRecords(): EloquentCollection | Collection | LazyCollection
     {
         if (! $this->canAccessSelectedRecords()) {
@@ -66,7 +71,7 @@ trait InteractsWithSelectedRecords
             throw new LogicException("The action [{$this->getName()}] is attempting to access the selected records query from the table, but it is not using [accessSelectedRecords()], so they are not available.");
         }
 
-        return $this->getLivewire()->getSelectedTableRecordsQuery($this->shouldFetchSelectedRecords(), $this->getSelectedRecordsChunkSize());
+        return $this->getLivewire()->getSelectedTableRecordsQuery(shouldFetchSelectedRecords: false, chunkSize: $this->getSelectedRecordsChunkSize());
     }
 
     public function getIndividuallyAuthorizedSelectedRecords(): EloquentCollection | Collection | LazyCollection
