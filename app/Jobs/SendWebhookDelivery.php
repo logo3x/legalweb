@@ -45,9 +45,13 @@ class SendWebhookDelivery implements ShouldQueue
         ];
 
         $secret = (string) config('services.n8n.webhook_secret');
-        if ($secret !== '') {
-            $headers['X-LegalWeb-Signature'] = N8nWebhook::sign($body, $secret);
+        if ($secret === '') {
+            // Nunca se envian eventos sin firma (el secreto se quito despues de encolar).
+            $this->markFailed($delivery, null, 'N8N_WEBHOOK_SECRET no configurado: no se envian eventos sin firma.');
+
+            return;
         }
+        $headers['X-LegalWeb-Signature'] = N8nWebhook::sign($body, $secret);
 
         $delivery->increment('attempts');
 

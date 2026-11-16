@@ -169,7 +169,8 @@ return [
     |
     */
 
-    'secure' => env('SESSION_SECURE_COOKIE'),
+    // Si el sitio corre en https, la cookie solo viaja cifrada aunque falte la variable en el .env.
+    'secure' => env('SESSION_SECURE_COOKIE', str_starts_with((string) env('APP_URL'), 'https://') ? true : null),
 
     /*
     |--------------------------------------------------------------------------

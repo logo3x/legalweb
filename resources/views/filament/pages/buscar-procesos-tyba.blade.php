@@ -103,13 +103,14 @@
                                 @if(! empty($p['estado']))
                                     <span style="padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; {{ $p['estado'] === 'Vigente' ? 'background:#DBEAFE;color:#1E40AF;' : 'background:#F1F5F9;color:#475569;' }}">{{ $p['estado'] }}</span>
                                 @endif
-                                @if(! empty($p['url']))
+                                @if(! empty($p['url']) && str_starts_with((string) $p['url'], 'https://'))
                                     <a href="{{ $p['url'] }}" target="_blank" rel="noopener" style="font-size: 12px; font-weight: 600; color: #3A86FF; text-decoration: underline;">Ver en SAMAI</a>
                                 @endif
                                 @if(! $yaImportado)
                                     <button
                                         type="button"
-                                        onclick="navigator.clipboard.writeText('{{ $p['radicado'] }}'); this.innerHTML='<svg width=12 height=12 fill=none stroke=currentColor stroke-width=2.5 viewBox=\'0 0 24 24\'><path stroke-linecap=round stroke-linejoin=round d=\'M5 13l4 4L19 7\'/></svg> Radicado copiado'; this.style.background='#D1FAE5'; this.style.color='#065F46'; this.style.borderColor='#A7F3D0';"
+                                        data-radicado="{{ $p['radicado'] }}"
+                                        onclick="navigator.clipboard.writeText(this.dataset.radicado); this.innerHTML='<svg width=12 height=12 fill=none stroke=currentColor stroke-width=2.5 viewBox=\'0 0 24 24\'><path stroke-linecap=round stroke-linejoin=round d=\'M5 13l4 4L19 7\'/></svg> Radicado copiado'; this.style.background='#D1FAE5'; this.style.color='#065F46'; this.style.borderColor='#A7F3D0';"
                                         style="display: inline-flex; align-items: center; gap: 5px; padding: 7px 14px; font-size: 12px; font-weight: 600; border: 1px solid #CBD5E1; border-radius: 8px; background: #fff; cursor: pointer; color: #334155; transition: all .15s ease;">
                                         <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1m-6-12h6a2 2 0 012 2v8a2 2 0 01-2 2H10a2 2 0 01-2-2V5a2 2 0 012-2z"/></svg>
                                         Copiar radicado

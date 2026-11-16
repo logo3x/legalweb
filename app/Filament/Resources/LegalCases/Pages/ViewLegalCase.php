@@ -50,7 +50,7 @@ class ViewLegalCase extends ViewRecord
         return [
             ActionGroup::make([
                 Action::make('ai_summary')
-                    ->authorize(fn (): bool => $this->userCanOnCase('ai.use'))
+                    ->authorize(fn (): bool => $this->userCanUseAiOnCase())
                     ->label('Resumen del Caso')
                     ->icon('heroicon-o-document-text')
                     ->modalWidth('2xl')
@@ -64,7 +64,7 @@ class ViewLegalCase extends ViewRecord
                         Notification::make()->title('Texto copiado al portapapeles')->success()->send();
                     }),
                 Action::make('ai_next_step')
-                    ->authorize(fn (): bool => $this->userCanOnCase('ai.use'))
+                    ->authorize(fn (): bool => $this->userCanUseAiOnCase())
                     ->label('Sugerir Siguiente Paso')
                     ->icon('heroicon-o-light-bulb')
                     ->modalWidth('2xl')
@@ -78,7 +78,7 @@ class ViewLegalCase extends ViewRecord
                         Notification::make()->title('Texto copiado al portapapeles')->success()->send();
                     }),
                 Action::make('ai_draft')
-                    ->authorize(fn (): bool => $this->userCanOnCase('ai.use'))
+                    ->authorize(fn (): bool => $this->userCanUseAiOnCase())
                     ->label('Generar Borrador Word')
                     ->icon('heroicon-o-pencil-square')
                     ->modalDescription('Genera un borrador inicial en Word con placeholders <<<COMPLETAR>>> donde falten datos. Usted debe revisar, completar, verificar normas citadas y firmar antes de presentar. La IA puede equivocarse - usted es responsable del documento final.')
@@ -344,15 +344,16 @@ class ViewLegalCase extends ViewRecord
                     ->requiresConfirmation()
                     ->modalHeading(fn () => $this->record->portal_enabled ? 'Desactivar portal del cliente' : 'Activar portal del cliente')
                     ->modalDescription(fn () => $this->record->portal_enabled
-                        ? 'El cliente ya no podra ver el estado de su caso.'
-                        : 'El cliente podra ver el estado de su caso a traves del enlace.')
+                        ? 'El cliente ya no podrá ver el estado de su caso y el enlace actual dejará de funcionar. Si lo vuelve a activar, se creará un enlace nuevo.'
+                        : 'El cliente podrá ver el estado de su caso a través del enlace.')
                     ->action(function () {
                         $record = $this->record;
 
-                        if (! $record->portal_token) {
-                            $record->generatePortalToken();
+                        if ($record->portal_enabled) {
+                            // Desactivar revoca el enlace: si se filtro, no vuelve a servir al reactivar.
+                            $record->forceFill(['portal_enabled' => false, 'portal_token' => null])->save();
                         } else {
-                            $record->update(['portal_enabled' => ! $record->portal_enabled]);
+                            $record->generatePortalToken();
                         }
 
                         $status = $record->fresh()->portal_enabled ? 'activado' : 'desactivado';
@@ -494,7 +495,7 @@ class ViewLegalCase extends ViewRecord
     private function aiResultSchema(string $task, int $rows, string $failureMessage): array
     {
         // Nunca enviar datos del caso al proveedor si el usuario no puede usar la IA en este caso.
-        if (! $this->userCanOnCase('ai.use')) {
+        if (! $this->userCanUseAiOnCase()) {
             return [];
         }
 
@@ -531,6 +532,10 @@ class ViewLegalCase extends ViewRecord
                 ->selectablePlaceholder(false)
                 ->live()
                 ->afterStateUpdated(function (?string $state, Set $set) use ($generate): void {
+                    if (! array_key_exists((string) $state, app(AIModelRegistry::class)->options())) {
+                        return;
+                    }
+
                     session(['ai_model' => $state]);
                     $regenerated = $generate($state);
                     $set('ai_result', $regenerated['result']);
@@ -577,6 +582,15 @@ class ViewLegalCase extends ViewRecord
     /**
      * Permiso por caso del usuario (los administradores de la firma siempre lo tienen).
      */
+    /**
+     * La IA lee las actuaciones del caso: quien no puede verlas tampoco puede usarla,
+     * porque el resumen o el borrador las revelaria.
+     */
+    private function userCanUseAiOnCase(): bool
+    {
+        return $this->userCanOnCase('ai.use') && $this->userCanOnCase('events.view');
+    }
+
     private function userCanOnCase(string $permission): bool
     {
         return (bool) auth()->user()?->hasCasePermission($this->record->getKey(), $permission);

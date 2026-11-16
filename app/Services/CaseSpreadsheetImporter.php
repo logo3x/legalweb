@@ -207,7 +207,17 @@ class CaseSpreadsheetImporter
         $existing = Client::withoutGlobalScopes()->where('firm_id', $firm->id)->where('document_number', $document)->first();
 
         if ($existing) {
+            // Un colaborador solo puede usar clientes que ya ve (los de sus casos o los que creo).
+            // El documento es unico en la firma, asi que tampoco puede crear uno con el mismo numero.
+            if (! $this->user->isAdmin() && ! Client::withTrashed()->whereKey($existing->getKey())->exists()) {
+                return "El cliente con documento {$document} ya existe en la firma. Pida al administrador que le asigne sus casos.";
+            }
+
             if ($existing->trashed()) {
+                if (! $this->user->isAdmin()) {
+                    return "El cliente con documento {$document} esta en la papelera. Solo el administrador puede restaurarlo.";
+                }
+
                 $existing->restore();
             }
 
@@ -261,7 +271,11 @@ class CaseSpreadsheetImporter
             }
         }
 
-        return CaseType::firstOrCreate(['name' => 'General']);
+        // Los tipos de proceso son globales y los administra el superadmin: solo se crea
+        // "General" si la plataforma no tiene ningun tipo todavia.
+        return CaseType::where('name', 'General')->first()
+            ?? CaseType::orderBy('id')->first()
+            ?? CaseType::create(['name' => 'General']);
     }
 
     private function status(mixed $value): string

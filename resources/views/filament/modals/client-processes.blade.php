@@ -30,7 +30,8 @@
                             <div style="flex-shrink: 0; margin-left: 12px;">
                                 <button
                                     type="button"
-                                    onclick="navigator.clipboard.writeText('{{ $p['radicado'] }}'); this.textContent='Copiado!'; this.style.background='#dcfce7'; this.style.color='#166534';"
+                                    data-radicado="{{ $p['radicado'] }}"
+                                    onclick="navigator.clipboard.writeText(this.dataset.radicado); this.textContent='Copiado!'; this.style.background='#dcfce7'; this.style.color='#166534';"
                                     style="padding: 4px 12px; font-size: 11px; border: 1px solid #d1d5db; border-radius: 6px; background: #fff; cursor: pointer; color: #374151;">
                                     Copiar radicado
                                 </button>

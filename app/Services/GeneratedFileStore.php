@@ -25,6 +25,22 @@ class GeneratedFileStore
     }
 
     /**
+     * Ruta para archivos que solo usa el sistema (por ejemplo, el PDF que se adjunta al reporte
+     * mensual del cliente). Esta carpeta no la sirve la ruta de descarga: un colaborador no
+     * puede bajar reportes de casos que no tiene asignados.
+     */
+    public function internalPathFor(int $firmId, string $fileName): string
+    {
+        $directory = storage_path('app/private/generated-internal/'.$firmId);
+
+        if (! is_dir($directory)) {
+            mkdir($directory, 0755, true);
+        }
+
+        return $directory.DIRECTORY_SEPARATOR.$this->sanitize($fileName);
+    }
+
+    /**
      * Ruta de un archivo existente de la firma, o null si no existe.
      */
     public function find(int $firmId, string $fileName): ?string

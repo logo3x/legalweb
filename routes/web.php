@@ -100,6 +100,11 @@ Route::get('/download/{filename}', function (string $filename) {
         abort(403, 'Tipo de archivo no permitido.');
     }
 
+    // Reportes mensuales antiguos (nombre predecible por numero de caso): solo los adjunta el sistema.
+    if (preg_match('/^reporte_.+_\d{4}_\d{2}\.pdf$/', $filename)) {
+        abort(404);
+    }
+
     // Solo busca en la carpeta privada de la firma del usuario: no se pueden bajar archivos de otra firma.
     $firmId = auth()->user()->firm_id;
     $path = $firmId ? app(GeneratedFileStore::class)->find($firmId, $filename) : null;
@@ -133,13 +138,24 @@ Route::get('/documents/{document}/file', function (Document $document) {
 })->middleware('auth')->name('documents.file');
 
 // Baja de campanas masivas (Ley 1581): enlace firmado incluido en cada correo masivo.
-Route::get('/correos/baja/{user}', function (User $user) {
+// El GET solo muestra la confirmacion: los escaneres de enlaces de los correos (Safe Links,
+// antivirus) abren las URL solos y no deben dar de baja a nadie. La baja se hace por POST,
+// desde el boton de la pagina o con el "cancelar suscripcion" de un clic de Gmail/Yahoo.
+Route::get('/correos/baja/{user}', function (User $user, Request $request) {
+    return view('mass-email-unsubscribed', [
+        'email' => $user->email,
+        'confirmed' => (bool) $user->mass_email_opt_out_at,
+        'action' => $request->fullUrl(),
+    ]);
+})->middleware(['signed', 'throttle:20,1'])->name('mass-email.unsubscribe');
+
+Route::post('/correos/baja/{user}', function (User $user) {
     if (! $user->mass_email_opt_out_at) {
         $user->forceFill(['mass_email_opt_out_at' => now()])->save();
     }
 
-    return view('mass-email-unsubscribed', ['email' => $user->email]);
-})->middleware(['signed', 'throttle:20,1'])->name('mass-email.unsubscribe');
+    return view('mass-email-unsubscribed', ['email' => $user->email, 'confirmed' => true, 'action' => null]);
+})->middleware(['signed', 'throttle:20,1'])->name('mass-email.unsubscribe.confirm');
 
 // Tour completion
 Route::post('/admin/tour/complete', function () {

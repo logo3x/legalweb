@@ -14,8 +14,9 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->append(SecurityHeaders::class);
-        // Wompi no envia token CSRF: el webhook se autentica con su firma (WompiController).
-        $middleware->preventRequestForgery(except: ['wompi/webhook']);
+        // Sin token CSRF: el webhook de Wompi se autentica con su firma (WompiController) y la
+        // baja de un clic de Gmail/Yahoo llega sin sesion, protegida por la URL firmada.
+        $middleware->preventRequestForgery(except: ['wompi/webhook', 'correos/baja/*']);
         // No existe la ruta "login" de Laravel: el inicio de sesion es el de Filament.
         $middleware->redirectGuestsTo('/admin/login');
         $middleware->alias([

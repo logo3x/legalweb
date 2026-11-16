@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Reminders;
 
+use App\Filament\Resources\Concerns\RestrictsChangesToOwnerOrAdmin;
 use App\Filament\Resources\Reminders\Pages\CreateReminder;
 use App\Filament\Resources\Reminders\Pages\EditReminder;
 use App\Filament\Resources\Reminders\Pages\ListReminders;
@@ -16,6 +17,8 @@ use Filament\Tables\Table;
 
 class ReminderResource extends Resource
 {
+    use RestrictsChangesToOwnerOrAdmin;
+
     protected static ?string $model = Reminder::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendarDays;

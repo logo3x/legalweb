@@ -164,9 +164,10 @@ class TybaService
                         'pagina' => $page,
                     ]);
             } catch (\Exception $e) {
+                // Sin el documento completo (dato personal): solo los ultimos digitos.
                 Log::warning('Tyba API: error busqueda documento', [
-                    'document' => $cleanDoc,
-                    'error' => $e->getMessage(),
+                    'document' => '***'.substr($cleanDoc, -4),
+                    'error' => str_replace($cleanDoc, '***'.substr($cleanDoc, -4), $e->getMessage()),
                 ]);
                 break;
             }

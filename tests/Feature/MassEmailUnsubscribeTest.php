@@ -25,14 +25,17 @@ class MassEmailUnsubscribeTest extends TestCase
         ]);
     }
 
-    public function test_signed_link_unsubscribes_the_user(): void
+    public function test_signed_link_asks_for_confirmation_and_post_unsubscribes(): void
     {
         $user = User::factory()->create();
+        $url = URL::signedRoute('mass-email.unsubscribe', ['user' => $user->id]);
 
-        $this->get(URL::signedRoute('mass-email.unsubscribe', ['user' => $user->id]))
-            ->assertOk()
-            ->assertSee($user->email);
+        // Abrir el enlace (o que lo abra un escaner de correo) no da de baja.
+        $this->get($url)->assertOk()->assertSee($user->email)->assertSee('cancelar mi suscripción');
+        $this->assertNull($user->fresh()->mass_email_opt_out_at);
 
+        // El boton de la pagina o la baja de un clic de Gmail/Yahoo (POST sin sesion ni CSRF).
+        $this->post($url, ['List-Unsubscribe' => 'One-Click'])->assertOk()->assertSee('no recibirás más campañas');
         $this->assertNotNull($user->fresh()->mass_email_opt_out_at);
     }
 
@@ -42,9 +45,10 @@ class MassEmailUnsubscribeTest extends TestCase
         $other = User::factory()->create();
 
         $this->get(route('mass-email.unsubscribe', ['user' => $user->id]))->assertForbidden();
+        $this->post(route('mass-email.unsubscribe.confirm', ['user' => $user->id]))->assertForbidden();
 
         $signedForUser = URL::signedRoute('mass-email.unsubscribe', ['user' => $user->id]);
-        $this->get(str_replace("/baja/{$user->id}", "/baja/{$other->id}", $signedForUser))->assertForbidden();
+        $this->post(str_replace("/baja/{$user->id}", "/baja/{$other->id}", $signedForUser))->assertForbidden();
 
         $this->assertNull($user->fresh()->mass_email_opt_out_at);
         $this->assertNull($other->fresh()->mass_email_opt_out_at);

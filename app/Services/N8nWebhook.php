@@ -40,7 +40,8 @@ class N8nWebhook
 
     public function isConfigured(): bool
     {
-        return filled(config('services.n8n.webhook_url'));
+        // Sin secreto no se envia nada: n8n no podria distinguir nuestros eventos de uno falso.
+        return filled(config('services.n8n.webhook_url')) && filled(config('services.n8n.webhook_secret'));
     }
 
     public function isEnabled(string $event): bool

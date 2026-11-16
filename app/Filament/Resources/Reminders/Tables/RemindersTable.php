@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Reminders\Tables;
 
+use App\Filament\Resources\Reminders\ReminderResource;
 use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
@@ -145,6 +146,7 @@ class RemindersTable
                     ->color('success')
                     ->action(fn ($record) => $record->update(['is_completed' => true, 'completed_at' => now()]))
                     ->visible(fn ($record) => ! $record->is_completed)
+                    ->authorize(fn ($record): bool => ReminderResource::canEdit($record))
                     ->requiresConfirmation(),
                 EditAction::make(),
             ])

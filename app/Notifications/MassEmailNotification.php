@@ -85,6 +85,8 @@ class MassEmailNotification extends Notification
     private function addUnsubscribeHeader(Email $message, string $unsubscribeUrl): void
     {
         $message->getHeaders()->addTextHeader('List-Unsubscribe', "<{$unsubscribeUrl}>");
+        // Baja de un clic (RFC 8058), exigida por Gmail y Yahoo a los remitentes masivos.
+        $message->getHeaders()->addTextHeader('List-Unsubscribe-Post', 'List-Unsubscribe=One-Click');
     }
 
     private function extractPreview(string $html): string

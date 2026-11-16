@@ -6,6 +6,7 @@ use App\Models\Firm;
 use App\Models\LegalCase;
 use Illuminate\Support\Str;
 use PhpOffice\PhpWord\PhpWord;
+use PhpOffice\PhpWord\Settings;
 use PhpOffice\PhpWord\SimpleType\Jc;
 
 class DocumentGenerator
@@ -13,6 +14,10 @@ class DocumentGenerator
     public function generateWord(LegalCase $case, string $documentType, string $content): string
     {
         $firm = $case->user->firm;
+
+        // Escapa el texto al escribir el XML del documento: la IA y los datos del caso pueden traer
+        // "&" o "<" (documento corrupto) o etiquetas de Word inyectadas (campos o enlaces externos).
+        Settings::setOutputEscapingEnabled(true);
 
         $phpWord = new PhpWord;
 

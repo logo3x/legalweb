@@ -39,8 +39,13 @@ class FirmScope implements Scope
             return;
         }
 
-        // Colaboradores (no admin): solo lo relacionado con sus casos asignados.
-        $allowedCaseIds = CasePermission::where('user_id', $user->id)->pluck('legal_case_id');
+        // Colaboradores (no admin): solo lo relacionado con los casos asignados con el permiso
+        // "Ver caso". Un caso asignado solo para subir documentos o usar la IA no muestra la ficha.
+        $allowedCaseIds = CasePermission::where('user_id', $user->id)
+            ->get(['legal_case_id', 'permissions'])
+            ->filter(fn (CasePermission $permission): bool => $permission->hasPermission('case.view'))
+            ->pluck('legal_case_id')
+            ->values();
 
         if ($table === 'legal_cases') {
             $builder->whereIn('legal_cases.id', $allowedCaseIds);

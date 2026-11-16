@@ -9,6 +9,7 @@ use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class WompiPaymentSecurityTest extends TestCase
@@ -44,11 +45,12 @@ class WompiPaymentSecurityTest extends TestCase
     }
 
     /**
-     * Evento "transaction.updated" firmado como lo hace Wompi.
+     * Evento "transaction.updated" firmado como lo hace Wompi. La API de Wompi (simulada)
+     * responde con la transaccion real, que por defecto coincide con la del evento.
      *
      * @return array<string, mixed>
      */
-    private function event(array $transaction = [], ?string $secret = self::SECRET): array
+    private function event(array $transaction = [], ?string $secret = self::SECRET, ?array $apiTransaction = null): array
     {
         $transaction = array_merge([
             'id' => '1234-1700000000-00001',
@@ -57,6 +59,8 @@ class WompiPaymentSecurityTest extends TestCase
             'amount_in_cents' => 5000000,
             'currency' => 'COP',
         ], $transaction);
+
+        Http::fake(['*/transactions/*' => Http::response(['data' => $apiTransaction ?? $transaction])]);
 
         $properties = ['transaction.id', 'transaction.status', 'transaction.amount_in_cents'];
         $timestamp = 1760000000;
@@ -77,6 +81,50 @@ class WompiPaymentSecurityTest extends TestCase
         $this->postJson(route('wompi.webhook'), $this->event())->assertOk();
 
         $this->assertSame('active', $subscription->fresh()->status);
+    }
+
+    public function test_webhook_ignores_unsigned_reference_and_uses_wompi_api(): void
+    {
+        $victim = $this->pendingSubscription();
+        $attacker = Subscription::create([
+            'firm_id' => Firm::factory()->create()->id,
+            'plan_id' => $victim->plan_id,
+            'billing_cycle' => 'monthly',
+            'amount_in_cents' => 5000000,
+            'status' => 'pending',
+            'starts_at' => now(),
+            'wompi_reference' => 'LEGALWEB-2-pro-sin-pagar',
+        ]);
+
+        // Evento real (pagado por la victima) con la referencia cambiada: la firma sigue siendo valida
+        // porque la referencia no esta entre las propiedades firmadas.
+        $real = ['id' => '1234-1700000000-00001', 'status' => 'APPROVED', 'reference' => self::REFERENCE, 'amount_in_cents' => 5000000, 'currency' => 'COP'];
+        $this->postJson(route('wompi.webhook'), $this->event(['reference' => $attacker->wompi_reference], self::SECRET, $real))->assertOk();
+
+        $this->assertSame('pending', $attacker->fresh()->status);
+        $this->assertSame('active', $victim->fresh()->status);
+    }
+
+    public function test_webhook_is_retried_when_wompi_api_is_unavailable(): void
+    {
+        $subscription = $this->pendingSubscription();
+        // El primer stub registrado gana: la API responde con error.
+        Http::fake(['*' => Http::response([], 500)]);
+        $event = $this->event();
+
+        $this->postJson(route('wompi.webhook'), $event)->assertStatus(503);
+
+        $this->assertSame('pending', $subscription->fresh()->status);
+    }
+
+    public function test_callback_rejects_malformed_transaction_ids(): void
+    {
+        Http::fake();
+        $user = User::factory()->create(['firm_id' => Firm::factory()->create()->id, 'role' => 'admin']);
+
+        $this->actingAs($user)->get('/wompi/callback?id=../../merchants/x')->assertRedirect('/admin/planes');
+
+        Http::assertNothingSent();
     }
 
     public function test_webhook_with_invalid_signature_is_rejected(): void

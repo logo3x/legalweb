@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex">
-    <title>Suscripcion cancelada - LegalWeb</title>
+    <title>{{ $confirmed ? 'Suscripción cancelada' : 'Cancelar suscripción' }} - LegalWeb</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -16,22 +16,32 @@
         p { color: #6b7280; line-height: 1.6; font-size: 15px; margin-bottom: 12px; }
         .note { margin-top: 24px; padding-top: 24px; border-top: 1px solid #e5e7eb; font-size: 13px; color: #9ca3af; }
         a { color: #3A86FF; }
+        button { margin-top: 12px; background: #1E3A5F; color: #fff; border: 0; border-radius: 10px; padding: 12px 22px; font-size: 15px; font-weight: 600; cursor: pointer; }
     </style>
 </head>
 <body>
     <div class="card">
-        <div class="icon">
-            <svg width="36" height="36" fill="none" stroke="#16a34a" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-            </svg>
-        </div>
+        @if ($confirmed)
+            <div class="icon">
+                <svg width="36" height="36" fill="none" stroke="#16a34a" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+            </div>
 
-        <h1>Listo, no recibiras mas campanas</h1>
-        <p>Dejaremos de enviar correos informativos y promocionales a <strong>{{ $email }}</strong>.</p>
+            <h1>Listo, no recibirás más campañas</h1>
+            <p>Dejaremos de enviar correos informativos y promocionales a <strong>{{ $email }}</strong>.</p>
+        @else
+            <h1>¿Cancelar la suscripción a las campañas?</h1>
+            <p>Dejaremos de enviar correos informativos y promocionales a <strong>{{ $email }}</strong>.</p>
+
+            <form method="POST" action="{{ $action }}">
+                <button type="submit">Sí, cancelar mi suscripción</button>
+            </form>
+        @endif
 
         <p class="note">
-            Seguiras recibiendo las notificaciones de tu cuenta (vencimientos, actuaciones, pagos), porque son necesarias para el servicio.
-            Si cambias de opinion, escribenos a <a href="mailto:legalwebco@gmail.com">legalwebco@gmail.com</a>.
+            Seguirás recibiendo las notificaciones de tu cuenta (vencimientos, actuaciones, pagos), porque son necesarias para el servicio.
+            Si cambias de opinión, escríbenos a <a href="mailto:legalwebco@gmail.com">legalwebco@gmail.com</a>.
         </p>
     </div>
 </body>

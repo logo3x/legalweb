@@ -36,6 +36,31 @@ class WompiController extends Controller
     }
 
     /**
+     * Consulta la transaccion directamente en la API de Wompi: es la unica fuente confiable
+     * de referencia, monto y estado (los datos del navegador o del evento pueden alterarse).
+     *
+     * @return array<string, mixed>|null
+     */
+    private function fetchTransaction(string $transactionId): ?array
+    {
+        if (! preg_match('/^[A-Za-z0-9\-]{1,80}$/', $transactionId)) {
+            return null;
+        }
+
+        try {
+            $response = Http::timeout(15)->get($this->baseUrl().'/transactions/'.$transactionId);
+        } catch (\Throwable $e) {
+            Log::warning('Wompi: no se pudo consultar la transaccion', ['id' => $transactionId, 'error' => $e->getMessage()]);
+
+            return null;
+        }
+
+        $transaction = $response->successful() ? $response->json('data') : null;
+
+        return is_array($transaction) && ($transaction['id'] ?? null) === $transactionId ? $transaction : null;
+    }
+
+    /**
      * Redirige al Widget de Checkout de Wompi.
      */
     public function checkout(Request $request)
@@ -127,16 +152,15 @@ class WompiController extends Controller
      */
     public function callback(Request $request)
     {
-        $transactionId = $request->query('id');
+        $transactionId = (string) $request->query('id', '');
 
-        if (! $transactionId) {
+        if ($transactionId === '') {
             return redirect('/admin/planes')->with('info', 'Transaccion no encontrada o cancelada.');
         }
 
-        $response = Http::get($this->baseUrl().'/transactions/'.$transactionId);
+        $transaction = $this->fetchTransaction($transactionId);
 
-        if ($response->successful()) {
-            $transaction = $response->json('data');
+        if ($transaction) {
             $status = $transaction['status'] ?? 'UNKNOWN';
             $reference = $transaction['reference'] ?? '';
 
@@ -213,10 +237,26 @@ class WompiController extends Controller
         $status = $data['status'] ?? '';
 
         if ($event === 'transaction.updated' && $status === 'APPROVED') {
-            $subscription = Subscription::where('wompi_reference', $reference)->first();
+            // La firma solo cubre las propiedades listadas (id, estado, monto): la referencia y la
+            // moneda del evento no van firmadas. Por eso se activa con la transaccion consultada
+            // en la API de Wompi a partir del id firmado, nunca con los datos del evento.
+            if (! in_array('transaction.id', $properties, true)) {
+                Log::warning('Wompi webhook: el id de la transaccion no viene firmado', ['reference' => $reference]);
+
+                return response()->json(['status' => 'unsigned_id'], 401);
+            }
+
+            $transaction = $this->fetchTransaction((string) ($data['id'] ?? ''));
+
+            if (! $transaction) {
+                // Wompi reintenta el evento y la verificacion periodica (verify-payments) lo recoge.
+                return response()->json(['status' => 'unverified'], 503);
+            }
+
+            $subscription = Subscription::where('wompi_reference', (string) ($transaction['reference'] ?? ''))->first();
 
             if ($subscription) {
-                app(SubscriptionActivator::class)->activate($subscription, $data);
+                app(SubscriptionActivator::class)->activate($subscription, $transaction);
             }
         }
 

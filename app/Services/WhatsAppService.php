@@ -99,7 +99,7 @@ class WhatsAppService
         $phone = self::normalizePhone($to);
 
         if (! $phone) {
-            Log::warning('WhatsApp: numero invalido', ['to' => $to]);
+            Log::warning('WhatsApp: numero invalido', ['to' => '***'.substr((string) $to, -4)]);
 
             return false;
         }
@@ -118,7 +118,7 @@ class WhatsAppService
 
             if ($response->failed()) {
                 Log::error('WhatsApp: Twilio rechazo el mensaje', [
-                    'to' => $phone,
+                    'to' => '***'.substr((string) $phone, -4),
                     'status' => $response->status(),
                     'code' => $response->json('code'),
                     'message' => $response->json('message'),
@@ -129,7 +129,7 @@ class WhatsAppService
 
             return true;
         } catch (\Throwable $e) {
-            Log::error('WhatsApp: error de conexion con Twilio: '.$e->getMessage(), ['to' => $phone]);
+            Log::error('WhatsApp: error de conexion con Twilio: '.$e->getMessage(), ['to' => '***'.substr((string) $phone, -4)]);
 
             return false;
         }

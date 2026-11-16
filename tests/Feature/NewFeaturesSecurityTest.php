@@ -153,7 +153,7 @@ class NewFeaturesSecurityTest extends TestCase
 
     public function test_n8n_case_events_do_not_include_client_personal_data(): void
     {
-        config(['services.n8n.webhook_url' => 'https://n8n.example.com/webhook/x', 'services.n8n.events' => '*']);
+        config(['services.n8n.webhook_url' => 'https://n8n.example.com/webhook/x', 'services.n8n.events' => '*', 'services.n8n.webhook_secret' => 'secreto-de-prueba']);
         Queue::fake();
 
         $client = Client::factory()->create([

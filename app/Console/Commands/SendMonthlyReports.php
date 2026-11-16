@@ -13,6 +13,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
+use Illuminate\Support\Str;
 
 #[Signature('app:send-monthly-reports')]
 #[Description('Genera y envia reportes mensuales de casos a los clientes')]
@@ -85,8 +86,8 @@ class SendMonthlyReports extends Command
                 'resumen' => $resumen,
             ])->setPaper('letter');
 
-            $fileName = "reporte_{$case->case_number}_{$previousMonth->format('Y_m')}.pdf";
-            $path = app(GeneratedFileStore::class)->pathFor($case->firm_id, $fileName);
+            $fileName = "reporte_{$case->case_number}_{$previousMonth->format('Y_m')}_".Str::random(16).'.pdf';
+            $path = app(GeneratedFileStore::class)->internalPathFor($case->firm_id, $fileName);
 
             $pdf->save($path);
 

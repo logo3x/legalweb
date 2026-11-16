@@ -161,9 +161,9 @@ class LegalCase extends Model
 
     public function generatePortalToken(): string
     {
-        // Preserve existing token so previously shared links keep working.
-        // Only generate a new one when none exists yet.
-        if (! $this->portal_token) {
+        // Mientras el portal esta activo se conserva el enlace ya compartido. Si estaba
+        // desactivado, se crea uno nuevo: desactivar el portal revoca el enlace anterior.
+        if (! $this->portal_token || ! $this->portal_enabled) {
             $this->portal_token = Str::random(64);
         }
 

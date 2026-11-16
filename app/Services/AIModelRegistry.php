@@ -80,7 +80,9 @@ class AIModelRegistry
             ->values()
             ->all();
 
-        if ($preferredKey) {
+        // Solo se acepta un modelo de la lista verificada: la clave llega del navegador y
+        // un modelo arbitrario podria ser de pago o de un proveedor que entrena con los datos.
+        if ($preferredKey && in_array($preferredKey, $keys, true)) {
             array_unshift($keys, $preferredKey);
         }
 
@@ -266,10 +268,9 @@ class AIModelRegistry
         $catalog = [];
 
         try {
-            $response = Http::timeout(15)->get(config('services.gemini.base_url').'/models', [
-                'key' => config('services.gemini.api_key'),
-                'pageSize' => 200,
-            ]);
+            $response = Http::timeout(15)
+                ->withHeaders(['x-goog-api-key' => (string) config('services.gemini.api_key')])
+                ->get(config('services.gemini.base_url').'/models', ['pageSize' => 200]);
 
             foreach ($response->json('models', []) as $model) {
                 $id = str_replace('models/', '', $model['name'] ?? '');
@@ -284,7 +285,7 @@ class AIModelRegistry
                 $catalog[$id] = $model['displayName'] ?? $id;
             }
         } catch (\Exception $e) {
-            Log::info('Gemini models list error: '.$e->getMessage());
+            Log::info('Gemini models list error: '.AIProviderClient::redactSecrets($e->getMessage()));
         }
 
         // Los alias "-latest" siempre apuntan al modelo vigente, por eso van primero.

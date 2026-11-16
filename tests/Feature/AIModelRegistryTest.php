@@ -283,6 +283,22 @@ class AIModelRegistryTest extends TestCase
         $this->assertNotContains('openrouter:acme/other-model:free', array_column(app(AIModelRegistry::class)->verifiedModels(), 'key'));
     }
 
+    public function test_preferred_model_outside_the_verified_list_is_ignored(): void
+    {
+        Cache::forever(AIModelRegistry::CACHE_KEY, [
+            ['key' => 'openrouter:acme/good-model:free', 'label' => 'Good Model (OpenRouter)', 'verified_at' => ''],
+        ]);
+        $this->fakeProviders(['openrouter:acme/good-model:free' => 200, 'openrouter:anthropic/modelo-de-pago' => 200]);
+        $case = $this->makeCase();
+
+        // La clave llega del navegador: un modelo de pago no verificado nunca se usa ni se agrega a la lista.
+        $ai = app(AIService::class)->usingModel('openrouter:anthropic/modelo-de-pago');
+        $ai->summarizeCase($case);
+
+        $this->assertSame('openrouter:acme/good-model:free', $ai->getLastModelKey());
+        $this->assertSame(['openrouter:acme/good-model:free'], array_column(app(AIModelRegistry::class)->verifiedModels(), 'key'));
+    }
+
     public function test_service_discovers_a_new_model_when_all_known_models_are_gone(): void
     {
         Cache::forever(AIModelRegistry::CACHE_KEY, [

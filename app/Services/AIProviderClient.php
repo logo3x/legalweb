@@ -88,10 +88,19 @@ class AIProviderClient
                 default => $this->result(null, null, "{$key}: proveedor desconocido"),
             };
         } catch (\Exception $e) {
-            Log::info("AI {$key} excepcion: ".$e->getMessage());
+            $message = self::redactSecrets($e->getMessage());
+            Log::info("AI {$key} excepcion: ".$message);
 
-            return $this->result(null, null, "{$key}: ".$e->getMessage());
+            return $this->result(null, null, "{$key}: ".$message);
         }
+    }
+
+    /**
+     * Quita claves que puedan venir dentro de una URL en un mensaje de error antes de guardarlo.
+     */
+    public static function redactSecrets(string $message): string
+    {
+        return (string) preg_replace('/([?&](?:key|api_key|token)=)[^&\s"\']+/i', '$1[oculto]', $message);
     }
 
     /**
@@ -102,7 +111,9 @@ class AIProviderClient
         $apiKey = config('services.gemini.api_key');
         $baseUrl = config('services.gemini.base_url');
 
-        $response = Http::timeout($timeout)->post("{$baseUrl}/models/{$model}:generateContent?key={$apiKey}", [
+        // La clave va en una cabecera, no en la URL: los mensajes de error de Guzzle incluyen la URL
+        // completa y terminarian en el log y en el historial de uso de IA.
+        $response = Http::timeout($timeout)->withHeaders(['x-goog-api-key' => (string) $apiKey])->post("{$baseUrl}/models/{$model}:generateContent", [
             'system_instruction' => [
                 'parts' => [['text' => $systemPrompt]],
             ],
