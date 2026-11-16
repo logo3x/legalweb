@@ -134,6 +134,60 @@ class SamaiIntegrationTest extends TestCase
             ->assertSee('Ver en SAMAI');
     }
 
+    public function test_search_detects_name_document_or_radicado_in_one_field(): void
+    {
+        $this->assertSame(['modo' => 'radicado', 'termino' => '11001310300120240015800', 'tipo_documento' => null], BuscarProcesosTyba::detectarTipoBusqueda(' 11001-31-03-001-2024-00158-00 '));
+        $this->assertSame(['modo' => 'documento', 'termino' => '1098765432', 'tipo_documento' => 1], BuscarProcesosTyba::detectarTipoBusqueda('1.098.765.432'));
+        $this->assertSame(['modo' => 'documento', 'termino' => '900123456', 'tipo_documento' => 3], BuscarProcesosTyba::detectarTipoBusqueda('900.123.456'));
+        $this->assertSame(['modo' => 'nombre', 'termino' => 'GARCIA LOPEZ MARIA', 'tipo_documento' => null], BuscarProcesosTyba::detectarTipoBusqueda('GARCIA  LOPEZ MARIA'));
+    }
+
+    public function test_search_in_all_sources_merges_rama_and_samai_by_radicado(): void
+    {
+        [$user] = $this->firmUserAndClient();
+        $this->mock(TybaService::class, fn (MockInterface $mock) => $mock->shouldReceive('extractProcessInfo')->once()->andReturn([
+            'codigo_proceso' => '11001310300120240015800',
+            'despacho' => 'Juzgado 1 Civil del Circuito',
+            'departamento' => 'BOGOTA',
+        ]));
+        $this->fakeSamai([$this->samaiItem()]);
+
+        $this->actingAs($user);
+
+        // Un radicado distinto en cada fuente: los dos aparecen, cada uno con su fuente.
+        Livewire::test(BuscarProcesosTyba::class)
+            ->assertSet('data.fuente', 'todas')
+            ->assertSet('data.modo', 'auto')
+            ->fillForm(['termino' => self::RADICADO])
+            ->call('buscar')
+            ->assertSet('searchedSource', 'todas')
+            ->assertSet('searchedMode', 'radicado')
+            ->assertSee('11001310300120240015800')
+            ->assertSee(self::RADICADO)
+            ->assertSee('SAMAI')
+            ->assertSet('avisos', []);
+    }
+
+    public function test_document_search_in_all_sources_uses_rama_and_explains_samai(): void
+    {
+        [$user] = $this->firmUserAndClient();
+        $this->mock(TybaService::class, fn (MockInterface $mock) => $mock->shouldReceive('searchByDocument')->once()->with('1098765432', 1)->andReturn([
+            ['radicado' => '11001310300120240015800', 'despacho' => 'Juzgado 1 Civil', 'departamento' => 'BOGOTA', 'fecha' => '', 'ultima_actuacion' => '', 'sujetos' => '', 'es_privado' => false],
+        ]));
+        Http::fake();
+
+        $this->actingAs($user);
+
+        Livewire::test(BuscarProcesosTyba::class)
+            ->fillForm(['termino' => '1098765432'])
+            ->call('buscar')
+            ->assertSet('searchedMode', 'documento')
+            ->assertSee('11001310300120240015800')
+            ->assertSee('SAMAI no permite buscar por cédula');
+
+        Http::assertNotSent(fn (Request $request): bool => str_ends_with($request->url(), '/buscar'));
+    }
+
     public function test_samai_case_view_renders(): void
     {
         $case = $this->samaiCase(['url' => 'https://samai.consejodeestado.gov.co/Vistas/Casos/list_procesos.aspx?guid=abc']);

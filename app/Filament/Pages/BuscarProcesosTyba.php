@@ -23,6 +23,17 @@ class BuscarProcesosTyba extends Page implements HasForms
 {
     use InteractsWithForms;
 
+    /**
+     * @var array<string, string>
+     */
+    public const TIPOS_DOCUMENTO = [
+        '1' => 'Cédula de ciudadanía',
+        '2' => 'Cédula de extranjería',
+        '3' => 'NIT',
+        '4' => 'Pasaporte',
+        '5' => 'Tarjeta de identidad',
+    ];
+
     protected string $view = 'filament.pages.buscar-procesos-tyba';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMagnifyingGlass;
@@ -41,7 +52,7 @@ class BuscarProcesosTyba extends Page implements HasForms
 
     public string $searchedMode = 'nombre';
 
-    public string $searchedSource = 'rama';
+    public string $searchedSource = 'todas';
 
     public array $procesos = [];
 
@@ -51,6 +62,13 @@ class BuscarProcesosTyba extends Page implements HasForms
 
     public ?string $errorMessage = null;
 
+    /**
+     * Avisos de la ultima busqueda (por ejemplo, una fuente que no se pudo consultar).
+     *
+     * @var list<string>
+     */
+    public array $avisos = [];
+
     public function mount(): void
     {
         $nombre = request()->query('nombre');
@@ -59,14 +77,15 @@ class BuscarProcesosTyba extends Page implements HasForms
         $tipoDoc = request()->query('tipo_documento');
 
         $initial = [
-            'fuente' => 'rama',
+            'fuente' => 'todas',
             'corporacion' => '',
             'tipo_parte' => '',
-            'modo' => 'nombre',
+            'modo' => 'auto',
+            'termino' => '',
             'nombre' => '',
             'radicado' => '',
             'documento' => '',
-            'tipo_documento' => $tipoDoc ?: '1',
+            'tipo_documento' => is_string($tipoDoc) && array_key_exists($tipoDoc, self::TIPOS_DOCUMENTO) ? $tipoDoc : '1',
         ];
 
         if (is_string($radicado) && trim($radicado) !== '') {
@@ -76,24 +95,19 @@ class BuscarProcesosTyba extends Page implements HasForms
             $initial['modo'] = 'documento';
             $initial['documento'] = trim($documento);
         } elseif (is_string($nombre) && trim($nombre) !== '') {
+            $initial['modo'] = 'nombre';
             $initial['nombre'] = trim($nombre);
         }
 
         $this->form->fill($initial);
 
-        $hasInitialSearch = $initial['nombre'] !== '' || $initial['radicado'] !== '' || $initial['documento'] !== '';
+        $term = $initial['modo'] === 'auto' ? '' : $initial[$initial['modo']];
 
-        if ($hasInitialSearch && ! UsageLimiter::attempt('judicial')) {
+        if ($term === '' || ($initial['modo'] === 'nombre' && mb_strlen($term) < 3) || ! UsageLimiter::attempt('judicial')) {
             return;
         }
 
-        if ($initial['nombre'] !== '' && strlen($initial['nombre']) >= 3) {
-            $this->ejecutarBusqueda('nombre', $initial['nombre']);
-        } elseif ($initial['radicado'] !== '') {
-            $this->ejecutarBusqueda('radicado', $initial['radicado']);
-        } elseif ($initial['documento'] !== '') {
-            $this->ejecutarBusqueda('documento', $initial['documento'], (int) $initial['tipo_documento']);
-        }
+        $this->ejecutar('todas', $initial['modo'], $term, (int) $initial['tipo_documento']);
     }
 
     public function form(Schema $schema): Schema
@@ -102,17 +116,19 @@ class BuscarProcesosTyba extends Page implements HasForms
             ->statePath('data')
             ->components([
                 Select::make('fuente')
-                    ->label('Fuente')
+                    ->label('Dónde buscar')
                     ->options([
+                        'todas' => 'Todas las fuentes (Rama Judicial y SAMAI)',
                         'rama' => 'Rama Judicial (civil, laboral, penal, familia...)',
                         'samai' => 'SAMAI - Consejo de Estado (contencioso administrativo)',
                     ])
-                    ->default('rama')
+                    ->default('todas')
+                    ->selectablePlaceholder(false)
                     ->native(false)
                     ->live()
                     ->afterStateUpdated(function ($state, $set, $get): void {
                         if ($state === 'samai' && $get('modo') === 'documento') {
-                            $set('modo', 'nombre');
+                            $set('modo', 'auto');
                         }
                     })
                     ->columnSpanFull(),
@@ -120,34 +136,53 @@ class BuscarProcesosTyba extends Page implements HasForms
                 Select::make('modo')
                     ->label('Buscar por')
                     ->options(fn ($get): array => $get('fuente') === 'samai'
-                        ? ['nombre' => 'Nombre de la parte', 'radicado' => 'Numero de radicado']
+                        ? [
+                            'auto' => 'Nombre o radicado (se detecta solo)',
+                            'nombre' => 'Nombre de la parte',
+                            'radicado' => 'Número de radicado',
+                        ]
                         : [
-                            'nombre' => 'Nombre / Razon social',
-                            'radicado' => 'Numero de radicado',
-                            'documento' => 'Cedula o NIT',
+                            'auto' => 'Nombre, cédula/NIT o radicado (se detecta solo)',
+                            'nombre' => 'Nombre / Razón social',
+                            'documento' => 'Cédula o NIT',
+                            'radicado' => 'Número de radicado',
                         ])
-                    ->default('nombre')
+                    ->default('auto')
+                    ->selectablePlaceholder(false)
                     ->native(false)
                     ->live()
+                    ->columnSpanFull(),
+
+                TextInput::make('termino')
+                    ->label('Nombre, cédula/NIT o radicado')
+                    ->placeholder('Ej: GARCIA LOPEZ MARIA · 1098765432 · 11001310300120240015800')
+                    ->helperText('Escriba un nombre (apellidos primero), un documento sin puntos o un radicado de 23 dígitos. Detectamos el tipo de búsqueda automáticamente.')
+                    ->required(fn ($get): bool => $get('modo') === 'auto')
+                    ->minLength(3)
+                    ->maxLength(150)
+                    ->visible(fn ($get): bool => $get('modo') === 'auto')
                     ->columnSpanFull(),
 
                 TextInput::make('nombre')
                     ->label('Nombre completo')
                     ->placeholder('Ej: GARCIA LOPEZ MARIA')
-                    ->helperText('Apellidos primero. Busca directamente en la Rama Judicial.')
+                    ->helperText('Apellidos primero.')
+                    ->required(fn ($get): bool => $get('modo') === 'nombre')
                     ->minLength(3)
                     ->maxLength(150)
-                    ->visible(fn ($get) => $get('modo') === 'nombre')
+                    ->visible(fn ($get): bool => $get('modo') === 'nombre')
                     ->columnSpanFull(),
 
                 Grid::make(2)
                     ->components([
                         Select::make('corporacion')
-                            ->label('Corporacion o juzgado')
+                            ->label('Corporación o juzgado (SAMAI)')
                             ->options(fn (): array => app(SamaiService::class)->corporations())
                             ->searchable()
                             ->required(fn ($get): bool => $get('fuente') === 'samai' && $get('modo') === 'nombre')
-                            ->helperText('SAMAI exige elegir donde buscar.'),
+                            ->helperText(fn ($get): string => $get('fuente') === 'todas'
+                                ? 'Opcional. SAMAI solo busca nombres dentro de una corporación: elíjala para incluir SAMAI.'
+                                : 'SAMAI exige elegir dónde buscar un nombre.'),
                         Select::make('tipo_parte')
                             ->label('Rol de la parte')
                             ->options([
@@ -158,43 +193,63 @@ class BuscarProcesosTyba extends Page implements HasForms
                             ])
                             ->native(false),
                     ])
-                    ->visible(fn ($get) => $get('fuente') === 'samai' && $get('modo') === 'nombre')
+                    ->visible(fn ($get): bool => $get('fuente') !== 'rama' && in_array($get('modo'), ['auto', 'nombre'], true))
                     ->columnSpanFull(),
 
                 TextInput::make('radicado')
-                    ->label('Numero de radicado (23 digitos)')
+                    ->label('Número de radicado (23 dígitos)')
                     ->placeholder('Ej: 11001310300120240015800')
-                    ->helperText('Traemos el expediente completo de la Rama.')
+                    ->helperText('Traemos el expediente completo.')
+                    ->required(fn ($get): bool => $get('modo') === 'radicado')
                     ->minLength(20)
                     ->maxLength(30)
-                    ->visible(fn ($get) => $get('modo') === 'radicado')
+                    ->visible(fn ($get): bool => $get('modo') === 'radicado')
                     ->columnSpanFull(),
 
                 Grid::make(3)
                     ->components([
                         Select::make('tipo_documento')
                             ->label('Tipo')
-                            ->options([
-                                '1' => 'Cedula ciudadania',
-                                '2' => 'Cedula extranjeria',
-                                '3' => 'NIT',
-                                '4' => 'Pasaporte',
-                                '5' => 'Tarjeta identidad',
-                            ])
+                            ->options(self::TIPOS_DOCUMENTO)
                             ->default('1')
                             ->native(false)
                             ->columnSpan(1),
                         TextInput::make('documento')
-                            ->label('Numero')
+                            ->label('Número')
                             ->placeholder('Ej: 1098765432 o 900123456')
                             ->helperText('Sin puntos ni guiones.')
+                            ->required(fn ($get): bool => $get('modo') === 'documento')
                             ->minLength(5)
                             ->maxLength(20)
                             ->columnSpan(2),
                     ])
-                    ->visible(fn ($get) => $get('modo') === 'documento')
+                    ->visible(fn ($get): bool => $get('modo') === 'documento')
                     ->columnSpanFull(),
             ]);
+    }
+
+    /**
+     * Decide si lo escrito es un radicado, un documento o un nombre.
+     *
+     * @return array{modo: string, termino: string, tipo_documento: int|null}
+     */
+    public static function detectarTipoBusqueda(string $texto): array
+    {
+        $texto = trim($texto);
+        $soloDigitos = (string) preg_replace('/[\s.\-]/', '', $texto);
+
+        if ($soloDigitos !== '' && ctype_digit($soloDigitos)) {
+            if (strlen($soloDigitos) >= 20) {
+                return ['modo' => 'radicado', 'termino' => $soloDigitos, 'tipo_documento' => null];
+            }
+
+            // NIT de empresa: 9 digitos que empiezan por 8 o 9 (sin digito de verificacion).
+            $esNit = strlen($soloDigitos) === 9 && in_array($soloDigitos[0], ['8', '9'], true);
+
+            return ['modo' => 'documento', 'termino' => $soloDigitos, 'tipo_documento' => $esNit ? 3 : 1];
+        }
+
+        return ['modo' => 'nombre', 'termino' => (string) preg_replace('/\s+/', ' ', $texto), 'tipo_documento' => null];
     }
 
     public function buscar(): void
@@ -205,22 +260,29 @@ class BuscarProcesosTyba extends Page implements HasForms
             return;
         }
 
-        $modo = $data['modo'] ?? 'nombre';
-        $term = trim((string) ($data[$modo] ?? ''));
+        $fuente = in_array($data['fuente'] ?? null, ['todas', 'rama', 'samai'], true) ? $data['fuente'] : 'todas';
+        $modo = $data['modo'] ?? 'auto';
         $tipo = (int) ($data['tipo_documento'] ?? 1);
 
-        if (($data['fuente'] ?? 'rama') === 'samai') {
-            $this->ejecutarBusquedaSamai($modo, $term, (string) ($data['corporacion'] ?? ''), (string) ($data['tipo_parte'] ?? ''));
-
-            return;
+        if ($modo === 'auto') {
+            $detectado = self::detectarTipoBusqueda((string) ($data['termino'] ?? ''));
+            $modo = $detectado['modo'];
+            $term = $detectado['termino'];
+            $tipo = $detectado['tipo_documento'] ?? $tipo;
+        } else {
+            $term = trim((string) ($data[$modo] ?? ''));
         }
 
-        $this->ejecutarBusqueda($modo, $term, $tipo);
+        $this->ejecutar($fuente, $modo, $term, $tipo, (string) ($data['corporacion'] ?? ''), (string) ($data['tipo_parte'] ?? ''));
     }
 
-    protected function ejecutarBusquedaSamai(string $modo, string $term, string $corporacion, string $tipoParte): void
+    /**
+     * Busca en las fuentes elegidas y une los resultados sin repetir radicados.
+     */
+    protected function ejecutar(string $fuente, string $modo, string $term, int $tipoDocumento = 1, string $corporacion = '', string $tipoParte = ''): void
     {
         $this->errorMessage = null;
+        $this->avisos = [];
         $this->procesos = [];
 
         if ($term === '') {
@@ -229,33 +291,126 @@ class BuscarProcesosTyba extends Page implements HasForms
 
         $this->searchedTerm = $term;
         $this->searchedMode = $modo;
-        $this->searchedSource = 'samai';
+        $this->searchedSource = $fuente;
         $this->hasSearched = true;
 
-        try {
-            $samai = app(SamaiService::class);
-            $items = $modo === 'radicado'
-                ? array_filter([$samai->findByRadicado($term)])
-                : $samai->searchByParty($term, $corporacion, $tipoParte);
+        $resultados = [];
+        $errores = [];
+        $fuentesConsultadas = 0;
 
-            $this->procesos = collect($items)->map(fn (array $item): array => [
-                'radicado' => $item['radicado'],
-                'despacho' => trim($item['despacho'].' - '.$item['corporacion_nombre'], ' -'),
-                'departamento' => $item['clase'],
-                'fecha' => $item['fecha_ingreso'],
-                'ultima_actuacion' => '',
-                'sujetos' => trim('Demandante: '.$item['demandante'].' | Demandado: '.$item['demandado']),
-                'es_privado' => $item['es_privado'],
-                'estado' => $item['vigente'],
-                'url' => $item['url'],
-                'fuente' => 'samai',
-            ])->values()->all();
-        } catch (\Throwable $e) {
-            $this->errorMessage = 'No pudimos conectar con SAMAI. Intente en unos minutos.';
-            Log::warning('BuscarProcesosTyba: error SAMAI', ['error' => $e->getMessage(), 'modo' => $modo]);
+        if ($fuente !== 'samai') {
+            $fuentesConsultadas++;
+
+            try {
+                $resultados = array_merge($resultados, $this->buscarEnRama($modo, $term, $tipoDocumento));
+            } catch (\Throwable $e) {
+                $errores[] = 'No pudimos conectar con la Rama Judicial. Intente en unos minutos.';
+                Log::warning('BuscarProcesosTyba: error Rama', ['error' => $e->getMessage(), 'modo' => $modo]);
+            }
+        }
+
+        if ($fuente !== 'rama') {
+            $motivoSinSamai = match (true) {
+                $modo === 'documento' => 'SAMAI no permite buscar por cédula o NIT, así que esta búsqueda se hizo solo en la Rama Judicial. Para incluir SAMAI, busque por nombre o radicado.',
+                $modo === 'nombre' && $corporacion === '' => 'SAMAI solo busca nombres dentro de una corporación. Elija una en "Corporación o juzgado (SAMAI)" para incluirlo en la búsqueda.',
+                default => null,
+            };
+
+            if ($motivoSinSamai !== null && $fuente === 'samai') {
+                $errores[] = $motivoSinSamai;
+            } elseif ($motivoSinSamai !== null) {
+                $this->avisos[] = $motivoSinSamai;
+            } else {
+                $fuentesConsultadas++;
+
+                try {
+                    $resultados = array_merge($resultados, $this->buscarEnSamai($modo, $term, $corporacion, $tipoParte));
+                } catch (\Throwable $e) {
+                    $errores[] = 'No pudimos conectar con SAMAI. Intente en unos minutos.';
+                    Log::warning('BuscarProcesosTyba: error SAMAI', ['error' => $e->getMessage(), 'modo' => $modo]);
+                }
+            }
+        }
+
+        $this->procesos = collect($resultados)
+            ->filter(fn ($proceso): bool => is_array($proceso) && ! empty($proceso['radicado']))
+            ->unique('radicado')
+            ->values()
+            ->all();
+
+        // Si al menos una fuente respondio, se muestran sus resultados y el fallo queda como aviso.
+        if ($errores !== [] && count($errores) < max(1, $fuentesConsultadas)) {
+            $this->avisos = array_merge($this->avisos, $errores);
+        } elseif ($errores !== []) {
+            $this->errorMessage = implode(' ', $errores);
         }
 
         $this->loadExistingRadicados();
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    protected function buscarEnRama(string $modo, string $term, int $tipoDocumento): array
+    {
+        $service = app(TybaService::class);
+
+        $result = match ($modo) {
+            'radicado' => (function () use ($service, $term): array {
+                $info = $service->extractProcessInfo($term);
+                if (! $info) {
+                    return [];
+                }
+                $sujetos = is_array($info['sujetos'] ?? null)
+                    ? implode(' | ', array_map(
+                        fn ($s) => is_array($s) ? ($s['tipo'] ?? '').': '.($s['nombre'] ?? '') : (string) $s,
+                        array_slice($info['sujetos'], 0, 4)
+                    ))
+                    : (string) ($info['sujetos'] ?? '');
+
+                return [[
+                    'radicado' => $info['codigo_proceso'] ?? $term,
+                    'despacho' => $info['despacho'] ?? '',
+                    'departamento' => $info['departamento'] ?? '',
+                    'fecha' => $info['fecha_publicacion'] ?? '',
+                    'ultima_actuacion' => $info['fecha_ultima_actuacion'] ?? '',
+                    'sujetos' => $sujetos,
+                    'es_privado' => $info['es_privado'] ?? false,
+                ]];
+            })(),
+            'documento' => $service->searchByDocument($term, $tipoDocumento),
+            default => $service->searchByName($term),
+        };
+
+        return collect(is_array($result) ? $result : [])
+            ->filter(fn ($proceso): bool => is_array($proceso))
+            ->map(fn (array $proceso): array => $proceso + ['fuente' => 'rama'])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    protected function buscarEnSamai(string $modo, string $term, string $corporacion, string $tipoParte): array
+    {
+        $samai = app(SamaiService::class);
+        $items = $modo === 'radicado'
+            ? array_filter([$samai->findByRadicado($term)])
+            : $samai->searchByParty($term, $corporacion, $tipoParte);
+
+        return collect($items)->map(fn (array $item): array => [
+            'radicado' => $item['radicado'],
+            'despacho' => trim($item['despacho'].' - '.$item['corporacion_nombre'], ' -'),
+            'departamento' => $item['clase'],
+            'fecha' => $item['fecha_ingreso'],
+            'ultima_actuacion' => '',
+            'sujetos' => trim('Demandante: '.$item['demandante'].' | Demandado: '.$item['demandado']),
+            'es_privado' => $item['es_privado'],
+            'estado' => $item['vigente'],
+            'url' => $item['url'],
+            'fuente' => 'samai',
+        ])->values()->all();
     }
 
     protected function loadExistingRadicados(): void
@@ -265,57 +420,5 @@ class BuscarProcesosTyba extends Page implements HasForms
             ->whereNotNull('external_case_number')
             ->pluck('external_case_number')
             ->toArray();
-    }
-
-    protected function ejecutarBusqueda(string $modo, string $term, int $tipoDocumento = 1): void
-    {
-        $this->errorMessage = null;
-        $this->procesos = [];
-
-        if ($term === '') {
-            return;
-        }
-
-        $service = app(TybaService::class);
-        $this->searchedSource = 'rama';
-        $this->searchedTerm = $term;
-        $this->searchedMode = $modo;
-        $this->hasSearched = true;
-
-        try {
-            $result = match ($modo) {
-                'radicado' => (function () use ($service, $term) {
-                    $info = $service->extractProcessInfo($term);
-                    if (! $info) {
-                        return [];
-                    }
-                    $sujetos = is_array($info['sujetos'] ?? null)
-                        ? implode(' | ', array_map(
-                            fn ($s) => is_array($s) ? ($s['tipo'] ?? '').': '.($s['nombre'] ?? '') : (string) $s,
-                            array_slice($info['sujetos'], 0, 4)
-                        ))
-                        : (string) ($info['sujetos'] ?? '');
-
-                    return [[
-                        'radicado' => $info['codigo_proceso'] ?? $term,
-                        'despacho' => $info['despacho'] ?? '',
-                        'departamento' => $info['departamento'] ?? '',
-                        'fecha' => $info['fecha_publicacion'] ?? '',
-                        'ultima_actuacion' => $info['fecha_ultima_actuacion'] ?? '',
-                        'sujetos' => $sujetos,
-                        'es_privado' => $info['es_privado'] ?? false,
-                    ]];
-                })(),
-                'documento' => $service->searchByDocument($term, $tipoDocumento),
-                default => $service->searchByName($term),
-            };
-
-            $this->procesos = is_array($result) ? $result : [];
-        } catch (\Throwable $e) {
-            $this->errorMessage = 'No pudimos conectar con la Rama Judicial. Intente en unos minutos.';
-            Log::warning('BuscarProcesosTyba: error', ['error' => $e->getMessage(), 'modo' => $modo]);
-        }
-
-        $this->loadExistingRadicados();
     }
 }

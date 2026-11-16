@@ -8,9 +8,9 @@
         <div style="flex: 1; min-width: 0;">
             <h3 style="margin: 0 0 4px; font-size: 17px; font-weight: 700; color: #1E3A5F;">Encuentra procesos en la Rama Judicial y en SAMAI</h3>
             <p style="margin: 0; font-size: 13.5px; color: #475569; line-height: 1.55;">
-                Busca por <strong>nombre del cliente</strong>, <strong>cedula / NIT</strong> o <strong>numero de radicado</strong>.
-                Importa el proceso completo con un click — actuaciones, sujetos, despacho y vigilancia automatica activada.
-                Para procesos <strong>contencioso-administrativos</strong> elige la fuente SAMAI (Consejo de Estado, tribunales y juzgados administrativos).
+                Escribe el <strong>nombre</strong>, la <strong>cédula / NIT</strong> o el <strong>número de radicado</strong> en un solo campo: detectamos el tipo de búsqueda.
+                Por defecto buscamos en <strong>todas las fuentes</strong> (Rama Judicial y SAMAI) a la vez.
+                Luego importas el proceso completo con un clic: actuaciones, sujetos, despacho y vigilancia automática.
             </p>
         </div>
     </div>
@@ -34,12 +34,23 @@
         </div>
     @endif
 
+    @foreach($avisos as $aviso)
+        <div style="background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 10px; padding: 12px 16px; margin-bottom: 12px; color: #78350F; font-size: 13.5px; line-height: 1.5;">
+            {{ $aviso }}
+        </div>
+    @endforeach
+
     @if($hasSearched && ! $errorMessage)
         @php
             $labelMode = match($searchedMode) {
                 'radicado' => 'radicado',
-                'documento' => 'documento',
+                'documento' => 'cédula/NIT',
                 default => 'nombre',
+            };
+            $labelFuente = match($searchedSource) {
+                'rama' => 'Rama Judicial',
+                'samai' => 'SAMAI',
+                default => 'todas las fuentes',
             };
             $totalEncontrados = count($procesos);
             $totalNuevos = collect($procesos)->filter(fn($p) => !in_array($p['radicado'], $existingRadicados))->count();
@@ -56,7 +67,7 @@
                 </div>
             @endif
             <div style="margin-left: auto; font-size: 12px; color: #64748B;">
-                Buscaste por {{ $labelMode }}: <code style="background: #fff; padding: 2px 8px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; color: #1E3A5F;">{{ $searchedTerm }}</code>
+                En {{ $labelFuente }}, por {{ $labelMode }}: <code style="background: #fff; padding: 2px 8px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; color: #1E3A5F;">{{ $searchedTerm }}</code>
             </div>
         </div>
 
@@ -66,7 +77,7 @@
                 <p style="font-weight: 600; font-size: 16px; color: #334155; margin: 0 0 6px;">No se encontraron procesos</p>
                 <p style="font-size: 13.5px; margin: 0; line-height: 1.55;">
                     Verifique los datos. La Rama busca por coincidencia exacta &mdash;<br>
-                    intente con menos palabras o el documento sin puntos ni guiones.
+                    intente con menos palabras o con el documento sin puntos ni guiones.
                 </p>
             </div>
         @else
@@ -80,6 +91,11 @@
                             <div style="flex: 1; min-width: 0;">
                                 <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap;">
                                     <span style="font-size: 13.5px; font-weight: 600; color: #0F172A; font-family: 'JetBrains Mono', monospace; letter-spacing: -.01em;">{{ $p['radicado'] }}</span>
+                                    @if(($p['fuente'] ?? '') === 'samai')
+                                        <span style="display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; background: #EDE9FE; color: #5B21B6;">SAMAI</span>
+                                    @elseif(($p['fuente'] ?? '') === 'rama' && $searchedSource === 'todas')
+                                        <span style="display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; background: #F1F5F9; color: #334155;">Rama Judicial</span>
+                                    @endif
                                     @if($yaImportado)
                                         <span style="display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; background: #D1FAE5; color: #065F46;">
                                             <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
@@ -93,7 +109,7 @@
                                 <div style="font-size: 12.5px; color: #64748B; margin-bottom: 6px;">
                                     {{ $p['departamento'] ?? '' }}
                                     @if(!empty($p['fecha'])) &middot; Radicado el {{ $p['fecha'] }} @endif
-                                    @if(!empty($p['ultima_actuacion'])) &middot; Ultima actuacion: <strong style="color: #1E3A5F;">{{ $p['ultima_actuacion'] }}</strong> @endif
+                                    @if(!empty($p['ultima_actuacion'])) &middot; Última actuación: <strong style="color: #1E3A5F;">{{ $p['ultima_actuacion'] }}</strong> @endif
                                 </div>
                                 @if(!empty($p['sujetos']))
                                     <div style="font-size: 12px; color: #94A3B8; line-height: 1.5; max-height: 36px; overflow: hidden;">{{ $p['sujetos'] }}</div>
@@ -129,7 +145,7 @@
                         <strong>Para importar:</strong> copia el radicado del proceso nuevo y ve a
                         <a href="{{ url('/admin/cases/create') }}" style="color: #1D4ED8; font-weight: 600; text-decoration: underline;">Casos &rarr; Nuevo caso</a>,
                         o usa la
-                        <a href="{{ url('/admin/cases?action=importar-masivo') }}" style="color: #1D4ED8; font-weight: 600; text-decoration: underline;">importacion masiva</a>
+                        <a href="{{ url('/admin/cases?action=importar-masivo') }}" style="color: #1D4ED8; font-weight: 600; text-decoration: underline;">importación masiva</a>
                         para varios a la vez.
                     </div>
                 </div>
