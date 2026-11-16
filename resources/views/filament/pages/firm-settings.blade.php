@@ -25,7 +25,7 @@
         <form wire:submit="save">
             {{ $this->form }}
 
-            <div class="mt-10 pt-6 border-t border-gray-200 flex justify-end gap-3">
+            <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid #E2E8F0; display: flex; justify-content: flex-end; gap: 12px;">
                 <x-filament::button type="submit" size="lg">
                     {{ $isOnboarding ? 'Guardar y comenzar' : 'Guardar cambios' }}
                 </x-filament::button>

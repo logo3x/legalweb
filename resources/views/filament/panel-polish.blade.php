@@ -240,7 +240,86 @@
         z-index: 1;
     }
 
+    /* ============================================
+       Secciones de formularios y fichas: entran con un
+       desplazamiento corto al abrir la pagina. Solo
+       opacity/transform (no recalcula el layout) y el
+       estado final es transform:none, asi los menus
+       desplegables dentro de la seccion no se afectan.
+       ============================================ */
+    .fi-main .fi-section {
+        animation: lwSectionIn .32s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    .fi-main .fi-section .fi-section,
+    .fi-modal .fi-section {
+        animation: none;
+    }
+    @keyframes lwSectionIn {
+        from { opacity: 0; transform: translate3d(0, 6px, 0); }
+        to   { opacity: 1; transform: none; }
+    }
+
+    /* Pestanas del caso (actuaciones, documentos...): el contenido aparece suave al cambiar */
+    .fi-resource-relation-manager .fi-ta {
+        animation: lwFadeIn .22s ease-out both;
+    }
+    @keyframes lwFadeIn {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+    }
+
+    /* Barra de progreso de la navegacion sin recarga: un poco mas visible */
+    #nprogress .bar { height: 3px !important; }
+    #nprogress .peg { box-shadow: 0 0 10px #3A86FF, 0 0 5px #3A86FF !important; }
+
+    /* ============================================
+       Precargas propias (busquedas largas): tarjetas
+       esqueleto con brillo y un indicador giratorio.
+       ============================================ */
+    .lw-skeleton {
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 16px 18px;
+        margin-bottom: 10px;
+        background: #fff;
+    }
+    .lw-skeleton-line {
+        height: 11px;
+        border-radius: 6px;
+        margin-bottom: 10px;
+        background: linear-gradient(90deg, #F1F5F9 0%, #E2E8F0 50%, #F1F5F9 100%);
+        background-size: 200% 100%;
+        animation: lwShimmer 1.4s linear infinite;
+    }
+    .lw-skeleton-line:last-child { margin-bottom: 0; }
+    .lw-spinner {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        border: 2px solid #BFDBFE;
+        border-top-color: #3A86FF;
+        animation: lwSpin .7s linear infinite;
+        flex-shrink: 0;
+    }
+    @keyframes lwSpin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Resultados de busqueda: aparecen escalonados (solo los primeros, el resto sin demora) */
+    .lw-result {
+        animation: lwSectionIn .3s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    .lw-result:nth-child(2) { animation-delay: 40ms; }
+    .lw-result:nth-child(3) { animation-delay: 80ms; }
+    .lw-result:nth-child(4) { animation-delay: 120ms; }
+    .lw-result:nth-child(5) { animation-delay: 160ms; }
+    .lw-result:nth-child(n+6) { animation-delay: 200ms; }
+
     @media (prefers-reduced-motion: reduce) {
+        .fi-main .fi-section, .fi-resource-relation-manager .fi-ta, .lw-result,
+        .lw-skeleton-line, .lw-spinner {
+            animation: none !important;
+        }
         .fi-wi, .fi-page-header, .fi-modal-window,
         .fi-sidebar-item-active > .fi-sidebar-item-button::before,
         .fi-topbar-database-notifications-trigger[data-unread]::after,

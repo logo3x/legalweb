@@ -18,6 +18,8 @@ use App\Models\LegalCase;
 use BackedEnum;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\TextSize;
@@ -83,157 +85,180 @@ class LegalCaseResource extends Resource
 
     public static function infolist(Schema $schema): Schema
     {
+        // Dos columnas en pantallas grandes: la informacion del caso ocupa 2/3 y el resumen
+        // con las partes queda a la derecha. En el celular todo se apila.
         return $schema
             ->components([
-                Section::make('Información del caso')
-                    ->icon(Heroicon::OutlinedBriefcase)
-                    ->columns(4)
+                Grid::make(['default' => 1, 'lg' => 3])
+                    ->columnSpanFull()
                     ->schema([
-                        TextEntry::make('case_number')
-                            ->label('No. Caso')
-                            ->icon('heroicon-m-hashtag')
-                            ->weight('bold')
-                            ->size(TextSize::Large),
-                        TextEntry::make('external_case_number')
-                            ->label('Radicado judicial')
-                            ->icon('heroicon-m-document-text')
-                            ->placeholder('Sin radicado'),
-                        TextEntry::make('caseType.name')
-                            ->label('Tipo de proceso')
-                            ->badge(),
-                        TextEntry::make('status')
-                            ->label('Estado')
-                            ->badge()
-                            ->color(fn (string $state): string => match ($state) {
-                                'abierto' => 'info',
-                                'en_progreso' => 'warning',
-                                'en_espera' => 'gray',
-                                'cerrado' => 'success',
-                                'archivado' => 'danger',
-                                default => 'gray',
-                            })
-                            ->formatStateUsing(fn (string $state): string => match ($state) {
-                                'abierto' => 'Abierto',
-                                'en_progreso' => 'En progreso',
-                                'en_espera' => 'En espera',
-                                'cerrado' => 'Cerrado',
-                                'archivado' => 'Archivado',
-                                default => $state,
-                            }),
-                        TextEntry::make('title')
-                            ->label('Título')
-                            ->columnSpanFull(),
-                        TextEntry::make('description')
-                            ->label('Descripción')
-                            ->columnSpanFull()
-                            ->placeholder('Sin descripción'),
-                        TextEntry::make('priority')
-                            ->label('Prioridad')
-                            ->badge()
-                            ->color(fn (string $state): string => match ($state) {
-                                'baja' => 'gray',
-                                'media' => 'info',
-                                'alta' => 'warning',
-                                'urgente' => 'danger',
-                                default => 'gray',
-                            })
-                            ->formatStateUsing(fn (string $state): string => ucfirst($state)),
-                        TextEntry::make('court')
-                            ->label('Juzgado / Despacho')
-                            ->icon('heroicon-m-building-office')
-                            ->placeholder('Sin asignar'),
-                        TextEntry::make('judge')
-                            ->label('Juez')
-                            ->icon('heroicon-m-user')
-                            ->placeholder('Sin asignar'),
-                        TextEntry::make('started_at')
-                            ->label('Fecha de inicio')
-                            ->icon('heroicon-m-calendar')
-                            ->date('d/m/Y')
-                            ->placeholder('Sin definir'),
-                        TextEntry::make('closed_at')
-                            ->label('Fecha de cierre')
-                            ->icon('heroicon-m-calendar')
-                            ->date('d/m/Y')
-                            ->placeholder('Caso abierto'),
-                        TextEntry::make('last_tyba_sync')
-                            ->label('Última sincronización')
-                            ->icon('heroicon-m-arrow-path')
-                            ->since()
-                            ->placeholder('Nunca sincronizado')
-                            ->visible(fn ($record) => (bool) $record->external_case_number),
-                    ]),
-                Section::make('Datos de la Rama Judicial')
-                    ->icon(Heroicon::OutlinedBuildingLibrary)
-                    ->columns(4)
-                    ->visible(fn ($record) => ! empty($record->tyba_data))
-                    ->schema([
-                        TextEntry::make('tyba_data.codigo_proceso')
-                            ->label('Código del proceso'),
-                        TextEntry::make('tyba_data.tipo_proceso')
-                            ->label('Tipo de proceso'),
-                        TextEntry::make('tyba_data.clase_proceso')
-                            ->label('Clase de proceso'),
-                        TextEntry::make('tyba_data.subclase')
-                            ->label('Subclase')
-                            ->placeholder('-'),
-                        TextEntry::make('tyba_data.departamento')
-                            ->label('Departamento'),
-                        TextEntry::make('tyba_data.corporacion')
-                            ->label('Corporación')
-                            ->placeholder('-'),
-                        TextEntry::make('tyba_data.especialidad')
-                            ->label('Especialidad'),
-                        TextEntry::make('tyba_data.numero_despacho')
-                            ->label('No. Despacho')
-                            ->placeholder('-'),
-                        TextEntry::make('tyba_data.despacho')
-                            ->label('Despacho')
-                            ->columnSpan(2),
-                        TextEntry::make('tyba_data.ponente')
-                            ->label('Ponente / Juez')
-                            ->placeholder('-'),
-                        TextEntry::make('tyba_data.fecha_publicacion')
-                            ->label('Fecha de publicación')
-                            ->placeholder('-'),
-                        TextEntry::make('tyba_data.fecha_ultima_actuacion')
-                            ->label('Última actuación')
-                            ->placeholder('-'),
-                        TextEntry::make('tyba_data.ubicacion')
-                            ->label('Sistema')
-                            ->placeholder('-'),
-                        TextEntry::make('tyba_data.recurso')
-                            ->label('Recurso')
-                            ->placeholder('-'),
-                        TextEntry::make('tyba_data.cod_despacho')
-                            ->label('Código del despacho')
-                            ->placeholder('-'),
-                    ]),
-                Section::make('Partes')
-                    ->icon(Heroicon::OutlinedUserGroup)
-                    ->columns(3)
-                    ->schema([
-                        TextEntry::make('client')
-                            ->label('Cliente')
-                            ->icon('heroicon-m-user')
-                            ->formatStateUsing(fn ($record) => "{$record->client->first_name} {$record->client->last_name}"),
-                        TextEntry::make('client.document_number')
-                            ->label('Documento')
-                            ->icon('heroicon-m-identification'),
-                        TextEntry::make('client.phone')
-                            ->label('Teléfono')
-                            ->icon('heroicon-m-phone')
-                            ->placeholder('Sin teléfono'),
-                        TextEntry::make('user.name')
-                            ->label('Abogado responsable')
-                            ->icon('heroicon-m-academic-cap'),
-                        TextEntry::make('user.email')
-                            ->label('Correo del abogado')
-                            ->icon('heroicon-m-envelope'),
-                        TextEntry::make('opposing_party')
-                            ->label('Contraparte')
-                            ->icon('heroicon-m-user-group')
-                            ->placeholder('Sin contraparte'),
+                        Group::make([
+                            Section::make('Información del caso')
+                                ->icon(Heroicon::OutlinedBriefcase)
+                                ->columns(['default' => 1, 'sm' => 2])
+                                ->schema([
+                                    TextEntry::make('title')
+                                        ->label('Título')
+                                        ->weight('medium')
+                                        ->columnSpanFull(),
+                                    TextEntry::make('description')
+                                        ->label('Descripción')
+                                        ->columnSpanFull()
+                                        ->placeholder('Sin descripción'),
+                                    TextEntry::make('external_case_number')
+                                        ->label('Radicado judicial')
+                                        ->icon('heroicon-m-document-text')
+                                        ->fontFamily('mono')
+                                        ->copyable()
+                                        ->copyMessage('Radicado copiado')
+                                        ->placeholder('Sin radicado'),
+                                    TextEntry::make('caseType.name')
+                                        ->label('Tipo de proceso')
+                                        ->badge(),
+                                    TextEntry::make('court')
+                                        ->label('Juzgado / Despacho')
+                                        ->icon('heroicon-m-building-office')
+                                        ->placeholder('Sin asignar'),
+                                    TextEntry::make('judge')
+                                        ->label('Juez')
+                                        ->icon('heroicon-m-user')
+                                        ->placeholder('Sin asignar'),
+                                ]),
+                            Section::make('Datos de la Rama Judicial')
+                                ->icon(Heroicon::OutlinedBuildingLibrary)
+                                ->columns(['default' => 1, 'sm' => 2, 'xl' => 3])
+                                ->collapsible()
+                                ->visible(fn ($record) => ! empty($record->tyba_data))
+                                ->schema([
+                                    TextEntry::make('tyba_data.codigo_proceso')
+                                        ->label('Código del proceso'),
+                                    TextEntry::make('tyba_data.tipo_proceso')
+                                        ->label('Tipo de proceso'),
+                                    TextEntry::make('tyba_data.clase_proceso')
+                                        ->label('Clase de proceso'),
+                                    TextEntry::make('tyba_data.subclase')
+                                        ->label('Subclase')
+                                        ->placeholder('-'),
+                                    TextEntry::make('tyba_data.departamento')
+                                        ->label('Departamento'),
+                                    TextEntry::make('tyba_data.corporacion')
+                                        ->label('Corporación')
+                                        ->placeholder('-'),
+                                    TextEntry::make('tyba_data.especialidad')
+                                        ->label('Especialidad'),
+                                    TextEntry::make('tyba_data.numero_despacho')
+                                        ->label('No. Despacho')
+                                        ->placeholder('-'),
+                                    TextEntry::make('tyba_data.despacho')
+                                        ->label('Despacho')
+                                        ->columnSpanFull(),
+                                    TextEntry::make('tyba_data.ponente')
+                                        ->label('Ponente / Juez')
+                                        ->placeholder('-'),
+                                    TextEntry::make('tyba_data.fecha_publicacion')
+                                        ->label('Fecha de publicación')
+                                        ->placeholder('-'),
+                                    TextEntry::make('tyba_data.fecha_ultima_actuacion')
+                                        ->label('Última actuación')
+                                        ->placeholder('-'),
+                                    TextEntry::make('tyba_data.ubicacion')
+                                        ->label('Sistema')
+                                        ->placeholder('-'),
+                                    TextEntry::make('tyba_data.recurso')
+                                        ->label('Recurso')
+                                        ->placeholder('-'),
+                                    TextEntry::make('tyba_data.cod_despacho')
+                                        ->label('Código del despacho')
+                                        ->placeholder('-'),
+                                ]),
+                        ])->columnSpan(['default' => 1, 'lg' => 2]),
+
+                        Group::make([
+                            Section::make('Resumen')
+                                ->icon(Heroicon::OutlinedClipboardDocumentCheck)
+                                ->columns(2)
+                                ->schema([
+                                    TextEntry::make('case_number')
+                                        ->label('No. de caso')
+                                        ->icon('heroicon-m-hashtag')
+                                        ->weight('bold')
+                                        ->size(TextSize::Large)
+                                        ->columnSpanFull(),
+                                    TextEntry::make('status')
+                                        ->label('Estado')
+                                        ->badge()
+                                        ->color(fn (string $state): string => match ($state) {
+                                            'abierto' => 'info',
+                                            'en_progreso' => 'warning',
+                                            'en_espera' => 'gray',
+                                            'cerrado' => 'success',
+                                            'archivado' => 'danger',
+                                            default => 'gray',
+                                        })
+                                        ->formatStateUsing(fn (string $state): string => match ($state) {
+                                            'abierto' => 'Abierto',
+                                            'en_progreso' => 'En progreso',
+                                            'en_espera' => 'En espera',
+                                            'cerrado' => 'Cerrado',
+                                            'archivado' => 'Archivado',
+                                            default => $state,
+                                        }),
+                                    TextEntry::make('priority')
+                                        ->label('Prioridad')
+                                        ->badge()
+                                        ->color(fn (string $state): string => match ($state) {
+                                            'baja' => 'gray',
+                                            'media' => 'info',
+                                            'alta' => 'warning',
+                                            'urgente' => 'danger',
+                                            default => 'gray',
+                                        })
+                                        ->formatStateUsing(fn (string $state): string => ucfirst($state)),
+                                    TextEntry::make('started_at')
+                                        ->label('Fecha de inicio')
+                                        ->icon('heroicon-m-calendar')
+                                        ->date('d/m/Y')
+                                        ->placeholder('Sin definir'),
+                                    TextEntry::make('closed_at')
+                                        ->label('Fecha de cierre')
+                                        ->icon('heroicon-m-calendar')
+                                        ->date('d/m/Y')
+                                        ->placeholder('Caso abierto'),
+                                    TextEntry::make('last_tyba_sync')
+                                        ->label('Última sincronización')
+                                        ->icon('heroicon-m-arrow-path')
+                                        ->since()
+                                        ->placeholder('Nunca sincronizado')
+                                        ->visible(fn ($record) => (bool) $record->external_case_number)
+                                        ->columnSpanFull(),
+                                ]),
+                            Section::make('Partes')
+                                ->icon(Heroicon::OutlinedUserGroup)
+                                ->schema([
+                                    TextEntry::make('client')
+                                        ->label('Cliente')
+                                        ->icon('heroicon-m-user')
+                                        ->weight('medium')
+                                        ->formatStateUsing(fn ($record) => "{$record->client->first_name} {$record->client->last_name}"),
+                                    Grid::make(2)->schema([
+                                        TextEntry::make('client.document_number')
+                                            ->label('Documento')
+                                            ->icon('heroicon-m-identification'),
+                                        TextEntry::make('client.phone')
+                                            ->label('Teléfono')
+                                            ->icon('heroicon-m-phone')
+                                            ->placeholder('Sin teléfono'),
+                                    ]),
+                                    TextEntry::make('user.name')
+                                        ->label('Abogado responsable')
+                                        ->icon('heroicon-m-academic-cap')
+                                        ->helperText(fn ($record): ?string => $record->user?->email),
+                                    TextEntry::make('opposing_party')
+                                        ->label('Contraparte')
+                                        ->icon('heroicon-m-user-group')
+                                        ->placeholder('Sin contraparte'),
+                                ]),
+                        ])->columnSpan(['default' => 1, 'lg' => 1]),
                     ]),
             ]);
     }

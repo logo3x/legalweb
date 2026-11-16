@@ -15,7 +15,9 @@
         </div>
     </div>
 
-    <form wire:submit="buscar" style="margin-bottom: 24px;">
+    <form wire:submit="buscar" style="margin-bottom: 24px;"
+          x-data
+          x-on:submit="setTimeout(() => { const el = document.querySelector('[data-lw-loading]'); if (el && el.offsetParent && el.getBoundingClientRect().top > window.innerHeight - 120) { el.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center' }); } }, 350)">
         {{ $this->form }}
 
         <div style="margin-top: 18px; display: flex; gap: 10px; flex-wrap: wrap;">
@@ -28,6 +30,21 @@
         </div>
     </form>
 
+    <div wire:loading.delay.block wire:target="buscar" aria-live="polite" data-lw-loading>
+        <div style="display: flex; align-items: center; gap: 10px; background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 10px; padding: 14px 18px; margin-bottom: 14px; font-size: 14px; color: #1E40AF;">
+            <span class="lw-spinner"></span>
+            <span>Consultando las fuentes judiciales&hellip; puede tardar hasta 20 segundos.</span>
+        </div>
+        @foreach([72, 58, 66] as $width)
+            <div class="lw-skeleton">
+                <div class="lw-skeleton-line" style="width: 38%;"></div>
+                <div class="lw-skeleton-line" style="width: {{ $width }}%;"></div>
+                <div class="lw-skeleton-line" style="width: {{ $width - 22 }}%;"></div>
+            </div>
+        @endforeach
+    </div>
+
+    <div wire:loading.remove wire:target="buscar">
     @if($errorMessage)
         <div style="background: #FEE2E2; border: 1px solid #FECACA; border-radius: 10px; padding: 14px 18px; margin-bottom: 16px; color: #991B1B; font-size: 14px;">
             {{ $errorMessage }}
@@ -84,7 +101,7 @@
             <div>
                 @foreach($procesos as $p)
                     @php $yaImportado = in_array($p['radicado'], $existingRadicados); @endphp
-                    <div style="border: 1px solid {{ $yaImportado ? '#A7F3D0' : '#E2E8F0' }}; border-radius: 12px; padding: 16px 18px; margin-bottom: 10px; background: {{ $yaImportado ? '#ECFDF5' : '#fff' }}; transition: all .2s cubic-bezier(0.23, 1, 0.32, 1);"
+                    <div class="lw-result" wire:key="proceso-{{ $p['radicado'] }}" style="border: 1px solid {{ $yaImportado ? '#A7F3D0' : '#E2E8F0' }}; border-radius: 12px; padding: 16px 18px; margin-bottom: 10px; background: {{ $yaImportado ? '#ECFDF5' : '#fff' }}; transition: all .2s cubic-bezier(0.23, 1, 0.32, 1);"
                          onmouseover="if(!{{ $yaImportado ? 'true' : 'false' }}){this.style.borderColor='#3A86FF';this.style.boxShadow='0 6px 16px rgba(58,134,255,.10)';this.style.transform='translateY(-1px)'}"
                          onmouseout="if(!{{ $yaImportado ? 'true' : 'false' }}){this.style.borderColor='#E2E8F0';this.style.boxShadow='none';this.style.transform='translateY(0)'}">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap;">
@@ -152,4 +169,5 @@
             @endif
         @endif
     @endif
+    </div>
 </x-filament-panels::page>

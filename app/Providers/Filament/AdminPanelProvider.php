@@ -43,6 +43,19 @@ class AdminPanelProvider extends PanelProvider
                 NavigationGroup::make('Super Admin')->collapsed(),
             ])
             ->sidebarCollapsibleOnDesktop()
+            // Navegacion sin recargar la pagina y precarga al pasar el mouse por un enlace:
+            // cambiar de seccion se siente instantaneo. Las descargas, pagos, Google, portal
+            // y bajas de correo siempre se abren con una carga normal.
+            ->spa(hasPrefetching: true)
+            ->spaUrlExceptions([
+                '*/download/*',
+                '*/documents/*',
+                '*/wompi/*',
+                '*/auth/*',
+                '*/portal/*',
+                '*/correos/*',
+                '*/setup.php*',
+            ])
             // Ctrl+K / Cmd+K abre la busqueda de casos y clientes.
             ->globalSearchKeyBindings(['ctrl+k', 'command+k'])
             ->globalSearchFieldKeyBindingSuffix()
@@ -84,7 +97,7 @@ class AdminPanelProvider extends PanelProvider
             ->font('Inter')
             ->renderHook(
                 'panels::head.end',
-                fn () => new HtmlString('<script async src="https://www.googletagmanager.com/gtag/js?id=G-2Q7KJTB5MT"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-2Q7KJTB5MT");</script><meta name="csrf-token" content="'.csrf_token().'">'),
+                fn () => new HtmlString('<script async src="https://www.googletagmanager.com/gtag/js?id=G-2Q7KJTB5MT"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-2Q7KJTB5MT",{send_page_view:false});document.addEventListener("livewire:navigated",function(){gtag("event","page_view",{page_location:location.href,page_title:document.title});});</script><meta name="csrf-token" content="'.csrf_token().'">'),
             )
             ->renderHook(
                 'panels::body.start',

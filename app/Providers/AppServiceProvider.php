@@ -17,6 +17,9 @@ use App\Models\Reminder;
 use App\Models\User;
 use App\Notifications\LoginAlertNotification;
 use Filament\Notifications\Notification;
+use Filament\Schemas\Components\Fieldset;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
 use Filament\Support\Exceptions\Halt;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Database\Eloquent\Model;
@@ -54,6 +57,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->guardReadOnlySubscriptions();
+        $this->configureFilamentLayout();
 
         // Registrar fecha y contador de logins para seguimiento de actividad.
         // Cubre tanto login por email/password como Google OAuth (cualquier
@@ -139,5 +143,20 @@ class AppServiceProvider extends ServiceProvider
 
         Event::listen('eloquent.saving: *', $guard);
         Event::listen('eloquent.deleting: *', $guard);
+    }
+
+    /**
+     * Desde Filament 4 las secciones, grillas y fieldsets ocupan una sola columna del
+     * formulario y quedan en mosaico (huecos y orden poco claro). Aqui vuelven a ocupar
+     * todo el ancho por defecto; donde se quiere otra distribucion se indica columnSpan().
+     */
+    private function configureFilamentLayout(): void
+    {
+        Section::configureUsing(fn (Section $section) => $section->columnSpanFull());
+        Grid::configureUsing(fn (Grid $grid) => $grid->columnSpanFull());
+        Fieldset::configureUsing(fn (Fieldset $fieldset) => $fieldset->columnSpanFull());
+
+        // Barra de progreso de la navegacion sin recarga con el azul de la marca.
+        config(['livewire.navigate.progress_bar_color' => '#3A86FF']);
     }
 }
