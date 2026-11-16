@@ -96,10 +96,15 @@ class UsoIa extends Page
                         return;
                     }
 
-                    $results = app(AIModelHealth::class)->probeAll();
+                    // Tiempo limitado: el hosting corta las peticiones largas. Los que no alcancen
+                    // los prueba la comprobacion automatica en los siguientes minutos.
+                    $results = app(AIModelHealth::class)->probeAll(45);
+                    $total = count(app(AIModelRegistry::class)->options());
                     $ok = count(array_filter($results, fn (array $entry): bool => $entry['ok']));
 
-                    $notification = Notification::make()->title("{$ok} de ".count($results).' modelo(s) respondieron');
+                    $notification = Notification::make()
+                        ->title("{$ok} de ".count($results).' modelo(s) probados respondieron')
+                        ->body(count($results) < $total ? 'Faltan '.($total - count($results)).' por probar: se prueban solos en los próximos minutos.' : null);
                     $ok > 0 ? $notification->success()->send() : $notification->danger()->send();
                 }),
             Action::make('refresh_models')
@@ -107,17 +112,34 @@ class UsoIa extends Page
                 ->icon('heroicon-o-arrow-path')
                 ->color('gray')
                 ->requiresConfirmation()
-                ->modalDescription('Consulta los catalogos de Gemini, OpenRouter y NVIDIA y prueba los modelos gratuitos. Puede tardar varios minutos.')
+                ->modalDescription('Consulta los catálogos de Gemini, OpenRouter y NVIDIA y prueba los modelos gratuitos. Avanza por tramos de menos de un minuto; si queda a medias, la búsqueda continúa sola cada minuto.')
                 ->authorize(fn (): bool => static::canAccess())
                 ->action(function (): void {
                     if (! $this->allowProbe()) {
                         return;
                     }
 
-                    $verified = app(AIModelRegistry::class)->refresh();
+                    $step = app(AIModelRegistry::class)->refreshStep(45);
 
-                    $notification = Notification::make()->title(count($verified).' modelo(s) disponibles');
-                    $verified ? $notification->success()->send() : $notification->danger()->send();
+                    if ($step['busy']) {
+                        Notification::make()->title('Ya hay una búsqueda en curso')->body("Van {$step['probed']} de {$step['total']} candidatos probados. Continúa sola cada minuto.")->info()->send();
+
+                        return;
+                    }
+
+                    if (! $step['done']) {
+                        Notification::make()
+                            ->title("Búsqueda en curso: {$step['probed']} de {$step['total']} candidatos probados")
+                            ->body(count($step['verified']).' modelo(s) responden hasta ahora. La búsqueda continúa sola cada minuto; le llegará un correo si cambia el modelo principal.')
+                            ->info()
+                            ->send();
+
+                        return;
+                    }
+
+                    app(AIModelHealth::class)->notifyChanges();
+                    $notification = Notification::make()->title(count($step['verified']).' modelo(s) disponibles');
+                    $step['verified'] ? $notification->success()->send() : $notification->danger()->send();
                 }),
         ];
     }

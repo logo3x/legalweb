@@ -91,11 +91,22 @@ class AIModelHealth
      *
      * @return list<HealthEntry>
      */
-    public function probeAll(): array
+    public function probeAll(?int $budgetSeconds = null): array
     {
         @set_time_limit(300);
+        $startedAt = microtime(true);
+        $results = [];
 
-        return array_map(fn (string $key) => $this->probe($key), array_keys($this->registry->options()));
+        foreach (array_keys($this->registry->options()) as $key) {
+            // Con tiempo limitado se detiene antes de que el hosting corte la peticion.
+            if ($budgetSeconds !== null && $results !== [] && (microtime(true) - $startedAt) + self::PROBE_TIMEOUT > $budgetSeconds) {
+                break;
+            }
+
+            $results[] = $this->probe($key);
+        }
+
+        return $results;
     }
 
     /**
@@ -206,7 +217,8 @@ class AIModelHealth
 
         if (Cache::add(self::REFRESH_LOCK_KEY, true, now()->addHours(6))) {
             Log::warning('AI: ningun modelo responde; se buscan modelos nuevos');
-            $this->registry->refresh();
+            // Primer tramo corto: el resto lo continua el cron de cada minuto (el hosting corta peticiones largas).
+            $this->registry->refreshStep(30);
         }
 
         if ($this->healthyCount() === 0 && Cache::add(self::ALERT_KEY, true, now()->addHours(6))) {

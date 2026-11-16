@@ -17,6 +17,13 @@ class AIModelRegistry
 {
     public const CACHE_KEY = 'ai.verified_models';
 
+    public const REFRESH_STATE_KEY = 'ai.verified_models.refresh_state';
+
+    /**
+     * Espera maxima por modelo al buscar modelos nuevos.
+     */
+    private const PROBE_TIMEOUT = 25;
+
     /**
      * Prueba con una pregunta real y margen de tokens similar al de la app: algunos modelos
      * gratuitos "razonan" hasta agotar los tokens y nunca entregan respuesta.
@@ -141,59 +148,142 @@ class AIModelRegistry
     }
 
     /**
-     * Consulta el catalogo de cada proveedor, prueba los candidatos y guarda los que responden.
+     * Busqueda completa de modelos (consola o pruebas). En la web se usa refreshStep(),
+     * porque el hosting corta las peticiones largas.
      *
      * @return list<array{key: string, label: string, verified_at: string}>
      */
     public function refresh(): array
     {
-        // En hosting compartido PHP suele cortar a los 30-60 s; se pide mas tiempo si se permite.
-        @set_time_limit(300);
+        @set_time_limit(600);
 
-        $verified = [];
-        $verifiedPerProvider = [];
-        $previous = collect($this->verifiedModels())->keyBy('key');
-        $probed = [];
+        do {
+            $step = $this->refreshStep(null);
+        } while (! $step['done'] && ! $step['busy']);
 
-        foreach ($this->discoverCandidates() as $key => $label) {
-            [$provider] = AIProviderClient::parseKey($key);
+        return $step['verified'];
+    }
 
-            // Se prueban candidatos hasta reunir max_candidates que respondan por proveedor
-            // (con data_collection=deny muchos gratuitos se descartan).
-            if (($verifiedPerProvider[$provider] ?? 0) >= $this->maxCandidates($provider)) {
-                continue;
-            }
+    public function refreshInProgress(): bool
+    {
+        return Cache::has(self::REFRESH_STATE_KEY);
+    }
 
-            $probed[] = $key;
-            $response = $this->client->complete($key, 'Eres un abogado colombiano.', self::PROBE_PROMPT, self::PROBE_MAX_TOKENS, 25);
+    /**
+     * Avance de la busqueda en curso.
+     *
+     * @return array{probed: int, total: int, started_at: string}|null
+     */
+    public function refreshProgress(): ?array
+    {
+        $state = Cache::get(self::REFRESH_STATE_KEY);
 
-            if (mb_strlen(trim((string) $response['content'])) >= self::PROBE_MIN_ANSWER_LENGTH) {
-                $verified[] = ['key' => $key, 'label' => $label, 'verified_at' => now()->toDateTimeString()];
-                $verifiedPerProvider[$provider] = ($verifiedPerProvider[$provider] ?? 0) + 1;
-            } elseif ($previous->has($key) && $this->isTransientFailure($response['status'])) {
-                // Fallo transitorio (saturacion, limite de uso): se conserva la verificacion anterior.
-                $verified[] = $previous->get($key);
-                $verifiedPerProvider[$provider] = ($verifiedPerProvider[$provider] ?? 0) + 1;
-            }
-
-            // Avance guardado tras cada prueba: si el hosting corta la ejecucion, no se pierde lo verificado
-            // y se conservan los modelos anteriores que aun no se alcanzaron a probar.
-            if ($verified) {
-                Cache::forever(self::CACHE_KEY, array_values(array_merge(
-                    $verified,
-                    $previous->except($probed)->all(),
-                )));
-            }
+        if (! is_array($state)) {
+            return null;
         }
 
-        if ($verified) {
-            Cache::forever(self::CACHE_KEY, $verified);
+        return ['probed' => (int) $state['position'], 'total' => count($state['candidates']), 'started_at' => (string) $state['started_at']];
+    }
+
+    /**
+     * Un tramo de la busqueda de modelos: consulta los catalogos (al empezar), prueba candidatos
+     * hasta agotar $budgetSeconds y guarda el avance para continuar en el siguiente tramo
+     * (otro clic o el cron de cada minuto). Con $budgetSeconds = null corre hasta terminar.
+     *
+     * @return array{done: bool, busy: bool, verified: list<array{key: string, label: string, verified_at: string}>, probed: int, total: int}
+     */
+    public function refreshStep(?int $budgetSeconds): array
+    {
+        $lock = Cache::lock('ai.verified_models.refresh_lock', ($budgetSeconds ?? 600) + 60);
+
+        if (! $lock->get()) {
+            $progress = $this->refreshProgress();
+
+            return ['done' => false, 'busy' => true, 'verified' => [], 'probed' => $progress['probed'] ?? 0, 'total' => $progress['total'] ?? 0];
+        }
+
+        try {
+            $startedAt = microtime(true);
+            $state = Cache::get(self::REFRESH_STATE_KEY);
+
+            // Una busqueda que quedo a medias hace mas de 6 horas se descarta y se empieza de nuevo.
+            if (! is_array($state) || now()->subHours(6)->gt($state['started_at'])) {
+                $state = [
+                    'candidates' => $this->discoverCandidates(),
+                    'position' => 0,
+                    'verified' => [],
+                    'per_provider' => [],
+                    'probed' => [],
+                    'previous' => $this->verifiedModels(),
+                    'started_at' => now()->toDateTimeString(),
+                ];
+                Cache::forever(self::REFRESH_STATE_KEY, $state);
+            }
+
+            $keys = array_keys($state['candidates']);
+            $previous = collect($state['previous'])->keyBy('key');
+            $probedThisStep = 0;
+
+            while ($state['position'] < count($keys)) {
+                // Siempre se prueba al menos un modelo por tramo para que la busqueda avance.
+                if ($budgetSeconds !== null && $probedThisStep > 0 && (microtime(true) - $startedAt) + self::PROBE_TIMEOUT > $budgetSeconds) {
+                    break;
+                }
+
+                $key = $keys[$state['position']];
+                $label = $state['candidates'][$key];
+                $state['position']++;
+                [$provider] = AIProviderClient::parseKey($key);
+
+                // Se prueban candidatos hasta reunir max_candidates que respondan por proveedor
+                // (con data_collection=deny muchos gratuitos se descartan).
+                if (($state['per_provider'][$provider] ?? 0) >= $this->maxCandidates($provider)) {
+                    continue;
+                }
+
+                $probedThisStep++;
+                $state['probed'][] = $key;
+                $response = $this->client->complete($key, 'Eres un abogado colombiano.', self::PROBE_PROMPT, self::PROBE_MAX_TOKENS, self::PROBE_TIMEOUT);
+
+                if (mb_strlen(trim((string) $response['content'])) >= self::PROBE_MIN_ANSWER_LENGTH) {
+                    $state['verified'][] = ['key' => $key, 'label' => $label, 'verified_at' => now()->toDateTimeString()];
+                    $state['per_provider'][$provider] = ($state['per_provider'][$provider] ?? 0) + 1;
+                } elseif ($previous->has($key) && $this->isTransientFailure($response['status'])) {
+                    // Fallo transitorio (saturacion, limite de uso): se conserva la verificacion anterior.
+                    $state['verified'][] = $previous->get($key);
+                    $state['per_provider'][$provider] = ($state['per_provider'][$provider] ?? 0) + 1;
+                }
+
+                // Avance guardado tras cada prueba: si el hosting corta la ejecucion, no se pierde lo verificado
+                // y se conservan los modelos anteriores que aun no se alcanzaron a probar.
+                if ($state['verified']) {
+                    Cache::forever(self::CACHE_KEY, array_values(array_merge(
+                        $state['verified'],
+                        $previous->except($state['probed'])->all(),
+                    )));
+                }
+
+                Cache::forever(self::REFRESH_STATE_KEY, $state);
+            }
+
+            if ($state['position'] < count($keys)) {
+                return ['done' => false, 'busy' => false, 'verified' => $state['verified'], 'probed' => $state['position'], 'total' => count($keys)];
+            }
+
+            Cache::forget(self::REFRESH_STATE_KEY);
             Cache::forever(self::CACHE_KEY.'.refreshed_at', now()->toDateTimeString());
-        } else {
-            Log::error('AI: ningun modelo respondio durante la verificacion; se conserva la lista anterior');
-        }
 
-        return $verified;
+            if ($state['verified']) {
+                Cache::forever(self::CACHE_KEY, $state['verified']);
+            } else {
+                Cache::forever(self::CACHE_KEY, $state['previous']);
+                Log::error('AI: ningun modelo respondio durante la verificacion; se conserva la lista anterior');
+            }
+
+            return ['done' => true, 'busy' => false, 'verified' => $state['verified'], 'probed' => count($keys), 'total' => count($keys)];
+        } finally {
+            $lock->release();
+        }
     }
 
     /**

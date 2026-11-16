@@ -285,28 +285,42 @@ Route::get('/cron/{token}/{task?}', function (string $token, ?string $task = nul
         $results[] = "queue: {$processed} job(s) procesados";
     }
 
-    // Comprobacion automatica de los modelos de IA: cada 10 minutos prueba como maximo 2
-    // modelos sin noticias recientes. Se cuelga de la tarea "queue" para no exigir otro cron.
-    if ((! $task || $task === 'queue') && Cache::add('ai.model_health.tick', true, now()->addMinutes(10))) {
-        try {
-            $probed = app(AIModelHealth::class)->runScheduledCheck(2);
-            $results[] = 'ai-health: '.count($probed).' modelo(s) probados';
-        } catch (Throwable $e) {
-            Log::warning('ai-health fallo: '.$e->getMessage());
-        }
-    }
+    // Tareas de IA colgadas de "queue" (no exigen otro cron). Cada peticion se mantiene corta:
+    // el hosting corta las que tardan mucho, asi que se mide el tiempo ya usado.
+    $elapsed = fn (): float => microtime(true) - (defined('LARAVEL_START') ? LARAVEL_START : microtime(true));
 
-    // Respaldo de la verificacion diaria de modelos (verify-ai-models): si el cron de las 6:00 no
-    // corrio en mas de 30 horas, se ejecuta aqui una vez (como maximo cada 2 horas si falla).
-    $lastVerified = app(AIModelRegistry::class)->lastVerifiedAt();
-    if ((! $task || $task === 'queue')
-        && (! $lastVerified || Carbon::parse($lastVerified)->lt(now()->subHours(30)))
-        && Cache::add('ai.verify_models.fallback_lock', true, now()->addHours(2))) {
-        try {
-            Artisan::call('app:verify-ai-models');
-            $results[] = 'verify-ai-models (respaldo): '.count(app(AIModelRegistry::class)->verifiedModels()).' modelo(s) disponibles';
-        } catch (Throwable $e) {
-            Log::warning('verify-ai-models (respaldo) fallo: '.$e->getMessage());
+    if (! $task || $task === 'queue') {
+        $registry = app(AIModelRegistry::class);
+
+        // Busqueda de modelos nuevos a medias (por un clic, el cron diario o una caida): avanza un tramo.
+        // Si el cron de las 6:00 no corrio en mas de 30 horas, aqui empieza una nueva.
+        $lastVerified = $registry->lastVerifiedAt();
+        $verificationDue = ! $lastVerified || Carbon::parse($lastVerified)->lt(now()->subHours(30));
+
+        if (($registry->refreshInProgress() || ($verificationDue && Cache::add('ai.verify_models.fallback_lock', true, now()->addHours(2))))
+            && $elapsed() < 60) {
+            try {
+                $step = $registry->refreshStep(40);
+                $results[] = $step['done']
+                    ? 'ai-models: busqueda terminada, '.count($step['verified']).' modelo(s) disponibles'
+                    : "ai-models: busqueda en curso ({$step['probed']} de {$step['total']})";
+
+                if ($step['done']) {
+                    app(AIModelHealth::class)->notifyChanges();
+                }
+            } catch (Throwable $e) {
+                Log::warning('ai-models: fallo la busqueda de modelos: '.$e->getMessage());
+            }
+        }
+
+        // Comprobacion automatica: cada 10 minutos prueba como maximo 2 modelos sin noticias recientes.
+        if ($elapsed() < 60 && Cache::add('ai.model_health.tick', true, now()->addMinutes(10))) {
+            try {
+                $probed = app(AIModelHealth::class)->runScheduledCheck(2);
+                $results[] = 'ai-health: '.count($probed).' modelo(s) probados';
+            } catch (Throwable $e) {
+                Log::warning('ai-health fallo: '.$e->getMessage());
+            }
         }
     }
 
@@ -356,8 +370,9 @@ Route::get('/cron/{token}/{task?}', function (string $token, ?string $task = nul
 
     // Tarea: verify-ai-models (diaria, prueba los modelos de IA disponibles)
     if ($task === 'verify-ai-models') {
-        Artisan::call('app:verify-ai-models');
-        $results[] = 'verify-ai-models: '.count(app(AIModelRegistry::class)->verifiedModels()).' modelo(s) disponibles';
+        // Por tramos: el hosting corta las peticiones largas; el resto lo continua el cron de cada minuto.
+        Artisan::call('app:verify-ai-models', ['--budget' => 50]);
+        $results[] = 'verify-ai-models: '.trim(Artisan::output());
     }
 
     // Tarea: mass-emails (cada 5 min, despacha campañas programadas que llegaron a su hora)

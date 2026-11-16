@@ -111,6 +111,45 @@ class AIModelRegistryTest extends TestCase
         Http::assertNotSent(fn (Request $request) => str_contains($request->url(), 'gemini-3.8-flash-tts'));
     }
 
+    public function test_refresh_runs_in_short_steps_that_resume_where_they_stopped(): void
+    {
+        $this->fakeProviders([
+            'gemini:gemini-flash-latest' => 200,
+            'openrouter:acme/good-model:free' => 200,
+            'openrouter:acme/other-model:free' => 404,
+        ]);
+        $registry = app(AIModelRegistry::class);
+
+        // Con un tiempo minimo, cada tramo prueba un solo candidato y guarda el avance.
+        $first = $registry->refreshStep(1);
+
+        $this->assertFalse($first['done']);
+        $this->assertSame(1, $first['probed']);
+        $this->assertTrue($registry->refreshInProgress());
+        $this->assertNull($registry->lastVerifiedAt());
+
+        $steps = 1;
+        do {
+            $step = $registry->refreshStep(1);
+            $steps++;
+        } while (! $step['done'] && $steps < 10);
+
+        $this->assertTrue($step['done']);
+        $this->assertGreaterThan(2, $steps);
+        $this->assertFalse($registry->refreshInProgress());
+        $this->assertNotNull($registry->lastVerifiedAt());
+        $this->assertSame(['openrouter:acme/good-model:free', 'gemini:gemini-flash-latest'], array_column($registry->verifiedModels(), 'key'));
+    }
+
+    public function test_verify_command_with_budget_reports_progress_instead_of_blocking(): void
+    {
+        $this->fakeProviders(['openrouter:acme/good-model:free' => 200, 'gemini:gemini-flash-latest' => 200]);
+
+        $this->artisan('app:verify-ai-models', ['--budget' => 1])
+            ->expectsOutputToContain('Busqueda en curso')
+            ->assertSuccessful();
+    }
+
     public function test_refresh_keeps_probing_until_enough_models_respond(): void
     {
         config(['services.gemini.api_key' => null, 'services.openrouter.max_candidates' => 1]);

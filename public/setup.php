@@ -1040,7 +1040,9 @@ try {
     }
 
     if ($step === 'verify_ai_models') {
-        Artisan::call('app:verify-ai-models');
+        // Por tramos de 50 s: el hosting corta las peticiones largas. Si queda a medias,
+        // la busqueda continua sola con el cron de cada minuto (o al volver a abrir este paso).
+        Artisan::call('app:verify-ai-models', ['--budget' => 50]);
         $aiOutput = trim(Artisan::output());
         foreach (explode("\n", $aiOutput) as $line) {
             if (trim($line)) {

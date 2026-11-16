@@ -41,7 +41,12 @@
         <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px; margin-bottom: 6px;">
             <h3 style="font-size: 16px; font-weight: 700; color: #1E3A5F; margin: 0; font-family: 'Poppins',sans-serif;">Estado de los modelos</h3>
             <span style="font-size: 12px; color: #94a3b8;">
-                Última búsqueda de modelos: {{ $lastRefresh ? \Illuminate\Support\Carbon::parse($lastRefresh)->diffForHumans() : 'nunca' }}
+                @php $refreshProgress = app(\App\Services\AIModelRegistry::class)->refreshProgress(); @endphp
+                @if ($refreshProgress)
+                    Búsqueda de modelos en curso: {{ $refreshProgress['probed'] }} de {{ $refreshProgress['total'] }} candidatos probados
+                @else
+                    Última búsqueda de modelos: {{ $lastRefresh ? \Illuminate\Support\Carbon::parse($lastRefresh)->diffForHumans() : 'nunca' }}
+                @endif
             </span>
         </div>
         @if($this->openRouterAllowsTraining())
