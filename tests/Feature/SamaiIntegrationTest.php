@@ -171,7 +171,7 @@ class SamaiIntegrationTest extends TestCase
     public function test_document_search_in_all_sources_uses_rama_and_explains_samai(): void
     {
         [$user] = $this->firmUserAndClient();
-        $this->mock(TybaService::class, fn (MockInterface $mock) => $mock->shouldReceive('searchByDocument')->once()->with('1098765432', 1)->andReturn([
+        $this->mock(TybaService::class, fn (MockInterface $mock) => $mock->shouldReceive('documentSearchUnavailable')->andReturn(false)->getMock()->shouldReceive('searchClientProcesses')->once()->with('1098765432', 1, '')->andReturn([
             ['radicado' => '11001310300120240015800', 'despacho' => 'Juzgado 1 Civil', 'departamento' => 'BOGOTA', 'fecha' => '', 'ultima_actuacion' => '', 'sujetos' => '', 'es_privado' => false],
         ]));
         Http::fake();
@@ -186,6 +186,49 @@ class SamaiIntegrationTest extends TestCase
             ->assertSee('SAMAI no permite buscar por cédula');
 
         Http::assertNotSent(fn (Request $request): bool => str_ends_with($request->url(), '/buscar'));
+    }
+
+    public function test_rama_without_document_search_falls_back_to_the_client_name(): void
+    {
+        Http::fake([
+            '*/DocumentoIdentificacion*' => Http::response(['StatusCode' => 404, 'Message' => 'Tipo de consulta: DocumentoIdentificacion, no existe.'], 404),
+            '*/NombreRazonSocial*' => Http::response(['procesos' => [
+                ['llaveProceso' => '11001310300120240015800', 'despacho' => 'Juzgado 1 Civil', 'departamento' => 'BOGOTA', 'sujetosProcesales' => 'Demandante: CARLOS ANDRES PEREZ GOMEZ | Demandado: BANCO'],
+                ['llaveProceso' => '11001310300120240099900', 'despacho' => 'Juzgado 2 Civil', 'departamento' => 'BOGOTA', 'sujetosProcesales' => 'Demandante: CARLOS PEREZ RUIZ'],
+            ], 'paginacion' => ['cantidadPaginas' => 1]]),
+        ]);
+
+        $tyba = app(TybaService::class);
+        $found = $tyba->searchClientProcesses('79845123', 1, 'Carlos Andrés Pérez Gómez');
+
+        $this->assertTrue($tyba->documentSearchUnavailable());
+        $this->assertSame(['11001310300120240015800'], array_column($found, 'radicado'), 'Solo los procesos donde aparece el nombre completo.');
+    }
+
+    public function test_search_by_document_explains_when_it_is_not_a_client(): void
+    {
+        [$user] = $this->firmUserAndClient();
+        Http::fake([
+            '*/DocumentoIdentificacion*' => Http::response(['StatusCode' => 404], 404),
+            '*/corporaciones' => Http::response(['ok' => true, 'data' => []]),
+        ]);
+
+        $this->actingAs($user);
+
+        Livewire::test(BuscarProcesosTyba::class)
+            ->fillForm(['termino' => '1098631735'])
+            ->call('buscar')
+            ->assertSee('ya no permite consultar procesos por cédula');
+    }
+
+    public function test_samai_corporations_failure_is_not_retried_on_every_request(): void
+    {
+        Http::fake(['*/corporaciones' => Http::response('', 500)]);
+
+        $this->assertSame([], app(SamaiService::class)->corporations());
+        $this->assertSame([], app(SamaiService::class)->corporations());
+
+        Http::assertSentCount(1);
     }
 
     public function test_samai_case_view_renders(): void

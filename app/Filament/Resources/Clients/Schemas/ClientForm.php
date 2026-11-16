@@ -63,7 +63,7 @@ class ClientForm
                                     ->label('Vigilar procesos nuevos de este cliente')
                                     ->disabled(fn (): bool => ! self::firmHasMonitoring())
                                     ->helperText(fn (): string => self::firmHasMonitoring()
-                                        ? 'Cada noche buscamos el documento en la Rama Judicial y le avisamos si aparece en un proceso que aun no esta en LegalWeb.'
+                                        ? 'Cada noche buscamos al cliente en la Rama Judicial (por su nombre, porque la Rama ya no permite buscar por cédula) y le avisamos si aparece en un proceso que aún no está en LegalWeb.'
                                         : 'La vigilancia de clientes esta incluida en los planes Profesional y Firma. Mejore su plan en "Mi Plan".')
                                     ->columnSpanFull(),
                                 Toggle::make('whatsapp_enabled')

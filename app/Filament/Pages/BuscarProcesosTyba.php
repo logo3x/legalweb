@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Models\Client;
 use App\Models\LegalCase;
 use App\Services\SamaiService;
 use App\Services\TybaService;
@@ -156,7 +157,7 @@ class BuscarProcesosTyba extends Page implements HasForms
                 TextInput::make('termino')
                     ->label('Nombre, cédula/NIT o radicado')
                     ->placeholder('Ej: GARCIA LOPEZ MARIA · 1098765432 · 11001310300120240015800')
-                    ->helperText('Escriba un nombre (apellidos primero), un documento sin puntos o un radicado de 23 dígitos. Detectamos el tipo de búsqueda automáticamente.')
+                    ->helperText('Escriba un nombre, un radicado de 23 dígitos o la cédula/NIT de un cliente registrado (la Rama Judicial ya no permite buscar cualquier cédula). Detectamos el tipo de búsqueda automáticamente.')
                     ->required(fn ($get): bool => $get('modo') === 'auto')
                     ->minLength(3)
                     ->maxLength(150)
@@ -294,6 +295,11 @@ class BuscarProcesosTyba extends Page implements HasForms
         $this->searchedSource = $fuente;
         $this->hasSearched = true;
 
+        // Las fuentes judiciales pueden tardar: se da margen para que el hosting no corte la consulta.
+        if (function_exists('set_time_limit')) {
+            @set_time_limit(120);
+        }
+
         $resultados = [];
         $errores = [];
         $fuentesConsultadas = 0;
@@ -303,6 +309,8 @@ class BuscarProcesosTyba extends Page implements HasForms
 
             try {
                 $resultados = array_merge($resultados, $this->buscarEnRama($modo, $term, $tipoDocumento));
+            } catch (\DomainException $e) {
+                $errores[] = $e->getMessage();
             } catch (\Throwable $e) {
                 $errores[] = 'No pudimos conectar con la Rama Judicial. Intente en unos minutos.';
                 Log::warning('BuscarProcesosTyba: error Rama', ['error' => $e->getMessage(), 'modo' => $modo]);
@@ -378,7 +386,7 @@ class BuscarProcesosTyba extends Page implements HasForms
                     'es_privado' => $info['es_privado'] ?? false,
                 ]];
             })(),
-            'documento' => $service->searchByDocument($term, $tipoDocumento),
+            'documento' => $this->buscarDocumentoEnRama($service, $term, $tipoDocumento),
             default => $service->searchByName($term),
         };
 
@@ -387,6 +395,33 @@ class BuscarProcesosTyba extends Page implements HasForms
             ->map(fn (array $proceso): array => $proceso + ['fuente' => 'rama'])
             ->values()
             ->all();
+    }
+
+    /**
+     * La Rama Judicial retiro la consulta publica por cedula/NIT. Si el documento es de un cliente
+     * de la firma, se busca por su nombre y se dejan los procesos donde aparece como parte.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    protected function buscarDocumentoEnRama(TybaService $service, string $term, int $tipoDocumento): array
+    {
+        $documento = (string) preg_replace('/[^0-9A-Za-z]/', '', $term);
+        $cliente = Client::where('document_number', $documento)->first();
+        $nombre = $cliente ? trim("{$cliente->first_name} {$cliente->last_name}") : '';
+
+        $procesos = $service->searchClientProcesses($documento, $tipoDocumento, $nombre);
+
+        if (! $service->documentSearchUnavailable()) {
+            return $procesos;
+        }
+
+        if (! $cliente) {
+            throw new \DomainException('La Rama Judicial ya no permite consultar procesos por cédula o NIT en su sistema público. Busque por nombre (apellidos y nombres) o por número de radicado. Si el documento es de uno de sus clientes, regístrelo en Clientes y lo buscaremos por su nombre.');
+        }
+
+        $this->avisos[] = "La Rama Judicial ya no permite consultar por cédula o NIT, así que buscamos por el nombre de su cliente {$nombre} y dejamos solo los procesos donde aparece como parte. Revise que sean de esa persona: puede haber homónimos.";
+
+        return $procesos;
     }
 
     /**

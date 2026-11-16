@@ -8,7 +8,7 @@
         <div style="flex: 1; min-width: 0;">
             <h3 style="margin: 0 0 4px; font-size: 17px; font-weight: 700; color: #1E3A5F;">Encuentra procesos en la Rama Judicial y en SAMAI</h3>
             <p style="margin: 0; font-size: 13.5px; color: #475569; line-height: 1.55;">
-                Escribe el <strong>nombre</strong>, la <strong>cédula / NIT</strong> o el <strong>número de radicado</strong> en un solo campo: detectamos el tipo de búsqueda.
+                Escribe el <strong>nombre</strong>, el <strong>número de radicado</strong> o la <strong>cédula / NIT de uno de tus clientes</strong> en un solo campo: detectamos el tipo de búsqueda.
                 Por defecto buscamos en <strong>todas las fuentes</strong> (Rama Judicial y SAMAI) a la vez.
                 Luego importas el proceso completo con un clic: actuaciones, sujetos, despacho y vigilancia automática.
             </p>
@@ -17,7 +17,7 @@
 
     <form wire:submit="buscar" style="margin-bottom: 24px;"
           x-data
-          x-on:submit="setTimeout(() => { const el = document.querySelector('[data-lw-loading]'); if (el && el.offsetParent && el.getBoundingClientRect().top > window.innerHeight - 120) { el.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center' }); } }, 350)">
+          x-on:submit="setTimeout(() => { const el = document.querySelector('[data-lw-loading]'); if (el && el.offsetParent && el.getBoundingClientRect().top > window.innerHeight - 120) { window.scrollTo({ top: window.scrollY + el.getBoundingClientRect().top - window.innerHeight / 3, left: window.scrollX, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); } }, 350)">
         {{ $this->form }}
 
         <div style="margin-top: 18px; display: flex; gap: 10px; flex-wrap: wrap;">

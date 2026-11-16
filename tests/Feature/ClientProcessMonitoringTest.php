@@ -46,9 +46,9 @@ class ClientProcessMonitoringTest extends TestCase
             'external_case_number' => '11001310300120260000100',
         ]);
 
-        $this->mock(TybaService::class, fn (MockInterface $mock) => $mock->shouldReceive('searchByDocument')
+        $this->mock(TybaService::class, fn (MockInterface $mock) => $mock->shouldReceive('searchClientProcesses')
             ->once()
-            ->with('900123456', 3)
+            ->with('900123456', 3, \Mockery::type('string'))
             ->andReturn([
                 $this->process('11001310300120260000100'),
                 $this->process('05001310500120260000200'),
@@ -67,7 +67,7 @@ class ClientProcessMonitoringTest extends TestCase
 
     public function test_known_processes_are_not_notified_twice(): void
     {
-        $this->mock(TybaService::class, fn (MockInterface $mock) => $mock->shouldReceive('searchByDocument')
+        $this->mock(TybaService::class, fn (MockInterface $mock) => $mock->shouldReceive('searchClientProcesses')
             ->twice()
             ->andReturn([$this->process('05001310500120260000200')]));
 
@@ -87,7 +87,7 @@ class ClientProcessMonitoringTest extends TestCase
             'is_demo' => true,
         ]);
 
-        $this->mock(TybaService::class, fn (MockInterface $mock) => $mock->shouldNotReceive('searchByDocument'));
+        $this->mock(TybaService::class, fn (MockInterface $mock) => $mock->shouldNotReceive('searchClientProcesses'));
 
         $this->artisan('app:monitor-client-processes')->assertSuccessful();
 

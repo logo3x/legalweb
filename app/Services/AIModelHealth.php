@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\User;
+use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -200,8 +201,15 @@ class AIModelHealth
             if ($superadmins->isNotEmpty()) {
                 Notification::make()
                     ->title('La IA no esta respondiendo')
-                    ->body('Ninguno de los modelos de IA respondio en la ultima comprobacion automatica. Revise el estado en Uso de IA.')
+                    ->body('Ninguno de los modelos de IA respondió en la última comprobación automática. En Uso de IA puede ver el error de cada modelo, probarlos de nuevo o buscar modelos nuevos.')
                     ->danger()
+                    ->actions([
+                        Action::make('abrir_uso_ia')
+                            ->label('Abrir Uso de IA')
+                            ->button()
+                            ->url(url('/admin/uso-ia'))
+                            ->markAsRead(),
+                    ])
                     ->sendToDatabase($superadmins);
             }
         }

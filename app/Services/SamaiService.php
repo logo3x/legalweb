@@ -33,13 +33,26 @@ class SamaiService
             return $cached;
         }
 
+        // Si SAMAI no respondio hace poco, no se vuelve a esperar en cada clic de la pagina.
+        if (Cache::has('samai:corporaciones:fallo')) {
+            return [];
+        }
+
         try {
-            $response = $this->client()->get(self::BASE_URL.'/Vistas/Casos/Jprocesos.ashx/corporaciones');
+            $response = Http::acceptJson()
+                ->withUserAgent('Mozilla/5.0 (compatible; LegalWeb/1.0; +https://legalweb.com.co)')
+                ->connectTimeout(5)
+                ->timeout(8)
+                ->get(self::BASE_URL.'/Vistas/Casos/Jprocesos.ashx/corporaciones');
         } catch (\Throwable) {
+            Cache::put('samai:corporaciones:fallo', true, now()->addMinutes(10));
+
             return [];
         }
 
         if (! $response->successful() || ! $response->json('ok')) {
+            Cache::put('samai:corporaciones:fallo', true, now()->addMinutes(10));
+
             return [];
         }
 
@@ -204,7 +217,8 @@ class SamaiService
         return Http::acceptJson()
             ->asJson()
             ->withUserAgent('Mozilla/5.0 (compatible; LegalWeb/1.0; +https://legalweb.com.co)')
-            ->timeout(25)
-            ->retry(2, 800, throw: false);
+            ->connectTimeout(5)
+            ->timeout(15)
+            ->retry(2, 500, throw: false);
     }
 }

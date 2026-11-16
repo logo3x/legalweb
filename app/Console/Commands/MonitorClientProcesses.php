@@ -43,7 +43,8 @@ class MonitorClientProcesses extends Command
                 continue;
             }
 
-            $found = $tyba->searchByDocument((string) $client->document_number, $client->ramaDocumentTypeCode());
+            // La Rama ya no permite buscar por documento: se usa el nombre del cliente como alternativa.
+            $found = $tyba->searchClientProcesses((string) $client->document_number, $client->ramaDocumentTypeCode(), "{$client->first_name} {$client->last_name}");
 
             $imported = LegalCase::withoutGlobalScopes()
                 ->where('firm_id', $client->firm_id)

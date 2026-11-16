@@ -5,10 +5,74 @@ namespace App\Services;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class TybaService
 {
     private string $apiBase = 'https://consultaprocesos.ramajudicial.gov.co:448/api/v2';
+
+    /**
+     * La consulta publica por cedula/NIT fue retirada por la Rama Judicial (desde nov-2026 responde
+     * "no existe" o "no esta autorizado"). Se marca para usar la busqueda por nombre como alternativa.
+     */
+    private bool $documentSearchUnavailable = false;
+
+    public function documentSearchUnavailable(): bool
+    {
+        return $this->documentSearchUnavailable;
+    }
+
+    /**
+     * Procesos de un cliente: por documento si la Rama lo permite; si no, por su nombre,
+     * dejando solo los procesos donde todas las palabras del nombre aparecen entre las partes.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function searchClientProcesses(string $document, int $tipoDocumento, string $fullName): array
+    {
+        $found = $this->searchByDocument($document, $tipoDocumento);
+
+        if (! $this->documentSearchUnavailable) {
+            return $found;
+        }
+
+        $tokens = array_values(array_filter(
+            explode(' ', self::normalizeName($fullName)),
+            fn (string $token): bool => mb_strlen($token) >= 2,
+        ));
+
+        // Con una sola palabra habria demasiados homonimos.
+        if (count($tokens) < 2) {
+            return [];
+        }
+
+        try {
+            $byName = $this->searchByName(implode(' ', $tokens));
+        } catch (\Throwable $e) {
+            Log::warning('Tyba API: error busqueda por nombre del cliente', ['error' => $e->getMessage()]);
+
+            return [];
+        }
+
+        return array_values(array_filter($byName, function (array $proceso) use ($tokens): bool {
+            $sujetos = self::normalizeName((string) ($proceso['sujetos'] ?? ''));
+
+            foreach ($tokens as $token) {
+                if (! preg_match('/\b'.preg_quote($token, '/').'\b/u', $sujetos)) {
+                    return false;
+                }
+            }
+
+            return true;
+        }));
+    }
+
+    private static function normalizeName(string $value): string
+    {
+        $value = mb_strtoupper(Str::ascii($value));
+
+        return trim((string) preg_replace('/[^A-Z0-9]+/', ' ', $value));
+    }
 
     /**
      * Extraer informacion completa de un proceso desde la API publica de la Rama Judicial.
@@ -169,6 +233,12 @@ class TybaService
                     'document' => '***'.substr($cleanDoc, -4),
                     'error' => str_replace($cleanDoc, '***'.substr($cleanDoc, -4), $e->getMessage()),
                 ]);
+                break;
+            }
+
+            if (in_array($response->status(), [401, 404], true)) {
+                // La Rama retiro esta consulta del acceso publico.
+                $this->documentSearchUnavailable = true;
                 break;
             }
 
