@@ -4,6 +4,7 @@ namespace App\Filament\Resources\LegalCases\RelationManagers;
 
 use App\Filament\Resources\LegalCases\RelationManagers\Concerns\ChecksCasePermissions;
 use App\Notifications\FlowStepCompletedNotification;
+use App\Services\JudicialCalendarService;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Toggle;
@@ -42,7 +43,7 @@ class FlowProgressRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
-            ->description('El flujo de proceso muestra las etapas legales de su caso. Cada paso tiene un plazo en días hábiles. Puede marcar los pasos como completados, en progreso u omitidos. Los plazos se calculan según el calendario judicial colombiano.')
+            ->description('El flujo de proceso muestra las etapas legales de su caso. Cada paso tiene un plazo en días hábiles que empieza a correr cuando lo inicia (botón Iniciar); le avisamos 3 días hábiles antes, 1 día antes y el día del vencimiento. Los plazos se calculan con el calendario judicial colombiano.')
             ->recordTitleAttribute('flowStep.name')
             ->columns([
                 TextColumn::make('flowStep.order')
@@ -53,9 +54,23 @@ class FlowProgressRelationManager extends RelationManager
                     ->label('Paso')
                     ->searchable(),
                 TextColumn::make('flowStep.days_limit')
-                    ->label('Plazo (días)')
+                    ->label('Plazo (días hábiles)')
                     ->placeholder('Sin límite')
                     ->alignCenter(),
+                // Vencimiento del paso iniciado: dias habiles desde su inicio, con festivos y vacancia.
+                TextColumn::make('started_at')
+                    ->label('Vence')
+                    ->state(function ($record): ?string {
+                        if ($record->status !== 'en_progreso' || ! $record->started_at || ! $record->flowStep?->days_limit) {
+                            return null;
+                        }
+
+                        return app(JudicialCalendarService::class)
+                            ->calculateDeadline($record->started_at, (int) $record->flowStep->days_limit)['deadline']
+                            ->format('d/m/Y');
+                    })
+                    ->placeholder('—')
+                    ->tooltip('El plazo corre desde que se inicia el paso, en días hábiles del calendario judicial.'),
                 TextColumn::make('status')
                     ->label('Estado')
                     ->badge()

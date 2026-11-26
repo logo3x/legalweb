@@ -97,6 +97,20 @@ class WompiController extends Controller
             if ($error) {
                 return redirect('/admin/planes')->with('error', $error);
             }
+
+            // El uso se cuenta al aprobarse el pago: mientras tanto, los pagos de otras firmas en curso
+            // (ultima hora) reservan cupo, para que un codigo de un solo uso no se canjee dos veces.
+            if ($discountCode->max_uses !== null) {
+                $reserved = Subscription::where('discount_code_id', $discountCode->id)
+                    ->where('status', 'pending')
+                    ->where('firm_id', '!=', $firm->id)
+                    ->where('created_at', '>=', now()->subHour())
+                    ->count();
+
+                if ($discountCode->current_uses + $reserved >= $discountCode->max_uses) {
+                    return redirect('/admin/planes')->with('error', 'Este codigo esta siendo usado en otro pago en curso. Intente de nuevo en una hora.');
+                }
+            }
             $discountAmount = $discountCode->calculateDiscount($originalAmount);
         }
 

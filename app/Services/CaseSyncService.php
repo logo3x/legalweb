@@ -137,10 +137,27 @@ class CaseSyncService
             // event_day (DATE con indice unico) es la unica fuente de verdad del dia.
             $eventDay = $date->toDateString();
 
-            $existing = CaseEvent::where('legal_case_id', $case->id)
-                ->where('title', $title)
-                ->where('event_day', $eventDay)
-                ->first();
+            $ref = $actuacion['ref'] ?? null;
+
+            // Se busca por el id de la actuacion en la Rama. Los eventos guardados antes de tener ese
+            // id (mismo titulo y dia, sin rama_ref) se adoptan una sola vez: si la Rama trae dos
+            // actuaciones iguales ese dia, la segunda se crea en lugar de fundirse con la primera.
+            $existing = $ref
+                ? CaseEvent::where('legal_case_id', $case->id)->where('rama_ref', $ref)->first()
+                : null;
+
+            if (! $existing) {
+                $existing = CaseEvent::where('legal_case_id', $case->id)
+                    ->where('title', $title)
+                    ->whereDate('event_day', $eventDay)
+                    ->whereNull('rama_ref')
+                    ->orderBy('id')
+                    ->first();
+
+                if ($existing && $ref) {
+                    $existing->forceFill(['rama_ref' => $ref])->saveQuietly();
+                }
+            }
 
             $newDescription = $this->buildEventDescription($actuacion);
 
@@ -158,12 +175,13 @@ class CaseSyncService
                     'title' => $title,
                     'event_date' => $date,
                     'event_day' => $eventDay,
+                    'rama_ref' => $ref,
                     'event_type' => 'actuacion',
                     'description' => $newDescription,
                     'user_id' => $case->user_id,
                 ]);
             } catch (QueryException $e) {
-                if (str_contains($e->getMessage(), 'ce_case_title_day_uniq')
+                if (str_contains($e->getMessage(), 'ce_case_rama_ref_uniq')
                     || str_contains($e->getMessage(), 'Duplicate entry')
                     || str_contains($e->getMessage(), 'UNIQUE constraint failed')) {
                     continue;
@@ -616,10 +634,14 @@ class CaseSyncService
             ->whereNull('event_day')
             ->update(['event_day' => DB::raw('DATE(event_date)')]);
 
+        // Solo eventos sin id de la Rama (versiones viejas del sync): los que tienen rama_ref son
+        // actuaciones distintas aunque compartan titulo y dia.
         $groups = DB::table('case_events')
             ->selectRaw('title, event_day, COUNT(*) as cnt, MIN(id) as keep_id')
             ->where('legal_case_id', $case->id)
             ->whereNotNull('event_day')
+            ->whereNull('rama_ref')
+            ->where('event_type', 'actuacion')
             ->groupBy('title', 'event_day')
             ->havingRaw('COUNT(*) > 1')
             ->get();
@@ -628,6 +650,8 @@ class CaseSyncService
             CaseEvent::where('legal_case_id', $case->id)
                 ->where('title', $g->title)
                 ->where('event_day', $g->event_day)
+                ->whereNull('rama_ref')
+                ->where('event_type', 'actuacion')
                 ->where('id', '!=', $g->keep_id)
                 ->delete();
         }

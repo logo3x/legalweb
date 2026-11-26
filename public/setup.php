@@ -896,7 +896,7 @@ try {
         $dupes = DB::select("
             SELECT legal_case_id, DATE(event_date) AS d, title, COUNT(*) AS n, MIN(id) AS keep_id
             FROM case_events
-            WHERE event_type = 'actuacion'
+            WHERE event_type = 'actuacion' AND rama_ref IS NULL
             GROUP BY legal_case_id, DATE(event_date), title
             HAVING n > 1
         ");
@@ -925,6 +925,7 @@ try {
                         ->whereRaw('DATE(event_date) = ?', [$g->d])
                         ->where('title', $g->title)
                         ->where('event_type', 'actuacion')
+                        ->whereNull('rama_ref')
                         ->where('id', '!=', $g->keep_id)
                         ->delete();
                     $eliminados += $deleted;

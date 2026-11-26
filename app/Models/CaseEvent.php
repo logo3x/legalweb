@@ -16,6 +16,7 @@ use Illuminate\Support\Carbon;
     'description',
     'event_date',
     'event_day',
+    'rama_ref',
     'event_type',
     'is_milestone',
     'user_id',

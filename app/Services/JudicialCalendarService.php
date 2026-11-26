@@ -124,6 +124,31 @@ class JudicialCalendarService
     }
 
     /**
+     * Dias habiles que faltan desde $from hasta $to: 0 si es el mismo dia, positivo si $to es
+     * posterior (cuenta los dias habiles despues de $from hasta $to inclusive) y negativo si ya paso.
+     */
+    public function businessDaysBetween(Carbon $from, Carbon $to): int
+    {
+        $from = $from->copy()->startOfDay();
+        $to = $to->copy()->startOfDay();
+
+        if ($from->equalTo($to)) {
+            return 0;
+        }
+
+        [$start, $end, $sign] = $to->greaterThan($from) ? [$from, $to, 1] : [$to, $from, -1];
+        $count = 0;
+
+        for ($day = $start->copy()->addDay(); $day->lte($end); $day->addDay()) {
+            if ($this->isBusinessDay($day)) {
+                $count++;
+            }
+        }
+
+        return $sign * $count;
+    }
+
+    /**
      * Calcular fecha de vencimiento.
      *
      * @param  string  $type  'business' (habiles), 'calendar' (calendario), 'months' (meses)

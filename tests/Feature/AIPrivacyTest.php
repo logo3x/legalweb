@@ -67,8 +67,9 @@ class AIPrivacyTest extends TestCase
             $this->assertStringNotContainsStringIgnoringCase($secret, $masked);
         }
 
-        // Los datos publicos del proceso se conservan.
-        $this->assertStringContainsString('11001310300120250012300', $masked);
+        // El radicado se oculta (con el, cualquiera encuentra el proceso y sus partes); el despacho se conserva.
+        $this->assertStringNotContainsString('11001310300120250012300', $masked);
+        $this->assertStringContainsString('[RADICADO]', $masked);
         $this->assertStringContainsString('Departamento: BOGOTA', $masked);
         $this->assertStringContainsString('[CLIENTE]', $masked);
 

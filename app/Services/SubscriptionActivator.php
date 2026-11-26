@@ -105,6 +105,17 @@ class SubscriptionActivator
             'redeemed_at' => now(),
         ]);
 
-        DiscountCode::whereKey($subscription->discount_code_id)->increment('current_uses');
+        // Incremento atomico solo si queda cupo. Si el pago ya se hizo con un codigo agotado
+        // (dos pagos abiertos a la vez), la suscripcion se activa igual pero queda registrado.
+        $counted = DiscountCode::whereKey($subscription->discount_code_id)
+            ->where(fn ($query) => $query->whereNull('max_uses')->orWhereColumn('current_uses', '<', 'max_uses'))
+            ->increment('current_uses');
+
+        if ($counted === 0) {
+            Log::warning('Wompi: codigo de descuento canjeado por encima de su limite de usos', [
+                'discount_code_id' => $subscription->discount_code_id,
+                'reference' => $subscription->wompi_reference,
+            ]);
+        }
     }
 }

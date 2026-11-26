@@ -6,6 +6,7 @@ use App\Models\CaseFlowProgress;
 use App\Models\LegalCase;
 use App\Notifications\Concerns\SendsWhatsApp;
 use App\Notifications\Messages\WhatsAppMessage;
+use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification as FilamentNotification;
 use Illuminate\Bus\Queueable;
@@ -21,7 +22,18 @@ class TermDeadlineNotification extends Notification implements ShouldQueue
         public LegalCase $case,
         public CaseFlowProgress $progress,
         public int $daysRemaining,
+        public ?Carbon $dueDate = null,
     ) {}
+
+    private function statusLabel(): string
+    {
+        return match (true) {
+            $this->daysRemaining < 0 => 'vencido',
+            $this->daysRemaining === 0 => 'vence hoy',
+            $this->daysRemaining === 1 => 'vence mañana',
+            default => "vence en {$this->daysRemaining} días hábiles",
+        };
+    }
 
     public function via(object $notifiable): array
     {
@@ -33,7 +45,7 @@ class TermDeadlineNotification extends Notification implements ShouldQueue
         $color = $this->daysRemaining <= 1 ? 'danger' : ($this->daysRemaining <= 3 ? 'warning' : 'info');
 
         return FilamentNotification::make()
-            ->title("Termino por vencer ({$this->daysRemaining} dias)")
+            ->title('Término procesal: '.$this->statusLabel())
             ->body($this->case->case_number.' - '.$this->progress->flowStep->name)
             ->icon('heroicon-o-clock')
             ->iconColor($color)
@@ -52,12 +64,14 @@ class TermDeadlineNotification extends Notification implements ShouldQueue
         $stepName = $this->progress->flowStep->name ?? 'Etapa procesal';
 
         $pill = match (true) {
-            $this->daysRemaining <= 0 => 'VENCE HOY',
+            $this->daysRemaining < 0 => 'T&Eacute;RMINO VENCIDO',
+            $this->daysRemaining === 0 => 'VENCE HOY',
             $this->daysRemaining === 1 => 'VENCE MA&Ntilde;ANA',
             default => 'VENCE EN '.$this->daysRemaining.' D&Iacute;AS H&Aacute;BILES',
         };
 
-        $dueDate = now()->addWeekdays(max(0, $this->daysRemaining));
+        // Fecha real calculada con el calendario judicial (festivos y vacancia incluidos).
+        $dueDate = $this->dueDate ?? now()->addWeekdays(max(0, $this->daysRemaining));
 
         return (new MailMessage)
             ->subject('[Termino procesal] '.$this->case->case_number.' - '.$stepName)
@@ -84,7 +98,7 @@ class TermDeadlineNotification extends Notification implements ShouldQueue
         return new WhatsAppMessage(
             template: 'deadline.lawyer',
             variables: [1 => $notifiable->name, 2 => $detail, 3 => (string) $this->daysRemaining, 4 => $url],
-            fallbackText: "LegalWeb - Termino por vencer en {$this->daysRemaining} dia(s): {$detail}. Ver: {$url}",
+            fallbackText: 'LegalWeb - Termino procesal '.$this->statusLabel().": {$detail}. Ver: {$url}",
         );
     }
 }

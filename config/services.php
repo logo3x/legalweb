@@ -70,6 +70,9 @@ return [
         'preferred_provider' => env('AI_PREFERRED_PROVIDER', 'openrouter'),
         // Cada cuantas horas se prueba automaticamente un modelo sin uso reciente (cuida la cuota gratuita).
         'health_interval_hours' => (int) env('AI_HEALTH_INTERVAL_HOURS', 6),
+        // true: nunca se usan proveedores que pueden entrenar con los datos (Gemini gratuito, NVIDIA,
+        // OpenRouter sin "deny"), ni siquiera como respaldo. Mas privado, pero la IA puede quedar sin modelos.
+        'only_private_providers' => (bool) env('AI_ONLY_PRIVATE_PROVIDERS', false),
     ],
 
     'openrouter' => [

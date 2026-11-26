@@ -69,9 +69,18 @@ class AIModelRegistry
 
         return array_filter(
             $options,
-            fn (string $key) => $this->client->isConfigured(AIProviderClient::parseKey($key)[0]),
+            fn (string $key) => $this->client->isConfigured(AIProviderClient::parseKey($key)[0]) && self::providerAllowed($key),
             ARRAY_FILTER_USE_KEY,
         );
+    }
+
+    /**
+     * Con AI_ONLY_PRIVATE_PROVIDERS=true se descartan los proveedores que pueden entrenar con los datos.
+     */
+    public static function providerAllowed(string $key): bool
+    {
+        return ! config('services.ai.only_private_providers')
+            || ! AIProviderClient::mayTrainOnData(AIProviderClient::parseKey($key)[0]);
     }
 
     /**
@@ -144,7 +153,9 @@ class AIModelRegistry
      */
     public function untriedCandidates(array $exclude, int $limit): array
     {
-        return array_slice(array_diff_key($this->discoverCandidates(), array_flip($exclude)), 0, $limit, true);
+        $candidates = array_filter($this->discoverCandidates(), fn (string $key): bool => self::providerAllowed($key), ARRAY_FILTER_USE_KEY);
+
+        return array_slice(array_diff_key($candidates, array_flip($exclude)), 0, $limit, true);
     }
 
     /**

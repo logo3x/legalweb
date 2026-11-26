@@ -558,7 +558,15 @@ class TybaService
                 $codRegla = '';
             }
 
+            // Identificador propio de la actuacion en la Rama: distingue dos actuaciones con el
+            // mismo titulo el mismo dia. Si no viene, una huella de su contenido.
+            $ref = $a['idRegActuacion'] ?? $a['consActuacion'] ?? null;
+            $ref = filled($ref)
+                ? 'r:'.$ref
+                : 'h:'.md5($tipo.'|'.$fecha.'|'.trim($a['anotacion'] ?? '').'|'.$fechaRegistro);
+
             $actuaciones[] = [
+                'ref' => mb_substr((string) $ref, 0, 64),
                 'ciclo' => '',
                 'tipo' => $tipo,
                 'fecha' => $fecha,

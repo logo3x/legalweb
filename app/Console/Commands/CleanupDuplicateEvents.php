@@ -27,7 +27,10 @@ class CleanupDuplicateEvents extends Command
         foreach ($query->cursor() as $case) {
             // Agrupar por (titulo, fecha) dentro del caso. Si hay grupos con mas
             // de un registro, mantener el de id mas bajo y eliminar el resto.
+            // Solo eventos sin id de la Rama: los que tienen rama_ref son actuaciones distintas
+            // aunque compartan titulo y dia (por ejemplo dos "Fijacion estado").
             $groups = CaseEvent::where('legal_case_id', $case->id)
+                ->whereNull('rama_ref')
                 ->selectRaw('title, DATE(event_date) as event_day, COUNT(*) as cnt, MIN(id) as keep_id')
                 ->groupBy('title', 'event_day')
                 ->having('cnt', '>', 1)
@@ -41,6 +44,7 @@ class CleanupDuplicateEvents extends Command
 
             foreach ($groups as $g) {
                 $removed = CaseEvent::where('legal_case_id', $case->id)
+                    ->whereNull('rama_ref')
                     ->where('title', $g->title)
                     ->whereRaw('DATE(event_date) = ?', [$g->event_day])
                     ->where('id', '!=', $g->keep_id)

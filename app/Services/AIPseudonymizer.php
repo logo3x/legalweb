@@ -10,9 +10,10 @@ use App\Models\LegalCase;
  *
  * El nombre del cliente, su documento, telefono, correo y direccion, los nombres de
  * las partes del proceso y los datos del abogado se reemplazan por marcadores como
- * [CLIENTE] o [PARTE_1]. El proveedor nunca ve a quien se refiere el caso; el abogado
- * recibe el texto completo. Los datos publicos del proceso (radicado, despacho, juez)
- * no se ocultan porque la IA los necesita para orientar la respuesta.
+ * [CLIENTE] o [PARTE_1]. El radicado y el numero interno del caso tambien se ocultan: con
+ * el radicado cualquiera encuentra el proceso y sus partes en la consulta publica. El
+ * proveedor nunca ve a quien se refiere el caso; el abogado recibe el texto completo.
+ * El despacho y el juez se dejan visibles porque la IA los usa para orientar la respuesta.
  */
 class AIPseudonymizer
 {
@@ -50,6 +51,15 @@ class AIPseudonymizer
             $instance->add((string) $client->address, '[CLIENTE_DIRECCION]');
         }
 
+        // Radicado tal como esta guardado, solo con digitos y con el formato de la Rama (con guiones).
+        $radicado = trim((string) $case->external_case_number);
+        if ($radicado !== '') {
+            $instance->add($radicado, '[RADICADO]', $radicado);
+            $digits = (string) preg_replace('/\D/', '', $radicado);
+            $instance->add($digits, '[RADICADO]', $radicado);
+        }
+        $instance->add((string) $case->case_number, '[NUMERO_CASO]');
+
         if ($case->user) {
             $instance->add((string) $case->user->name, '[ABOGADO]');
             $instance->add((string) $case->user->email, '[ABOGADO_CORREO]');
@@ -76,6 +86,8 @@ class AIPseudonymizer
         }
 
         // Datos que no estan en la ficha pero aparecen en textos libres (descripcion, actuaciones).
+        // Otros radicados (procesos relacionados, acumulados): 20 a 25 digitos, con o sin separadores.
+        $text = preg_replace_callback('/(?<!\d)\d(?:[\s\-]?\d){19,24}(?!\d)/', fn (array $m): string => $this->generic('RADICADO', $m[0]), $text) ?? $text;
         $text = preg_replace_callback('/[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}/i', fn (array $m): string => $this->generic('CORREO', $m[0]), $text) ?? $text;
         $text = preg_replace_callback('/(?<!\d)(?:\+?57[\s\-]?)?3\d{2}[\s\-]?\d{3}[\s\-]?\d{4}(?!\d)/', fn (array $m): string => $this->generic('TELEFONO', $m[0]), $text) ?? $text;
         $text = preg_replace_callback(
@@ -105,7 +117,7 @@ class AIPseudonymizer
     public static function instructions(): string
     {
         return "\n\nPRIVACIDAD: los datos personales del texto se reemplazaron por marcadores entre corchetes, "
-            .'por ejemplo [CLIENTE], [CLIENTE_DOCUMENTO], [ABOGADO] o [PARTE_1]. Escribe esos marcadores exactamente '
+            .'por ejemplo [CLIENTE], [CLIENTE_DOCUMENTO], [ABOGADO], [PARTE_1] o [RADICADO]. Escribe esos marcadores exactamente '
             .'igual donde corresponda el dato y nunca inventes nombres, documentos ni datos de contacto.';
     }
 
