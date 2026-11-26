@@ -72,6 +72,9 @@ return [
 
     'setup_key' => env('SETUP_KEY'),
 
+    // public/setup.php queda apagado salvo que SETUP_ENABLED=true (encenderlo solo mientras se usa).
+    'setup_enabled' => (bool) env('SETUP_ENABLED', false),
+
     /*
     |--------------------------------------------------------------------------
     | Application Locale Configuration

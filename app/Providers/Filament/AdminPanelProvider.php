@@ -95,9 +95,11 @@ class AdminPanelProvider extends PanelProvider
                 'warning' => Color::Amber,
             ])
             ->font('Inter')
+            // Analytics del panel sin datos de clientes: solo la ruta (con los numeros de registro ocultos)
+            // y un titulo generico, porque el titulo de un caso lleva el nombre del cliente.
             ->renderHook(
                 'panels::head.end',
-                fn () => new HtmlString('<script async src="https://www.googletagmanager.com/gtag/js?id=G-2Q7KJTB5MT"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-2Q7KJTB5MT",{send_page_view:false});document.addEventListener("livewire:navigated",function(){gtag("event","page_view",{page_location:location.href,page_title:document.title});});</script><meta name="csrf-token" content="'.csrf_token().'">'),
+                fn () => new HtmlString('<script async src="https://www.googletagmanager.com/gtag/js?id=G-2Q7KJTB5MT"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());function lwPage(){return {page_location:location.origin+location.pathname.replace(/\/\d+(?=\/|$)/g,"/:id"),page_title:"LegalWeb panel"};}gtag("config","G-2Q7KJTB5MT",Object.assign({send_page_view:false},lwPage()));document.addEventListener("livewire:navigated",function(){var p=lwPage();gtag("set",p);gtag("event","page_view",p);});</script><meta name="csrf-token" content="'.csrf_token().'">'),
             )
             ->renderHook(
                 'panels::body.start',

@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LegalWeb · El día que tu proceso cambie, lo sabrás antes que nadie</title>
-    <meta name="description" content="Software para abogados en Colombia: vigila tus procesos en la Rama Judicial y SAMAI, te avisa por correo, calcula términos en días hábiles y vigila a tus clientes por cédula o NIT. 3 meses gratis.">
+    <meta name="description" content="Software para abogados en Colombia: vigila tus procesos en la Rama Judicial, te avisa por correo de cada nueva actuación, calcula términos en días hábiles y organiza también tus procesos de SAMAI. 3 meses gratis.">
     <meta property="og:title" content="LegalWeb · Vigilancia judicial automática para abogados">
-    <meta property="og:description" content="Importa tu radicado y LegalWeb vigila la Rama Judicial y SAMAI cada noche. Te avisa por correo apenas aparezca una nueva actuación.">
+    <meta property="og:description" content="Importa tu radicado y LegalWeb vigila la Rama Judicial cada noche. Te avisa por correo apenas aparezca una nueva actuación.">
     <meta property="og:type" content="website">
     <meta property="og:image" content="https://legalweb.com.co/images/og-cover.png">
     <link rel="icon" href="/images/favicon.ico" type="image/x-icon">
@@ -734,8 +734,8 @@
                     antes que nadie.
                 </h1>
                 <p class="lead lw-hero-lead">
-                    LegalWeb vigila tus procesos en la Rama Judicial y en SAMAI y, cada vez que aparece una nueva actuación,
-                    te avisa por correo. Sin entrar a consultar uno por uno. Sin perder un término.
+                    LegalWeb vigila tus procesos en la Rama Judicial y, cada vez que aparece una nueva actuación,
+                    te avisa por correo. Sin entrar a consultar uno por uno. También organiza tus procesos de SAMAI.
                 </p>
                 <div class="lw-hero-cta" style="display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 18px;">
                     <a href="{{ route('auth.google') }}" class="btn btn-primary btn-lg">
@@ -811,20 +811,20 @@
                 <div class="pain-card">
                     <p class="pain-q">“Reviso la consulta de procesos uno por uno, todos los días.”</p>
                     <p class="pain-why">Con 30 o 40 procesos son horas a la semana entre la consulta de la Rama Judicial, SAMAI y páginas que se caen justo cuando más las necesitas.</p>
-                    <p class="pain-fix"><strong>LegalWeb lo hace por ti cada madrugada</strong> en la Rama Judicial y en SAMAI (Consejo de Estado y tribunales administrativos) y te avisa por correo solo cuando hay algo nuevo, con lo que cambió.</p>
+                    <p class="pain-fix"><strong>LegalWeb lo hace por ti cada madrugada</strong> en la Rama Judicial y te avisa por correo solo cuando hay algo nuevo, con lo que cambió. De SAMAI importas tus procesos contencioso administrativos y te avisamos si cambian sus datos generales (despacho, estado o partes); las actuaciones de SAMAI se revisan allí.</p>
                     <div class="pain-example"><b>Ejemplo</b>A las 3:00 a.m. se revisan tus 40 procesos. A las 7:00 tienes en tu correo: «Auto que admite la demanda · Juzgado 3.º Civil del Circuito de Medellín».</div>
                 </div>
                 <div class="pain-card">
                     <p class="pain-q">“Me da miedo que se me venza un término.”</p>
                     <p class="pain-why">Días hábiles, festivos, vacancia judicial, notificaciones por estado… un error de conteo puede costar el proceso y una queja disciplinaria.</p>
                     <p class="pain-fix"><strong>Calculadora de términos en días hábiles</strong> con el calendario judicial colombiano, tablero de vencimientos y recordatorios antes de que venza cada plazo.</p>
-                    <div class="pain-example"><b>Ejemplo</b>Te notifican por estado el auto que inadmite la demanda: LegalWeb cuenta los 5 días hábiles para subsanar (art. 90 del CGP), salta el festivo y te recuerda dos días antes.</div>
+                    <div class="pain-example"><b>Ejemplo</b>Aparece el auto que inadmite la demanda: LegalWeb calcula los 5 días hábiles para subsanar (art. 90 del CGP), descuenta festivos y vacancia judicial y te recuerda el día anterior al vencimiento. Confirma siempre la fecha de notificación.</div>
                 </div>
                 <div class="pain-card">
                     <span class="new-badge">Nuevo</span>
                     <p class="pain-q">“Me enteré tarde de que demandaron a mi cliente.”</p>
                     <p class="pain-why">Un cliente empresa recibe una demanda o un embargo y tú lo sabes cuando ya corren los términos para contestar.</p>
-                    <p class="pain-fix"><strong>Vigilancia por cédula o NIT:</strong> cada noche buscamos a tus clientes en la Rama Judicial y te avisamos si aparecen en un proceso que aún no tienes en LegalWeb.</p>
+                    <p class="pain-fix"><strong>Vigilancia de tus clientes:</strong> cada noche buscamos a tus clientes por su nombre en la Rama Judicial y te avisamos si aparecen en un proceso que aún no tienes en LegalWeb, para que confirmes si es él (puede haber homónimos).</p>
                     <div class="pain-example"><b>Ejemplo</b>Distribuidora Andina S.A.S. aparece como demandada en un proceso ejecutivo nuevo. Recibes el radicado, lo importas con un clic y preparas la defensa desde el primer día.</div>
                 </div>
                 <div class="pain-card">
@@ -885,7 +885,7 @@
                         <span class="num">02</span>
                     </div>
                     <h3>Vigilancia diaria</h3>
-                    <p>Cada día a las 3:00 a.m. el sistema vuelve a consultar la Rama Judicial y SAMAI por ti, de forma automática.</p>
+                    <p>Cada día a las 3:00 a.m. el sistema vuelve a consultar la Rama Judicial por ti, de forma automática, y revisa los datos generales de tus procesos de SAMAI.</p>
                 </div>
 
                 <div class="step">
@@ -938,7 +938,7 @@
                         <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                     </div>
                     <h3>Expediente digital</h3>
-                    <p>Documentos, actuaciones y evidencias centralizados. Línea de tiempo del proceso y flujo procesal integrado.</p>
+                    <p>Actuaciones, enlaces a tus documentos (Drive, OneDrive) y línea de tiempo del proceso, con flujo procesal integrado.</p>
                 </div>
                 <div class="feat-card">
                     <div class="ico ai">
@@ -952,7 +952,7 @@
                         <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
                     </div>
                     <h3>Calculadora de términos</h3>
-                    <p>Calcula vencimientos en días hábiles según el calendario judicial colombiano. Sin errores de conteo.</p>
+                    <p>Calcula vencimientos en días hábiles según el calendario judicial colombiano: descuenta fines de semana, festivos y la vacancia de Semana Santa y fin de año.</p>
                 </div>
                 <div class="feat-card">
                     <div class="ico ai">
@@ -1131,11 +1131,11 @@
             <div class="trust-grid lw-reveal before lw-stagger">
                 <div class="item">
                     <div class="k">Ley 1581</div>
-                    <div class="d">Cumplimiento en protección de datos personales</div>
+                    <div class="d">Autorización de datos registrada y baja de correos con un clic</div>
                 </div>
                 <div class="item">
                     <div class="k">Art. 74 C.P.</div>
-                    <div class="d">Secreto profesional garantizado en cada acceso</div>
+                    <div class="d">Pensado para el secreto profesional: cada firma ve solo sus casos</div>
                 </div>
                 <div class="item">
                     <div class="k">CGP · Ley 906</div>

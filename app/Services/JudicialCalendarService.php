@@ -7,13 +7,14 @@ use Carbon\Carbon;
 class JudicialCalendarService
 {
     /**
-     * Festivos fijos de Colombia (Ley 51 de 1983).
-     * Los que se trasladan al lunes siguiente estan marcados con 'transfer'.
+     * Festivos de Colombia (Ley 51 de 1983).
+     * Los que se trasladan al lunes siguiente (Ley Emiliani) estan marcados con 'transfer'.
+     * 1 de enero, 1 de mayo, 20 de julio, 7 de agosto, 8 y 25 de diciembre NO se trasladan.
      */
     private array $fixedHolidays = [
         ['month' => 1, 'day' => 1, 'transfer' => false],   // Año Nuevo
-        ['month' => 5, 'day' => 1, 'transfer' => true],     // Dia del Trabajo
-        ['month' => 7, 'day' => 20, 'transfer' => true],    // Grito de Independencia
+        ['month' => 5, 'day' => 1, 'transfer' => false],    // Dia del Trabajo
+        ['month' => 7, 'day' => 20, 'transfer' => false],   // Grito de Independencia
         ['month' => 8, 'day' => 7, 'transfer' => false],    // Batalla de Boyaca
         ['month' => 12, 'day' => 8, 'transfer' => false],   // Inmaculada Concepcion
         ['month' => 12, 'day' => 25, 'transfer' => false],  // Navidad
@@ -44,9 +45,10 @@ class JudicialCalendarService
         $easter = $this->calculateEaster($year);
         $holidays[] = $easter->copy()->subDays(3)->format('Y-m-d');  // Jueves Santo
         $holidays[] = $easter->copy()->subDays(2)->format('Y-m-d');  // Viernes Santo
-        $holidays[] = $easter->copy()->addDays(43)->next(Carbon::MONDAY)->format('Y-m-d'); // Ascension (lunes)
-        $holidays[] = $easter->copy()->addDays(64)->next(Carbon::MONDAY)->format('Y-m-d'); // Corpus Christi (lunes)
-        $holidays[] = $easter->copy()->addDays(71)->next(Carbon::MONDAY)->format('Y-m-d'); // Sagrado Corazon (lunes)
+        // Trasladados por la Ley 51: Pascua + 43, 64 y 71 dias ya caen en lunes (no se vuelve a mover).
+        $holidays[] = $easter->copy()->addDays(43)->format('Y-m-d'); // Ascension del Senor
+        $holidays[] = $easter->copy()->addDays(64)->format('Y-m-d'); // Corpus Christi
+        $holidays[] = $easter->copy()->addDays(71)->format('Y-m-d'); // Sagrado Corazon
 
         return $holidays;
     }
@@ -76,20 +78,21 @@ class JudicialCalendarService
         $month = $date->month;
         $day = $date->day;
 
-        // Vacancia judicial: Diciembre 20 a Enero 11
+        // Vacancia colectiva (Decreto 546 de 1971, art. 2, modificado por la Ley 31 de 1971):
+        // del 20 de diciembre al 10 de enero inclusive.
         if ($month === 12 && $day >= 20) {
             return true;
         }
-        if ($month === 1 && $day <= 11) {
+        if ($month === 1 && $day <= 10) {
             return true;
         }
 
-        // Semana Santa (jueves a domingo)
+        // Los dias de la Semana Santa (mismo decreto): del lunes santo al domingo de resurreccion.
         $easter = $this->calculateEaster($date->year);
-        $holyThursday = $easter->copy()->subDays(3);
-        $easterSunday = $easter->copy();
+        $holyMonday = $easter->copy()->subDays(6)->startOfDay();
+        $easterSunday = $easter->copy()->endOfDay();
 
-        if ($date->between($holyThursday, $easterSunday)) {
+        if ($date->between($holyMonday, $easterSunday)) {
             return true;
         }
 

@@ -350,9 +350,10 @@ Route::get('/cron/{token}/{task?}', function (string $token, ?string $task = nul
             $migrateOutput = 'ERROR: '.$e->getMessage();
         }
         try {
+            // Sin cache:clear: la cache guarda la lista de modelos de IA verificados, su estado y los
+            // avisos ya enviados; borrarla en cada despliegue dejaba la IA sin modelos.
             Artisan::call('view:clear');
             Artisan::call('config:clear');
-            Artisan::call('cache:clear');
             Artisan::call('route:clear');
             $clearOutput = 'caches limpiados';
         } catch (Throwable $e) {

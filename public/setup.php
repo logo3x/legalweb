@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -24,9 +25,23 @@ $app = require_once __DIR__.'/../bootstrap/app.php';
 $kernel = $app->make(Kernel::class);
 $kernel->bootstrap();
 
-// La clave vive solo en el .env del servidor (SETUP_KEY). Sin ella, el panel queda bloqueado.
+// Apagado por defecto: solo responde con SETUP_ENABLED=true en el .env. Para desplegar sin este
+// panel basta /cron/{CRON_TOKEN}/setup (migraciones y limpieza de configuracion, rutas y vistas).
+if (! config('app.setup_enabled')) {
+    http_response_code(403);
+    header('Cache-Control: no-store');
+    exit('setup.php esta desactivado. Para usarlo, agregue SETUP_ENABLED=true al .env desde el Administrador de archivos de cPanel y vuelva a quitarlo al terminar.');
+}
+
+// La clave vive solo en el .env del servidor (SETUP_KEY). Maximo 5 intentos fallidos cada 15 minutos por IP.
 $secret = (string) config('app.setup_key');
+$attemptsKey = 'setup-php:'.($_SERVER['REMOTE_ADDR'] ?? 'desconocida');
+if (RateLimiter::tooManyAttempts($attemptsKey, 5)) {
+    http_response_code(429);
+    exit('Demasiados intentos. Espere 15 minutos.');
+}
 if (strlen($secret) < 20 || ! hash_equals($secret, (string) ($_GET['key'] ?? ''))) {
+    RateLimiter::hit($attemptsKey, 900);
     http_response_code(403);
     exit('No autorizado');
 }
@@ -591,8 +606,8 @@ try {
         setup_log('Routes cleared', 'success');
         Artisan::call('view:clear');
         setup_log('Views cleared', 'success');
-        Artisan::call('cache:clear');
-        setup_log('Cache cleared', 'success');
+        // Sin cache:clear: borraria la lista de modelos de IA verificados y el estado de los avisos.
+        setup_log('Cache de datos conservada (modelos de IA, avisos)', 'muted');
     }
 
     if ($step === 'superadmin') {
