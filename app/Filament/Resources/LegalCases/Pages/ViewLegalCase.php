@@ -568,7 +568,7 @@ class ViewLegalCase extends ViewRecord
         if ($limits && ! $limits->canUseAi()) {
             Notification::make()
                 ->title('Uso las consultas de IA de este mes')
-                ->body(FirmPlan::upgradeMessage('El plan Gratuito incluye '.$limits->aiMonthlyLimit().' consultas de IA al mes.'))
+                ->body(FirmPlan::upgradeMessage('El plan '.$limits->label().' incluye '.$limits->aiMonthlyLimit().' consultas de IA al mes.'))
                 ->warning()
                 ->persistent()
                 ->send();

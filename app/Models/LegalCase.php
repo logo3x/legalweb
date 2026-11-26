@@ -85,7 +85,7 @@ class LegalCase extends Model
 
             FilamentNotification::make()
                 ->title('Alcanzo el limite de casos activos')
-                ->body(FirmPlan::upgradeMessage('El plan Gratuito permite '.$firm->planLimits()->maxActiveCases().' casos activos. Puede cerrar o archivar un caso, o'))
+                ->body(FirmPlan::upgradeMessage('El plan '.$firm->planLimits()->label().' permite '.$firm->planLimits()->maxActiveCases().' casos activos. Puede cerrar o archivar un caso, o'))
                 ->warning()
                 ->persistent()
                 ->send();

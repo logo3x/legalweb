@@ -374,7 +374,7 @@
             display: flex; flex-wrap: wrap; gap: 24px;
             justify-content: center; align-items: stretch; margin-bottom: 40px;
         }
-        .plan { position: relative; flex: 1 1 290px; max-width: 360px; }
+        .plan { position: relative; flex: 1 1 240px; max-width: 300px; }
         .plan .recommended {
             position: absolute; top: -13px; left: 50%; transform: translateX(-50%); z-index: 3;
         }
@@ -1032,7 +1032,7 @@
         <div class="container" style="max-width: 1140px;">
             <div class="section-head lw-reveal before">
                 <h2>3 meses gratis con todo incluido.</h2>
-                <p>Después siga gratis con el plan Gratuito (hasta 5 casos activos) o pase a <strong>Profesional</strong> por $120.000 COP/mes con casos ilimitados. Sus datos se conservan siempre.</p>
+                <p>Después siga gratis con el plan Gratuito (hasta 5 casos activos), pase a <strong>Individual</strong> por $59.900 COP/mes con hasta 80 procesos, o a <strong>Profesional</strong> por $120.000 COP/mes con casos ilimitados. Sus datos se conservan siempre.</p>
             </div>
 
             <div class="plan-grid lw-reveal before lw-stagger">
@@ -1053,6 +1053,23 @@
                             Comenzar gratis
                         </a>
                         <div style="font-size: 13px; color: var(--text-faint); text-align: center; margin-top: 12px;">Configúralo en 60 segundos</div>
+                    </div>
+                </div>
+
+                <div class="plan">
+                    <div class="plan-card">
+                        <div class="eyebrow" style="align-self: flex-start; margin-bottom: 16px;">Abogado independiente</div>
+                        <h3 style="font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 700; color: var(--brand-navy); margin: 0 0 6px;">Individual</h3>
+                        <p style="font-size: var(--text-sm); color: var(--text-muted); margin: 0 0 22px; line-height: 1.5;">1 usuario y hasta 80 procesos activos con revisión diaria, aviso de fallos e informe de los lunes.</p>
+                        <div style="margin-bottom: 22px; min-height: 70px;">
+                            <div style="display: flex; align-items: baseline; gap: 8px;">
+                                <span class="price paid">$59.900</span>
+                                <span class="price-suffix">COP / mes</span>
+                            </div>
+                            <div style="font-size: var(--text-sm); color: var(--text-faint); margin-top: 8px;">o $299.500 por 6 meses</div>
+                        </div>
+                        <a href="{{ route('auth.google') }}" class="btn btn-primary btn-full" style="margin-top: auto;">Empezar</a>
+                        <div style="font-size: 13px; color: var(--text-faint); text-align: center; margin-top: 12px;">30 consultas de IA al mes</div>
                     </div>
                 </div>
 
@@ -1104,7 +1121,7 @@
                         'Casos y clientes ilimitados',
                         'Importación y vigilancia de la Rama Judicial',
                         'Alertas de actuaciones por correo',
-                        'Vigilancia de clientes por cédula o NIT',
+                        'Vigilancia de clientes en la Rama Judicial',
                         'Calculadora de términos en días hábiles',
                         'Asistente IA jurídico',
                         'Portal del cliente y reportes PDF',

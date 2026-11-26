@@ -48,9 +48,9 @@ class PlanLimitsNoticeNotification extends Notification implements ShouldQueue
                 'intro' => "A partir del <strong>{$date}</strong> su cuenta pasa al plan <strong>Gratuito</strong>. Sus casos, clientes y documentos se conservan completos.",
                 'lines' => [
                     'El plan Gratuito incluye hasta <strong>5 casos activos</strong>, 1 usuario, 10 consultas de IA al mes y sincronizacion semanal con la Rama Judicial.',
-                    'La vigilancia de clientes por cedula o NIT queda incluida solo en los planes Profesional y Firma.',
+                    'La vigilancia de clientes queda incluida solo en los planes Profesional y Firma.',
                 ],
-                'highlight' => 'Con el plan Profesional ($120.000/mes, o $600.000 por 6 meses) sigue con casos ilimitados, 3 usuarios y todas las funciones.',
+                'highlight' => 'Con el plan Individual ($59.900/mes) sigue con hasta 80 procesos y revision diaria. Con Profesional ($120.000/mes, o $600.000 por 6 meses) tiene casos ilimitados, 3 usuarios y todas las funciones.',
                 'actionUrl' => url('/admin/planes'),
                 'actionLabel' => 'Ver planes',
                 'footerNote' => 'Si tiene dudas, responda este correo y le ayudamos.',

@@ -20,18 +20,20 @@
                     [true, 'Rama Judicial y SAMAI (sincronización semanal)'],
                     [true, 'Portal del cliente, agenda y calculadora de términos'],
                     ...(\App\Services\WhatsAppService::isEnabled() ? [[false, 'Avisos por WhatsApp']] : []),
-                    [false, 'Vigilancia de clientes por documento'],
+                    [false, 'Vigilancia de clientes en la Rama Judicial'],
                 ];
             }
 
+            // Segun los limites de cada plan de pago (Individual, Profesional, Firma).
             return [
-                [true, 'Casos y clientes ilimitados'],
-                [true, 'Hasta '.$plan->max_users.' usuarios con permisos por caso'],
-                [true, 'Asistente IA sin límite mensual'],
-                [true, 'Rama Judicial y SAMAI (sincronización diaria)'],
+                [true, $plan->max_cases ? 'Hasta '.$plan->max_cases.' procesos activos' : 'Casos y clientes ilimitados'],
+                [true, (int) $plan->max_users === 1 ? '1 usuario' : 'Hasta '.$plan->max_users.' usuarios con permisos por caso'],
+                [true, $plan->ai_monthly_limit ? $plan->ai_monthly_limit.' consultas de IA al mes' : 'Asistente IA sin límite mensual'],
+                [true, 'Rama Judicial y SAMAI (revisión diaria)'],
+                [true, 'Aviso el mismo día si una consulta falla e informe de verificación cada lunes'],
                 [true, 'Portal del cliente, reportes PDF y facturación'],
-                ...(\App\Services\WhatsAppService::isEnabled() ? [[true, 'Avisos por WhatsApp']] : []),
-                [true, 'Vigilancia de clientes por documento'],
+                ...(\App\Services\WhatsAppService::isEnabled() ? [[(bool) $plan->has_whatsapp, 'Avisos por WhatsApp']] : []),
+                [(bool) $plan->has_client_monitoring, 'Vigilancia de clientes en la Rama Judicial'],
             ];
         };
 
@@ -46,7 +48,7 @@
             </h2>
             <p style="font-size: 15px; color: #6b7280; max-width: 680px; margin: 0 auto; line-height: 1.6;">
                 Todas las cuentas empiezan con <strong>3 meses gratis con todo incluido</strong>. Después puede seguir gratis con el plan
-                Gratuito o pasar a Profesional o Firma. Sus datos se conservan siempre.
+                Gratuito o pasar a Individual, Profesional o Firma. Sus datos se conservan siempre.
             </p>
             @if($tier === 'trial')
                 <div style="display: inline-block; margin-top: 16px; padding: 8px 16px; background: #FEF3C7; color: #92400E; border-radius: 999px; font-size: 13px; font-weight: 600;">

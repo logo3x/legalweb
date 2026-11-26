@@ -143,6 +143,25 @@ class PlanLimitsTest extends TestCase
         $this->assertSame('cerrado', $closed->fresh()->status);
     }
 
+    public function test_individual_plan_allows_80_active_cases_and_one_user(): void
+    {
+        $this->travelTo('2027-02-15 10:00:00');
+        $individual = Plan::create(['name' => 'Individual', 'slug' => 'individual', 'price_monthly' => 59900, 'price_yearly' => 299500, 'max_cases' => 80, 'max_users' => 1, 'ai_monthly_limit' => 30, 'has_client_monitoring' => false, 'sync_every_days' => 1, 'is_active' => true]);
+        $this->subscribe($individual);
+        $this->createActiveCases(80);
+
+        $limits = $this->firm->planLimits();
+        $this->assertSame('paid', $limits->tier());
+        $this->assertSame('Individual', $limits->label());
+        $this->assertSame(80, $limits->maxActiveCases());
+        $this->assertSame(1, $limits->maxUsers());
+        $this->assertSame(30, $limits->aiMonthlyLimit());
+        $this->assertFalse($limits->hasClientMonitoring());
+        $this->assertFalse($limits->canAddActiveCase());
+
+        $this->actingAs($this->admin)->get('/admin/planes')->assertOk()->assertSee('Individual')->assertSee('Hasta 80 procesos activos');
+    }
+
     public function test_paid_plan_has_no_case_limit(): void
     {
         $this->travelTo('2027-02-15 10:00:00');

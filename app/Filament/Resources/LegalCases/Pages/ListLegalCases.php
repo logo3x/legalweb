@@ -386,7 +386,7 @@ class ListLegalCases extends ListRecords
 
         Notification::make()
             ->title('Alcanzo el limite de casos activos')
-            ->body(FirmPlan::upgradeMessage('El plan Gratuito permite '.$firm->planLimits()->maxActiveCases().' casos activos.'))
+            ->body(FirmPlan::upgradeMessage('El plan '.$firm->planLimits()->label().' permite '.$firm->planLimits()->maxActiveCases().' casos activos.'))
             ->warning()
             ->persistent()
             ->send();
