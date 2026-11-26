@@ -3,7 +3,9 @@
 namespace App\Filament\Resources\LegalCases\RelationManagers;
 
 use App\Filament\Resources\LegalCases\RelationManagers\Concerns\ChecksCasePermissions;
+use App\Models\CaseEvent;
 use App\Notifications\CaseUpdatedNotification;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
@@ -20,6 +22,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Log;
 
 class EventsRelationManager extends RelationManager
 {
@@ -75,11 +78,6 @@ class EventsRelationManager extends RelationManager
                     ->relationship('user', 'name', fn ($query) => $query->where('firm_id', auth()->user()->firm_id))
                     ->searchable()
                     ->preload(),
-                Toggle::make('notify_client')
-                    ->label('Notificar al cliente por email')
-                    ->helperText('Se enviara un correo al cliente informando sobre esta actuacion')
-                    ->default(false)
-                    ->dehydrated(false),
             ]);
     }
 
@@ -123,27 +121,47 @@ class EventsRelationManager extends RelationManager
             ->defaultSort('event_date', 'desc')
             ->headerActions([
                 CreateAction::make()
-                    ->label('Nueva Actuación')
-                    ->after(function ($record, array $data) {
-                        if (! ($data['notify_client'] ?? false)) {
+                    ->label('Nueva Actuación'),
+            ])
+            ->recordActions([
+                // Accion inmediata con confirmacion: el abogado ve a que correo se envia y si salio.
+                Action::make('notify_client')
+                    ->label('Avisar al cliente')
+                    ->icon('heroicon-o-envelope')
+                    ->color('gray')
+                    ->visible(fn (): bool => $this->getOwnerRecord()->client !== null)
+                    ->authorize(fn (): bool => static::userHasCasePermission($this->getOwnerRecord(), 'portal.share'))
+                    ->disabled(fn (): bool => ! $this->clientCanReceiveEmail())
+                    ->tooltip(fn (): ?string => $this->clientCanReceiveEmail() ? null : $this->clientEmailProblem())
+                    ->requiresConfirmation()
+                    ->modalIcon('heroicon-o-envelope')
+                    ->modalHeading('Avisar al cliente por correo')
+                    ->modalDescription(fn (CaseEvent $record): string => 'Se enviará ahora a '.$this->getOwnerRecord()->client->email.' un correo con la actuación «'.$record->title.'» del '.$record->event_date->format('d/m/Y').'.')
+                    ->modalSubmitActionLabel('Enviar correo')
+                    ->action(function (CaseEvent $record): void {
+                        $case = $this->getOwnerRecord();
+                        $client = $case->client;
+
+                        try {
+                            $client->notifyNow(new CaseUpdatedNotification($case, $record));
+                        } catch (\Throwable $e) {
+                            Log::warning('Aviso de actuacion al cliente no enviado', ['event' => $record->id, 'error' => $e->getMessage()]);
+
+                            Notification::make()
+                                ->title('No se pudo enviar el correo')
+                                ->body('Intente de nuevo en unos minutos. Si el problema sigue, revise el correo del cliente.')
+                                ->danger()
+                                ->send();
+
                             return;
                         }
 
-                        $case = $record->legalCase;
-                        $client = $case->client;
-
-                        if ($client?->email) {
-                            $client->notify(new CaseUpdatedNotification($case, $record));
-
-                            Notification::make()
-                                ->title('Cliente notificado')
-                                ->body("Se envio email a {$client->email}")
-                                ->success()
-                                ->send();
-                        }
+                        Notification::make()
+                            ->title('Correo enviado')
+                            ->body("El cliente recibirá el aviso en {$client->email}. Si no le llega, pídale revisar la carpeta de spam.")
+                            ->success()
+                            ->send();
                     }),
-            ])
-            ->recordActions([
                 EditAction::make(),
                 DeleteAction::make(),
             ])
@@ -152,5 +170,25 @@ class EventsRelationManager extends RelationManager
                     DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    private function clientCanReceiveEmail(): bool
+    {
+        return $this->clientEmailProblem() === null;
+    }
+
+    /**
+     * Por que no se le puede escribir al cliente, o null si se puede.
+     */
+    private function clientEmailProblem(): ?string
+    {
+        $client = $this->getOwnerRecord()->client;
+
+        return match (true) {
+            $client === null => 'El caso no tiene cliente.',
+            $client->is_demo => 'Es un cliente de ejemplo: no se le envían correos.',
+            blank($client->email) => 'El cliente no tiene correo. Agréguelo en Clientes para poder avisarle.',
+            default => null,
+        };
     }
 }

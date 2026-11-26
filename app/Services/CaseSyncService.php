@@ -684,14 +684,14 @@ class CaseSyncService
             }
         }
 
-        // Solo agregar termino si las fechas representan un rango real
-        $hasRangoTermino = ! empty($a['fecha_inicial'])
-            && ! empty($a['fecha_final'])
-            && ($a['fecha_inicial'] !== $fecha || $a['fecha_final'] !== $fecha)
-            && ($a['fecha_inicial'] !== $a['fecha_final']);
+        // El termino que registra el despacho, salvo que sea el mismo dia de la actuacion (no aporta).
+        $inicio = (string) ($a['fecha_inicial'] ?? '');
+        $fin = (string) ($a['fecha_final'] ?? '');
 
-        if ($hasRangoTermino) {
-            $parts[] = "Termino: inicio {$a['fecha_inicial']} - fin {$a['fecha_final']}";
+        if ($inicio !== '' && ($inicio !== $fecha || ($fin !== '' && $fin !== $fecha))) {
+            $parts[] = ($fin === '' || $fin === $inicio)
+                ? "Termino registrado por el despacho: {$inicio}"
+                : "Termino registrado por el despacho: del {$inicio} al {$fin}";
         }
 
         if (! empty($a['cod_regla'])) {

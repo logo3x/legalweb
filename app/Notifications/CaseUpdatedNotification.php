@@ -25,7 +25,8 @@ class CaseUpdatedNotification extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
-        $portalUrl = $this->case->portal_token
+        // Solo se enlaza el portal si esta activo; si no, el cliente llegaria a una pagina cerrada.
+        $portalUrl = $this->case->portal_enabled && $this->case->portal_token
             ? route('portal.show', $this->case->portal_token)
             : null;
 

@@ -299,6 +299,13 @@ class LegalCaseResource extends Resource
                                             ->icon('heroicon-m-phone')
                                             ->placeholder('Sin teléfono'),
                                     ]),
+                                    TextEntry::make('client.email')
+                                        ->label('Correo del cliente')
+                                        ->icon('heroicon-m-envelope')
+                                        ->copyable()
+                                        ->copyMessage('Correo copiado')
+                                        ->url(fn (LegalCase $record): ?string => $record->client?->email ? 'mailto:'.$record->client->email : null)
+                                        ->placeholder('Sin correo: agréguelo en Clientes para poder enviarle avisos'),
                                     TextEntry::make('user.name')
                                         ->label('Abogado responsable')
                                         ->icon('heroicon-m-academic-cap')
