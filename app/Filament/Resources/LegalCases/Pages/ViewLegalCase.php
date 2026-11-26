@@ -162,7 +162,7 @@ class ViewLegalCase extends ViewRecord
             ])
                 ->label('Asistente IA')
                 ->icon('heroicon-o-sparkles')
-                ->color('warning')
+                ->color('info')
                 ->button(),
             ActionGroup::make([
                 Action::make('download_report')
@@ -288,7 +288,7 @@ class ViewLegalCase extends ViewRecord
             ])
                 ->label('Acciones')
                 ->icon('heroicon-o-bolt')
-                ->color('primary')
+                ->color('gray')
                 ->button(),
             ActionGroup::make([
                 Action::make('compartir')
@@ -390,10 +390,12 @@ class ViewLegalCase extends ViewRecord
             ])
                 ->label('Cliente')
                 ->icon('heroicon-o-user-circle')
-                ->color('info')
+                ->color('gray')
                 ->button(),
             EditAction::make()
-                ->label('Editar'),
+                ->label('Editar')
+                ->icon('heroicon-o-pencil-square')
+                ->color('gray'),
         ];
     }
 
@@ -491,6 +493,11 @@ class ViewLegalCase extends ViewRecord
     public function hasCombinedRelationManagerTabsWithContent(): bool
     {
         return true;
+    }
+
+    public function getContentTabLabel(): ?string
+    {
+        return 'Resumen';
     }
 
     /**

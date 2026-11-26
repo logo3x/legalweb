@@ -28,7 +28,7 @@ class FlowProgressRelationManager extends RelationManager
 
     protected static string $relationship = 'flowProgress';
 
-    protected static ?string $title = 'Flujo de Proceso';
+    protected static ?string $title = 'Etapas y términos';
 
     public function isReadOnly(): bool
     {

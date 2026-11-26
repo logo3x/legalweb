@@ -7,10 +7,13 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class PortalAccessLogsRelationManager extends RelationManager
 {
-    use ChecksCasePermissions;
+    use ChecksCasePermissions {
+        canViewForRecord as checkedCanViewForRecord;
+    }
 
     protected static function casePermissionFor(string $action): ?string
     {
@@ -22,7 +25,19 @@ class PortalAccessLogsRelationManager extends RelationManager
 
     protected static string $relationship = 'portalAccessLogs';
 
-    protected static ?string $title = 'Accesos al Portal';
+    protected static ?string $title = 'Accesos al portal';
+
+    /**
+     * Solo aparece si el caso tiene o tuvo portal: en los demas casos es una pestana vacia mas.
+     */
+    public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool
+    {
+        if (! $ownerRecord->portal_enabled && ! $ownerRecord->portalAccessLogs()->exists()) {
+            return false;
+        }
+
+        return static::checkedCanViewForRecord($ownerRecord, $pageClass);
+    }
 
     public function form(Schema $schema): Schema
     {

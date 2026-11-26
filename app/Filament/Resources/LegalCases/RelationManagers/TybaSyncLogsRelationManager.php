@@ -24,7 +24,7 @@ class TybaSyncLogsRelationManager extends RelationManager
 
     protected static string $relationship = 'tybaSyncLogs';
 
-    protected static ?string $title = 'Historial de sincronización';
+    protected static ?string $title = 'Consultas';
 
     public function isPageBased(): bool
     {

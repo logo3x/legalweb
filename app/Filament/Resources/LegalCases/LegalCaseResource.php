@@ -14,7 +14,10 @@ use App\Filament\Resources\LegalCases\RelationManagers\PortalAccessLogsRelationM
 use App\Filament\Resources\LegalCases\RelationManagers\TybaSyncLogsRelationManager;
 use App\Filament\Resources\LegalCases\Schemas\LegalCaseForm;
 use App\Filament\Resources\LegalCases\Tables\LegalCasesTable;
+use App\Models\CaseEvent;
 use App\Models\LegalCase;
+use App\Models\Reminder;
+use App\Services\CasePendingSummary;
 use BackedEnum;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Resource;
@@ -22,13 +25,13 @@ use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Support\Enums\TextSize;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 class LegalCaseResource extends Resource
@@ -89,6 +92,60 @@ class LegalCaseResource extends Resource
         // con las partes queda a la derecha. En el celular todo se apila.
         return $schema
             ->components([
+                // Lo primero que necesita el abogado: que corre, que viene y si la vigilancia funciona.
+                Section::make('Lo pendiente')
+                    ->icon(Heroicon::OutlinedBellAlert)
+                    ->columnSpanFull()
+                    ->columns(['default' => 1, 'sm' => 2, 'xl' => 4])
+                    ->schema([
+                        TextEntry::make('pending_deadline')
+                            ->label('Próximo término')
+                            ->icon(Heroicon::OutlinedClock)
+                            ->weight('medium')
+                            ->state(fn (LegalCase $record): ?string => self::pending($record)['deadline']['step'] ?? null)
+                            ->color(fn (LegalCase $record): ?string => (self::pending($record)['deadline']['remaining'] ?? 99) <= 3 ? 'danger' : null)
+                            ->iconColor(fn (LegalCase $record): ?string => (self::pending($record)['deadline']['remaining'] ?? 99) <= 3 ? 'danger' : 'gray')
+                            ->belowContent(fn (LegalCase $record): ?string => self::deadlineDetail(self::pending($record)['deadline']))
+                            ->placeholder('Sin términos corriendo'),
+                        TextEntry::make('pending_reminder')
+                            ->label('Próxima cita')
+                            ->icon(Heroicon::OutlinedCalendarDays)
+                            ->iconColor('gray')
+                            ->weight('medium')
+                            ->state(fn (LegalCase $record): ?string => self::pending($record)['reminder']?->title)
+                            ->belowContent(fn (LegalCase $record): ?string => ($reminder = self::pending($record)['reminder'])
+                                ? $reminder->due_date->format('d/m/Y').' · '.$reminder->due_date->diffForHumans()
+                                : null)
+                            ->placeholder('Nada agendado'),
+                        TextEntry::make('pending_last_event')
+                            ->label('Última actuación')
+                            ->icon(Heroicon::OutlinedDocumentText)
+                            ->iconColor('gray')
+                            ->weight('medium')
+                            ->state(fn (LegalCase $record): ?string => self::pending($record)['event']?->title)
+                            ->belowContent(fn (LegalCase $record): ?string => ($event = self::pending($record)['event'])?->event_date
+                                ? $event->event_date->format('d/m/Y').' · '.$event->event_date->diffForHumans()
+                                : null)
+                            ->placeholder('Aún sin actuaciones'),
+                        // El silencio nunca significa "sin novedades": si la consulta fallo, se dice aqui.
+                        TextEntry::make('pending_sync')
+                            ->label(fn (LegalCase $record): string => $record->isSamai() ? 'Consulta a SAMAI' : 'Consulta a la Rama')
+                            ->weight('medium')
+                            ->state(fn (LegalCase $record): string => match (true) {
+                                $record->sync_failed_at !== null => 'No pudimos consultarlo',
+                                blank($record->external_case_number) => 'Sin radicado: no se vigila',
+                                $record->last_tyba_sync === null => 'Aún no consultado',
+                                default => 'Al día',
+                            })
+                            ->icon(fn (LegalCase $record): Heroicon => $record->sync_failed_at !== null ? Heroicon::OutlinedExclamationTriangle : Heroicon::OutlinedArrowPath)
+                            ->iconColor(fn (LegalCase $record): string => $record->sync_failed_at !== null ? 'danger' : 'gray')
+                            ->color(fn (LegalCase $record): ?string => $record->sync_failed_at !== null ? 'danger' : null)
+                            ->belowContent(fn (LegalCase $record): ?string => match (true) {
+                                $record->sync_failed_at !== null => "{$record->sync_error} (desde {$record->sync_failed_at->format('d/m/Y H:i')}). Revíselo directamente en ".($record->isSamai() ? 'SAMAI' : 'la Rama Judicial').'; reintentamos cada hora.',
+                                $record->last_tyba_sync !== null => 'Última consulta exitosa '.$record->last_tyba_sync->diffForHumans(),
+                                default => null,
+                            }),
+                    ]),
                 Grid::make(['default' => 1, 'lg' => 3])
                     ->columnSpanFull()
                     ->schema([
@@ -97,14 +154,13 @@ class LegalCaseResource extends Resource
                                 ->icon(Heroicon::OutlinedBriefcase)
                                 ->columns(['default' => 1, 'sm' => 2])
                                 ->schema([
-                                    TextEntry::make('title')
-                                        ->label('Título')
-                                        ->weight('medium')
-                                        ->columnSpanFull(),
+                                    // La descripcion que genera la importacion repite los datos de la Rama:
+                                    // en ese caso va dentro de "Datos de la Rama Judicial".
                                     TextEntry::make('description')
                                         ->label('Descripción')
                                         ->columnSpanFull()
-                                        ->placeholder('Sin descripción'),
+                                        ->extraAttributes(['style' => 'white-space: pre-line'])
+                                        ->visible(fn (LegalCase $record): bool => filled($record->description) && ! (self::isImportedDescription($record) && filled($record->tyba_data))),
                                     TextEntry::make('external_case_number')
                                         ->label('Radicado judicial')
                                         ->icon('heroicon-m-document-text')
@@ -127,7 +183,9 @@ class LegalCaseResource extends Resource
                             Section::make('Datos de la Rama Judicial')
                                 ->icon(Heroicon::OutlinedBuildingLibrary)
                                 ->columns(['default' => 1, 'sm' => 2, 'xl' => 3])
+                                ->description('Datos de referencia tal como los publica el despacho.')
                                 ->collapsible()
+                                ->collapsed()
                                 ->visible(fn ($record) => ! empty($record->tyba_data))
                                 ->schema([
                                     TextEntry::make('tyba_data.codigo_proceso')
@@ -170,6 +228,12 @@ class LegalCaseResource extends Resource
                                     TextEntry::make('tyba_data.cod_despacho')
                                         ->label('Código del despacho')
                                         ->placeholder('-'),
+                                    TextEntry::make('imported_description')
+                                        ->label('Detalle importado')
+                                        ->state(fn (LegalCase $record): ?string => $record->description)
+                                        ->extraAttributes(['style' => 'white-space: pre-line'])
+                                        ->visible(fn (LegalCase $record): bool => self::isImportedDescription($record))
+                                        ->columnSpanFull(),
                                 ]),
                         ])->columnSpan(['default' => 1, 'lg' => 2]),
 
@@ -182,19 +246,12 @@ class LegalCaseResource extends Resource
                                         ->label('No. de caso')
                                         ->icon('heroicon-m-hashtag')
                                         ->weight('bold')
-                                        ->size(TextSize::Large)
+                                        ->copyable()
                                         ->columnSpanFull(),
                                     TextEntry::make('status')
                                         ->label('Estado')
                                         ->badge()
-                                        ->color(fn (string $state): string => match ($state) {
-                                            'abierto' => 'info',
-                                            'en_progreso' => 'warning',
-                                            'en_espera' => 'gray',
-                                            'cerrado' => 'success',
-                                            'archivado' => 'danger',
-                                            default => 'gray',
-                                        })
+                                        ->color(fn (string $state): string => $state === 'en_espera' ? 'warning' : 'gray')
                                         ->formatStateUsing(fn (string $state): string => match ($state) {
                                             'abierto' => 'Abierto',
                                             'en_progreso' => 'En progreso',
@@ -223,24 +280,7 @@ class LegalCaseResource extends Resource
                                         ->label('Fecha de cierre')
                                         ->icon('heroicon-m-calendar')
                                         ->date('d/m/Y')
-                                        ->placeholder('Caso abierto'),
-                                    TextEntry::make('last_tyba_sync')
-                                        ->label('Última consulta exitosa')
-                                        ->icon('heroicon-m-arrow-path')
-                                        ->since()
-                                        ->placeholder('Nunca consultado')
-                                        ->visible(fn ($record) => (bool) $record->external_case_number)
-                                        ->columnSpanFull(),
-                                    // Si la ultima consulta fallo, el abogado lo ve aqui y no un falso "al dia".
-                                    TextEntry::make('sync_error')
-                                        ->label('No pudimos consultar este proceso')
-                                        ->icon('heroicon-m-exclamation-triangle')
-                                        ->iconColor('danger')
-                                        ->color('danger')
-                                        ->weight('medium')
-                                        ->formatStateUsing(fn ($state, $record): string => "{$state} (desde {$record->sync_failed_at?->format('d/m/Y H:i')}). Revíselo directamente en ".($record->isSamai() ? 'SAMAI' : 'la Rama Judicial').': puede haber actuaciones nuevas. Reintentamos cada hora.')
-                                        ->visible(fn ($record): bool => $record->sync_failed_at !== null)
-                                        ->columnSpanFull(),
+                                        ->visible(fn (LegalCase $record): bool => $record->closed_at !== null),
                                 ]),
                             Section::make('Partes')
                                 ->icon(Heroicon::OutlinedUserGroup)
@@ -271,6 +311,51 @@ class LegalCaseResource extends Resource
                         ])->columnSpan(['default' => 1, 'lg' => 1]),
                     ]),
             ]);
+    }
+
+    /**
+     * Lo pendiente del caso, calculado una sola vez por peticion.
+     *
+     * @return array{deadline: array{step: string, deadline: Carbon, remaining: int}|null, reminder: Reminder|null, event: CaseEvent|null}
+     */
+    private static function pending(LegalCase $record): array
+    {
+        static $cache = new \WeakMap;
+
+        return $cache[$record] ??= (function () use ($record): array {
+            $summary = app(CasePendingSummary::class);
+
+            return [
+                'deadline' => $summary->nextDeadline($record),
+                'reminder' => $summary->nextReminder($record),
+                'event' => $summary->lastEvent($record),
+            ];
+        })();
+    }
+
+    /**
+     * @param  array{step: string, deadline: Carbon, remaining: int}|null  $deadline
+     */
+    private static function deadlineDetail(?array $deadline): ?string
+    {
+        if ($deadline === null) {
+            return null;
+        }
+
+        $remaining = $deadline['remaining'];
+        $when = match (true) {
+            $remaining < 0 => 'venció hace '.abs($remaining).' día(s) hábil(es)',
+            $remaining === 0 => 'vence hoy',
+            $remaining === 1 => 'vence mañana (1 día hábil)',
+            default => "faltan {$remaining} días hábiles",
+        };
+
+        return 'Vence el '.$deadline['deadline']->format('d/m/Y').' · '.$when;
+    }
+
+    private static function isImportedDescription(LegalCase $record): bool
+    {
+        return str_starts_with((string) $record->description, 'Importado desde');
     }
 
     public static function table(Table $table): Table

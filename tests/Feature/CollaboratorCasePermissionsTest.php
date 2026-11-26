@@ -77,6 +77,8 @@ class CollaboratorCasePermissionsTest extends TestCase
     public function test_admin_sees_every_tab(): void
     {
         $this->actingAs($this->admin);
+        // La pestana de accesos al portal solo aparece si el caso usa el portal.
+        $this->case->forceFill(['portal_enabled' => true])->save();
 
         foreach ([EventsRelationManager::class, DocumentsRelationManager::class, FlowProgressRelationManager::class, PortalAccessLogsRelationManager::class] as $manager) {
             $this->assertTrue($manager::canViewForRecord($this->case, ViewLegalCase::class), $manager);
