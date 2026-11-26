@@ -112,6 +112,7 @@
         <a href="{{ $settingsUrl }}" style="color:#6b7280;text-decoration:underline;">Ajustar notificaciones</a>
       </p>
       <p style="margin:0;font-size:11px;color:#9ca3af;">&copy; {{ $year }} {{ $appName }}. Conectado con la Rama Judicial de Colombia.</p>
+      <p style="margin:6px 0 0;font-size:11px;color:#9ca3af;line-height:1.55;">Para que nuestros avisos no terminen en spam, agregue <strong>{{ config('mail.from.address') }}</strong> a sus contactos.</p>
     </td></tr>
 
   </table>

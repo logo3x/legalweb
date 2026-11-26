@@ -144,7 +144,8 @@
           <a href="{{ $unsubscribeUrl }}" style="color:#94A3B8;text-decoration:underline;">Cancelar suscripcion</a>
         @endif
         <br>
-        &copy; {{ $year }} {{ $appName }} &middot; Hecho en Colombia.
+        &copy; {{ $year }} {{ $appName }} &middot; Hecho en Colombia.<br>
+        Para que nuestros avisos no terminen en spam, agregue <strong>{{ config('mail.from.address') }}</strong> a sus contactos.
       </p>
     </td></tr>
   </table>

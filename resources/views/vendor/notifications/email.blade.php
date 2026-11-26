@@ -151,6 +151,9 @@
                             <p style="margin:0 0 6px 0;font-size:12px;color:#6b7280;line-height:1.6;">
                                 Este mensaje fue enviado autom&aacute;ticamente. Por favor no responda a este correo.
                             </p>
+                            <p style="margin:0 0 6px 0;font-size:12px;color:#6b7280;line-height:1.6;">
+                                Para que nuestros avisos no terminen en spam, agregue <strong>{{ config('mail.from.address') }}</strong> a sus contactos.
+                            </p>
                             <p style="margin:0 0 10px 0;font-size:12px;color:#9ca3af;line-height:1.6;">
                                 <a href="{{ url('/portal/terminos') }}" style="color:#6b7280;text-decoration:underline;">T&eacute;rminos y Condiciones</a>
                                 &nbsp;&middot;&nbsp;

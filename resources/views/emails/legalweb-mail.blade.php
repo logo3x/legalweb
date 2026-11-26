@@ -123,6 +123,9 @@
       <p style="margin:0;font-size:11.5px;color:#94A3B8;line-height:1.55;">
         Recibe este correo porque tiene una cuenta activa en {{ $appName }}.
       </p>
+      <p style="margin:6px 0 0;font-size:11.5px;color:#94A3B8;line-height:1.55;">
+        Para que nuestros avisos no terminen en spam, agregue <strong>{{ config('mail.from.address') }}</strong> a sus contactos.
+      </p>
     </td></tr>
   </table>
 

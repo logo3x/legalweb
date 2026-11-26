@@ -1,6 +1,6 @@
 <x-filament-panels::page>
     <div style="margin-bottom: 24px; padding: 16px 20px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; color: #1e40af; font-size: 14px; line-height: 1.6;">
-        <p style="margin: 0;"><strong>&iquest;C&oacute;mo funciona?</strong> Seleccione el tipo de notificaci&oacute;n y reciba en su correo (<strong>{{ auth()->user()->email }}</strong>) un ejemplo de c&oacute;mo le llegar&aacute; cuando ocurra el evento real. Usa datos de su primer caso registrado para que la previsualizaci&oacute;n sea realista.</p>
+        <p style="margin: 0;"><strong>&iquest;C&oacute;mo funciona?</strong> Seleccione el tipo de notificaci&oacute;n y reciba en su correo (<strong>{{ auth()->user()->email }}</strong>) un ejemplo de c&oacute;mo le llegar&aacute; cuando ocurra el evento real. Usa los datos de su caso m&aacute;s reciente o, si a&uacute;n no tiene casos, un caso de ejemplo.</p>
     </div>
 
     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px;">
@@ -49,6 +49,12 @@
     </div>
 
     <div style="margin-top: 32px; padding: 16px 20px; background: #fefce8; border: 1px solid #fde68a; border-radius: 10px; color: #854d0e; font-size: 13px; line-height: 1.6;">
-        <p style="margin: 0;"><strong>Nota:</strong> el correo puede tardar hasta un minuto en llegar. Si no aparece en la bandeja de entrada, revise la carpeta de <strong>spam</strong> o <strong>promociones</strong>. Si su servicio marca nuestros correos como spam, ag&eacute;guelos a su libreta de direcciones para evitarlo a futuro.</p>
+        <p style="margin: 0 0 8px 0;"><strong>Para que nuestros avisos no lleguen a spam</strong> (los avisos de t&eacute;rminos no se pueden perder):</p>
+        <ol style="margin: 0; padding-left: 20px; line-height: 1.7;">
+            <li>Agregue <strong>{{ config('mail.from.address') }}</strong> a sus contactos.</li>
+            <li>Si un correo de LegalWeb llega a <strong>spam</strong> o <strong>promociones</strong>, &aacute;bralo y m&aacute;rquelo como <strong>&laquo;No es spam&raquo;</strong> (en Gmail, mu&eacute;valo a &laquo;Principal&raquo;).</li>
+            <li>En Outlook u Office 365: clic derecho en el correo &rarr; <strong>Correo no deseado &rarr; Nunca bloquear al remitente</strong>.</li>
+        </ol>
+        <p style="margin: 8px 0 0 0;">El correo de prueba puede tardar hasta un minuto en llegar.</p>
     </div>
 </x-filament-panels::page>
