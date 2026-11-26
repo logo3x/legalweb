@@ -1,0 +1,13 @@
+{
+  "id": "P019",
+  "buys": true,
+  "purchases_first_month": 1,
+  "reason_code": "convenience",
+  "reason": "Llevo procesos en tres ciudades y revisar la Rama a mano me quita horas; si en los 30 dias en paralelo no se le escapa ni una actuacion frente a mi propia revision, $59.900 por el plan Individual es menos de lo que me cuesta una hora de trabajo. Pago solo si la comparacion sale limpia, no por la promesa.",
+  "objection": "No conozco a ningun colega que la use y la garantia solo me devuelve un mes de $59.900: si se les pasa un auto y se me vence un termino, el dano es mio y vale mil veces mas. Ademas el tope de 50 procesos me queda justo y el salto a $120.000 es el doble por cosas que no necesito.",
+  "would_change_my_mind": "Que durante la prueba se les escape una sola actuacion que yo si vi, o que no me avisen de una consulta fallida; en ese caso cancelo y sigo como estoy.",
+  "price_too_cheap": 20000,
+  "price_cheap": 45000,
+  "price_expensive": 110000,
+  "price_too_expensive": 180000
+}
