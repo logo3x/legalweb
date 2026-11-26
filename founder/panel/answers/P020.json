@@ -1,0 +1,13 @@
+{
+  "id": "P020",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "trust",
+  "reason": "Me registro a la prueba gratis porque ya tuve un susto con un termino, pero no pago ni suelto mi revision manual hasta saber quien esta detras y comprobar que no se le escapa ninguna actuacion. Ningun colega mio la usa y no voy a confiarle 200 procesos y mi responsabilidad profesional a un desconocido.",
+  "objection": "Si el sistema no me avisa de un auto y se me vence el termino, la que responde ante el cliente y ante la Comision de Disciplina soy yo, no ellos. No se quien es la empresa, ni que pasa con los datos de mis clientes, ni si la pagina sigue existiendo en un ano.",
+  "would_change_my_mind": "Que durante los tres meses yo siga revisando a mano en paralelo y el sistema no falle ni una sola actuacion frente a mi Excel, y que un colega o firma conocida me confirme que la usa; con eso pagaria los $120.000 sin discutir.",
+  "price_too_cheap": 30000,
+  "price_cheap": 80000,
+  "price_expensive": 250000,
+  "price_too_expensive": 450000
+}

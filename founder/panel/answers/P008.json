@@ -1,0 +1,13 @@
+{
+  "id": "P008",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "trust",
+  "reason": "La necesidad la tengo, ya casi se me pasa un termino, pero $120.000 fijos cada mes me pesan con lo que gano y igual tendria que seguir revisando los juzgados yo misma porque si la plataforma no ve una actuacion la que responde ante el cliente soy yo. Ademas el aviso llega por correo y yo vivo en WhatsApp; lo mas probable es que use los 3 meses gratis a medias y me quede en el plan gratuito con mis 5 procesos mas delicados.",
+  "objection": "Si la plataforma no detecta una actuacion y se me vence un termino, quien responde? No dice nada de garantia ni de que pasa cuando la Rama Judicial esta caida o el juzgado sube tarde el estado.",
+  "would_change_my_mind": "Que en los 3 meses de prueba no se le escape ni una sola actuacion de mis procesos frente a lo que yo misma revise, y que el aviso me llegue por WhatsApp; con eso probado pagaria, mejor si es mas cerca de $80.000.",
+  "price_too_cheap": 20000,
+  "price_cheap": 50000,
+  "price_expensive": 90000,
+  "price_too_expensive": 130000
+}
