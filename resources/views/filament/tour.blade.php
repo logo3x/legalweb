@@ -57,65 +57,65 @@ console.log('[LegalWeb Tour] script bloque cargado, esperando driver.js...');
             {
                 popover: {
                     title: 'Bienvenido a LegalWeb &#128075;',
-                    description: '<p style="margin:0 0 10px 0;">Perm&iacute;tanos mostrarle las funcionalidades principales en menos de 90 segundos. Le ahorrar&aacute; muchas horas de exploraci&oacute;n.</p><p style="margin:0;font-size:13px;opacity:0.85;">Puede cerrar el recorrido cuando lo desee y volver a verlo desde <strong>Mi Firma &rarr; Volver a ver tour</strong>.</p>',
+                    description: '<p style="margin:0 0 10px 0;">En menos de 90 segundos le mostramos lo esencial para vigilar sus procesos sin revisarlos uno por uno.</p><p style="margin:0;font-size:13px;opacity:0.85;">Puede cerrar el recorrido cuando quiera y volver a verlo desde <strong>Mi Firma &rarr; Volver a ver tour</strong>.</p>',
                 }
             },
             {
-                element: 'aside nav',
+                element: '.lw-myday-grid',
                 popover: {
-                    title: 'Men&uacute; principal &#127960;&#65039;',
-                    description: '<p style="margin:0;">Aqu&iacute; encontrar&aacute; todos los m&oacute;dulos del sistema: <strong>Casos, Clientes, Actuaciones, Agenda, Documentos y Reportes</strong>. Todo lo que necesita en un solo lugar.</p>',
-                    side: 'right',
+                    title: 'Mi d&iacute;a &#128197;',
+                    description: '<p style="margin:0;">Lo urgente de hoy en una sola vista: t&eacute;rminos por vencer, agenda y novedades de sus procesos. Empiece aqu&iacute; cada ma&ntilde;ana.</p>',
+                    side: 'bottom',
+                }
+            },
+            {
+                element: '.fi-global-search-field',
+                popover: {
+                    title: 'B&uacute;squeda r&aacute;pida &#128269;',
+                    description: '<p style="margin:0;">Presione <strong>Ctrl + K</strong> desde cualquier pantalla para encontrar un caso por t&iacute;tulo o radicado, o un cliente por nombre o documento.</p>',
+                    side: 'bottom',
                 }
             },
             {
                 element: 'a[href*="/admin/legal-cases"]',
                 popover: {
-                    title: 'Casos: gesti&oacute;n integral de procesos &#9878;&#65039;',
-                    description: '<p style="margin:0 0 8px 0;">El coraz&oacute;n del sistema. Aqu&iacute; crea, importa y administra todos sus procesos judiciales.</p><p style="margin:0;background:rgba(58,134,255,0.15);padding:10px;border-radius:8px;font-size:13px;"><strong>&#128161; Sugerencia:</strong> con solo el n&uacute;mero de radicado puede importar un caso completo desde la <strong>Rama Judicial</strong> en segundos. Tambi&eacute;n dispone de importaci&oacute;n masiva.</p>',
+                    title: 'Casos &#9878;&#65039;',
+                    description: '<p style="margin:0 0 8px 0;">Con el bot&oacute;n <strong>&laquo;Importar proceso&raquo;</strong> trae un caso completo con solo el radicado, de la <strong>Rama Judicial</strong> o de <strong>SAMAI</strong>.</p><p style="margin:0;background:rgba(58,134,255,0.15);padding:10px;border-radius:8px;font-size:13px;"><strong>&#128161; &iquest;Tiene muchos procesos?</strong> En <strong>M&aacute;s opciones</strong> puede importarlos desde un <strong>Excel</strong> (descargue la plantilla) o pegar varios radicados a la vez.</p>',
                     side: 'right',
                 }
             },
             {
-                element: 'a[href*="/admin/clients"]',
+                element: 'a[href*="/admin/buscar-procesos-tyba"]',
                 popover: {
-                    title: 'Clientes: directorio centralizado &#128100;',
-                    description: '<p style="margin:0 0 8px 0;">Su base de datos de clientes, con historial completo de procesos asociados.</p><p style="margin:0;background:rgba(58,134,255,0.15);padding:10px;border-radius:8px;font-size:13px;"><strong>&#128161; Sugerencia:</strong> en el encabezado del listado dispone del bot&oacute;n <strong>&laquo;Buscar Procesos&raquo;</strong>, que consulta directamente la Rama Judicial por nombre, sin necesidad de tener al cliente registrado. Tambi&eacute;n encontrar&aacute; la misma acci&oacute;n en la fila de cada cliente ya creado (deslice horizontalmente la tabla si no la ve).</p>',
+                    title: 'Buscar procesos &#128270;',
+                    description: '<p style="margin:0;">Un solo campo para buscar por <strong>nombre</strong>, <strong>radicado</strong> o la <strong>c&eacute;dula/NIT de un cliente</strong> en la Rama Judicial y SAMAI a la vez. &Uacute;til para encontrar procesos que a&uacute;n no tiene en LegalWeb.</p>',
                     side: 'right',
                 }
             },
             {
-                element: 'a[href*="/admin/reminders"]',
+                element: 'a[href*="/admin/vencimientos"]',
                 popover: {
-                    title: 'Agenda y vencimientos &#9200;',
-                    description: '<p style="margin:0 0 8px 0;">Recordatorios generados autom&aacute;ticamente a partir de las actuaciones de la Rama Judicial.</p><p style="margin:0;font-size:13px;">Recibir&aacute; notificaciones por <strong>correo electr&oacute;nico</strong> y en la <strong>campana &#128276;</strong> del panel. As&iacute; no se le pasa ning&uacute;n t&eacute;rmino.</p>',
-                    side: 'right',
-                }
-            },
-            {
-                element: 'a[href*="/admin/reports"]',
-                popover: {
-                    title: 'Reportes y anal&iacute;tica &#128202;',
-                    description: '<p style="margin:0;">Indicadores clave de su firma: casos por estado, productividad por abogado, anal&iacute;tica de despachos y reportes en PDF listos para presentar.</p>',
+                    title: 'Vencimientos y t&eacute;rminos &#9200;',
+                    description: '<p style="margin:0 0 8px 0;">Los plazos se cuentan en <strong>d&iacute;as h&aacute;biles</strong> con el calendario judicial colombiano: festivos, Semana Santa y vacancia de fin de a&ntilde;o.</p><p style="margin:0;font-size:13px;">Le avisamos <strong>3 d&iacute;as h&aacute;biles antes, 1 d&iacute;a antes y el d&iacute;a del vencimiento</strong>. Para un c&aacute;lculo puntual tiene la <strong>Calculadora de t&eacute;rminos</strong>.</p>',
                     side: 'right',
                 }
             },
             {
                 popover: {
-                    title: 'Asistente IA integrado &#129302;',
-                    description: '<p style="margin:0 0 10px 0;">Dentro de cada caso encontrar&aacute; el bot&oacute;n <strong>&laquo;Asistente IA&raquo;</strong>, que le permite:</p><ul style="margin:0 0 10px 18px;padding:0;font-size:14px;line-height:1.6;"><li>Generar res&uacute;menes ejecutivos del expediente</li><li>Sugerir pr&oacute;ximos pasos procesales</li><li>Redactar borradores de demandas, tutelas y memoriales</li></ul><p style="margin:0;background:rgba(255,180,0,0.2);padding:10px;border-radius:8px;font-size:13px;border-left:3px solid #ffb400;"><strong>&#9888;&#65039; Importante:</strong> los textos generados son <strong>borradores orientativos</strong>. La IA no reemplaza el criterio profesional del abogado. Revise siempre antes de utilizarlos.</p>',
+                    title: 'Vigilancia diaria, sin sorpresas &#128260;',
+                    description: '<p style="margin:0 0 8px 0;">Cada madrugada consultamos sus procesos y le avisamos por <strong>correo</strong> y en la <strong>campana &#128276;</strong> cuando hay una actuaci&oacute;n nueva.</p><ul style="margin:0;padding-left:18px;font-size:14px;line-height:1.6;"><li>Si una consulta falla, se lo decimos <strong>ese mismo d&iacute;a</strong> para que revise a mano.</li><li>Cada <strong>lunes</strong> recibe un informe con la fecha de la &uacute;ltima consulta exitosa de cada proceso.</li></ul><p style="margin:8px 0 0 0;font-size:13px;opacity:0.9;">El silencio nunca significa &laquo;sin novedades&raquo;.</p>',
                 }
             },
             {
                 popover: {
-                    title: 'Sincronizaci&oacute;n autom&aacute;tica &#128260;',
-                    description: '<p style="margin:0 0 8px 0;">Cada d&iacute;a a las <strong>3:00 a.&nbsp;m.</strong> el sistema consulta la Rama Judicial por usted.</p><p style="margin:0;font-size:14px;">Si detecta nuevas actuaciones, le notificaremos por <strong>correo</strong> y en la <strong>campana &#128276;</strong>. Gesti&oacute;n proactiva, sin esfuerzo manual.</p>',
+                    title: 'Asistente IA con sus datos protegidos &#129302;',
+                    description: '<p style="margin:0 0 10px 0;">En cada caso, el bot&oacute;n <strong>&laquo;Asistente IA&raquo;</strong> resume el expediente, sugiere el pr&oacute;ximo paso y redacta borradores de memoriales, tutelas y demandas.</p><p style="margin:0 0 10px 0;font-size:13px;">Antes de enviar el caso a la IA ocultamos <strong>nombres, documentos, contactos y el radicado</strong>, y los volvemos a poner en su documento.</p><p style="margin:0;background:rgba(255,180,0,0.2);padding:10px;border-radius:8px;font-size:13px;border-left:3px solid #ffb400;"><strong>&#9888;&#65039; Importante:</strong> son <strong>borradores orientativos</strong>; revise siempre antes de usarlos.</p>',
                 }
             },
             {
                 popover: {
                     title: 'Todo listo para comenzar &#128640;',
-                    description: '<p style="margin:0 0 10px 0;">Le sugerimos comenzar de la siguiente manera:</p><ol style="margin:0 0 10px 18px;padding:0;font-size:14px;line-height:1.7;"><li>Ingrese al m&oacute;dulo <strong>Casos</strong></li><li>Seleccione <strong>&laquo;Importar desde Tyba&raquo;</strong></li><li>Indique el n&uacute;mero de radicado de su primer proceso</li></ol><p style="margin:0;font-size:13px;opacity:0.9;">&iquest;Tiene alguna inquietud? Escr&iacute;banos a <strong>legalwebco@gmail.com</strong>. Estaremos atentos.</p>',
+                    description: '<p style="margin:0 0 10px 0;">Le sugerimos empezar as&iacute;:</p><ol style="margin:0 0 10px 18px;padding:0;font-size:14px;line-height:1.7;"><li>Entre a <strong>Casos</strong>.</li><li>Pulse <strong>&laquo;Importar proceso&raquo;</strong> y escriba el radicado de su primer proceso.</li><li>&iquest;Muchos procesos? Use <strong>M&aacute;s opciones &rarr; Importar desde Excel</strong>.</li></ol><p style="margin:0;font-size:13px;opacity:0.9;">&iquest;Dudas? Escr&iacute;banos a <strong>legalwebco@gmail.com</strong>.</p>',
                 }
             },
         ],

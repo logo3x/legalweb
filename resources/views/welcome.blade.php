@@ -1137,7 +1137,7 @@
             </div>
 
             <p style="text-align: center; font-size: var(--text-sm); color: var(--text-faint); margin-top: 28px;">
-                Precios en pesos colombianos. El plan Gratuito incluye hasta 5 casos activos, 1 usuario, 10 consultas de IA al mes y sincronización semanal; no incluye la vigilancia de clientes por cédula o NIT.
+                Precios en pesos colombianos. El plan Gratuito incluye hasta 5 casos activos, 1 usuario, 10 consultas de IA al mes y sincronización semanal; no incluye la vigilancia de clientes.
             </p>
         </div>
     </section>

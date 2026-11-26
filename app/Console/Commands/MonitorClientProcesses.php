@@ -14,7 +14,7 @@ use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 
 #[Signature('app:monitor-client-processes {--limit=25 : Clientes a revisar por ejecucion}')]
-#[Description('Busca en la Rama Judicial procesos nuevos de los clientes con vigilancia activa (por cedula o NIT)')]
+#[Description('Busca en la Rama Judicial procesos nuevos de los clientes con vigilancia activa (por nombre; la Rama ya no permite buscar por cedula o NIT)')]
 class MonitorClientProcesses extends Command
 {
     public function handle(TybaService $tyba): int

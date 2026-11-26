@@ -79,7 +79,7 @@ class GettingStarted extends Widget
             ],
             [
                 'title' => 'Registre a un cliente',
-                'description' => 'Con su cédula o NIT podemos avisarle si aparece en procesos nuevos.',
+                'description' => 'Con su nombre y documento podemos avisarle si aparece en procesos nuevos.',
                 'done' => (clone $realClients)->exists(),
                 'url' => ClientResource::getUrl('create'),
                 'cta' => 'Nuevo cliente',
@@ -103,7 +103,7 @@ class GettingStarted extends Widget
         if ($limits->hasClientMonitoring()) {
             $steps[] = [
                 'title' => 'Active la vigilancia de un cliente',
-                'description' => 'Cada noche lo buscamos por cédula o NIT y le avisamos si lo demandan.',
+                'description' => 'Cada noche lo buscamos en la Rama Judicial y le avisamos si aparece en un proceso nuevo.',
                 'done' => (clone $realClients)->where('process_monitoring_enabled', true)->exists(),
                 'url' => ClientResource::getUrl('index'),
                 'cta' => 'Ver clientes',
