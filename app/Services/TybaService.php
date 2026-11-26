@@ -9,6 +9,10 @@ use Illuminate\Support\Str;
 
 class TybaService
 {
+    /**
+     * Todas las busquedas envian SoloActivos=false: por defecto la Rama solo devuelve procesos
+     * con actuaciones en los ultimos 30 dias, y un proceso quieto parecia "no encontrado".
+     */
     private string $apiBase = 'https://consultaprocesos.ramajudicial.gov.co:448/api/v2';
 
     /**
@@ -201,6 +205,7 @@ class TybaService
             $response = Http::timeout(15)
                 ->get("{$this->apiBase}/Procesos/Consulta/NombreRazonSocial", [
                     'nombre' => $name,
+                    'SoloActivos' => 'false',
                     'pagina' => $page,
                 ]);
 
@@ -264,6 +269,7 @@ class TybaService
                     ->get("{$this->apiBase}/Procesos/Consulta/DocumentoIdentificacion", [
                         'tipoDocumento' => $tipoDocumento,
                         'numeroDocumento' => $cleanDoc,
+                        'SoloActivos' => 'false',
                         'pagina' => $page,
                     ]);
             } catch (\Exception $e) {
@@ -341,6 +347,8 @@ class TybaService
                 $response = Http::timeout(20)
                     ->get("{$this->apiBase}/Procesos/Consulta/NumeroRadicacion", [
                         'numero' => $radicado,
+                        // Sin esto la Rama solo devuelve procesos con actuaciones en los ultimos 30 dias.
+                        'SoloActivos' => 'false',
                         'pagina' => 1,
                     ]);
 

@@ -12,6 +12,7 @@ use App\Notifications\SystemNewsNotification;
 use App\Services\CaseSyncService;
 use App\Services\TybaService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
@@ -187,5 +188,21 @@ class SyncFailureAlertsTest extends TestCase
         $this->artisan('app:sync-tyba-actuaciones')->assertSuccessful();
 
         $this->assertNotNull(Cache::get(SyncTybaActuaciones::LAST_RUN_KEY));
+    }
+
+    public function test_rama_searches_include_processes_without_recent_actuaciones(): void
+    {
+        // Por defecto la Rama solo devuelve procesos con actuaciones en los ultimos 30 dias.
+        Http::fake(['*' => Http::response(['procesos' => []])]);
+        $tyba = app(TybaService::class);
+
+        $tyba->extractProcessInfo('68081310300120240001800');
+        $tyba->searchByName('ANGIE VANESSA SOTO ARANGO');
+        $tyba->searchByDocument('1098765432');
+
+        foreach (['NumeroRadicacion', 'NombreRazonSocial', 'DocumentoIdentificacion'] as $endpoint) {
+            Http::assertSent(fn (Request $request): bool => str_contains($request->url(), "/Procesos/Consulta/{$endpoint}")
+                && ($request->data()['SoloActivos'] ?? null) === 'false');
+        }
     }
 }
