@@ -20,6 +20,7 @@ use App\Notifications\SyncFailuresNotification;
 use App\Notifications\TermDeadlineNotification;
 use App\Notifications\TybaSyncNotification;
 use App\Notifications\VerificationReportNotification;
+use App\Services\DemoDataService;
 use App\Services\UsageLimiter;
 use BackedEnum;
 use Filament\Notifications\Notification;
@@ -127,9 +128,10 @@ class ProbarNotificaciones extends Page
 
         $user = auth()->user();
 
-        // Si la firma aun no tiene casos, se usa un caso de ejemplo en memoria (no se guarda nada).
-        $case = ($user->firm_id ? LegalCase::where('firm_id', $user->firm_id)->orderByDesc('id')->first() : null)
-            ?? $this->sampleCase($user);
+        // Las pruebas usan un caso de demostracion real de la firma: el boton del correo abre ese caso.
+        // Sin firma (superadmin) se usa un caso de ejemplo en memoria (no se guarda nada).
+        $demoCase = $this->demoCase($user);
+        $case = $demoCase ? $this->markedAsDemo($demoCase) : $this->sampleCase($user);
 
         try {
             match ($key) {
@@ -148,7 +150,8 @@ class ProbarNotificaciones extends Page
 
             Notification::make()
                 ->title('Correo de prueba enviado')
-                ->body('Revise su bandeja de entrada en '.$user->email.'. Puede tardar hasta 1 minuto; si no aparece, busque en spam y márquelo como «No es spam».')
+                ->body(($demoCase ? 'Usa el caso de demostración «'.$demoCase->title.'»: el botón del correo abre ese caso. ' : '')
+                    .'Revise su bandeja de entrada en '.$user->email.'. Puede tardar hasta 1 minuto; si no aparece, busque en spam y márquelo como «No es spam».')
                 ->success()
                 ->send();
         } catch (\Throwable $e) {
@@ -164,7 +167,7 @@ class ProbarNotificaciones extends Page
 
     private function testReminderDue($user, LegalCase $case): void
     {
-        $reminder = Reminder::where('user_id', $user->id)
+        $reminder = Reminder::where('legal_case_id', $case->id ?: null)
             ->where('is_completed', false)
             ->first()
             ?? new Reminder([
@@ -269,7 +272,44 @@ class ProbarNotificaciones extends Page
     }
 
     /**
-     * Caso de ejemplo en memoria para firmas sin casos (nunca se guarda).
+     * Caso de demostracion de la firma (los que se crean al registrarse). Si se borraron,
+     * se vuelven a crear; no cuentan para el limite de casos del plan.
+     */
+    private function demoCase($user): ?LegalCase
+    {
+        if (! $user->firm_id || ! $user->firm) {
+            return null;
+        }
+
+        $find = fn (): ?LegalCase => LegalCase::where('firm_id', $user->firm_id)
+            ->where('is_demo', true)
+            ->withCount('flowProgress')
+            ->orderByDesc('flow_progress_count')
+            ->orderBy('id')
+            ->first();
+
+        if ($case = $find()) {
+            return $case;
+        }
+
+        app(DemoDataService::class)->seedForFirm($user->firm, $user);
+
+        return $find();
+    }
+
+    /**
+     * Copia en memoria con el titulo marcado como demo; el id es el real, asi el enlace abre el caso.
+     */
+    private function markedAsDemo(LegalCase $case): LegalCase
+    {
+        $marked = clone $case;
+        $marked->title = '[DEMO] '.$case->title;
+
+        return $marked;
+    }
+
+    /**
+     * Caso de ejemplo en memoria para usuarios sin firma (nunca se guarda).
      */
     private function sampleCase($user): LegalCase
     {

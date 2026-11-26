@@ -45,6 +45,13 @@ class ViewLegalCase extends ViewRecord
         return Str::limit((string) $this->record->title, 70);
     }
 
+    public function getSubheading(): ?string
+    {
+        return $this->record->is_demo
+            ? 'Caso de demostración: datos de ejemplo para conocer LegalWeb, no corresponde a un proceso real.'
+            : null;
+    }
+
     protected function getHeaderActions(): array
     {
         return [
