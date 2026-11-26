@@ -28,21 +28,25 @@ use Laravel\Mcp\Server\Methods\CompletionComplete;
 use Laravel\Mcp\Server\Methods\Concerns\ResolvesResources;
 use Laravel\Mcp\Server\Methods\Discover;
 use Laravel\Mcp\Server\Methods\GetPrompt;
+use Laravel\Mcp\Server\Methods\GetSkill;
 use Laravel\Mcp\Server\Methods\Initialize;
 use Laravel\Mcp\Server\Methods\Listen;
 use Laravel\Mcp\Server\Methods\ListPrompts;
 use Laravel\Mcp\Server\Methods\ListResources;
 use Laravel\Mcp\Server\Methods\ListResourceTemplates;
+use Laravel\Mcp\Server\Methods\ListSkills;
 use Laravel\Mcp\Server\Methods\ListTools;
 use Laravel\Mcp\Server\Methods\Ping;
 use Laravel\Mcp\Server\Methods\ReadResource;
 use Laravel\Mcp\Server\Prompt;
 use Laravel\Mcp\Server\Resource;
 use Laravel\Mcp\Server\ServerContext;
+use Laravel\Mcp\Server\Skill;
 use Laravel\Mcp\Server\Testing\PendingTestResponse;
 use Laravel\Mcp\Server\Testing\TestListResponse;
 use Laravel\Mcp\Server\Testing\TestResponse;
 use Laravel\Mcp\Server\Tool;
+use Laravel\Mcp\Server\Transport\HttpTransport;
 use Laravel\Mcp\Transport\JsonRpcNotification;
 use Laravel\Mcp\Transport\JsonRpcRequest;
 use Laravel\Mcp\Transport\JsonRpcResponse;
@@ -72,6 +76,8 @@ abstract class Server
         'resources/list',
         'resources/templates/list',
         'resources/read',
+        'skills/list',
+        'skills/get',
     ];
 
     protected string $name = 'Laravel MCP Server';
@@ -121,6 +127,11 @@ abstract class Server
      * @var array<int, Prompt|class-string<Prompt>>
      */
     protected array $prompts = [];
+
+    /**
+     * @var array<int, Skill|class-string<Skill>|string>
+     */
+    protected array $skills = [];
 
     public int $maxPaginationLength = 50;
 
@@ -190,6 +201,7 @@ abstract class Server
     {
         $this->boot();
         $this->detectUiCapability();
+        $this->detectSkillsCapability();
 
         $this->transport->onReceive($this->handle(...));
     }
@@ -229,7 +241,7 @@ abstract class Server
                 $this->validateProtocolMeta($request, $context);
             }
 
-            if (! isset($this->methods[$request->method])) {
+            if (! $this->implementsMethod($request)) {
                 throw new JsonRpcException(
                     "The method [{$request->method}] was not found.",
                     ErrorCode::METHOD_NOT_FOUND->value,
@@ -277,6 +289,8 @@ abstract class Server
             tools: $this->tools,
             resources: $this->resources,
             prompts: $this->prompts,
+            headers: $this->transport instanceof HttpTransport ? $this->transport->headers() : null,
+            skills: $this->skills,
         );
     }
 
@@ -325,6 +339,17 @@ abstract class Server
         }
     }
 
+    protected function implementsMethod(JsonRpcRequest $request): bool
+    {
+        $handler = $this->methods[$request->method] ?? null;
+
+        if ($handler === null) {
+            return false;
+        }
+
+        return $request->isLegacy() || ! in_array($handler, [Initialize::class, Ping::class], true);
+    }
+
     /**
      * @throws JsonRpcException
      */
@@ -347,7 +372,7 @@ abstract class Server
 
     protected function send(JsonRpcResponse $response, ServerContext $context, ?JsonRpcRequest $request = null): void
     {
-        if ($request instanceof JsonRpcRequest && array_key_exists('result', $response->content)) {
+        if ($request instanceof JsonRpcRequest && ! $request->isLegacy() && array_key_exists('result', $response->content)) {
             $result = (array) $response->content['result'];
             $result['_meta'][MetaKey::SERVER_INFO->value] = $context->implementation->toArray();
 
@@ -464,6 +489,18 @@ abstract class Server
         if (collect($this->resources)->contains(fn (Resource|string $resource): bool => is_subclass_of($resource, AppResource::class))) {
             $this->extensions[] = Extension::Ui;
         }
+    }
+
+    protected function detectSkillsCapability(): void
+    {
+        if ($this->skills === []) {
+            return;
+        }
+
+        $this->extensions[] = Extension::Skills;
+        $this->capabilities[self::CAPABILITY_RESOURCES] ??= (object) [];
+        $this->methods['skills/list'] = ListSkills::class;
+        $this->methods['skills/get'] = GetSkill::class;
     }
 
     /**

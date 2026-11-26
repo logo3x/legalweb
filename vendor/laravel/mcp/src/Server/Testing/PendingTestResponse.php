@@ -7,6 +7,7 @@ namespace Laravel\Mcp\Server\Testing;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Auth\Authenticatable;
 use InvalidArgumentException;
+use Laravel\Mcp\Enums\MetaKey;
 use Laravel\Mcp\Exceptions\JsonRpcException;
 use Laravel\Mcp\Server;
 use Laravel\Mcp\Server\Contracts\HasUriTemplate;
@@ -22,6 +23,11 @@ use Stringable;
 
 class PendingTestResponse
 {
+    /**
+     * @var array<string, mixed>
+     */
+    protected array $clientCapabilities = [];
+
     /**
      * @param  class-string<Server>  $serverClass
      */
@@ -94,6 +100,16 @@ class PendingTestResponse
         } while ($cursor !== null);
 
         return new TestListResponse($resources);
+    }
+
+    /**
+     * @param  array<string, mixed>  $capabilities
+     */
+    public function withClientCapabilities(array $capabilities): static
+    {
+        $this->clientCapabilities = $capabilities;
+
+        return $this;
     }
 
     public function prompts(): TestListResponse
@@ -180,6 +196,7 @@ class PendingTestResponse
                 'context' => [
                     'arguments' => $currentArgs,
                 ],
+                '_meta' => $this->meta(),
             ],
         );
 
@@ -225,6 +242,14 @@ class PendingTestResponse
         return $server;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
+    protected function meta(): array
+    {
+        return [MetaKey::CLIENT_CAPABILITIES->value => $this->clientCapabilities];
+    }
+
     protected function executeRequest(Server $server, JsonRpcRequest $request): mixed
     {
         try {
@@ -267,7 +292,11 @@ class PendingTestResponse
             $params['uri'] = $this->expandUriTemplate($primitive->uriTemplate(), $arguments);
         }
 
-        $request = new JsonRpcRequest(uniqid(), $method, $params);
+        $id = uniqid();
+
+        $params['_meta'] = [...$this->meta(), ...$params['_meta'] ?? [], 'progressToken' => $id];
+
+        $request = new JsonRpcRequest($id, $method, $params);
 
         $response = $this->executeRequest($server, $request);
 

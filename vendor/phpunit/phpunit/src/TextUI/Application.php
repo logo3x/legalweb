@@ -607,7 +607,9 @@ final readonly class Application
         if ($configuration->hasLogfileJunit()) {
             try {
                 new JunitXmlLogger(
-                    OutputFacade::printerFor($configuration->logfileJunit()),
+                    DefaultPrinter::from(
+                        $configuration->logfileJunit(),
+                    ),
                     EventFacade::instance(),
                 );
             } catch (DirectoryDoesNotExistException|InvalidSocketException $e) {

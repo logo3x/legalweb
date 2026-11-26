@@ -17,29 +17,37 @@ use php_user_filter;
 use RuntimeException;
 use TypeError;
 
-use function get_resource_type;
-use function gettype;
+use function ftell;
 use function in_array;
+use function is_array;
 use function is_resource;
-use function str_replace;
+use function is_string;
+use function min;
 use function stream_bucket_append;
 use function stream_bucket_make_writeable;
 use function stream_bucket_new;
-use function stream_filter_append;
-use function stream_filter_prepend;
 use function stream_filter_register;
 use function stream_get_filters;
 use function stream_get_meta_data;
+use function strlen;
+use function strpos;
+use function substr;
+use function trim;
 
+use const PSFS_FEED_ME;
 use const PSFS_PASS_ON;
 
 final class SwapDelimiter extends php_user_filter
 {
-    private const FILTER_NAME = 'string.league.csv.delimiter';
-    public const MODE_READ = 'read';
-    public const MODE_WRITE = 'write';
+    private const string FILTER_NAME = 'string.league.csv.delimiter';
+    public const string MODE_READ = 'read';
+    public const string MODE_WRITE = 'write';
     private string $search = '';
     private string $replace = '';
+    private string $buffer = '';
+    private ?string $streamStart = null;
+    /** Number of bytes compared to recognize the start of the stream. */
+    private const int STREAM_START_LENGTH = 32;
 
     public static function getFiltername(): string
     {
@@ -61,20 +69,17 @@ final class SwapDelimiter extends php_user_filter
     {
         self::register();
 
-        if ($csv instanceof Reader) {
-            $csv->appendStreamFilterOnRead(self::getFiltername(), [
+        $csv instanceof Reader
+            ? StreamFilter::appendOnReadTo($csv, self::getFiltername(), [
                 'mb_separator' => $inputDelimiter,
                 'separator' => $csv->getDelimiter(),
                 'mode' => self::MODE_READ,
+            ])
+            : StreamFilter::appendOnWriteTo($csv, self::getFiltername(), [
+                'mb_separator' => $inputDelimiter,
+                'separator' => $csv->getDelimiter(),
+                'mode' => self::MODE_WRITE,
             ]);
-            return;
-        }
-
-        $csv->appendStreamFilterOnWrite(self::getFiltername(), [
-            'mb_separator' => $inputDelimiter,
-            'separator' => $csv->getDelimiter(),
-            'mode' => self::MODE_WRITE,
-        ]);
     }
 
     /**
@@ -88,20 +93,15 @@ final class SwapDelimiter extends php_user_filter
     public static function appendTo(mixed $stream, string $inputDelimiter, string $delimiter): mixed
     {
         self::register();
-
-        is_resource($stream) || throw new TypeError('Argument passed must be a stream resource, '.gettype($stream).' given.');
-        'stream' === ($type = get_resource_type($stream)) || throw new TypeError('Argument passed must be a stream resource, '.$type.' resource given');
-
-        /** @var resource|false $filter */
-        $filter = Warning::cloak(fn () => stream_filter_append($stream, self::getFiltername(), params: [
+        $params = [
             'mb_separator' => $inputDelimiter,
             'separator' => $delimiter,
             'mode' => str_contains(stream_get_meta_data($stream)['mode'], 'r') ? self::MODE_READ : self::MODE_WRITE,
-        ]));
+        ];
 
-        is_resource($filter) || throw new RuntimeException('Could not append the registered stream filter: '.self::getFiltername());
-
-        return $filter;
+        return self::MODE_READ === $params['mode']
+            ? StreamFilter::appendOnReadTo($stream, self::getFiltername(), $params)
+            : StreamFilter::appendOnWriteTo($stream, self::getFiltername(), $params);
     }
 
     /**
@@ -115,20 +115,15 @@ final class SwapDelimiter extends php_user_filter
     public static function prependTo(mixed $stream, string $inputDelimiter, string $delimiter): mixed
     {
         self::register();
-
-        is_resource($stream) || throw new TypeError('Argument passed must be a stream resource, '.gettype($stream).' given.');
-        'stream' === ($type = get_resource_type($stream)) || throw new TypeError('Argument passed must be a stream resource, '.$type.' resource given');
-
-        $filtername = self::getFiltername();
-        /** @var resource|false $filter */
-        $filter = Warning::cloak(fn () => stream_filter_prepend($stream, $filtername, params: [
+        $params = [
             'mb_separator' => $inputDelimiter,
             'separator' => $delimiter,
             'mode' => str_contains(stream_get_meta_data($stream)['mode'], 'r') ? self::MODE_READ : self::MODE_WRITE,
-        ]));
-        is_resource($filter) || throw new RuntimeException('Could not prepend the registered stream filter: '.$filtername);
+        ];
 
-        return $filter;
+        return self::MODE_READ === $params['mode']
+            ? StreamFilter::prependOnReadTo($stream, self::getFiltername(), $params)
+            : StreamFilter::prependOnWriteTo($stream, self::getFiltername(), $params);
     }
 
     public function onCreate(): bool
@@ -154,22 +149,86 @@ final class SwapDelimiter extends php_user_filter
             default => ['', ''],
         };
 
-        return !in_array('', [$this->replace, $this->search], true);
+        if (in_array('', [$this->replace, $this->search], true)) {
+            return false;
+        }
+
+        $this->buffer = '';
+        return true;
+    }
+
+    public function onClose(): void
+    {
+        $this->buffer = '';
+        parent::onClose();
     }
 
     public function filter($in, $out, &$consumed, bool $closing): int
     {
-        $data = '';
+        $chunk = '';
         while (null !== ($bucket = stream_bucket_make_writeable($in))) {
-            $data .= $bucket->data;
+            $chunk .= $bucket->data;
             $consumed += $bucket->datalen;
         }
 
-        $data = str_replace($this->search, $this->replace, $data);
-        Warning::cloak(function () use ($data, $out) {
-            stream_bucket_append($out, stream_bucket_new($this->stream, $data));
+        // the stream was rewound: a partial delimiter held back belongs to the previous read
+        if ($this->isStartOfStream($chunk)) {
+            $this->buffer = '';
+        }
+
+        $data = $this->buffer.$chunk;
+        $this->buffer = '';
+
+        $output = '';
+        $searchLength = strlen($this->search);
+        $offset = 0;
+
+        while (false !== ($position = strpos($data, $this->search, $offset))) {
+            $output .= substr($data, $offset, $position - $offset).$this->replace;
+            $offset = $position + $searchLength;
+        }
+
+        $remaining = substr($data, $offset);
+
+        if (!$closing) {
+            for ($length = min($searchLength - 1, strlen($remaining)); 0 < $length; --$length) {
+                if (substr($remaining, -$length) === substr($this->search, 0, $length)) {
+                    $this->buffer = substr($remaining, -$length);
+                    $remaining = substr($remaining, 0, -$length);
+
+                    break;
+                }
+            }
+        }
+
+        $output .= $remaining;
+        if ('' === $output) {
+            return PSFS_FEED_ME;
+        }
+
+        Warning::cloak(function () use ($output, $out) {
+            stream_bucket_append($out, stream_bucket_new($this->stream, $output));
         });
 
         return PSFS_PASS_ON;
+    }
+
+    /**
+     * Tells whether the chunk is the start of the stream.
+     *
+     * The filter is not told when the stream is rewound, so the stream position is used.
+     * A single read larger than a chunk stays at position 0 until it returns, so a chunk
+     * at position 0 must also start with the same bytes as the stream.
+     */
+    private function isStartOfStream(string $chunk): bool
+    {
+        if ('' === $chunk || !is_resource($this->stream) || 0 !== ftell($this->stream)) {
+            return false;
+        }
+
+        $head = substr($chunk, 0, self::STREAM_START_LENGTH);
+        $this->streamStart ??= $head;
+
+        return $head === $this->streamStart;
     }
 }

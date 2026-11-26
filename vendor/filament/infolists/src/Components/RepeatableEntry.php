@@ -10,9 +10,11 @@ use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Concerns\CanLimitItemsForProcessing;
 use Filament\Schemas\Components\Concerns\HasContainerGridLayout;
 use Filament\Schemas\Schema;
+use Filament\Schemas\StatePathSegment;
 use Filament\Support\Components\Contracts\HasEmbeddedView;
 use Filament\Support\Concerns\CanBeContained;
 use Filament\Support\Enums\Alignment;
+use Filament\Support\State\LazyLoadedState;
 use Generator;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Model;
@@ -32,6 +34,10 @@ class RepeatableEntry extends Entry implements HasEmbeddedView
      */
     protected array | Closure | null $tableColumns = null;
 
+    protected bool $hasResolvedLazyLoadedState = false;
+
+    protected mixed $cachedLazyLoadedState = null;
+
     protected mixed $cachedItemsState = null;
 
     protected ?Generator $cachedItemsStateGenerator = null;
@@ -40,6 +46,62 @@ class RepeatableEntry extends Entry implements HasEmbeddedView
      * @var array<array-key, mixed> | null
      */
     protected ?array $cachedItemsStateGeneratorSnapshot = null;
+
+    public function state(mixed $state): static
+    {
+        $this->hasResolvedLazyLoadedState = false;
+        $this->cachedLazyLoadedState = null;
+
+        return parent::state($state);
+    }
+
+    public function getState(): mixed
+    {
+        if (! $this->isStateLazyLoaded()) {
+            return parent::getState();
+        }
+
+        if ($this->isRenderingLazyLoadedState && (! $this->hasResolvedLazyLoadedState)) {
+            $this->cachedLazyLoadedState = parent::getState();
+            $this->hasResolvedLazyLoadedState = true;
+        }
+
+        return $this->hasResolvedLazyLoadedState ? $this->cachedLazyLoadedState : null;
+    }
+
+    /**
+     * @internal
+     */
+    public function prepareChildSchemasForLookup(): void
+    {
+        if ($this->hasResolvedLazyLoadedState || $this->isRenderingLazyLoadedState || (! $this->isStateLazyLoaded())) {
+            return;
+        }
+
+        if ($this->isHidden()) {
+            return;
+        }
+
+        $schema = $this->getContainer();
+
+        while ($schema !== null) {
+            if ($schema->isHidden()) {
+                return;
+            }
+
+            $schema = $schema->getParentComponent()?->getContainer();
+        }
+
+        if ($this->getLazyLoadedStateGroup()) {
+            $state = app(LazyLoadedState::class)->getGroupState([$this->getKey() => $this])[$this->getLazyLoadedStateKey()];
+            $component = $this->getClone()->state(static fn (): mixed => $state);
+            $this->cachedLazyLoadedState = $component->getConstantState();
+        } else {
+            $this->cachedLazyLoadedState = $this->getConstantState();
+        }
+
+        $this->hasResolvedLazyLoadedState = true;
+    }
 
     /**
      * Configure table columns for display
@@ -91,12 +153,23 @@ class RepeatableEntry extends Entry implements HasEmbeddedView
         $this->cachedItemsState = $state;
 
         $containers = [];
+        $usedItemStatePaths = [];
+
+        foreach (array_keys($state) as $itemKey) {
+            if (StatePathSegment::isSafe($itemKey)) {
+                $usedItemStatePaths[(string) $itemKey] = true;
+            }
+        }
 
         foreach ($state as $itemKey => $itemData) {
+            $itemStatePath = StatePathSegment::isSafe($itemKey)
+                ? $itemKey
+                : $this->generateSafeItemStatePath($itemKey, $usedItemStatePaths);
+
             $container = $this
                 ->getChildSchema()
                 ->getClone()
-                ->statePath($itemKey)
+                ->statePath($itemStatePath)
                 ->inlineLabel(false);
 
             if ($itemData instanceof Model) {
@@ -109,6 +182,27 @@ class RepeatableEntry extends Entry implements HasEmbeddedView
         }
 
         return $containers;
+    }
+
+    /**
+     * @internal Never call or override this method. It is not part of the public API and may change in minor and patch releases.
+     *
+     * @param  array<string, true>  $usedItemStatePaths
+     */
+    protected function generateSafeItemStatePath(string | int $itemKey, array &$usedItemStatePaths): string
+    {
+        $baseItemStatePath = 'item-' . hash('sha256', (string) $itemKey);
+        $itemStatePath = $baseItemStatePath;
+        $itemStatePathSuffix = 1;
+
+        while (isset($usedItemStatePaths[$itemStatePath])) {
+            $itemStatePath = "{$baseItemStatePath}-{$itemStatePathSuffix}";
+            $itemStatePathSuffix++;
+        }
+
+        $usedItemStatePaths[$itemStatePath] = true;
+
+        return $itemStatePath;
     }
 
     protected function areCachedDefaultChildSchemasFresh(): bool
@@ -208,7 +302,7 @@ class RepeatableEntry extends Entry implements HasEmbeddedView
     public function toEmbeddedHtml(): string
     {
         if ($this->isTable()) {
-            return $this->toEmbeddedTableHtml();
+            return $this->toTableEmbeddedHtml();
         }
 
         $items = $this->getItems();
@@ -261,7 +355,10 @@ class RepeatableEntry extends Entry implements HasEmbeddedView
         <?php return $this->wrapEmbeddedHtml(ob_get_clean());
     }
 
-    protected function toEmbeddedTableHtml(): string
+    /**
+     * @internal Never call or override this method. It is not part of the public API and may change in minor and patch releases.
+     */
+    protected function toTableEmbeddedHtml(): string
     {
         $items = $this->getItems();
         $tableColumns = $this->getTableColumns();

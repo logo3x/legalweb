@@ -29,11 +29,13 @@
         "illuminate/support": "^12.41.1|^13.0",
         "illuminate/validation": "^12.41.1|^13.0",
         "illuminate/json-schema": "^12.41.1|^13.0",
-        "symfony/process": "^7.4.5|^8.0.5"
+        "symfony/mime": "^7.4|^8.0",
+        "symfony/process": "^7.4.5|^8.0.5",
+        "symfony/yaml": "^7.4|^8.0"
     },
     "require-dev": {
         "jasonmccreary/double": "^1.0",
-        "laravel/pint": "^1.20",
+        "laravel/pint": "^1.20,!=1.32.2",
         "orchestra/testbench": "^10.8|^11.0",
         "pestphp/pest": "^3.8.5|^4.3.2",
         "phpstan/phpstan": "^2.1.27",

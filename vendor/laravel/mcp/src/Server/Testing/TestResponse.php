@@ -7,6 +7,7 @@ namespace Laravel\Mcp\Server\Testing;
 use Closure;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Traits\Conditionable;
 use Illuminate\Support\Traits\Macroable;
 use Illuminate\Testing\AssertableJsonString;
@@ -53,6 +54,27 @@ class TestResponse
                 $this->notifications[] = $response;
             }
         }
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $data
+     */
+    public function assertErrorCode(int $code, ?array $data = null): static
+    {
+        $error = $this->response->toArray()['error'] ?? null;
+
+        Assert::assertIsArray($error, 'The response is not a JSON-RPC error.');
+        Assert::assertSame($code, $error['code'] ?? null, 'The response does not carry the expected error code.');
+
+        if (! is_null($data)) {
+            Assert::assertSame(
+                $data,
+                json_decode((string) json_encode($error['data'] ?? null), true),
+                'The response does not carry the expected error data.',
+            );
+        }
+
+        return $this;
     }
 
     /**
@@ -378,6 +400,23 @@ class TestResponse
         }
 
         Assert::fail("The expected notification [{$method}], but it was not found.");
+    }
+
+    public function assertSentProgress(int|float $progress, int|float|null $total = null, ?string $message = null): static
+    {
+        $expected = Arr::whereNotNull(['progress' => $progress, 'total' => $total, 'message' => $message]);
+
+        foreach ($this->notifications as $notification) {
+            $content = $notification->toArray();
+
+            if ($content['method'] === 'notifications/progress' && Arr::except($content['params'], 'progressToken') === $expected) {
+                Assert::assertTrue(true); // @phpstan-ignore-line
+
+                return $this;
+            }
+        }
+
+        Assert::fail("The expected progress [{$progress}] was not sent.");
     }
 
     public function assertName(string $name): static
