@@ -1,0 +1,13 @@
+{
+  "id": "P049",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "trust",
+  "reason": "El precio no es el problema, $120.000 al mes es menos de lo que me cuesta una hora revisando radicados. Pero no conozco a LegalWeb y no voy a dejar la vigilancia de 200 procesos de clientes empresa, ni sus datos, en una plataforma de la que no se quien responde; probaria gratis con unos pocos radicados y seguiria con mi Excel en paralelo.",
+  "objection": "No se quien esta detras, donde quedan guardados los datos de mis clientes ni quien responde si el sistema no me avisa de una actuacion y se me vence un termino. El portal para clientes y la IA me suenan a mas exposicion, no a menos.",
+  "would_change_my_mind": "Que durante los 3 meses de prueba no se le escape una sola actuacion frente a mi revision manual, y que haya un contrato de confidencialidad y tratamiento de datos claro, con empresa colombiana identificable y otras firmas que conozca usandolo.",
+  "price_too_cheap": 30000,
+  "price_cheap": 80000,
+  "price_expensive": 200000,
+  "price_too_expensive": 350000
+}

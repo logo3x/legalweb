@@ -1,0 +1,13 @@
+{
+  "id": "P006",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "need",
+  "reason": "Llevo menos de 15 procesos y ya tengo quien me los revise; con mis ingresos, $120.000 al mes es casi el 4% de lo que gano y el plan gratis de 5 casos con revision semanal me cubre buena parte. Probaria los 3 meses con gusto, pero al terminar me quedaria en el gratuito.",
+  "objection": "Pagar $1.440.000 al ano por vigilar una docena de procesos que hoy ya me revisan y que yo misma puedo consultar en la Rama Judicial; ademas no se que tan confiable es la consulta en juzgados civiles y de familia de mi ciudad, donde los estados a veces no quedan bien cargados.",
+  "would_change_my_mind": "Un plan individual de unos $40.000 al mes para hasta 20 procesos con consulta diaria, y haber comprobado en la prueba que no se le escapo ninguna actuacion.",
+  "price_too_cheap": 10000,
+  "price_cheap": 30000,
+  "price_expensive": 60000,
+  "price_too_expensive": 90000
+}

@@ -1,0 +1,13 @@
+{
+  "id": "P045",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Ya pago una vigilancia judicial desde hace anos y me funciona; no voy a pagar dos servicios ni a migrar todos mis radicados por algo que hace basicamente lo mismo. Si acaso, uso los 3 meses gratis y despues me quedo con el plan gratuito de 5 casos para los procesos mas delicados.",
+  "objection": "Si un dia el sistema no me avisa una actuacion y se me vence un termino, el que responde soy yo. A mi proveedor actual ya lo conozco; a este no, y no tengo quien me ayude a pasar los procesos ni a revisar en paralelo que no se le escape nada.",
+  "would_change_my_mind": "Que durante los 3 meses gratis me detecte actuaciones que mi servicio actual no vio o aviso tarde, y que ademas me salga claramente mas barato que lo que pago hoy, con la migracion de radicados hecha por ellos.",
+  "price_too_cheap": 25000,
+  "price_cheap": 50000,
+  "price_expensive": 100000,
+  "price_too_expensive": 150000
+}

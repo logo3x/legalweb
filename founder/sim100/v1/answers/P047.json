@@ -1,0 +1,13 @@
+{
+  "id": "P047",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Ya tengo quien me revisa los procesos y me funciona; la prueba gratis la haria por curiosidad y por el portal de clientes, pero al terminar no cambiaria algo que no me esta fallando. Ademas con mas de 3 abogados el plan que me tocaria es el de $250.000, no el de $120.000.",
+  "objection": "Si la consulta de madrugada se salta una actuacion en la Rama o en SAMAI, el vencimiento me lo como yo, y no veo nada que me diga que tan confiable es ni quien responde si falla.",
+  "would_change_my_mind": "Correrlo en paralelo los 3 meses con mis procesos y comprobar que no se le escapa ninguna actuacion que mi dependiente si encontro, y que el portal de verdad me baja las llamadas de los clientes empresa.",
+  "price_too_cheap": 30000,
+  "price_cheap": 70000,
+  "price_expensive": 180000,
+  "price_too_expensive": 300000
+}

@@ -1,0 +1,13 @@
+{
+  "id": "P017",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "price",
+  "reason": "Uso los 3 meses gratis y después me quedo en el plan gratuito con mis 5 procesos más delicados; el resto los sigo revisando yo mismo en la página de la Rama como siempre. Pagar $120.000 al mes cuando hay una opción gratis no va conmigo.",
+  "objection": "No conozco esta plataforma y me piden entrar con mi cuenta de Google y cargar los radicados de mis clientes; además, si el correo de alerta falla un día y se me pasa un término, el responsable soy yo, no ellos.",
+  "would_change_my_mind": "Que en los 3 meses de prueba me avise de una actuación que yo no había visto y que el plan ilimitado baje a unos $50.000 al mes, con claridad escrita sobre qué hacen con los datos.",
+  "price_too_cheap": 10000,
+  "price_cheap": 30000,
+  "price_expensive": 70000,
+  "price_too_expensive": 110000
+}

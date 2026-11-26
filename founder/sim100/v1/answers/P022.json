@@ -1,0 +1,13 @@
+{
+  "id": "P022",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Ya tengo dependiente judicial que me revisa los estados y va a los juzgados, y me funciona. Una pagina que me manda correos no me reemplaza a esa persona, asi que seria pagar dos veces por lo mismo.",
+  "objection": "Si la pagina no detecta una actuacion o la Rama Judicial se cae y se me pasa un termino, el que responde ante el cliente soy yo. A mi dependiente lo conozco y le puedo reclamar; a una pagina no.",
+  "would_change_my_mind": "Que durante los tres meses gratis la herramienta me avisara de actuaciones que mi dependiente no vio, o que el portal de clientes me quitara de verdad las llamadas de las empresas preguntando como va cada proceso.",
+  "price_too_cheap": 20000,
+  "price_cheap": 50000,
+  "price_expensive": 100000,
+  "price_too_expensive": 150000
+}

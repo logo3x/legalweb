@@ -1,0 +1,13 @@
+{
+  "id": "P024",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "price",
+  "reason": "Uso los tres meses gratis sin problema, pero al terminar no pago $120.000 al mes: llevo anos revisando la Rama radicado por radicado con mi Excel y me funciona. Para los procesos que llevo solo, eso es casi $1.500.000 al ano por algo que hoy hago yo mismo sin costo.",
+  "objection": "Si el sistema no me avisa de un auto y se me vence un termino, el responsable soy yo, no ellos; igual terminaria revisando a mano para estar tranquilo, y entonces estaria pagando doble.",
+  "would_change_my_mind": "Un plan para abogado solo de unos $50.000 al mes, y haber comprobado durante la prueba que no se le escapo ni una sola actuacion frente a mi revision manual en las tres ciudades.",
+  "price_too_cheap": 15000,
+  "price_cheap": 40000,
+  "price_expensive": 80000,
+  "price_too_expensive": 120000
+}

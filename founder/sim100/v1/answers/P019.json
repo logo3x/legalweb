@@ -1,0 +1,13 @@
+{
+  "id": "P019",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "trust",
+  "reason": "Ya le pago a un dependiente que revisa estados y va a los juzgados, y confio en el. No conozco a ningun colega que use esto ni se quien esta detras, asi que no voy a dejar la vigilancia de 150 procesos en manos de una pagina.",
+  "objection": "Si el sistema no detecta una actuacion y se me vence un termino, quien responde? En civil y familia mucho juzgado municipal publica mal o tarde en la Rama, y un correo no reemplaza a quien va al despacho.",
+  "would_change_my_mind": "Que dos o tres colegas litigantes de mi ciudad me digan que lo usan hace un ano sin que se les escape una actuacion, y que durante la prueba coincida al cien por ciento con lo que reporta mi dependiente.",
+  "price_too_cheap": 30000,
+  "price_cheap": 70000,
+  "price_expensive": 150000,
+  "price_too_expensive": 280000
+}

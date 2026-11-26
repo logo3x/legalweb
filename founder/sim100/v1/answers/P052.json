@@ -1,0 +1,13 @@
+{
+  "id": "P052",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "trust",
+  "reason": "El precio no es el problema, $120.000 al mes es poco para la firma. Pero no conozco a LegalWeb y no voy a montar los radicados de mis clientes empresa, ni abrirles un portal, en una plataforma de la que no se quien esta detras; mi Excel y la revision de cada manana me funcionan.",
+  "objection": "No se quien es esta empresa, donde guardan la informacion ni que pasa si un dia el robot no detecta una actuacion y se me vence un termino: la responsabilidad sigue siendo mia.",
+  "would_change_my_mind": "Que un colega de confianza o una firma conocida me diga que lo usa hace mas de un ano sin que se le escape una actuacion, y un contrato de confidencialidad claro con la empresa identificada.",
+  "price_too_cheap": 30000,
+  "price_cheap": 80000,
+  "price_expensive": 200000,
+  "price_too_expensive": 350000
+}

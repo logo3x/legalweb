@@ -1,0 +1,13 @@
+{
+  "id": "P040",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Ya pago una vigilancia judicial desde hace anos y me funciona; no voy a pagar $120.000 mas al mes ni a pasar todos mis radicados a otro sistema por algo que ya tengo resuelto. Probaria los 3 meses gratis y lo mas seguro es que me quede en el plan gratuito o lo deje.",
+  "objection": "$120.000 al mes es mucho para los procesos que llevo, y no se si la consulta de SAMAI es tan confiable como la que ya tengo: si se le escapa un auto en lo contencioso, el termino vencido lo pago yo.",
+  "would_change_my_mind": "Que durante los tres meses de prueba me avisara de actuaciones en SAMAI antes o mejor que mi servicio actual, y que costara menos de lo que hoy pago, alrededor de $60.000 al mes.",
+  "price_too_cheap": 15000,
+  "price_cheap": 45000,
+  "price_expensive": 80000,
+  "price_too_expensive": 120000
+}

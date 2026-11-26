@@ -1,0 +1,13 @@
+{
+  "id": "P015",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "trust",
+  "reason": "Yo reviso mis procesos a mano y con mi agenda de papel; no le voy a confiar mis terminos a un programa que no conozco y que ningun colega me ha recomendado. Ademas, $120.000 al mes es mucho para los procesos que llevo.",
+  "objection": "Si el sistema no detecta una actuacion y se me vence un termino, el que responde ante el cliente soy yo, no la pagina. Ya tuve un susto y por eso mismo no delego eso en algo que no puedo verificar.",
+  "would_change_my_mind": "Que un colega de confianza me diga que lleva un ano usandolo y que nunca le ha fallado una notificacion; con eso y un precio cercano a $60.000 lo pensaria.",
+  "price_too_cheap": 15000,
+  "price_cheap": 40000,
+  "price_expensive": 80000,
+  "price_too_expensive": 120000
+}

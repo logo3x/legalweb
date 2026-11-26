@@ -1,0 +1,13 @@
+{
+  "id": "P018",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Ya tengo quien me revise los procesos hace anos y me funciona; no voy a migrar 60 radicados ni a pagar dos servicios a la vez por algo que hace lo mismo.",
+  "objection": "Si me cambio y a la herramienta nueva se le pasa una actuacion, el que pierde el termino y responde ante el cliente soy yo. Con el actual ya se que no falla.",
+  "would_change_my_mind": "Que durante los 3 meses gratis, corriendo en paralelo con mi servicio actual, LegalWeb me detecte todo lo que detecta el otro (y ojala algo que al otro se le escape) y que ademas me salga claramente mas barato; el portal para que el cliente empresa consulte solo y deje de llamarme es lo unico que de verdad me tienta.",
+  "price_too_cheap": 30000,
+  "price_cheap": 70000,
+  "price_expensive": 130000,
+  "price_too_expensive": 200000
+}

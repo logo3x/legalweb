@@ -1,0 +1,13 @@
+{
+  "id": "P027",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Yo ya le pago a mi dependiente para que revise estados y vaya a los juzgados, y a ella le confio mis terminos; una pagina que consulta la Rama de madrugada no me la reemplaza porque igual hay que ir al despacho, sacar copias y radicar. Pagar $120.000 al mes encima de lo que ya pago es un gasto doble.",
+  "objection": "Las paginas de la Rama se caen y cambian cada rato; el dia que esto deje de consultar y no me llegue el correo, se me vence un termino y el responsable ante el cliente soy yo, no la plataforma.",
+  "would_change_my_mind": "Usarlo los 3 meses gratis en paralelo con mi dependiente y comprobar que no se le escapa ni una sola actuacion que ella si encontro, y que me avisa cuando no pudo consultar la Rama en vez de quedarse callado.",
+  "price_too_cheap": 15000,
+  "price_cheap": 40000,
+  "price_expensive": 80000,
+  "price_too_expensive": 120000
+}

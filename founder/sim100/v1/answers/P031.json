@@ -1,0 +1,13 @@
+{
+  "id": "P031",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Ya pago un servicio de vigilancia hace anos y tengo todos los procesos de la firma montados ahi; por $120.000 no voy a migrar 200 radicados ni a pagar dos vigilancias al tiempo. Lo probaria gratis como segundo par de ojos y me quedaria con los 5 casos mas delicados en el plan gratuito.",
+  "objection": "Despues del susto que tuve con un termino, no le confio la vigilancia de toda la firma a una herramienta nueva que no conozco: si un dia falla la consulta a la Rama o a SAMAI y no me llega el correo, el que responde ante el cliente soy yo.",
+  "would_change_my_mind": "Que durante los 3 meses de prueba me detecte al menos una actuacion que mi servicio actual no me aviso o me aviso tarde, y que la migracion de todos mis radicados sea subir un Excel y ya.",
+  "price_too_cheap": 30000,
+  "price_cheap": 70000,
+  "price_expensive": 150000,
+  "price_too_expensive": 250000
+}

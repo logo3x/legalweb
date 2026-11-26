@@ -1,0 +1,13 @@
+{
+  "id": "P029",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Ya le pago a mi dependiente para que revise estados y vaya a los juzgados, y confio en ella, no en una pagina. Pagar $120.000 al mes encima de eso es mucho para los procesos que llevo; me quedaria con el plan gratis de 5 casos o lo dejaria.",
+  "objection": "Si la pagina no detecta una actuacion y se me vence un termino, la responsabilidad es mia; ademas la dependiente igual tiene que ir al juzgado, asi que no me ahorro su pago.",
+  "would_change_my_mind": "Que en los 3 meses de prueba detecte todas las actuaciones que mi dependiente encuentra, sin fallar ninguna, y que cueste alrededor de $50.000 al mes.",
+  "price_too_cheap": 15000,
+  "price_cheap": 40000,
+  "price_expensive": 80000,
+  "price_too_expensive": 120000
+}

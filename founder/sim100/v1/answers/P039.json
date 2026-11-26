@@ -1,0 +1,13 @@
+{
+  "id": "P039",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Ya tengo un dependiente que me revisa los procesos en las tres ciudades y me funciona; no voy a cambiar eso por un correo automatico de una pagina que nadie de mi confianza me ha recomendado.",
+  "objection": "Si el sistema se salta una actuacion y se me vence un termino, la responsabilidad es mia y no tengo a quien reclamarle; ademas no me gusta entregar mis radicados ni entrar con mi cuenta de Google a una herramienta que no conozco.",
+  "would_change_my_mind": "Que un colega de confianza que lleve procesos como los mios me diga que lo uso un ano completo sin que se le escapara una sola actuacion, y poder probarlo en paralelo con mi dependiente.",
+  "price_too_cheap": 30000,
+  "price_cheap": 60000,
+  "price_expensive": 150000,
+  "price_too_expensive": 250000
+}

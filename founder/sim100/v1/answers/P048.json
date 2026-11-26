@@ -1,0 +1,13 @@
+{
+  "id": "P048",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Ya tengo quien me revise los procesos y me funciona. Aprovecho los 3 meses gratis para comparar, y después me quedo en el plan gratis con mis 5 procesos más delicados; no veo por qué pagar $120.000 al mes por algo que ya tengo resuelto.",
+  "objection": "Si un día la consulta a la Rama falla y no me llega el correo, el que pierde el término soy yo. No voy a soltar a mi dependiente por una plataforma que no conozco, y pagar las dos cosas no tiene sentido.",
+  "would_change_my_mind": "Que en los 3 meses de prueba me avise de actuaciones que a mi dependiente se le pasaron, sin fallar ni una, y que me salga claramente más barato que lo que le pago hoy a él.",
+  "price_too_cheap": 15000,
+  "price_cheap": 40000,
+  "price_expensive": 80000,
+  "price_too_expensive": 120000
+}

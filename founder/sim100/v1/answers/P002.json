@@ -1,0 +1,13 @@
+{
+  "id": "P002",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "price",
+  "reason": "La consulta de la Rama Judicial es gratis y ya tengo mi rutina de cada manana con el Excel; $120.000 al mes es $1.440.000 al ano por algo que hoy hago yo mismo. Usaria los 3 meses gratis y luego me quedaria en el plan gratuito o volveria a revisar a mano.",
+  "objection": "No se si puedo confiar en que el sistema no se le pase una actuacion; si se le escapa un auto y se me vence un termino, el responsable soy yo, asi que igual terminaria revisando a mano y pagando doble.",
+  "would_change_my_mind": "Que durante los 3 meses de prueba me avise de todas las actuaciones sin fallar ni una frente a mi propia revision, y que haya un plan individual de unos $50.000 al mes; no necesito 3 usuarios.",
+  "price_too_cheap": 15000,
+  "price_cheap": 40000,
+  "price_expensive": 80000,
+  "price_too_expensive": 120000
+}

@@ -1,0 +1,13 @@
+{
+  "id": "P008",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Llevo menos de 15 procesos y ya le pago a mi dependiente, que revisa estados y va al juzgado; no voy a pagar $120.000 al mes encima de eso por algo que ella ya hace. Usaria los 3 meses gratis y despues me quedaria en el plan gratuito de 5 casos como segunda alerta.",
+  "objection": "Si la plataforma no detecta una actuacion y se me vence un termino, nadie responde; a mi dependiente la puedo llamar y exigirle, a una pagina no. Ademas la Rama Judicial se cae y no se que pasa esa madrugada.",
+  "would_change_my_mind": "Que durante los 3 meses gratis no se le escape ni una actuacion frente a lo que reporta mi dependiente, y que el plan cueste alrededor de $50.000 al mes para mis pocos procesos.",
+  "price_too_cheap": 15000,
+  "price_cheap": 40000,
+  "price_expensive": 80000,
+  "price_too_expensive": 120000
+}

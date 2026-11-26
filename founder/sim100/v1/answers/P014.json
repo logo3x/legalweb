@@ -1,0 +1,13 @@
+{
+  "id": "P014",
+  "buys": true,
+  "purchases_first_month": 1,
+  "reason_code": "need",
+  "reason": "Consultar la Rama es gratis, pero con mas de cien procesos nadie en la firma lo hace todos los dias y ya casi se nos pasa un termino. Si en los tres meses gratis los correos llegan bien y no se le escapa ninguna actuacion, $120.000 al mes es menos de lo que cobro por una hora.",
+  "objection": "Que el sistema no detecte una actuacion o que la Rama este caida y yo me confie; si se me vence un termino por culpa de la herramienta, el responsable sigo siendo yo. Ademas somos mas de 3 abogados, asi que en realidad me tocaria el plan de $250.000.",
+  "would_change_my_mind": "Que durante la prueba se le pase una sola actuacion que yo si vea en la Rama, o que cargar mis radicados desordenados me tome mas de una tarde; en ese caso no pago.",
+  "price_too_cheap": 30000,
+  "price_cheap": 80000,
+  "price_expensive": 200000,
+  "price_too_expensive": 350000
+}

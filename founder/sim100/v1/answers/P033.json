@@ -1,0 +1,13 @@
+{
+  "id": "P033",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "trust",
+  "reason": "Yo ya casi pierdo un termino una vez y por eso reviso radicado por radicado cada manana; si igual voy a tener que seguir revisando a mano porque no me fio del correo, no voy a pagar $120.000 al mes por algo que no me quita el trabajo. Probaria los 3 meses gratis en paralelo con mi Excel, pero pagar es otra cosa.",
+  "objection": "Si la plataforma no detecta una actuacion y se me vence un termino, quien responde? El que responde ante el cliente y ante el Consejo Superior soy yo, no ellos, y la oferta no dice nada de eso.",
+  "would_change_my_mind": "Que durante los 3 meses de prueba no se le escape ni una sola actuacion frente a mi revision manual, y que me digan por escrito que pasa y como me avisan cuando la consulta a la Rama falla.",
+  "price_too_cheap": 20000,
+  "price_cheap": 50000,
+  "price_expensive": 100000,
+  "price_too_expensive": 150000
+}

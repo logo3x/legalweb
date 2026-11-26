@@ -1,0 +1,13 @@
+{
+  "id": "P051",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "trust",
+  "reason": "No conozco esta plataforma y no voy a subir los radicados ni los datos de mis clientes a un sitio del que ningun colega me ha hablado. Yo reviso mis procesos en la pagina de la Rama y en el juzgado, con mi libreta y mi dependiente, y asi me ha funcionado.",
+  "objection": "No se quien esta detras ni que pasa con la informacion de mis clientes; y si el correo falla y se me pasa un termino, la responsabilidad disciplinaria es mia, no de ellos.",
+  "would_change_my_mind": "Que un colega de confianza que litigue en mis mismos juzgados me diga que lleva un ano usandolo y que no se le ha escapado ninguna actuacion.",
+  "price_too_cheap": 20000,
+  "price_cheap": 50000,
+  "price_expensive": 100000,
+  "price_too_expensive": 150000
+}

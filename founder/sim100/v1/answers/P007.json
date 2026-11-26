@@ -1,0 +1,13 @@
+{
+  "id": "P007",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "price",
+  "reason": "Me registro gratis porque no me piden tarjeta, pero al terminar los 3 meses dejo los 5 procesos mas delicados en el plan gratuito y el resto lo sigo llevando como siempre. $120.000 fijos cada mes es otra suscripcion mas y no estoy seguro de haber cargado siquiera todos mis radicados.",
+  "objection": "Tengo los radicados regados entre carpetas y chats de WhatsApp; si no saco el rato para subirlos todos, termino pagando por algo que uso a medias. Y no se que tan confiable es: si se le pasa una actuacion, el que responde ante el cliente soy yo.",
+  "would_change_my_mind": "Que durante la prueba me avise a tiempo de una actuacion que yo no habia visto y me salve un termino; ahi si pago, sobre todo si baja a unos $70.000 al mes.",
+  "price_too_cheap": 20000,
+  "price_cheap": 50000,
+  "price_expensive": 90000,
+  "price_too_expensive": 140000
+}

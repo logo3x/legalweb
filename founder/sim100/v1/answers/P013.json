@@ -1,0 +1,13 @@
+{
+  "id": "P013",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "trust",
+  "reason": "La prueba gratis si la hago, pero a los 3 meses no creo que pague: yo ya reviso cada manana y no voy a soltar mi Excel por un robot que depende de paginas de la Rama que se caen y cambian cada rato. Si igual tengo que seguir revisando a mano por si acaso, estoy pagando $120.000 por un correo duplicado.",
+  "objection": "Que un dia la pagina de la Rama cambie o se caiga, el sistema no me avise de una actuacion, se me venza un termino y el responsable ante el cliente siga siendo yo.",
+  "would_change_my_mind": "Que durante los 3 meses de prueba no se le escape ni una sola actuacion frente a mi revision manual, y que me avise claramente cuando no pudo consultar un proceso en vez de quedarse callado.",
+  "price_too_cheap": 20000,
+  "price_cheap": 50000,
+  "price_expensive": 100000,
+  "price_too_expensive": 160000
+}

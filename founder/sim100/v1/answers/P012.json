@@ -1,0 +1,13 @@
+{
+  "id": "P012",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "price",
+  "reason": "Lo probaria los 3 meses sin dudarlo, pero $120.000 al mes es casi el 3% de lo que me entra y yo ya reviso SAMAI varias veces por semana sin pagar nada. Al terminar la prueba me quedo en el plan gratis con mis 5 procesos mas delicados y sigo revisando el resto a mano.",
+  "objection": "Pago lo mismo que una oficina de 3 abogados con casos ilimitados, cuando soy uno solo y casi todo lo mio esta en SAMAI. No hay un plan para independiente y no se que tan confiable es la consulta de madrugada: si se le pasa un auto, el termino se me vence a mi, no a ellos.",
+  "would_change_my_mind": "Un plan individual de un solo usuario alrededor de $50.000 al mes, y haber comprobado durante la prueba que no se le escapo ninguna actuacion de SAMAI frente a mi revision manual.",
+  "price_too_cheap": 15000,
+  "price_cheap": 40000,
+  "price_expensive": 80000,
+  "price_too_expensive": 120000
+}
