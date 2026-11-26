@@ -134,6 +134,7 @@
                     <p style="margin: 0 0 14px; font-size: 14px; color: #475569;">
                         Activo con su <strong>{{ $firm->card_brand }} terminada en {{ $firm->card_last_four }}</strong>.
                         Cobramos la renovación el día anterior al vencimiento y le avisamos si el banco no la aprueba.
+                        En su extracto el cobro aparece como <strong>{{ \App\Services\WompiRecurringService::statementName() }}</strong>.
                     </p>
                     <x-filament::button color="gray" wire:click="removeCard" wire:confirm="¿Quitar la tarjeta y desactivar el pago automático?">
                         Quitar tarjeta y desactivar
@@ -197,7 +198,7 @@
                             </label>
                             <label style="font-size: 13px; color: #334155; display: flex; gap: 8px; align-items: flex-start;">
                                 <input type="checkbox" x-model="authorize" style="margin-top: 3px;">
-                                <span>Autorizo a LegalWeb a cobrar automáticamente a esta tarjeta el valor de mi plan en cada renovación, hasta que la quite en Mi Plan.</span>
+                                <span>Autorizo a LegalWeb a cobrar automáticamente a esta tarjeta el valor de mi plan en cada renovación, hasta que la quite en Mi Plan. Entiendo que el cobro aparecerá en mi extracto como <strong>{{ \App\Services\WompiRecurringService::statementName() }}</strong>, el comercio que procesa los pagos de LegalWeb.</span>
                             </label>
                             <p x-show="error" x-text="error" style="font-size: 13px; color: #B91C1C; margin: 0;"></p>
                             <div>
@@ -213,7 +214,7 @@
         @endif
 
         <p style="text-align: center; font-size: 13px; color: #94A3B8;">
-            Precios en pesos colombianos. Pago seguro con Wompi. Si su cuenta supera los límites del plan Gratuito, sus casos se conservan: solo no podrá agregar casos activos nuevos.
+            Precios en pesos colombianos. Pago seguro con Wompi; en el extracto de su tarjeta el cobro aparece como {{ \App\Services\WompiRecurringService::statementName() }}. Si su cuenta supera los límites del plan Gratuito, sus casos se conservan: solo no podrá agregar casos activos nuevos.
         </p>
     </div>
 

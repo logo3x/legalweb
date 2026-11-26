@@ -53,7 +53,7 @@ class SubscriptionStatusNotification extends Notification implements ShouldQueue
                 "Dr(a). {$name}, su suscripcion vence pronto",
                 "Su plan <strong>{$plan->name}</strong> vence el <strong>{$ends}</strong> ({$price} COP/mes).",
                 [$autoRenew
-                    ? 'Le cobraremos la renovacion automaticamente a su '.e($card).' el dia anterior al vencimiento. No tiene que hacer nada; si prefiere otro medio de pago, puede quitar la tarjeta en Mi Plan.'
+                    ? 'Le cobraremos la renovacion automaticamente a su '.e($card).' el dia anterior al vencimiento; en su extracto aparecera como '.e(WompiRecurringService::statementName()).'. No tiene que hacer nada; si prefiere otro medio de pago, puede quitar la tarjeta en Mi Plan.'
                     : 'Para que su cuenta siga activa sin interrupciones, realice el pago antes de esa fecha.'],
                 null,
                 'Renovar ahora',

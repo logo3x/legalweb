@@ -27,6 +27,14 @@ class WompiRecurringService
             && filled(config('services.wompi.integrity_secret'));
     }
 
+    /**
+     * Nombre del comercio que vera el cliente en el extracto de su tarjeta.
+     */
+    public static function statementName(): string
+    {
+        return (string) config('services.wompi.statement_name', 'CITORA');
+    }
+
     private function baseUrl(): string
     {
         return (string) config('services.wompi.base_url');

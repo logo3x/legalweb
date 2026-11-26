@@ -74,6 +74,8 @@ class WompiAutoRenewTest extends TestCase
 
         Livewire::test(UpgradePlan::class)
             ->assertSee('Pago automático de la renovación')
+            ->assertSee('el cobro aparecerá en mi extracto como', false)
+            ->assertSee('CITORA')
             ->call('registerCard', 'tok_test_123', 'acc_tok', 'pers_tok', false)
             ->assertNotified('Debe autorizar el cobro automático')
             ->call('registerCard', 'tok_test_123', 'acc_tok', 'pers_tok', true)
@@ -159,5 +161,10 @@ class WompiAutoRenewTest extends TestCase
 
         $this->assertStringContainsString('cobraremos la renovacion automaticamente', mb_strtolower($html));
         $this->assertStringContainsString('VISA terminada en 4242', $html);
+        $this->assertStringContainsString('en su extracto aparecera como CITORA', $html);
+
+        config(['services.wompi.statement_name' => 'LEGALWEB']);
+        $html = (string) (new SubscriptionStatusNotification($this->current, SubscriptionStatusNotification::STAGE_UPCOMING))->toMail($this->admin)->render();
+        $this->assertStringContainsString('en su extracto aparecera como LEGALWEB', $html);
     }
 }

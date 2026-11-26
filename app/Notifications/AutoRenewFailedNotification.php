@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\Firm;
+use App\Services\WompiRecurringService;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification as FilamentNotification;
 use Illuminate\Bus\Queueable;
@@ -37,7 +38,7 @@ class AutoRenewFailedNotification extends Notification implements ShouldQueue
         return (new MailMessage)
             ->subject('No pudimos cobrar la renovación de su plan en LegalWeb')
             ->greeting("Hola {$notifiable->name}")
-            ->line("Intentamos cobrar la renovación de su plan a la {$card} y el banco no la aprobó.")
+            ->line("Intentamos cobrar la renovación de su plan a la {$card} y el banco no la aprobó. El intento puede aparecer en su extracto como ".WompiRecurringService::statementName().', el comercio que procesa los pagos de LegalWeb.')
             ->line($this->willRetry
                 ? 'Volveremos a intentarlo mañana. Si prefiere, puede pagar ahora con otro medio o registrar otra tarjeta.'
                 : 'Ya no haremos más intentos automáticos. Para que su cuenta siga activa, pague la renovación con otro medio o registre otra tarjeta.')
