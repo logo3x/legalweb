@@ -9,18 +9,34 @@ use App\Models\Scopes\FirmScope;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Cache;
 
-#[Signature('app:sync-tyba-actuaciones')]
-#[Description('Sincroniza actuaciones desde la Rama Judicial para casos con radicado')]
+#[Signature('app:sync-tyba-actuaciones {--retry-failed : Solo reintenta los casos cuya ultima consulta fallo}')]
+#[Description('Sincroniza actuaciones desde la Rama Judicial y SAMAI para casos con radicado')]
 class SyncTybaActuaciones extends Command
 {
+    /**
+     * Momento de la ultima corrida nocturna completa (lo vigila app:notify-sync-failures).
+     */
+    public const LAST_RUN_KEY = 'sync.nightly.last_run_at';
+
+    /**
+     * Reintentos por caso antes de esperar a la corrida nocturna siguiente.
+     */
+    public const MAX_RETRIES = 6;
+
     public function handle(): void
     {
-        // Obtener casos activos con radicado que no se han sincronizado en 24h
-        $cases = LegalCase::withoutGlobalScope(FirmScope::class)
-            ->whereNotNull('external_case_number')
-            ->where('external_case_number', '!=', '')
-            ->whereIn('status', ['abierto', 'en_progreso', 'en_espera'])
+        if ($this->option('retry-failed')) {
+            $this->retryFailed();
+
+            return;
+        }
+
+        // Casos activos con radicado sin una consulta exitosa en 24 h. Un fallo no actualiza
+        // last_tyba_sync, asi que los casos que fallaron tambien entran aqui.
+        $cases = $this->activeCases()
             ->where(function ($q) {
                 $q->whereNull('last_tyba_sync')
                     ->orWhere('last_tyba_sync', '<', now()->subHours(24));
@@ -48,6 +64,39 @@ class SyncTybaActuaciones extends Command
             $this->info("Encolado: {$case->case_number} ({$case->external_case_number})");
         }
 
+        Cache::forever(self::LAST_RUN_KEY, now()->toDateTimeString());
+
         $this->info("Total encolados: {$dispatched}");
+    }
+
+    /**
+     * Reintento (cada hora, desde el cron): casos cuya ultima consulta fallo hace mas de una hora.
+     */
+    private function retryFailed(): void
+    {
+        $cases = $this->activeCases()
+            ->whereNotNull('sync_failed_at')
+            ->where('sync_failed_at', '<', now()->subHour())
+            ->where('sync_failures', '<', self::MAX_RETRIES)
+            ->orderBy('sync_failed_at')
+            ->limit(50)
+            ->get();
+
+        foreach ($cases->values() as $index => $case) {
+            SyncCaseActuaciones::dispatch($case, 'reintento')->delay(now()->addSeconds($index * 5));
+        }
+
+        $this->info("Reintentos encolados: {$cases->count()}");
+    }
+
+    /**
+     * @return Builder<LegalCase>
+     */
+    private function activeCases()
+    {
+        return LegalCase::withoutGlobalScope(FirmScope::class)
+            ->whereNotNull('external_case_number')
+            ->where('external_case_number', '!=', '')
+            ->whereIn('status', ['abierto', 'en_progreso', 'en_espera']);
     }
 }

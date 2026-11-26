@@ -209,6 +209,11 @@ Route::get('/cron/{token}/{task?}', function (string $token, ?string $task = nul
     if (! $task || $task === 'check-deadlines') {
         Artisan::call('app:check-deadlines');
         $results[] = 'check-deadlines: OK';
+
+        // Aviso diario a cada abogado de los procesos que no se pudieron consultar, y al superadmin
+        // si la sincronizacion nocturna no corrio o fallo en masa.
+        Artisan::call('app:notify-sync-failures');
+        $results[] = 'notify-sync-failures: OK';
     }
 
     // Tarea: send-reminders (cada 5 min)
@@ -288,6 +293,16 @@ Route::get('/cron/{token}/{task?}', function (string $token, ?string $task = nul
     // Tareas de IA colgadas de "queue" (no exigen otro cron). Cada peticion se mantiene corta:
     // el hosting corta las que tardan mucho, asi que se mide el tiempo ya usado.
     $elapsed = fn (): float => microtime(true) - (defined('LARAVEL_START') ? LARAVEL_START : microtime(true));
+
+    // Reintento cada hora de los procesos cuya ultima consulta a la Rama Judicial o SAMAI fallo.
+    if ((! $task || $task === 'queue') && Cache::add('sync.retry_failed.tick', true, now()->addHour())) {
+        try {
+            Artisan::call('app:sync-tyba-actuaciones', ['--retry-failed' => true]);
+            $results[] = 'sync-retry: '.trim(Artisan::output());
+        } catch (Throwable $e) {
+            Log::warning('sync-retry fallo: '.$e->getMessage());
+        }
+    }
 
     if (! $task || $task === 'queue') {
         $registry = app(AIModelRegistry::class);

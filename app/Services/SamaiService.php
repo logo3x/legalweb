@@ -20,6 +20,16 @@ class SamaiService
     public const BASE_URL = 'https://samai.consejodeestado.gov.co';
 
     /**
+     * Motivo legible del ultimo fallo de una busqueda (null si salio bien).
+     */
+    private ?string $lastError = null;
+
+    public function lastError(): ?string
+    {
+        return $this->lastError;
+    }
+
+    /**
      * Corporaciones (codigo de 7 digitos => nombre). El codigo coincide con los
      * primeros 7 digitos del radicado.
      *
@@ -94,6 +104,10 @@ class SamaiService
             }
         }
 
+        if ($items === [] && $this->lastError === null) {
+            $this->lastError = 'El radicado no aparece en SAMAI';
+        }
+
         return $items[0] ?? null;
     }
 
@@ -156,15 +170,21 @@ class SamaiService
             'tamanoPagina' => 10,
         ], $criteria);
 
+        $this->lastError = null;
+
         try {
             $response = $this->client()->post(self::BASE_URL.'/Vistas/Casos/Jprocesos.ashx/buscar', $body);
         } catch (\Throwable $e) {
+            $this->lastError = 'No hubo conexion con SAMAI';
             Log::warning('SAMAI: error de conexion', ['error' => $e->getMessage()]);
 
             return [];
         }
 
         if (! $response->successful() || ! $response->json('ok')) {
+            $this->lastError = $response->successful()
+                ? 'SAMAI respondio con un error o un formato distinto al esperado'
+                : 'SAMAI no respondio (HTTP '.$response->status().')';
             Log::info('SAMAI: busqueda sin resultado', [
                 'status' => $response->status(),
                 'error' => $response->json('error.message'),

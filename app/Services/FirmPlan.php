@@ -25,7 +25,7 @@ class FirmPlan
      * Las firmas cuya prueba ya habia terminado reciben 30 dias de aviso:
      * los limites del plan Gratuito no se aplican antes de esta fecha.
      */
-    public const FREE_LIMITS_FROM = '2026-12-12';
+    public const FREE_LIMITS_FROM = '2027-02-01';
 
     /**
      * Estados de caso que cuentan como activos.

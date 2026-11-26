@@ -27,9 +27,10 @@ class ProductAnnouncementTest extends TestCase
         $html = (string) (new MassEmailNotification($campaign))->toMail($user)->render();
 
         $this->assertStringContainsString('Camila, LegalWeb ahora trabaja aun mas por usted', $html);
-        $this->assertStringContainsString('Vigilancia de clientes por cedula o NIT', $html);
+        $this->assertStringContainsString('Vigilancia de sus clientes en la Rama Judicial', $html);
+        $this->assertStringNotContainsString('cedula o NIT', $html);
         $this->assertStringNotContainsString('WhatsApp', $html);
-        $this->assertStringContainsString('12 de diciembre de 2026', $html);
+        $this->assertStringContainsString('1 de febrero de 2027', $html);
         $this->assertStringContainsString(url('/portal/privacidad'), $html);
         $this->assertStringNotContainsString('{{', $html);
     }

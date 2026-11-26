@@ -6,6 +6,10 @@ use Illuminate\Support\Facades\Schedule;
 
 Schedule::command('app:check-deadlines')->dailyAt('08:00');
 
+Schedule::command('app:notify-sync-failures')->dailyAt('08:10');
+
+Schedule::command('app:sync-tyba-actuaciones --retry-failed')->hourly();
+
 Schedule::call(function () {
     $reminders = Reminder::with('user')
         ->where('is_completed', false)

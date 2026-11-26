@@ -60,30 +60,63 @@ class CaseSyncService
 
     public function __construct(public TybaService $tyba, public SamaiService $samai) {}
 
+    /**
+     * Campos que se limpian cuando una consulta sale bien.
+     *
+     * @var array<string, mixed>
+     */
+    private const CLEAR_FAILURE = ['sync_failed_at' => null, 'sync_error' => null, 'sync_failures' => 0];
+
     public function sync(LegalCase $case, string $origen = 'automatico', bool $notify = true): TybaSyncLog
     {
-        if ($case->isSamai()) {
-            return $this->syncSamai($case, $origen, $notify);
-        }
+        // Un error inesperado en un caso queda registrado como fallo de ese caso y no corta el lote nocturno.
+        try {
+            return $case->isSamai()
+                ? $this->syncSamai($case, $origen, $notify)
+                : $this->syncRama($case, $origen, $notify);
+        } catch (\Throwable $e) {
+            Log::error('Sync: error inesperado', ['case' => $case->id, 'error' => $e->getMessage()]);
 
+            return $this->recordFailure($case, $origen, $case->isSamai() ? 'SAMAI' : 'la Rama Judicial', 'Error interno al procesar la respuesta');
+        }
+    }
+
+    /**
+     * Fallo de consulta: NO cuenta como sincronizacion (last_tyba_sync no cambia), se guarda el
+     * motivo en el caso para mostrarlo, reintentarlo y avisar al abogado (app:notify-sync-failures).
+     */
+    private function recordFailure(LegalCase $case, string $origen, string $source, ?string $reason): TybaSyncLog
+    {
+        $reason = $reason ?: 'No hubo respuesta';
+
+        Log::error('Sync: consulta fallida', ['case' => $case->id, 'fuente' => $source, 'motivo' => $reason]);
+
+        $case->forceFill([
+            'sync_failed_at' => now(),
+            'sync_error' => mb_substr($reason, 0, 255),
+            'sync_failures' => (int) $case->sync_failures + 1,
+        ])->saveQuietly();
+
+        return TybaSyncLog::create([
+            'legal_case_id' => $case->id,
+            'status' => 'error',
+            'mensaje' => mb_substr("No se pudo consultar el radicado en {$source}: {$reason}", 0, 255),
+            'origen' => $origen,
+        ]);
+    }
+
+    private function syncRama(LegalCase $case, string $origen, bool $notify): TybaSyncLog
+    {
         $radicado = (string) $case->external_case_number;
         $info = $radicado !== '' ? $this->tyba->extractProcessInfo($radicado) : null;
 
         if (! $info) {
-            Log::warning('Tyba sync: consulta fallida', ['case' => $case->id]);
-            $case->update(['last_tyba_sync' => now()]);
-
-            return TybaSyncLog::create([
-                'legal_case_id' => $case->id,
-                'status' => 'error',
-                'mensaje' => 'No se pudo consultar el radicado en la Rama Judicial',
-                'origen' => $origen,
-            ]);
+            return $this->recordFailure($case, $origen, 'la Rama Judicial', $this->tyba->lastError());
         }
 
         $fieldChanges = $this->detectFieldChanges($case->tyba_data, $info);
 
-        $case->update($this->buildCaseUpdates($case, $info));
+        $case->update([...$this->buildCaseUpdates($case, $info), ...self::CLEAR_FAILURE]);
 
         // Auto-reparacion: antes de procesar, deduplica las actuaciones que ya
         // existen para este caso (titulo + dia). Cubre duplicados creados por
@@ -200,20 +233,12 @@ class CaseSyncService
      * esos datos y se registra una actuacion cuando el proceso se archiva o
      * vuelve a estar vigente.
      */
-    public function syncSamai(LegalCase $case, string $origen = 'automatico', bool $notify = true): TybaSyncLog
+    private function syncSamai(LegalCase $case, string $origen = 'automatico', bool $notify = true): TybaSyncLog
     {
         $item = $this->samai->findByRadicado((string) $case->external_case_number);
 
         if (! $item) {
-            Log::warning('SAMAI sync: consulta fallida', ['case' => $case->id]);
-            $case->update(['last_tyba_sync' => now()]);
-
-            return TybaSyncLog::create([
-                'legal_case_id' => $case->id,
-                'status' => 'error',
-                'mensaje' => 'No se pudo consultar el radicado en SAMAI',
-                'origen' => $origen,
-            ]);
+            return $this->recordFailure($case, $origen, 'SAMAI', $this->samai->lastError());
         }
 
         $previous = $case->tyba_data;
@@ -230,7 +255,7 @@ class CaseSyncService
             }
         }
 
-        $updates = ['last_tyba_sync' => now(), 'tyba_data' => $item];
+        $updates = ['last_tyba_sync' => now(), 'tyba_data' => $item, ...self::CLEAR_FAILURE];
 
         if ($item['despacho'] !== '') {
             $updates['court'] = $item['despacho'].($item['corporacion_nombre'] ? ' - '.$item['corporacion_nombre'] : '');

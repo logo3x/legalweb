@@ -39,6 +39,9 @@ use Illuminate\Support\Str;
     'firm_id',
     'is_demo',
     'last_tyba_sync',
+    'sync_failed_at',
+    'sync_error',
+    'sync_failures',
     'tyba_data',
     'auto_report_enabled',
 ])]
@@ -57,6 +60,8 @@ class LegalCase extends Model
             'auto_report_enabled' => 'boolean',
             'is_demo' => 'boolean',
             'last_tyba_sync' => 'datetime',
+            'sync_failed_at' => 'datetime',
+            'sync_failures' => 'integer',
             'tyba_data' => 'array',
         ];
     }

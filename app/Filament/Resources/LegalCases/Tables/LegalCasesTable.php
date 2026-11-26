@@ -14,6 +14,7 @@ use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\ViewAction;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
@@ -42,6 +43,15 @@ class LegalCasesTable
                     ->label('Tipo')
                     ->sortable()
                     ->badge(),
+                // La ultima consulta a la Rama Judicial / SAMAI fallo: el caso no esta al dia.
+                TextColumn::make('sync_failed_at')
+                    ->label('Consulta')
+                    ->formatStateUsing(fn (): string => 'Con error')
+                    ->badge()
+                    ->color('danger')
+                    ->icon('heroicon-m-exclamation-triangle')
+                    ->tooltip(fn ($record): ?string => $record->sync_error)
+                    ->placeholder(''),
                 TextColumn::make('client.first_name')
                     ->label('Cliente')
                     ->formatStateUsing(fn ($record) => "{$record->client->first_name} {$record->client->last_name}")
@@ -91,6 +101,10 @@ class LegalCasesTable
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
+                Filter::make('sync_failed')
+                    ->label('Con error de consulta')
+                    ->toggle()
+                    ->query(fn ($query) => $query->whereNotNull('sync_failed_at')),
                 SelectFilter::make('status')
                     ->label('Estado')
                     ->options([

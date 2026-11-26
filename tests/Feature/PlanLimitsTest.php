@@ -67,7 +67,7 @@ class PlanLimitsTest extends TestCase
 
     private function onFreeLimits(): void
     {
-        $this->travelTo('2027-01-15 10:00:00');
+        $this->travelTo('2027-02-15 10:00:00');
         $this->subscribe($this->free, ['trial_ends_at' => now()->subMonth()]);
     }
 
@@ -79,7 +79,7 @@ class PlanLimitsTest extends TestCase
 
     public function test_tiers_follow_the_subscription(): void
     {
-        $this->travelTo('2027-01-15 10:00:00');
+        $this->travelTo('2027-02-15 10:00:00');
         $trial = $this->subscribe($this->free, ['trial_ends_at' => now()->addMonth()]);
 
         $this->assertSame('trial', $this->firm->planLimits()->tier());
@@ -97,13 +97,13 @@ class PlanLimitsTest extends TestCase
         $this->assertTrue($this->firm->planLimits()->hasClientMonitoring());
     }
 
-    public function test_firms_whose_trial_already_ended_get_until_december_12(): void
+    public function test_firms_whose_trial_already_ended_get_until_february_1(): void
     {
         $this->travelTo('2026-11-20 10:00:00');
         $this->subscribe($this->free, ['trial_ends_at' => now()->subMonths(2)]);
 
         $this->assertSame('trial', $this->firm->planLimits()->tier());
-        $this->assertSame('2026-12-12', $this->firm->planLimits()->limitsStartAt()->toDateString());
+        $this->assertSame('2027-02-01', $this->firm->planLimits()->limitsStartAt()->toDateString());
     }
 
     public function test_free_plan_blocks_the_sixth_active_case_but_keeps_existing_ones(): void
@@ -145,7 +145,7 @@ class PlanLimitsTest extends TestCase
 
     public function test_paid_plan_has_no_case_limit(): void
     {
-        $this->travelTo('2027-01-15 10:00:00');
+        $this->travelTo('2027-02-15 10:00:00');
         $this->subscribe($this->pro);
         $this->createActiveCases(6);
 
@@ -209,14 +209,14 @@ class PlanLimitsTest extends TestCase
     public function test_notice_is_sent_thirty_and_three_days_before_limits(): void
     {
         Notification::fake();
-        $this->travelTo('2026-11-12 09:00:00');
+        $this->travelTo('2027-01-02 09:00:00');
         $this->subscribe($this->free, ['trial_ends_at' => now()->subMonth()]);
 
         $this->artisan('app:notify-plan-limits')->assertSuccessful();
         $this->artisan('app:notify-plan-limits')->assertSuccessful();
         Notification::assertSentToTimes($this->admin, PlanLimitsNoticeNotification::class, 1);
 
-        $this->travelTo('2026-12-10 09:00:00');
+        $this->travelTo('2027-01-29 09:00:00');
         $this->artisan('app:notify-plan-limits')->assertSuccessful();
 
         Notification::assertSentToTimes($this->admin, PlanLimitsNoticeNotification::class, 2);
@@ -248,7 +248,7 @@ class PlanLimitsTest extends TestCase
 
     public function test_plan_widget_renders_for_each_tier(): void
     {
-        $this->travelTo('2027-01-15 10:00:00');
+        $this->travelTo('2027-02-15 10:00:00');
         $subscription = $this->subscribe($this->free, ['trial_ends_at' => now()->addDays(20)]);
         $this->actingAs($this->admin);
 

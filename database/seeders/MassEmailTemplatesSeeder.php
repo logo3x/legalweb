@@ -136,7 +136,7 @@ HTML,
     <li>Hasta 5 casos activos y 1 usuario</li>
     <li>Sincronizacion con la Rama Judicial semanal en vez de diaria</li>
     <li>10 consultas de IA al mes</li>
-    <li>Sin avisos por WhatsApp ni vigilancia de clientes por cedula o NIT</li>
+    <li>Sin avisos por WhatsApp ni vigilancia de clientes</li>
 </ul>
 <p>Con el plan Profesional sigue exactamente como en la prueba.</p>
 
@@ -393,7 +393,7 @@ HTML,
             [
                 'category' => 'novedades',
                 'name' => 'Novedades noviembre 2026 - SAMAI, IA privada y planes',
-                'subject' => 'Novedades en LegalWeb: SAMAI, vigilancia por cedula, IA privada y cambios importantes',
+                'subject' => 'Novedades en LegalWeb: SAMAI, vigilancia de clientes, IA privada y cambios importantes',
                 'body' => <<<'HTML'
 <p><span class="lw-pill brand">Novedades de noviembre</span></p>
 <h2>{{first_name}}, LegalWeb ahora trabaja aun mas por usted</h2>
@@ -403,8 +403,8 @@ HTML,
     <div class="lw-card-row">
         <div class="lw-card-ico"><div style="background:#DBEAFE;color:#1E40AF;">&#128269;</div></div>
         <div class="lw-card-body">
-            <h4>Vigilancia de clientes por cedula o NIT</h4>
-            <p>Cada noche buscamos a sus clientes en la Rama Judicial y le avisamos si aparecen en un proceso nuevo. Asi se entera de una demanda contra su cliente desde el primer dia.</p>
+            <h4>Vigilancia de sus clientes en la Rama Judicial</h4>
+            <p>Cada noche buscamos a sus clientes por su nombre en la Rama Judicial y le avisamos si aparecen en un proceso nuevo, para que confirme si es su cliente. Asi se entera de una demanda contra su cliente desde el primer dia.</p>
         </div>
     </div>
 </div>
@@ -445,8 +445,8 @@ HTML,
 <ul class="lw-check-list">
     <li>Toda cuenta nueva sigue teniendo <strong>3 meses gratis con todo incluido</strong>.</li>
     <li>Al terminar la prueba, puede seguir <strong>gratis</strong> con hasta 5 casos activos, 1 usuario y 10 consultas de IA al mes. Sus casos y datos se conservan siempre.</li>
-    <li><strong>Profesional</strong> ($120.000/mes o $600.000 por 6 meses): casos ilimitados, 3 usuarios y vigilancia de clientes por cedula o NIT. <strong>Firma</strong> ($250.000/mes): hasta 10 usuarios.</li>
-    <li>Si su prueba ya termino, los limites del plan Gratuito aplican desde el <strong>12 de diciembre de 2026</strong>. Le avisaremos antes.</li>
+    <li><strong>Profesional</strong> ($120.000/mes o $600.000 por 6 meses): casos ilimitados, 3 usuarios y vigilancia de clientes. <strong>Firma</strong> ($250.000/mes): hasta 10 usuarios.</li>
+    <li>Si su prueba ya termino, los limites del plan Gratuito aplican desde el <strong>1 de febrero de 2027</strong>. Le avisaremos antes.</li>
 </ul>
 
 <div class="lw-callout brand">
@@ -515,7 +515,7 @@ HTML,
 <p>Hasta hoy, importar un caso requeria saber su numero de radicacion. Eso cambio:</p>
 
 <div class="lw-callout success">
-    <strong>Ahora puede buscar en la Rama Judicial por:</strong> nombre del cliente, razon social, cedula o NIT — directamente desde el panel.
+    <strong>Ahora puede buscar en la Rama Judicial por:</strong> nombre del cliente, razon social o radicado — directamente desde el panel.
 </div>
 
 <h3>Asi funciona en 3 pasos:</h3>

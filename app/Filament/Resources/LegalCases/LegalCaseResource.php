@@ -225,11 +225,21 @@ class LegalCaseResource extends Resource
                                         ->date('d/m/Y')
                                         ->placeholder('Caso abierto'),
                                     TextEntry::make('last_tyba_sync')
-                                        ->label('Última sincronización')
+                                        ->label('Última consulta exitosa')
                                         ->icon('heroicon-m-arrow-path')
                                         ->since()
-                                        ->placeholder('Nunca sincronizado')
+                                        ->placeholder('Nunca consultado')
                                         ->visible(fn ($record) => (bool) $record->external_case_number)
+                                        ->columnSpanFull(),
+                                    // Si la ultima consulta fallo, el abogado lo ve aqui y no un falso "al dia".
+                                    TextEntry::make('sync_error')
+                                        ->label('No pudimos consultar este proceso')
+                                        ->icon('heroicon-m-exclamation-triangle')
+                                        ->iconColor('danger')
+                                        ->color('danger')
+                                        ->weight('medium')
+                                        ->formatStateUsing(fn ($state, $record): string => "{$state} (desde {$record->sync_failed_at?->format('d/m/Y H:i')}). Revíselo directamente en ".($record->isSamai() ? 'SAMAI' : 'la Rama Judicial').': puede haber actuaciones nuevas. Reintentamos cada hora.')
+                                        ->visible(fn ($record): bool => $record->sync_failed_at !== null)
                                         ->columnSpanFull(),
                                 ]),
                             Section::make('Partes')

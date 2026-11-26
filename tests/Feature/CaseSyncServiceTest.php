@@ -92,12 +92,15 @@ class CaseSyncServiceTest extends TestCase
     public function test_failed_query_creates_error_log(): void
     {
         $case = $this->makeCase();
-        $this->mock(TybaService::class, fn (MockInterface $mock) => $mock->shouldReceive('extractProcessInfo')->andReturn(null));
+        $this->mock(TybaService::class, fn (MockInterface $mock) => $mock->shouldReceive('extractProcessInfo')->andReturn(null)
+            ->getMock()->shouldReceive('lastError')->andReturn('La Rama Judicial no respondio (HTTP 503)'));
 
         $log = app(CaseSyncService::class)->sync($case);
 
         $this->assertSame('error', $log->status);
+        $this->assertStringContainsString('HTTP 503', $log->mensaje);
         $this->assertSame(1, TybaSyncLog::count());
+        $this->assertNull($case->fresh()->last_tyba_sync, 'Un fallo no cuenta como sincronizacion.');
     }
 
     public function test_it_creates_a_hearing_reminder_from_the_date_in_the_annotation(): void

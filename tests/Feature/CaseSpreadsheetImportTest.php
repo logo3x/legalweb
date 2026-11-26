@@ -146,7 +146,7 @@ class CaseSpreadsheetImportTest extends TestCase
 
     public function test_respects_the_active_case_limit_of_the_free_plan(): void
     {
-        $this->travelTo('2027-01-15 10:00:00');
+        $this->travelTo('2027-02-15 10:00:00');
         $free = Plan::create(['name' => 'Gratuito', 'slug' => 'gratuito', 'price_monthly' => 0, 'price_yearly' => 0, 'max_cases' => 5, 'max_users' => 1, 'ai_monthly_limit' => 10, 'has_whatsapp' => false, 'has_client_monitoring' => false, 'sync_every_days' => 7, 'is_active' => true]);
         Subscription::create(['firm_id' => $this->firm->id, 'plan_id' => $free->id, 'status' => 'active', 'starts_at' => now()->subMonths(4), 'trial_ends_at' => now()->subMonth()]);
 

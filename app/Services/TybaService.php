@@ -17,6 +17,16 @@ class TybaService
      */
     private bool $documentSearchUnavailable = false;
 
+    /**
+     * Motivo legible del ultimo fallo de extractProcessInfo() (null si la consulta salio bien).
+     */
+    private ?string $lastError = null;
+
+    public function lastError(): ?string
+    {
+        return $this->lastError;
+    }
+
     public function documentSearchUnavailable(): bool
     {
         return $this->documentSearchUnavailable;
@@ -81,9 +91,30 @@ class TybaService
      */
     public function extractProcessInfo(string $radicado): ?array
     {
+        $this->lastError = null;
+
+        // Ningun error de la Rama (respuesta rara, campo faltante, timeout) debe romper el lote
+        // nocturno: se registra como fallo de este caso y se sigue con el siguiente.
+        try {
+            return $this->fetchProcessInfo($radicado);
+        } catch (\Throwable $e) {
+            $this->lastError = 'Error inesperado al leer la respuesta de la Rama Judicial';
+            Log::error('Tyba API: error inesperado', ['radicado' => $radicado, 'error' => $e->getMessage()]);
+
+            return null;
+        }
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function fetchProcessInfo(string $radicado): ?array
+    {
         $radicado = preg_replace('/[^0-9]/', '', $radicado);
 
         if (strlen($radicado) < 20) {
+            $this->lastError = 'El radicado no tiene 23 digitos';
+
             return null;
         }
 
@@ -103,7 +134,15 @@ class TybaService
         $actuaciones = $this->getActuaciones($idProceso, $idConexion);
 
         if (! $detail) {
+            $this->lastError = 'La Rama Judicial no entrego el detalle del proceso';
             Log::error('Tyba API: no se pudo obtener detalle', ['radicado' => $radicado]);
+
+            return null;
+        }
+
+        // Sin actuaciones legibles no se puede afirmar "sin novedades": es un fallo.
+        if ($actuaciones === null) {
+            Log::error('Tyba API: no se pudieron leer las actuaciones', ['radicado' => $radicado, 'motivo' => $this->lastError]);
 
             return null;
         }
@@ -328,6 +367,9 @@ class TybaService
         }
 
         if (! $response || ! $response->successful()) {
+            $this->lastError = $response
+                ? 'La Rama Judicial no respondio (HTTP '.$response->status().')'
+                : 'No hubo conexion con la Rama Judicial';
             Log::error('Tyba API: error en busqueda despues de 3 intentos', [
                 'status' => $response?->status(),
                 'radicado' => $radicado,
@@ -340,12 +382,20 @@ class TybaService
         $procesos = $data['procesos'] ?? [];
 
         if (empty($procesos)) {
+            $this->lastError = 'El radicado no aparece en la consulta publica de la Rama Judicial';
             Log::info('Tyba API: proceso no encontrado', ['radicado' => $radicado]);
 
             return null;
         }
 
         $proceso = $procesos[0];
+
+        if (! isset($proceso['idProceso'], $proceso['idConexion'])) {
+            $this->lastError = 'La Rama Judicial respondio con un formato distinto al esperado';
+            Log::error('Tyba API: respuesta de busqueda sin idProceso', ['radicado' => $radicado]);
+
+            return null;
+        }
 
         return [
             'idProceso' => $proceso['idProceso'],
@@ -389,41 +439,65 @@ class TybaService
      */
     private function getSujetos(int $idProceso, int $idConexion): array
     {
-        $response = Http::timeout(15)
-            ->get("{$this->apiBase}/Proceso/Sujetos/{$idProceso}", [
-                'idConexion' => $idConexion,
-                'pagina' => 1,
-            ]);
+        try {
+            $response = Http::timeout(15)
+                ->get("{$this->apiBase}/Proceso/Sujetos/{$idProceso}", [
+                    'idConexion' => $idConexion,
+                    'pagina' => 1,
+                ]);
+        } catch (\Throwable) {
+            return [];
+        }
 
         if (! $response->successful()) {
             return [];
         }
 
-        return $response->json()['sujetos'] ?? [];
+        $sujetos = $response->json('sujetos');
+
+        return is_array($sujetos) ? $sujetos : [];
     }
 
     /**
-     * @return array<int, array<string, mixed>>
+     * Actuaciones del proceso, o null si no se pudieron leer (error HTTP, sin conexion o
+     * formato distinto). Una lista vacia significa que la Rama no reporta actuaciones.
+     *
+     * @return array<int, array<string, mixed>>|null
      */
-    private function getActuaciones(int $idProceso, int $idConexion): array
+    private function getActuaciones(int $idProceso, int $idConexion): ?array
     {
         $all = [];
         $page = 1;
         $maxPages = 5;
 
         do {
-            $response = Http::timeout(15)
-                ->get("{$this->apiBase}/Proceso/Actuaciones/{$idProceso}", [
-                    'idConexion' => $idConexion,
-                    'pagina' => $page,
-                ]);
+            try {
+                $response = Http::timeout(15)
+                    ->get("{$this->apiBase}/Proceso/Actuaciones/{$idProceso}", [
+                        'idConexion' => $idConexion,
+                        'pagina' => $page,
+                    ]);
+            } catch (\Throwable) {
+                $this->lastError = 'No hubo conexion con la Rama Judicial al leer las actuaciones';
+
+                return null;
+            }
 
             if (! $response->successful()) {
-                break;
+                $this->lastError = 'La Rama Judicial no entrego las actuaciones (HTTP '.$response->status().')';
+
+                return null;
             }
 
             $data = $response->json();
-            $all = array_merge($all, $data['actuaciones'] ?? []);
+
+            if (! is_array($data) || ! array_key_exists('actuaciones', $data) || ! is_array($data['actuaciones'])) {
+                $this->lastError = 'Las actuaciones llegaron con un formato distinto al esperado';
+
+                return null;
+            }
+
+            $all = array_merge($all, $data['actuaciones']);
             $totalPages = $data['paginacion']['cantidadPaginas'] ?? 1;
             $page++;
         } while ($page <= $totalPages && $page <= $maxPages);
