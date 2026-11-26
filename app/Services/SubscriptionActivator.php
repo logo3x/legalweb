@@ -68,6 +68,11 @@ class SubscriptionActivator
 
         $this->redeemDiscount($subscription, $transaction);
 
+        // Renovacion automatica aprobada: se reinician los intentos fallidos de la tarjeta.
+        if ($subscription->is_auto_renewal) {
+            $subscription->firm?->forceFill(['auto_renew_failures' => 0])->save();
+        }
+
         $subscription->loadMissing(['firm', 'plan']);
         app(N8nWebhook::class)->dispatch('subscription.activated', [
             'firm' => N8nWebhook::firmData($subscription->firm),

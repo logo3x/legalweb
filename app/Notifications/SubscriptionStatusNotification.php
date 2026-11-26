@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\Subscription;
+use App\Services\WompiRecurringService;
 use Filament\Actions\Action;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -39,6 +40,11 @@ class SubscriptionStatusNotification extends Notification implements ShouldQueue
 
         $name = $notifiable->name ?? '';
 
+        // Con tarjeta registrada y cobro automatico activo, el aviso informa el cobro en vez de pedir el pago.
+        $firm = $this->subscription->firm;
+        $autoRenew = $firm && $firm->hasAutoRenewCard() && WompiRecurringService::enabled();
+        $card = trim(($firm?->card_brand ?? 'tarjeta').' terminada en '.($firm?->card_last_four ?? ''));
+
         [$subject, $tone, $eyebrow, $heading, $intro, $lines, $highlight, $actionLabel, $footer] = match ($this->stage) {
             self::STAGE_UPCOMING => [
                 'Su suscripcion se renueva pronto - LegalWeb',
@@ -46,7 +52,9 @@ class SubscriptionStatusNotification extends Notification implements ShouldQueue
                 'Renovacion proxima',
                 "Dr(a). {$name}, su suscripcion vence pronto",
                 "Su plan <strong>{$plan->name}</strong> vence el <strong>{$ends}</strong> ({$price} COP/mes).",
-                ['Para que su cuenta siga activa sin interrupciones, realice el pago antes de esa fecha.'],
+                [$autoRenew
+                    ? 'Le cobraremos la renovacion automaticamente a su '.e($card).' el dia anterior al vencimiento. No tiene que hacer nada; si prefiere otro medio de pago, puede quitar la tarjeta en Mi Plan.'
+                    : 'Para que su cuenta siga activa sin interrupciones, realice el pago antes de esa fecha.'],
                 null,
                 'Renovar ahora',
                 'Si tiene dudas, responda este correo y le ayudamos.',

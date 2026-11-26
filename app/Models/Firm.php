@@ -49,6 +49,8 @@ class Firm extends Model
             'tracking_tags' => 'array',
             'last_admin_review_at' => 'datetime',
             'plan_limits_notice_at' => 'datetime',
+            'auto_renew_authorized_at' => 'datetime',
+            'auto_renew_failures' => 'integer',
             'plan_limits_final_notice_at' => 'datetime',
         ];
     }
@@ -160,5 +162,13 @@ class Firm extends Model
         $max = $limits->maxActiveCases();
 
         return $max === null ? 'Ilimitados' : max(0, $max - $limits->activeCasesCount());
+    }
+
+    /**
+     * La firma registro una tarjeta y autorizo el cobro automatico de la renovacion.
+     */
+    public function hasAutoRenewCard(): bool
+    {
+        return filled($this->wompi_payment_source_id) && $this->auto_renew_authorized_at !== null;
     }
 }

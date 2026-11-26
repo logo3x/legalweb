@@ -52,6 +52,9 @@ return [
         'integrity_secret' => env('WOMPI_INTEGRITY_SECRET'),
         'sandbox' => env('WOMPI_SANDBOX', true),
         'origin' => env('WOMPI_ORIGIN', 'legalweb'),
+        // Cobro automatico de la renovacion con tarjeta registrada (fuentes de pago). Apagado hasta
+        // probarlo con llaves de sandbox de Wompi.
+        'recurring_enabled' => (bool) env('WOMPI_RECURRING_ENABLED', false),
         'base_url' => env('WOMPI_SANDBOX', true)
             ? 'https://sandbox.wompi.co/v1'
             : 'https://production.wompi.co/v1',

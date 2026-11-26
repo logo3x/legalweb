@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'original_amount',
     'discount_amount',
     'status',
+    'is_auto_renewal',
     'starts_at',
     'ends_at',
     'trial_ends_at',
@@ -28,6 +29,7 @@ class Subscription extends Model
     {
         return [
             'amount_in_cents' => 'integer',
+            'is_auto_renewal' => 'boolean',
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
             'trial_ends_at' => 'datetime',

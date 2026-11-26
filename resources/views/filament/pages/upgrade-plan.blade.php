@@ -124,6 +124,94 @@
             @endforeach
         </div>
 
+        @if($this->canManageAutoRenew())
+            @php $firm = auth()->user()->firm; @endphp
+            {{-- Pago automatico: la tarjeta se tokeniza en el navegador directamente con Wompi; a LegalWeb solo llega el token. --}}
+            <div style="background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 24px; margin-bottom: 24px;">
+                <h3 style="margin: 0 0 6px; font-size: 17px; font-weight: 700; color: #1E3A5F;">Pago automático de la renovación</h3>
+
+                @if($firm->hasAutoRenewCard())
+                    <p style="margin: 0 0 14px; font-size: 14px; color: #475569;">
+                        Activo con su <strong>{{ $firm->card_brand }} terminada en {{ $firm->card_last_four }}</strong>.
+                        Cobramos la renovación el día anterior al vencimiento y le avisamos si el banco no la aprueba.
+                    </p>
+                    <x-filament::button color="gray" wire:click="removeCard" wire:confirm="¿Quitar la tarjeta y desactivar el pago automático?">
+                        Quitar tarjeta y desactivar
+                    </x-filament::button>
+                @else
+                    @php $acceptance = $this->getWompiAcceptance(); @endphp
+                    <p style="margin: 0 0 16px; font-size: 14px; color: #475569;">
+                        Registre una tarjeta y renovamos su plan solos el día anterior al vencimiento. Puede quitarla cuando quiera.
+                        Los datos de la tarjeta van directo a Wompi: LegalWeb nunca los ve ni los guarda.
+                    </p>
+
+                    @if(! $acceptance)
+                        <p style="font-size: 13px; color: #B45309;">Wompi no está respondiendo en este momento. Intente de nuevo en unos minutos.</p>
+                    @else
+                        <div x-data="{
+                                number: '', expMonth: '', expYear: '', cvc: '', holder: '',
+                                acceptTerms: false, acceptData: false, authorize: false,
+                                busy: false, error: '',
+                                async submit() {
+                                    this.error = '';
+                                    if (! this.acceptTerms || ! this.acceptData || ! this.authorize) { this.error = 'Debe aceptar las tres autorizaciones.'; return; }
+                                    this.busy = true;
+                                    try {
+                                        const response = await fetch(@js(config('services.wompi.base_url').'/tokens/cards'), {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + @js((string) config('services.wompi.public_key')) },
+                                            body: JSON.stringify({
+                                                number: this.number.replace(/\s+/g, ''),
+                                                cvc: this.cvc.trim(),
+                                                exp_month: this.expMonth.trim().padStart(2, '0'),
+                                                exp_year: this.expYear.trim().slice(-2),
+                                                card_holder: this.holder.trim(),
+                                            }),
+                                        });
+                                        const json = await response.json();
+                                        if (! response.ok || ! json.data || ! json.data.id) { throw new Error('Wompi no aceptó los datos de la tarjeta. Revíselos.'); }
+                                        // Se borran del formulario: el numero nunca se envia a LegalWeb.
+                                        this.number = ''; this.cvc = '';
+                                        await $wire.registerCard(json.data.id, @js($acceptance['acceptance_token']), @js($acceptance['personal_auth_token']), this.authorize);
+                                    } catch (e) {
+                                        this.error = e.message || 'No se pudo registrar la tarjeta.';
+                                    } finally {
+                                        this.busy = false;
+                                    }
+                                },
+                            }" style="display: grid; gap: 12px; max-width: 520px;">
+                            <input x-model="holder" type="text" autocomplete="cc-name" placeholder="Nombre como aparece en la tarjeta" class="fi-input" style="border: 1px solid #CBD5E1; border-radius: 8px; padding: 9px 12px;">
+                            <input x-model="number" type="text" inputmode="numeric" autocomplete="cc-number" placeholder="Número de la tarjeta" class="fi-input" style="border: 1px solid #CBD5E1; border-radius: 8px; padding: 9px 12px;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+                                <input x-model="expMonth" type="text" inputmode="numeric" autocomplete="cc-exp-month" placeholder="Mes (MM)" class="fi-input" style="border: 1px solid #CBD5E1; border-radius: 8px; padding: 9px 12px;">
+                                <input x-model="expYear" type="text" inputmode="numeric" autocomplete="cc-exp-year" placeholder="Año (AA)" class="fi-input" style="border: 1px solid #CBD5E1; border-radius: 8px; padding: 9px 12px;">
+                                <input x-model="cvc" type="password" inputmode="numeric" autocomplete="cc-csc" placeholder="CVC" class="fi-input" style="border: 1px solid #CBD5E1; border-radius: 8px; padding: 9px 12px;">
+                            </div>
+                            <label style="font-size: 13px; color: #334155; display: flex; gap: 8px; align-items: flex-start;">
+                                <input type="checkbox" x-model="acceptTerms" style="margin-top: 3px;">
+                                <span>Acepto los <a href="{{ $acceptance['acceptance_permalink'] }}" target="_blank" rel="noopener" style="color: #2563EB; text-decoration: underline;">términos y condiciones de Wompi</a>.</span>
+                            </label>
+                            <label style="font-size: 13px; color: #334155; display: flex; gap: 8px; align-items: flex-start;">
+                                <input type="checkbox" x-model="acceptData" style="margin-top: 3px;">
+                                <span>Autorizo a Wompi el <a href="{{ $acceptance['personal_auth_permalink'] }}" target="_blank" rel="noopener" style="color: #2563EB; text-decoration: underline;">tratamiento de mis datos personales</a>.</span>
+                            </label>
+                            <label style="font-size: 13px; color: #334155; display: flex; gap: 8px; align-items: flex-start;">
+                                <input type="checkbox" x-model="authorize" style="margin-top: 3px;">
+                                <span>Autorizo a LegalWeb a cobrar automáticamente a esta tarjeta el valor de mi plan en cada renovación, hasta que la quite en Mi Plan.</span>
+                            </label>
+                            <p x-show="error" x-text="error" style="font-size: 13px; color: #B91C1C; margin: 0;"></p>
+                            <div>
+                                <x-filament::button type="button" x-on:click="submit()" x-bind:disabled="busy">
+                                    <span x-show="! busy">Registrar tarjeta y activar pago automático</span>
+                                    <span x-show="busy">Registrando…</span>
+                                </x-filament::button>
+                            </div>
+                        </div>
+                    @endif
+                @endif
+            </div>
+        @endif
+
         <p style="text-align: center; font-size: 13px; color: #94A3B8;">
             Precios en pesos colombianos. Pago seguro con Wompi. Si su cuenta supera los límites del plan Gratuito, sus casos se conservan: solo no podrá agregar casos activos nuevos.
         </p>
