@@ -2,12 +2,12 @@
   "id": "P002",
   "buys": false,
   "purchases_first_month": 0,
-  "reason_code": "habit",
-  "reason": "Aprovecho los 3 meses gratis completos y despues me quedo en el plan gratuito con los 5 procesos mas delicados; el resto lo sigo revisando como siempre en la pagina de la Rama, que no me cuesta nada. No pago una mensualidad mientras tenga una forma gratis de resolverlo.",
-  "objection": "No se si el correo de verdad me avisa todas las actuaciones a tiempo; si se le escapa una y yo igual tengo que entrar a revisar a mano, estaria pagando $120.000 al mes por algo que no me quita el trabajo.",
-  "would_change_my_mind": "Que durante los 3 meses de prueba me avise de una actuacion que a mi se me habria pasado en un proceso con termino corriendo, y que al volver a 5 casos con revision semanal sienta de verdad el hueco con mis mas de 80 procesos.",
+  "reason_code": "price",
+  "reason": "Uso los 30 dias gratis con todos los procesos de la firma y despues vuelvo a lo de siempre: la consulta en la Rama y en SAMAI es gratis y ya la tenemos montada. El plan de 50 procesos no me cubre y el de $120.000 es un gasto fijo mas que tendria que justificarles a mis socios.",
+  "objection": "Para una firma con mas de 80 procesos el unico plan que sirve es el Profesional, y pagar $120.000 todos los meses por algo que hoy hacemos sin pagar no me cuadra. El plan gratuito de 3 procesos no me sirve de nada, y la garantia solo me devuelve la mensualidad, no el termino que se me vencio.",
+  "would_change_my_mind": "Que durante la prueba en paralelo me avise de una actuacion que a nosotros se nos paso con nuestra revision; ahi si pagaria el Profesional sin discutir.",
   "price_too_cheap": 15000,
   "price_cheap": 40000,
-  "price_expensive": 80000,
-  "price_too_expensive": 120000
+  "price_expensive": 90000,
+  "price_too_expensive": 130000
 }

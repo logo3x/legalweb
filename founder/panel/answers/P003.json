@@ -3,11 +3,11 @@
   "buys": false,
   "purchases_first_month": 0,
   "reason_code": "trust",
-  "reason": "No conozco a ningun colega que la use ni se quien esta detras, y no voy a entregar los radicados de mis clientes ni dejar la vigilancia de terminos en manos de una pagina que vi por primera vez. Hoy eso lo hace mi dependiente judicial y lo reviso yo en papel.",
-  "objection": "Si el sistema no me avisa de una actuacion y se me vence un termino, el que responde ante el cliente y ante el Consejo Superior soy yo, no ellos. Y ademas me piden entrar con Google y hablan de inteligencia artificial con datos de mis procesos.",
-  "would_change_my_mind": "Que un colega de confianza que la use hace mas de un ano en procesos laborales me diga que nunca le ha fallado una notificacion, y saber con nombre propio quien es la empresa y quien responde si falla.",
-  "price_too_cheap": 30000,
-  "price_cheap": 70000,
-  "price_expensive": 180000,
-  "price_too_expensive": 300000
+  "reason": "No conozco a ningun colega que la use y yo no le entrego la vigilancia de mis procesos a una pagina que vi por primera vez. Mi dependiente revisa los despachos y asi seguimos; ni siquiera me pondria a organizar el Excel para la prueba.",
+  "objection": "Si se les pasa un auto y se me vence un termino, el que responde ante el cliente y ante la disciplinaria soy yo; devolverme $120.000 del mes no arregla nada. Dicen que hay NIT y un responsable, pero no se quienes son ni cuanto llevan.",
+  "would_change_my_mind": "Que un colega de confianza, de los que litigan laboral o ejecutivos como yo, me diga que la usa hace mas de un ano y que no le ha fallado; ahi si la pongo a correr en paralelo con el dependiente.",
+  "price_too_cheap": 40000,
+  "price_cheap": 90000,
+  "price_expensive": 250000,
+  "price_too_expensive": 450000
 }

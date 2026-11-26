@@ -3,11 +3,11 @@
   "buys": false,
   "purchases_first_month": 0,
   "reason_code": "habit",
-  "reason": "Ya tengo dependiente que me revisa estados y va a los juzgados, y me funciona. Con menos de 15 procesos y lo que gano, $120.000 al mes encima de lo que ya le pago a el no se justifica; me quedaria en el plan gratis de 5 casos si acaso.",
-  "objection": "Una pagina no va al despacho ni saca copias ni me avisa si SAMAI o la Rama se cayeron esa madrugada; si se le pasa una actuacion el que responde por el termino vencido soy yo, y a mi dependiente si lo puedo llamar a reclamarle.",
-  "would_change_my_mind": "Que mi dependiente se vaya o me falle con un termino, o que durante los 3 meses de prueba la herramienta detecte sin un solo error todo lo que el me reporta y cueste cerca de $40.000 al mes para mis pocos procesos.",
+  "reason": "Ya tengo dependiente que me revisa los estados y va a los juzgados, y con menos de 15 procesos yo mismo entro a SAMAI varias veces por semana. Probaria los 30 dias gratis por curiosidad, pero al terminar me quedaria con el plan gratuito de 3 procesos y no pagaria.",
+  "objection": "Una pagina no me reemplaza al dependiente: el igual tiene que ir al juzgado, sacar copias y radicar, asi que esto seria un gasto adicional y no un ahorro. Y si se les pasa una actuacion, que me devuelvan $59.900 no me arregla un termino vencido.",
+  "would_change_my_mind": "Que en la prueba en paralelo el sistema detecte una actuacion que a mi dependiente y a mi se nos paso, o que mi carga suba a 30 o mas procesos y ya no alcance a revisarlos a mano.",
   "price_too_cheap": 10000,
-  "price_cheap": 30000,
-  "price_expensive": 60000,
-  "price_too_expensive": 90000
+  "price_cheap": 25000,
+  "price_expensive": 45000,
+  "price_too_expensive": 60000
 }

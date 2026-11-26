@@ -2,12 +2,12 @@
   "id": "P019",
   "buys": true,
   "purchases_first_month": 1,
-  "reason_code": "need",
-  "reason": "Llevo procesos laborales y ejecutivos en tres ciudades y revisar la Rama a mano me quita horas cada semana; si en los tres meses de prueba no se le escapa ni una actuacion frente a mi revision manual, $120.000 al mes los pago sin drama. Probablemente tomaria el semestre de $600.000 para que me salga a $100.000.",
-  "objection": "No conozco a ningun colega que la use ni se quien esta detras. Si una madrugada la consulta falla y no me avisa, el termino vencido me lo cobran a mi, no a ellos; y ademas les estaria entregando la lista completa de mis radicados y los datos de mis clientes.",
-  "would_change_my_mind": "Que durante la prueba se le pase una sola actuacion que yo si vea en la Rama o en SAMAI, o que no me avise cuando la consulta falla: ahi no pago y me quedo con lo que ya uso.",
-  "price_too_cheap": 30000,
-  "price_cheap": 70000,
-  "price_expensive": 180000,
-  "price_too_expensive": 280000
+  "reason_code": "convenience",
+  "reason": "Llevo procesos en tres ciudades y revisar la Rama a mano me quita horas; si en los 30 dias en paralelo no se le escapa ni una actuacion frente a mi propia revision, $59.900 por el plan Individual es menos de lo que me cuesta una hora de trabajo. Pago solo si la comparacion sale limpia, no por la promesa.",
+  "objection": "No conozco a ningun colega que la use y la garantia solo me devuelve un mes de $59.900: si se les pasa un auto y se me vence un termino, el dano es mio y vale mil veces mas. Ademas el tope de 50 procesos me queda justo y el salto a $120.000 es el doble por cosas que no necesito.",
+  "would_change_my_mind": "Que durante la prueba se les escape una sola actuacion que yo si vi, o que no me avisen de una consulta fallida; en ese caso cancelo y sigo como estoy.",
+  "price_too_cheap": 20000,
+  "price_cheap": 45000,
+  "price_expensive": 110000,
+  "price_too_expensive": 180000
 }

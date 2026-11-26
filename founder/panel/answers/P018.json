@@ -1,13 +1,13 @@
 {
   "id": "P018",
-  "buys": false,
-  "purchases_first_month": 0,
-  "reason_code": "trust",
-  "reason": "La plata no es el problema, $120.000 es menos que lo que me cuesta un termino vencido. Pero no conozco a LegalWeb, no se quien esta detras, y no voy a montar los procesos de mis clientes ni abrirles un portal en una plataforma de la que nunca he oido; ademas mis radicados estan regados entre carpetas y WhatsApp, y lo mas probable es que nunca termine de cargarlos en los 3 meses.",
-  "objection": "No se quien guarda la informacion de mis clientes ni que pasa con ella, y entrar con mi cuenta de Google y pasarle datos a una IA me da mas desconfianza, no menos. Si un correo de alerta falla y se me pasa un termino, el que responde disciplinariamente soy yo, no ellos.",
-  "would_change_my_mind": "Que un colega que conozco lo use hace meses y me diga que no le ha fallado ni una actuacion, y que me quede claro por escrito que solo necesitan el numero de radicado (que es publico) y quien responde por los datos.",
+  "buys": true,
+  "purchases_first_month": 1,
+  "reason_code": "need",
+  "reason": "Ya se me paso un termino por poco y con mas de 80 procesos en la cabeza y en chats no doy abasto; $120.000 al mes por el plan Profesional es menos de lo que me cuesta un solo susto. Pero solo pago si en los 30 dias de prueba me aviso todo lo que yo vi por mi cuenta y nada se le escapo.",
+  "objection": "No tengo ningun Excel de radicados: los tengo regados en carpetas y WhatsApp, y armar esa lista es justo el trabajo que nunca hago. Ademas solo necesitan el radicado, bien, pero igual no los conozco y la garantia de devolverme un mes no me sirve de nada si se me vence un termino.",
+  "would_change_my_mind": "Que durante la prueba se les pase una sola actuacion que yo si vi, o que cargar mis procesos me toque a mi y me quite mas de una tarde; ahi lo dejo.",
   "price_too_cheap": 30000,
-  "price_cheap": 70000,
-  "price_expensive": 180000,
-  "price_too_expensive": 300000
+  "price_cheap": 80000,
+  "price_expensive": 250000,
+  "price_too_expensive": 450000
 }

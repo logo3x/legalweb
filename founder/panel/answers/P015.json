@@ -2,12 +2,12 @@
   "id": "P015",
   "buys": false,
   "purchases_first_month": 0,
-  "reason_code": "trust",
-  "reason": "Ya tengo quien me revise los procesos y me funciona. No voy a dejar los terminos de mis clientes en manos de un correo automatico de una empresa que no conozco y que ningun colega me ha recomendado.",
-  "objection": "Si el sistema no detecta una actuacion y se me vence un termino, el que responde disciplinariamente soy yo, no la pagina. Ademas tendria que subir todos mis radicados y datos de clientes a un sitio que no se quien maneja.",
-  "would_change_my_mind": "Que un colega de confianza me diga que lo lleva usando un ano largo sin que se le escape una sola actuacion, y que yo lo vea funcionar en paralelo con mi dependiente sobre mis propios procesos.",
-  "price_too_cheap": 30000,
-  "price_cheap": 60000,
-  "price_expensive": 130000,
-  "price_too_expensive": 200000
+  "reason_code": "habit",
+  "reason": "Ya tengo quien me revise los procesos y me funciona; no voy a montar mis radicados en una plataforma que no conozco y que ningun colega me ha recomendado. Para una firma con mas de cien procesos el precio no es el problema, el problema es confiarle los terminos a un sistema.",
+  "objection": "Si se les pasa una actuacion me devuelven $120.000, pero el termino vencido y la responsabilidad ante el cliente son mios. Esa garantia no cubre lo que realmente arriesgo, y ademas tendria que seguir pagando a mi dependiente para verificar.",
+  "would_change_my_mind": "Que un colega de confianza, con una firma parecida a la mia, me diga en persona que lleva un ano usandolo y que no se le ha pasado ni una actuacion.",
+  "price_too_cheap": 40000,
+  "price_cheap": 80000,
+  "price_expensive": 200000,
+  "price_too_expensive": 350000
 }

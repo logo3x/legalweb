@@ -3,11 +3,11 @@
   "buys": false,
   "purchases_first_month": 0,
   "reason_code": "habit",
-  "reason": "Llevo anos entrando cada manana a la consulta de la Rama, radicado por radicado, con mi Excel, y no se me ha vencido un termino. Probaria los 3 meses gratis, pero al terminar dejo los 5 procesos mas delicados en el plan gratuito y sigo revisando el resto a mano antes que pagar $1.440.000 al ano.",
-  "objection": "Si la pagina de la Rama se cae o el sistema no ve una actuacion y se me pasa un termino, el que responde ante el cliente soy yo, no LegalWeb. Entonces igual tendria que seguir revisando a mano, y pagar por algo que debo verificar no me ahorra el trabajo.",
-  "would_change_my_mind": "Que durante los 3 meses de prueba me avise de una actuacion que a mi se me haya escapado en la revision manual, y que el plan pago baje a unos $60.000 al mes.",
+  "reason": "Llevo anos entrando cada manana a la Rama Judicial y anotando en mi Excel; no me cuesta plata y confio en lo que veo con mis propios ojos. Haria la prueba gratis, y al terminar dejaria los tres procesos mas delicados en el plan gratuito y seguiria revisando el resto a mano.",
+  "objection": "Si de todas formas voy a seguir revisando a mano porque la responsabilidad ante el cliente es mia, estaria pagando por algo que ya hago; y la garantia solo me devuelve la mensualidad, no el termino que se me venza.",
+  "would_change_my_mind": "Que en los 30 dias de prueba el aviso me llegue antes de que yo vea una actuacion que se me paso en mi revision manual; ahi si pagaria el Individual.",
   "price_too_cheap": 15000,
-  "price_cheap": 40000,
-  "price_expensive": 80000,
-  "price_too_expensive": 120000
+  "price_cheap": 30000,
+  "price_expensive": 60000,
+  "price_too_expensive": 90000
 }

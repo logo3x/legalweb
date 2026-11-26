@@ -1,0 +1,13 @@
+{
+  "id": "P009",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Ya le pago a un dependiente que revisa estados, va a los juzgados y me responde cuando algo se le pasa; una pagina que me manda correos no reemplaza eso y consultar SAMAI es gratis. Probaria los 3 meses gratis, pero al terminar me quedaria en el plan gratuito o lo dejaria.",
+  "objection": "Si el sistema no detecta una actuacion y se me vence un termino, quien responde? A mi dependiente le puedo exigir; a un correo automatico no, y no se que tan confiable es la consulta de SAMAI, que se cae seguido.",
+  "would_change_my_mind": "Que durante los 3 meses de prueba detecte, sin fallar una sola vez, todas las actuaciones de mis procesos en SAMAI antes que mi dependiente, y que eso me permita reducirle horas o dedicarlo a otra cosa.",
+  "price_too_cheap": 20000,
+  "price_cheap": 50000,
+  "price_expensive": 100000,
+  "price_too_expensive": 180000
+}

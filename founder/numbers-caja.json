@@ -1,11 +1,11 @@
 {
   "business": "LegalWeb (solo costos de caja: sin sueldo del fundador)",
   "unit": "suscripcion-mes",
-  "price": 96900,
+  "price": 79900,
   "variable": [
     {
       "label": "Comision Wompi (2,65% + $700 + IVA, tarifa publica por confirmar)",
-      "cost": 3890
+      "cost": 3350
     },
     {
       "label": "Alertas por WhatsApp y correo por suscriptor (estimado)",
@@ -13,7 +13,7 @@
     },
     {
       "label": "Reserva para la garantia de devolucion (2% del precio, estimado)",
-      "cost": 1940
+      "cost": 1600
     }
   ],
   "fixed_monthly": [

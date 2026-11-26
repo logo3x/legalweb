@@ -3,11 +3,11 @@
   "buys": false,
   "purchases_first_month": 0,
   "reason_code": "trust",
-  "reason": "Probaria los 3 meses gratis porque no me cuesta nada, pero seguiria revisando a mano en la Rama y en mi Excel, porque si se me pasa una actuacion el que responde soy yo. Pagar $120.000 al mes por algo que de todas formas voy a verificar yo mismo, de una empresa que no conozco y que ningun colega usa, no lo veo.",
-  "objection": "No se quien esta detras ni que pasa si la herramienta no detecta una actuacion o la pagina de la Rama se cae esa madrugada y no me avisa; un termino vencido es mi tarjeta profesional, no la de ellos.",
-  "would_change_my_mind": "Que durante los 3 meses de prueba no se le escape ni una sola actuacion frente a mi revision manual, y que un colega litigante que yo conozca me diga que la usa y le funciona.",
-  "price_too_cheap": 20000,
-  "price_cheap": 50000,
-  "price_expensive": 100000,
-  "price_too_expensive": 150000
+  "reason": "La prueba gratis sin tarjeta si la haria, pero al dia 30 lo mas probable es que siga con mi Excel: no conozco a ningun colega que la use y, mientras no confie del todo, igual tendria que seguir revisando a mano, asi que estaria pagando por algo que no me quita trabajo. Ademas en los meses que paso de 50 procesos el plan que me toca es el de $120.000, y eso ya lo pienso dos veces.",
+  "objection": "Si se les pasa un auto y se me vence un termino, el que responde ante el cliente y ante el Consejo de la Judicatura soy yo; que me devuelvan $59.900 no me arregla nada. Y no se quien esta detras ni cuanto llevan funcionando.",
+  "would_change_my_mind": "Que un colega litigante que yo conozca me diga que la usa hace meses sin que se le escape una actuacion, o que en mis 30 dias de prueba en paralelo no falle ni una sola vez frente a mi revision en las tres ciudades, incluidos los juzgados que publican mal.",
+  "price_too_cheap": 15000,
+  "price_cheap": 35000,
+  "price_expensive": 80000,
+  "price_too_expensive": 130000
 }

@@ -1,0 +1,13 @@
+{
+  "id": "P017",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "trust",
+  "reason": "El susto del termino lo tengo fresco y la plata no es el problema, pero no conozco a esta empresa y no voy a entregarle la lista de mis procesos y de mis clientes ni a entrar con mi cuenta de Google. Ademas, si el correo no llega un dia, la que responde ante el cliente soy yo, asi que igual seguiria revisando a mano con mi Excel.",
+  "objection": "No se quien esta detras de LegalWeb ni que hacen con mis radicados y los datos de mis clientes; y lo del portal para el cliente y la IA me suena a mas exposicion, no a menos. Tampoco me dicen que pasa si la consulta falla y se me pasa una actuacion.",
+  "would_change_my_mind": "Que un colega de confianza o mi colegio de abogados lo use hace mas de un ano y me lo recomiende, y que yo compruebe durante la prueba, comparando contra mi revision manual, que no se le escapa ni una sola actuacion.",
+  "price_too_cheap": 30000,
+  "price_cheap": 60000,
+  "price_expensive": 120000,
+  "price_too_expensive": 180000
+}
