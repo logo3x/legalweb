@@ -143,7 +143,7 @@ class SyncFailureAlertsTest extends TestCase
         $this->artisan('app:sync-tyba-actuaciones', ['--retry-failed' => true])->assertSuccessful();
 
         Queue::assertPushed(SyncCaseActuaciones::class, 1);
-        Queue::assertPushed(SyncCaseActuaciones::class, fn (SyncCaseActuaciones $job): bool => $job->case->is($due) && $job->origen === 'reintento');
+        Queue::assertPushed(SyncCaseActuaciones::class, fn (SyncCaseActuaciones $job): bool => $job->case->is($due) && $job->origen === 'automatico');
     }
 
     public function test_lawyer_gets_one_daily_notice_listing_the_failed_cases(): void

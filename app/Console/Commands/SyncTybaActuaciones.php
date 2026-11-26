@@ -83,7 +83,7 @@ class SyncTybaActuaciones extends Command
             ->get();
 
         foreach ($cases->values() as $index => $case) {
-            SyncCaseActuaciones::dispatch($case, 'reintento')->delay(now()->addSeconds($index * 5));
+            SyncCaseActuaciones::dispatch($case, 'automatico')->delay(now()->addSeconds($index * 5));
         }
 
         $this->info("Reintentos encolados: {$cases->count()}");
