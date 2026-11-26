@@ -81,7 +81,7 @@
                     $isRecommended = $loop->first;
                     $semesterSaving = max(0, $plan->price_monthly * 6 - $plan->price_yearly);
                 @endphp
-                <div style="background: #fff; border-radius: 16px; padding: 28px; position: relative; {{ $isCurrent ? 'border: 2px solid #10b981;' : ($isRecommended ? 'border: 2px solid #3A86FF; box-shadow: 0 14px 32px rgba(58,134,255,.18);' : 'border: 1px solid #e5e7eb;') }}">
+                <div style="background: #fff; border-radius: 16px; padding: 28px; position: relative; display: flex; flex-direction: column; {{ $isCurrent ? 'border: 2px solid #10b981;' : ($isRecommended ? 'border: 2px solid #3A86FF; box-shadow: 0 14px 32px rgba(58,134,255,.18);' : 'border: 1px solid #e5e7eb;') }}">
                     @if($isCurrent)
                         <div style="position: absolute; top: -13px; left: 50%; transform: translateX(-50%); background: #10b981; color: #fff; font-size: 11px; font-weight: 700; padding: 4px 14px; border-radius: 999px; text-transform: uppercase;">Tu plan actual</div>
                     @elseif($isRecommended)
@@ -89,28 +89,38 @@
                     @endif
                     <h3 style="font-family: 'Poppins','Inter',sans-serif; font-size: 22px; font-weight: 700; color: #1E3A5F; margin: 0 0 6px;">{{ $plan->name }}</h3>
                     <p style="font-size: 14px; color: #64748B; margin: 0 0 18px; line-height: 1.5;">{{ $plan->description ?: 'Para abogados independientes y equipos pequeños.' }}</p>
-                    <div style="display: flex; align-items: baseline; gap: 8px;">
-                        <span style="font-family: 'Poppins','Inter',sans-serif; font-size: 2.6rem; font-weight: 800; color: #3A86FF; line-height: 1;">{{ $money($plan->price_monthly) }}</span>
-                        <span style="font-size: 15px; color: #64748B; font-weight: 600;">COP / mes</span>
+                    <div class="lw-price">
+                        <span class="lw-price-amount">{{ $money($plan->price_monthly) }}</span>
+                        <span class="lw-price-unit">COP al mes</span>
                     </div>
                     <div style="font-size: 13px; color: #64748B; margin: 6px 0 20px;">
-                        o {{ $money($plan->price_yearly) }} por 6 meses @if($semesterSaving > 0)<strong style="color: #047857;">(ahorra {{ $money($semesterSaving) }})</strong>@endif
+                        @if($semesterSaving > 0)Pagando 6 meses, <strong style="color: #047857;">ahorra {{ $money($semesterSaving) }}</strong>@else&nbsp;@endif
                     </div>
 
                     @include('filament.pages.partials.plan-features', ['features' => $planFeatures($plan)])
 
                     @if($isCurrent)
-                        <div style="text-align: center; padding: 12px; background: #ECFDF5; border-radius: 10px; font-size: 14px; font-weight: 600; color: #047857; margin-top: 18px;">Plan activo</div>
+                        <div style="text-align: center; padding: 12px; background: #ECFDF5; border-radius: 10px; font-size: 14px; font-weight: 600; color: #047857; margin-top: auto;">Plan activo</div>
                     @else
-                        <form method="POST" action="{{ route('wompi.checkout') }}" style="display: flex; flex-direction: column; gap: 8px; margin-top: 18px;">
+                        <form method="POST" action="{{ route('wompi.checkout') }}" style="display: flex; flex-direction: column; gap: 8px; margin-top: auto; padding-top: 18px;">
                             @csrf
                             <input type="hidden" name="plan_id" value="{{ $plan->id }}">
-                            <select name="billing_cycle" style="padding: 10px 12px; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 14px; color: #1E3A5F;">
-                                <option value="monthly">Mensual: {{ $money($plan->price_monthly) }}</option>
-                                <option value="biannual">Semestral: {{ $money($plan->price_yearly) }}</option>
-                            </select>
+                            <fieldset class="lw-cycle">
+                                <legend class="lw-sr-only">Forma de pago del plan {{ $plan->name }}</legend>
+                                <label>
+                                    <input type="radio" name="billing_cycle" value="monthly" checked>
+                                    <span class="lw-cycle-name">Mensual</span>
+                                    <span class="lw-cycle-price">{{ $money($plan->price_monthly) }}</span>
+                                </label>
+                                <label>
+                                    <input type="radio" name="billing_cycle" value="biannual">
+                                    <span class="lw-cycle-name">Semestral</span>
+                                    <span class="lw-cycle-price">{{ $money($plan->price_yearly) }}</span>
+                                    @if($semesterSaving > 0)<span class="lw-cycle-save">Ahorra {{ $money($semesterSaving) }}</span>@endif
+                                </label>
+                            </fieldset>
                             <details class="lw-coupon" style="font-size: 13px; color: #475569;">
-                                <summary style="cursor: pointer; padding: 6px 0; font-weight: 600; color: #1E3A5F;">Tengo un código de descuento</summary>
+                                <summary>Tengo un código de descuento</summary>
                                 <input type="text" name="discount_code" placeholder="EJEMPLO20" oninput="this.value = this.value.toUpperCase()"
                                     style="margin-top: 6px; width: 100%; padding: 10px 12px; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 14px; text-transform: uppercase;">
                             </details>
@@ -223,7 +233,25 @@
             .lw-plans-grid { grid-template-columns: 1fr !important; }
         }
         .lw-coupon summary::-webkit-details-marker { display: none; }
-        .lw-coupon summary { list-style: none; }
+        .lw-coupon summary { list-style: none; cursor: pointer; padding: 6px 0; font-weight: 500; color: #1d4ed8; text-decoration: underline; text-underline-offset: 3px; }
+
+        /* Precio: el monto y la unidad nunca se parten en varias lineas. */
+        .lw-price { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 8px; row-gap: 2px; }
+        .lw-price-amount { font-family: 'Poppins', 'Inter', sans-serif; font-size: clamp(1.9rem, 2.4vw, 2.6rem); font-weight: 800; color: #2563eb; line-height: 1; white-space: nowrap; font-variant-numeric: tabular-nums; }
+        .lw-price-unit { font-size: 14px; color: #64748B; font-weight: 600; white-space: nowrap; }
+
+        /* Forma de pago: dos opciones visibles en lugar de una lista desplegable. */
+        .lw-cycle { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0; padding: 0; border: 0; min-width: 0; }
+        .lw-cycle label { position: relative; display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border: 1px solid #CBD5E1; border-radius: 10px; background: #fff; cursor: pointer; transition: border-color .15s ease, background-color .15s ease; }
+        .lw-cycle label:hover { border-color: #94a3b8; }
+        .lw-cycle input { position: absolute; opacity: 0; pointer-events: none; }
+        .lw-cycle label:has(input:checked) { border-color: #2563eb; background: #eff6ff; box-shadow: inset 0 0 0 1px #2563eb; }
+        .lw-cycle label:has(input:focus-visible) { outline: 2px solid #2563eb; outline-offset: 2px; }
+        .lw-cycle-name { font-size: 13px; font-weight: 600; color: #1E3A5F; }
+        .lw-cycle-price { font-size: 14px; font-weight: 600; color: #0f172a; font-variant-numeric: tabular-nums; white-space: nowrap; }
+        .lw-cycle-save { font-size: 12px; font-weight: 600; color: #047857; line-height: 1.3; }
+        .lw-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+        @media (prefers-reduced-motion: reduce) { .lw-cycle label { transition: none; } }
     </style>
 
 </x-filament-panels::page>

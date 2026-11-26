@@ -247,4 +247,24 @@ class WompiPaymentSecurityTest extends TestCase
 
         $this->assertSame(5000000, Subscription::where('firm_id', $firm->id)->value('amount_in_cents'));
     }
+
+    public function test_checkout_redirects_to_the_wompi_web_checkout_with_a_valid_signature(): void
+    {
+        config(['services.wompi.public_key' => 'pub_test_abc', 'services.wompi.integrity_secret' => 'test_integrity_x', 'services.wompi.sandbox' => true]);
+        $firm = Firm::factory()->create();
+        $user = User::factory()->create(['firm_id' => $firm->id, 'role' => 'admin']);
+        $plan = Plan::create(['name' => 'Individual', 'slug' => 'individual', 'price_monthly' => 59900, 'price_yearly' => 299500, 'is_active' => true]);
+
+        $response = $this->actingAs($user)->post(route('wompi.checkout'), ['plan_id' => $plan->id, 'billing_cycle' => 'monthly']);
+
+        $location = (string) $response->headers->get('Location');
+        $this->assertStringStartsWith('https://checkout.wompi.co/p/?', $location, 'Web Checkout: la misma URL en pruebas y produccion.');
+        parse_str((string) parse_url($location, PHP_URL_QUERY), $query);
+
+        $reference = Subscription::where('firm_id', $firm->id)->sole()->wompi_reference;
+        $this->assertSame('pub_test_abc', $query['public-key']);
+        $this->assertSame('5990000', $query['amount-in-cents']);
+        $this->assertSame($reference, $query['reference']);
+        $this->assertSame(hash('sha256', $reference.'5990000COPtest_integrity_x'), $query['signature:integrity']);
+    }
 }

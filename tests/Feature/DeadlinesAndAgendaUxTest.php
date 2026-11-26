@@ -66,6 +66,7 @@ class DeadlinesAndAgendaUxTest extends TestCase
             'legal_case_id' => $this->case->id,
             'title' => $title,
             'type' => $type,
+            'priority' => 'media',
             'due_date' => now()->addDays($days)->setTime(17, 0),
             'is_completed' => false,
         ]);

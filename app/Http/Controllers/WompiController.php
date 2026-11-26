@@ -19,11 +19,13 @@ class WompiController extends Controller
         return config('services.wompi.base_url');
     }
 
+    /**
+     * Web Checkout de Wompi: la misma URL para pruebas y produccion; el ambiente lo define
+     * la llave publica (pub_test_ o pub_prod_).
+     */
     private function checkoutUrl(): string
     {
-        return config('services.wompi.sandbox')
-            ? 'https://checkout.wompi.co/widget2/test'
-            : 'https://checkout.wompi.co/widget2';
+        return 'https://checkout.wompi.co/p/';
     }
 
     /**
