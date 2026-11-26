@@ -1,145 +1,106 @@
-{{-- Descripcion colapsable --}}
-<details style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; margin-bottom: 24px;">
-    <summary style="padding: 12px 16px; cursor: pointer; font-size: 13px; font-weight: 500; color: #1e40af; list-style: none; display: flex; align-items: center; gap: 8px;">
-        <svg style="width: 16px; height: 16px;" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/></svg>
-        Cómo funcionan los vencimientos
-    </summary>
-    <div style="padding: 0 16px 12px 16px; font-size: 13px; color: #1e40af; line-height: 1.5;">
-        Este panel muestra los plazos y vencimientos de sus procesos judiciales. Las alertas se generan automáticamente cuando la Rama Judicial registra actuaciones como autos, traslados, audiencias o sentencias. Los plazos se calculan en días hábiles según el calendario judicial colombiano (excluyendo fines de semana, festivos y vacancia judicial).
-    </div>
-</details>
+@php
+    $kindLabels = ['termino' => 'Término de etapa', 'vencimiento' => 'Recordatorio'];
+    $months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+@endphp
 
-{{-- Resumen --}}
-<div class="lw-stats" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 24px;">
-    @foreach([
-        ['label' => 'Vencidos', 'value' => $data['summary']['vencidos'], 'bg' => '#fef2f2', 'border' => '#fecaca', 'color' => '#dc2626'],
-        ['label' => 'Vencen hoy', 'value' => $data['summary']['hoy'], 'bg' => '#fff7ed', 'border' => '#fed7aa', 'color' => '#ea580c'],
-        ['label' => '1-3 días', 'value' => $data['summary']['urgentes'], 'bg' => '#fefce8', 'border' => '#fde68a', 'color' => '#ca8a04'],
-        ['label' => '4-7 días', 'value' => $data['summary']['proximos'], 'bg' => '#eff6ff', 'border' => '#bfdbfe', 'color' => '#2563eb'],
-        ['label' => 'Total pendientes', 'value' => $data['summary']['total'], 'bg' => '#f9fafb', 'border' => '#e5e7eb', 'color' => '#4b5563'],
-    ] as $stat)
-        <div style="background: {{ $stat['bg'] }}; border: 1px solid {{ $stat['border'] }}; border-radius: 12px; padding: 16px; text-align: center;">
-            <div style="font-size: 32px; font-weight: 700; color: {{ $stat['color'] }};">{{ $stat['value'] }}</div>
-            <div style="font-size: 12px; color: {{ $stat['color'] }}; opacity: 0.8;">{{ $stat['label'] }}</div>
+<style>
+    .lw-dl { --lw-ink: #0f172a; --lw-muted: #475569; --lw-line: #e2e8f0; --lw-surface: #ffffff; --lw-danger: #b91c1c; --lw-warn: #92400e; --lw-link: #1d4ed8; }
+    .dark .lw-dl { --lw-ink: #f1f5f9; --lw-muted: #cbd5e1; --lw-line: rgba(255,255,255,.1); --lw-surface: rgba(255,255,255,.04); --lw-danger: #fca5a5; --lw-warn: #fcd34d; --lw-link: #93c5fd; }
+    .lw-dl { display: flex; flex-direction: column; gap: 28px; color: var(--lw-ink); }
+    .lw-dl-notice { display: flex; gap: 12px; align-items: flex-start; padding: 12px 16px; border: 1px solid var(--lw-line); border-radius: 10px; background: var(--lw-surface); font-size: 14px; line-height: 1.5; }
+    .lw-dl-notice svg { flex: none; width: 20px; height: 20px; color: #d97706; margin-top: 1px; }
+    .lw-dl-notice a, .lw-dl-row a { color: var(--lw-link); font-weight: 500; text-decoration: none; }
+    .lw-dl-notice a:hover, .lw-dl-row a:hover { text-decoration: underline; }
+    .lw-dl-group h3 { display: flex; align-items: baseline; gap: 8px; margin: 0 0 10px; font-size: 15px; font-weight: 600; }
+    .lw-dl-group h3 span { font-size: 13px; font-weight: 500; color: var(--lw-muted); }
+    .lw-dl-group.is-urgent h3 { color: var(--lw-danger); }
+    .lw-dl-list { border: 1px solid var(--lw-line); border-radius: 12px; background: var(--lw-surface); overflow: hidden; }
+    .lw-dl-row { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; gap: 16px; align-items: center; padding: 14px 18px; }
+    .lw-dl-row + .lw-dl-row { border-top: 1px solid var(--lw-line); }
+    .lw-dl-date { text-align: center; line-height: 1.1; }
+    .lw-dl-date strong { display: block; font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
+    .lw-dl-date small { font-size: 12px; color: var(--lw-muted); text-transform: uppercase; letter-spacing: .02em; }
+    .lw-dl-title { font-size: 14px; font-weight: 600; }
+    .lw-dl-meta { margin-top: 2px; font-size: 13px; color: var(--lw-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .lw-dl-when { font-size: 13px; font-weight: 500; color: var(--lw-muted); text-align: right; white-space: nowrap; }
+    .lw-dl-when.is-urgent { color: var(--lw-danger); font-weight: 600; }
+    .lw-dl-when.is-soon { color: var(--lw-warn); }
+    .lw-dl-empty { padding: 28px 24px; border: 1px dashed var(--lw-line); border-radius: 12px; font-size: 14px; line-height: 1.6; color: var(--lw-muted); }
+    .lw-dl-empty strong { display: block; margin-bottom: 4px; font-size: 15px; color: var(--lw-ink); }
+    .lw-dl details { font-size: 13px; color: var(--lw-muted); line-height: 1.6; }
+    .lw-dl summary { cursor: pointer; font-weight: 500; color: var(--lw-ink); }
+    @media (max-width: 640px) {
+        .lw-dl-row { grid-template-columns: 44px minmax(0, 1fr); padding: 12px 14px; }
+        .lw-dl-when { grid-column: 2; text-align: left; }
+        .lw-dl-meta { white-space: normal; }
+    }
+</style>
+
+<div class="lw-dl">
+    @if($data['unmonitored'] > 0)
+        <div class="lw-dl-notice" role="status">
+            <svg fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+            <div>
+                <strong>{{ $data['unmonitored'] }} {{ $data['unmonitored'] === 1 ? 'proceso no se ha podido consultar' : 'procesos no se han podido consultar' }} recientemente.</strong>
+                Sus actuaciones y términos pueden no estar al día: revíselos directamente en la Rama Judicial o SAMAI.
+                <a href="{{ $data['unmonitoredUrl'] }}">Ver casos con error de consulta</a>
+            </div>
         </div>
-    @endforeach
-</div>
+    @endif
 
-<div class="lw-cols" style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
-    {{-- Timeline de vencimientos --}}
-    <div style="background: #fff; border-radius: 12px; border: 1px solid #e5e7eb;">
-        <div style="padding: 16px 20px; border-bottom: 1px solid #f3f4f6;">
-            <h3 style="font-size: 16px; font-weight: 600; color: #111827; margin: 0;">Próximos vencimientos</h3>
-            <p style="font-size: 12px; color: #9ca3af; margin: 4px 0 0 0;">Próximos 30 días · alertas desde la Rama Judicial</p>
+    @if($data['total'] === 0)
+        <div class="lw-dl-empty">
+            <strong>No hay términos corriendo en los próximos 30 días.</strong>
+            Los términos aparecen aquí cuando inicia una etapa del proceso (pestaña «Etapas y términos» de cada caso) o cuando crea un recordatorio de tipo «Vencimiento» en la Agenda.
         </div>
+    @endif
 
-        @forelse ($data['reminders'] as $reminder)
-            @php
-                $borderColor = match($reminder['status']) {
-                    'vencido' => '#ef4444',
-                    'hoy' => '#f97316',
-                    'urgente' => '#eab308',
-                    'proximo' => '#3b82f6',
-                    default => '#e5e7eb',
-                };
-                $bgColor = match($reminder['status']) {
-                    'vencido' => '#fef2f2',
-                    'hoy' => '#fff7ed',
-                    default => '#ffffff',
-                };
-            @endphp
-            <div style="padding: 14px 20px; border-bottom: 1px solid #f3f4f6; border-left: 4px solid {{ $borderColor }}; background: {{ $bgColor }}; display: flex; align-items: flex-start; gap: 16px;">
-                <div style="flex: 1; min-width: 0;">
-                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                        <span style="font-size: 14px; font-weight: 600; color: #111827;">{{ $reminder['title'] }}</span>
-                        @if($reminder['type'] === 'audiencia')
-                            <span style="display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; background: #fef3c7; color: #92400e;">Audiencia</span>
-                        @elseif($reminder['type'] === 'vencimiento')
-                            <span style="display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; background: #fee2e2; color: #991b1b;">Vencimiento</span>
-                        @endif
-                        @if($reminder['priority'] === 'urgente')
-                            <span style="display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; background: #fee2e2; color: #991b1b;">Urgente</span>
-                        @elseif($reminder['priority'] === 'alta')
-                            <span style="display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; background: #ffedd5; color: #9a3412;">Alta</span>
-                        @endif
-                    </div>
-                    @if($reminder['description'])
-                        <p style="font-size: 12px; color: #6b7280; margin: 4px 0 0 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ Str::limit($reminder['description'], 120) }}</p>
-                    @endif
-                    @if($reminder['case_number'])
-                        <a href="{{ route('filament.admin.resources.legal-cases.view', $reminder['case_id']) }}" style="font-size: 12px; color: #3A86FF; text-decoration: none; margin-top: 4px; display: inline-block;">
-                            {{ $reminder['case_number'] }}
-                        </a>
-                    @endif
-                </div>
-
-                <div style="flex-shrink: 0; text-align: right; min-width: 90px;">
+    @foreach($data['groups'] as $group)
+        @continue(count($group['items']) === 0)
+        <section class="lw-dl-group {{ in_array($group['key'], ['overdue', 'today'], true) ? 'is-urgent' : '' }}" aria-label="{{ $group['title'] }}">
+            <h3>{{ $group['title'] }} <span>{{ count($group['items']) }}</span></h3>
+            <div class="lw-dl-list">
+                @foreach($group['items'] as $item)
                     @php
-                        $countdownColor = match($reminder['status']) {
-                            'vencido' => '#dc2626',
-                            'hoy' => '#ea580c',
-                            'urgente' => '#ca8a04',
-                            default => '#6b7280',
+                        $remaining = $item['remaining'];
+                        $when = match (true) {
+                            $remaining < -1 => 'Venció hace '.abs($remaining).' días hábiles',
+                            $remaining === -1 => 'Venció ayer',
+                            $remaining === 0 => 'Vence hoy',
+                            $remaining === 1 => 'En 1 día hábil',
+                            default => "En {$remaining} días hábiles",
                         };
-                        $countdownWeight = in_array($reminder['status'], ['vencido', 'hoy']) ? '700' : '500';
+                        $whenClass = $remaining <= 0 ? 'is-urgent' : ($remaining <= 3 ? 'is-soon' : '');
                     @endphp
-                    <div style="font-size: 14px; font-weight: {{ $countdownWeight }}; color: {{ $countdownColor }}; font-family: monospace;">
-                        @if($reminder['days'] < 0)
-                            {{ abs($reminder['days']) }}d vencido
-                        @elseif($reminder['days'] === 0)
-                            HOY
-                        @elseif($reminder['days'] === 1)
-                            MAÑANA
-                        @else
-                            {{ $reminder['days'] }} días
-                        @endif
-                    </div>
-                    <div style="font-size: 11px; color: #9ca3af;">{{ $reminder['due_date'] }}</div>
-                </div>
-            </div>
-        @empty
-            <div style="padding: 40px; text-align: center; color: #9ca3af;">
-                <svg style="width: 48px; height: 48px; margin: 0 auto 12px; color: #86efac;" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                <p style="font-weight: 500; margin: 0;">Sin vencimientos pendientes</p>
-                <p style="font-size: 13px; margin: 4px 0 0 0;">Las alertas se generan automáticamente al sincronizar con la Rama Judicial.</p>
-            </div>
-        @endforelse
-    </div>
-
-    {{-- Panel lateral --}}
-    <div>
-        <div style="background: #fff; border-radius: 12px; border: 1px solid #e5e7eb; margin-bottom: 16px;">
-            <div style="padding: 14px 16px; border-bottom: 1px solid #f3f4f6;">
-                <h3 style="font-size: 14px; font-weight: 600; color: #111827; margin: 0;">Actuaciones Recientes</h3>
-                <p style="font-size: 11px; color: #9ca3af; margin: 2px 0 0 0;">Últimos 15 días desde la Rama Judicial</p>
-            </div>
-            <div style="max-height: 320px; overflow-y: auto;">
-                @forelse ($data['recentActuaciones'] as $act)
-                    <div style="padding: 10px 16px; border-bottom: 1px solid #f9fafb;">
-                        <div style="font-size: 13px; font-weight: 500; color: #374151;">{{ $act['title'] }}</div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
-                            <span style="font-size: 11px; color: #9ca3af;">{{ $act['date'] }}</span>
-                            @if($act['case_id'])
-                                <a href="{{ route('filament.admin.resources.legal-cases.view', $act['case_id']) }}" style="font-size: 11px; color: #3A86FF; text-decoration: none;">{{ $act['case_number'] }}</a>
-                            @endif
+                    <div class="lw-dl-row">
+                        <div class="lw-dl-date" aria-hidden="true">
+                            <strong>{{ $item['date']->format('j') }}</strong>
+                            <small>{{ $months[$item['date']->month - 1] }}</small>
                         </div>
+                        <div style="min-width: 0;">
+                            <div class="lw-dl-title">{{ $item['title'] }}</div>
+                            <div class="lw-dl-meta">
+                                {{ $kindLabels[$item['kind']] ?? '' }} · {{ $item['date']->format('d/m/Y') }}
+                                @if($item['case_url'])
+                                    · <a href="{{ $item['case_url'] }}" wire:navigate>{{ $item['case_number'] }}</a>
+                                @endif
+                                @if($item['detail'])
+                                    · {{ \Illuminate\Support\Str::limit($item['detail'], 90) }}
+                                @endif
+                            </div>
+                        </div>
+                        <div class="lw-dl-when {{ $whenClass }}">{{ $when }}</div>
                     </div>
-                @empty
-                    <div style="padding: 20px; text-align: center; font-size: 13px; color: #9ca3af;">Sin actuaciones recientes</div>
-                @endforelse
+                @endforeach
             </div>
-        </div>
+        </section>
+    @endforeach
 
-        @if($data['casesStale'] > 0)
-            <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 12px; padding: 14px 16px;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <svg style="width: 18px; height: 18px; color: #d97706; flex-shrink: 0;" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
-                    <span style="font-size: 13px; font-weight: 600; color: #92400e;">{{ $data['casesStale'] }} caso(s) sin sincronizar</span>
-                </div>
-                <p style="font-size: 11px; color: #a16207; margin: 6px 0 0 0;">
-                    No se han consultado en la Rama Judicial en mas de 48 horas. La sincronizacion automatica se ejecuta diariamente a las 3:00 AM.
-                </p>
-            </div>
-        @endif
-    </div>
+    <details>
+        <summary>Cómo se calculan los vencimientos</summary>
+        <p style="margin: 8px 0 0;">
+            El plazo de cada etapa corre en días hábiles desde que usted la inicia, según el calendario judicial colombiano: sin fines de semana, festivos, Semana Santa ni la vacancia de fin de año.
+            Le avisamos por correo 3 días hábiles antes, 1 día antes y el día del vencimiento. Para un cálculo puntual use la Calculadora de términos.
+        </p>
+    </details>
 </div>

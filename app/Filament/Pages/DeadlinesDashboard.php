@@ -2,14 +2,17 @@
 
 namespace App\Filament\Pages;
 
-use App\Filament\Resources\CaseEvents\CaseEventResource;
-use App\Models\CaseEvent;
+use App\Filament\Resources\LegalCases\LegalCaseResource;
 use App\Models\LegalCase;
-use App\Models\Reminder;
+use App\Services\CasePendingSummary;
 use BackedEnum;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 
+/**
+ * Vencimientos: los terminos de las etapas procesales y los recordatorios de vencimiento,
+ * agrupados por urgencia. Las audiencias, reuniones y tareas viven en la Agenda.
+ */
 class DeadlinesDashboard extends Page
 {
     protected string $view = 'filament.pages.deadlines-dashboard';
@@ -24,89 +27,43 @@ class DeadlinesDashboard extends Page
 
     protected static ?int $navigationSort = 3;
 
+    public function getSubheading(): ?string
+    {
+        return 'Términos de las etapas de sus procesos y recordatorios de vencimiento, contados en días hábiles. Las audiencias y reuniones están en la Agenda.';
+    }
+
+    /**
+     * @return array{groups: list<array{key: string, title: string, items: list<array<string, mixed>>}>, total: int, unmonitored: int, unmonitoredUrl: string}
+     */
     public function getDeadlinesData(): array
     {
-        $userId = auth()->id();
-        $firmId = auth()->user()->firm_id;
+        $user = auth()->user();
+        $items = app(CasePendingSummary::class)->deadlinesFor($user);
 
-        // Vencimientos proximos (recordatorios pendientes)
-        $reminders = Reminder::with('legalCase')
-            ->where('user_id', $userId)
-            ->where('is_completed', false)
-            ->where('due_date', '>=', now()->subDays(7))
-            ->where('due_date', '<=', now()->addDays(30))
-            ->orderBy('due_date')
-            ->get()
-            ->map(function ($r) {
-                $days = (int) now()->startOfDay()->diffInDays($r->due_date->startOfDay(), false);
+        $groups = [
+            ['key' => 'overdue', 'title' => 'Vencidos', 'items' => $items->filter(fn (array $item): bool => $item['remaining'] < 0)],
+            ['key' => 'today', 'title' => 'Vencen hoy', 'items' => $items->filter(fn (array $item): bool => $item['remaining'] === 0)],
+            ['key' => 'soon', 'title' => 'Próximos 3 días hábiles', 'items' => $items->filter(fn (array $item): bool => $item['remaining'] >= 1 && $item['remaining'] <= 3)],
+            ['key' => 'later', 'title' => 'Más adelante (30 días)', 'items' => $items->filter(fn (array $item): bool => $item['remaining'] > 3)],
+        ];
 
-                return [
-                    'id' => $r->id,
-                    'title' => $r->title,
-                    'description' => $r->description,
-                    'due_date' => $r->due_date->format('d/m/Y'),
-                    'due_date_raw' => $r->due_date->format('Y-m-d'),
-                    'days' => $days,
-                    'type' => $r->type,
-                    'priority' => $r->priority,
-                    'case_number' => $r->legalCase?->case_number,
-                    'case_id' => $r->legal_case_id,
-                    'status' => match (true) {
-                        $days < 0 => 'vencido',
-                        $days === 0 => 'hoy',
-                        $days <= 3 => 'urgente',
-                        $days <= 7 => 'proximo',
-                        default => 'normal',
-                    },
-                ];
-            });
-
-        // Ultimas actuaciones de Rama Judicial (ultimos 15 dias)
-        $recentActuaciones = CaseEvent::with('legalCase')
-            ->whereHas('legalCase', fn ($q) => $q->where('firm_id', $firmId))
-            // Colaboradores: solo actuaciones de casos donde tienen permiso de verlas.
-            ->when(CaseEventResource::caseIdsWithPermission('events.view'), fn ($q, array $ids) => $q->whereIn('legal_case_id', $ids))
-            ->when(CaseEventResource::caseIdsWithPermission('events.view') === [], fn ($q) => $q->whereRaw('1 = 0'))
-            ->where('event_type', 'actuacion')
-            ->where('event_date', '>=', now()->subDays(15))
-            ->orderByDesc('event_date')
-            ->limit(15)
-            ->get()
-            ->map(fn ($e) => [
-                'title' => $e->title,
-                'date' => $e->event_date->format('d/m/Y'),
-                'case_number' => $e->legalCase?->case_number,
-                'case_id' => $e->legalCase?->id,
-            ]);
-
-        // Casos sin sincronizar (mas de 48h)
-        $casesStale = LegalCase::where('firm_id', $firmId)
+        // Procesos que no se pudieron consultar o llevan mas de 48 horas sin consulta: sus
+        // terminos pueden no estar al dia, y el silencio no significa "sin novedades".
+        $unmonitored = LegalCase::where('firm_id', $user->firm_id)
+            ->where('is_demo', false)
             ->whereNotNull('external_case_number')
             ->where('external_case_number', '!=', '')
             ->whereIn('status', ['abierto', 'en_progreso', 'en_espera'])
-            ->where(function ($q) {
-                $q->whereNull('last_tyba_sync')
-                    ->orWhere('last_tyba_sync', '<', now()->subHours(48));
-            })
+            ->where(fn ($query) => $query->whereNotNull('sync_failed_at')
+                ->orWhereNull('last_tyba_sync')
+                ->orWhere('last_tyba_sync', '<', now()->subHours(48)))
             ->count();
 
-        // Resumen
-        $vencidos = $reminders->where('status', 'vencido')->count();
-        $hoy = $reminders->where('status', 'hoy')->count();
-        $urgentes = $reminders->where('status', 'urgente')->count();
-        $proximos = $reminders->where('status', 'proximo')->count();
-
         return [
-            'reminders' => $reminders,
-            'recentActuaciones' => $recentActuaciones,
-            'casesStale' => $casesStale,
-            'summary' => [
-                'vencidos' => $vencidos,
-                'hoy' => $hoy,
-                'urgentes' => $urgentes,
-                'proximos' => $proximos,
-                'total' => $reminders->count(),
-            ],
+            'groups' => array_map(fn (array $group): array => [...$group, 'items' => $group['items']->values()->all()], $groups),
+            'total' => $items->count(),
+            'unmonitored' => $unmonitored,
+            'unmonitoredUrl' => LegalCaseResource::getUrl('index', ['tableFilters' => ['sync_failed' => ['isActive' => true]]]),
         ];
     }
 }

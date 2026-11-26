@@ -87,7 +87,7 @@ class AdminPanelProvider extends PanelProvider
             })
             ->brandLogoHeight('4rem')
             ->colors([
-                'primary' => Color::hex('#3A86FF'),
+                'primary' => Color::Blue, // Escala de azul con buen contraste; su tono 500 equivale al acento de marca #3A86FF.
                 'danger' => Color::Red,
                 'gray' => Color::Slate,
                 'info' => Color::Blue,
