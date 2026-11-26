@@ -1,0 +1,13 @@
+{
+  "id": "P080",
+  "buys": true,
+  "purchases_first_month": 1,
+  "reason_code": "convenience",
+  "reason": "Con mas de cien procesos pierdo media manana revisando radicado por radicado; si en los 30 dias en paralelo no se le escapa ninguna actuacion frente a mi Excel, $120.000 al mes es menos de lo que cobro por una hora. Pero pagaria el Profesional solo despues de comprobarlo yo misma, y seguiria revisando a mano los procesos delicados.",
+  "objection": "Las paginas de la Rama se caen y cambian cada rato; el dia que cambien algo esto deja de funcionar y a mi se me vence un termino. Que me devuelvan $120.000 no me arregla un termino vencido ni una queja de un cliente empresa.",
+  "would_change_my_mind": "Si durante la prueba se les pasa una sola actuacion que yo si vi a mano, o si una caida de la Rama no me la avisan ese mismo dia, no pago.",
+  "price_too_cheap": 30000,
+  "price_cheap": 80000,
+  "price_expensive": 200000,
+  "price_too_expensive": 350000
+}

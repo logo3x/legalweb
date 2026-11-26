@@ -1,0 +1,13 @@
+{
+  "id": "P048",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Ya tengo quien me revise los procesos y me funciona. Hago la prueba gratis de 30 dias porque no cuesta nada, pero al terminar me quedo con mi metodo y con el plan gratuito de 3 procesos para los mas delicados.",
+  "objection": "Tengo mas de 50 procesos en algunas epocas, asi que el plan de $59.900 no me alcanza y el de $120.000 es pagar encima de lo que ya le pago a mi dependiente, que ademas me hace otras vueltas en el juzgado.",
+  "would_change_my_mind": "Que en la prueba en paralelo el sistema me avise una actuacion que a mi dependiente se le paso; ahi si pagaria el Individual.",
+  "price_too_cheap": 10000,
+  "price_cheap": 30000,
+  "price_expensive": 60000,
+  "price_too_expensive": 90000
+}

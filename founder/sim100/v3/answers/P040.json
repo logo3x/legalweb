@@ -1,0 +1,13 @@
+{
+  "id": "P040",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Ya pago una vigilancia judicial hace anos y me funciona; ademas SAMAI lo reviso yo misma varias veces por semana. Cambiarme o pagar dos servicios a la vez no me justifica el esfuerzo.",
+  "objection": "No voy a pagar doble: tendria que cancelar el servicio que ya tengo y no veo que este me de algo que hoy me falte. Y el plan de $120.000 es mucho para los procesos que llevo.",
+  "would_change_my_mind": "Que en la prueba en paralelo me avise una actuacion de SAMAI que mi servicio actual dejo pasar, y que el plan de $69.900 me salga mas barato que lo que pago hoy.",
+  "price_too_cheap": 15000,
+  "price_cheap": 40000,
+  "price_expensive": 70000,
+  "price_too_expensive": 100000
+}

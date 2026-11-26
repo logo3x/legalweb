@@ -1,0 +1,13 @@
+{
+  "id": "P015",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "trust",
+  "reason": "Ya tuve un susto con un termino y por eso mismo no le suelto la vigilancia a una pagina que no conozco y que ningun colega me ha recomendado. Yo sigo revisando a mano y con mi dependiente; a lo sumo dejaria el plan gratuito de 3 procesos para mirar.",
+  "objection": "Si el sistema falla y se me vence un termino, que me devuelvan $69.900 no me arregla nada: el responsable ante el cliente y ante el Consejo Superior soy yo. Y de todas formas tendria que seguir revisando, entonces pago doble.",
+  "would_change_my_mind": "Que un colega de confianza que lleve un ano usandolo me diga que no le ha fallado una sola actuacion, y que la prueba de 30 dias coincida exactamente con mi revision manual.",
+  "price_too_cheap": 15000,
+  "price_cheap": 35000,
+  "price_expensive": 60000,
+  "price_too_expensive": 90000
+}

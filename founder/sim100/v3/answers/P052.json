@@ -1,0 +1,13 @@
+{
+  "id": "P052",
+  "buys": true,
+  "purchases_first_month": 1,
+  "reason_code": "convenience",
+  "reason": "Con mas de cien procesos, revisar radicado por radicado cada manana me quita horas, y aqui solo entrego numeros de radicado que son publicos. Si en los 30 dias en paralelo no se le escapa ni una actuacion frente a mi Excel, pago el Profesional de $120.000; es poca plata frente al riesgo de un termino vencido.",
+  "objection": "No los conozco y un aviso que no llega me puede costar un proceso; devolverme el mes no cubre ese dano. Ademas mi Excel tiene nombres de clientes y notas, tendria que limpiarlo antes de enviarlo, y el portal del cliente si implicaria poner informacion de ellos alli.",
+  "would_change_my_mind": "Que durante la prueba se les pase una sola actuacion que yo si vi a mano, o que una consulta falle y no me avisen ese mismo dia; ahi no pago y sigo con mi Excel.",
+  "price_too_cheap": 30000,
+  "price_cheap": 80000,
+  "price_expensive": 220000,
+  "price_too_expensive": 400000
+}

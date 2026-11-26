@@ -1,0 +1,13 @@
+{
+  "id": "P035",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Ya pago un servicio de vigilancia hace años y con mis pocos procesos me funciona; cambiarme me da pereza y no veo un problema que me obligue. Tal vez haría la prueba gratis, pero al final me quedaría con lo que tengo o con el plan gratuito de 3 procesos.",
+  "objection": "No voy a pagar dos servicios de vigilancia al tiempo, y pasarme implica confiar en una empresa que no conozco; la garantía solo devuelve el mes, no cubre un término vencido.",
+  "would_change_my_mind": "Que en los 30 días en paralelo mi servicio actual se le pase una actuación que LegalWeb sí me avisó, y que me salga más barato que lo que pago hoy.",
+  "price_too_cheap": 10000,
+  "price_cheap": 30000,
+  "price_expensive": 60000,
+  "price_too_expensive": 80000
+}

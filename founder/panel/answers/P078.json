@@ -1,0 +1,13 @@
+{
+  "id": "P078",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "price",
+  "reason": "Tengo menos de 15 procesos y revisarlos en la Rama me toma un rato cada manana y no me cuesta nada. Haria la prueba gratis, pero al terminar me quedaria con el plan gratuito de 3 procesos para los mas delicados y seguiria con mi Excel para el resto.",
+  "objection": "Pagar $59.900 al mes por algo que es consulta publica y gratuita, con un plan pensado para 50 procesos cuando yo llevo menos de 15. Y la garantia solo me devuelve la mensualidad, no el dano de un termino vencido, asi que igual tendria que seguir revisando a mano.",
+  "would_change_my_mind": "Que durante los 30 dias de prueba me avise de una actuacion que a mi se me paso en la revision manual, o un plan de hasta 15 procesos por unos $30.000 al mes.",
+  "price_too_cheap": 10000,
+  "price_cheap": 25000,
+  "price_expensive": 45000,
+  "price_too_expensive": 60000
+}

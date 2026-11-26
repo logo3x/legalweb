@@ -1,0 +1,161 @@
+{
+ "business": "LegalWeb (SaaS de vigilancia judicial para abogados en Colombia)",
+ "seed": 7,
+ "dealt": 20,
+ "answered": 20,
+ "skipped": [],
+ "buys": 6,
+ "passes": 14,
+ "buy_rate": 0.3,
+ "by_segment": [
+  [
+   "Abogado litigante independiente (20 a 80 procesos activos)",
+   10,
+   0.4
+  ],
+  [
+   "Socio de firma pequena, 2 a 10 abogados (80 a 300 procesos)",
+   6,
+   0.3333333333333333
+  ],
+  [
+   "Abogado joven o que litiga poco (menos de 15 procesos)",
+   4,
+   0.0
+  ]
+ ],
+ "by_behaviour": [
+  [
+   "Desordenado",
+   3,
+   1.0
+  ],
+  [
+   "Adopta tecnologia pronto",
+   2,
+   0.5
+  ],
+  [
+   "Revisa a mano",
+   5,
+   0.4
+  ],
+  [
+   "Tiene dependiente judicial",
+   3,
+   0.0
+  ],
+  [
+   "Busca lo gratis",
+   2,
+   0.0
+  ],
+  [
+   "Desconfia de la tecnologia",
+   2,
+   0.0
+  ],
+  [
+   "Ya paga un servicio de vigilancia",
+   3,
+   0.0
+  ]
+ ],
+ "by_income": [
+  [
+   "$112,844,000 and up",
+   7,
+   0.5714285714285714
+  ],
+  [
+   "under $53,457,000",
+   6,
+   0.3333333333333333
+  ],
+  [
+   "$53,457,000 to $112,844,000",
+   7,
+   0.0
+  ]
+ ],
+ "why_not": [
+  [
+   "habit",
+   9,
+   [
+    "Ya tengo dependiente que me revisa los estados y va a los juzgados, y con menos de 15 procesos yo mismo entro a SAMAI varias veces por semana. Probaria los 30 dias gratis por curiosidad, pero al terminar me quedaria con el plan gratuito de 3 procesos y no pagaria.",
+    "Ya pago un servicio de vigilancia hace anos y con menos de 15 procesos me funciona; cambiarme por ahorrar unos pesos me obliga a montar todo de nuevo y a confiar en alguien que no conozco. Tal vez haria la prueba gratis por curiosidad, pero al dia 30 lo mas probable es que me quede donde estoy o con el plan gratuito de 3 procesos."
+   ],
+   [
+    "P001",
+    "P004"
+   ]
+  ],
+  [
+   "price",
+   3,
+   [
+    "Uso los 30 dias gratis con todos los procesos de la firma y despues vuelvo a lo de siempre: la consulta en la Rama y en SAMAI es gratis y ya la tenemos montada. El plan de 50 procesos no me cubre y el de $120.000 es un gasto fijo mas que tendria que justificarles a mis socios.",
+    "Llevo menos de 15 procesos y gano poco mas de dos millones al mes; revisarlos a mano me toma unos minutos. Haria la prueba gratis por curiosidad, pero al terminar me quedaria con el plan gratuito de 3 procesos para los mas delicados y seguiria revisando el resto yo misma."
+   ],
+   [
+    "P002",
+    "P007"
+   ]
+  ],
+  [
+   "trust",
+   2,
+   [
+    "No conozco a ningun colega que la use y yo no le entrego la vigilancia de mis procesos a una pagina que vi por primera vez. Mi dependiente revisa los despachos y asi seguimos; ni siquiera me pondria a organizar el Excel para la prueba.",
+    "La prueba gratis sin tarjeta si la haria, pero al dia 30 lo mas probable es que siga con mi Excel: no conozco a ningun colega que la use y, mientras no confie del todo, igual tendria que seguir revisando a mano, asi que estaria pagando por algo que no me quita trabajo. Ademas en los meses que paso de 50 procesos el plan que me toca es el de $120.000, y eso ya lo pienso dos veces."
+   ],
+   [
+    "P003",
+    "P016"
+   ]
+  ]
+ ],
+ "why_yes": [
+  [
+   "need",
+   5,
+   [
+    "Ya se me ha pasado un termino por poco y llevo todo en la cabeza y en WhatsApp; si en los 30 dias veo que me avisa lo mismo que yo encuentro revisando a mano, $59.900 es menos de lo que me cuesta un susto. Tomaria el Individual y dejaria por fuera los procesos quietos para no pasar de 50.",
+    "Ya se me paso un termino por poco y trabajo sola, sin nadie que revise por mi; $59.900 al mes por el plan Individual lo pago si en la prueba veo que avisa lo mismo que yo encuentro a mano. El de $120.000 no, eso es mucho para los procesos que llevo."
+   ],
+   [
+    "P008",
+    "P010"
+   ]
+  ],
+  [
+   "convenience",
+   1,
+   [
+    "Llevo procesos en tres ciudades y revisar la Rama a mano me quita horas; si en los 30 dias en paralelo no se le escapa ni una actuacion frente a mi propia revision, $59.900 por el plan Individual es menos de lo que me cuesta una hora de trabajo. Pago solo si la comparacion sale limpia, no por la promesa."
+   ],
+   [
+    "P019"
+   ]
+  ]
+ ],
+ "flip": [
+  "Que en la prueba en paralelo el sistema detecte una actuacion que a mi dependiente y a mi se nos paso, o que mi carga suba a 30 o mas procesos y ya no alcance a revisarlos a mano.",
+  "Que durante la prueba en paralelo me avise de una actuacion que a nosotros se nos paso con nuestra revision; ahi si pagaria el Profesional sin discutir.",
+  "Que un colega de confianza, de los que litigan laboral o ejecutivos como yo, me diga que la usa hace mas de un ano y que no le ha fallado; ahi si la pongo a correr en paralelo con el dependiente.",
+  "Que en los 30 dias en paralelo LegalWeb me avise una actuacion que mi servicio actual no detecto o detecto tarde; ahi si cancelo el otro y me paso al plan Individual.",
+  "Que en los 30 dias de prueba el aviso me llegue antes de que yo vea una actuacion que se me paso en mi revision manual; ahi si pagaria el Individual.",
+  "Que en los 30 dias de prueba el sistema me avise de una actuacion que a mi dependiente se le paso; ahi si pagaria el Individual como respaldo.",
+  "Un plan para hasta 15 procesos por unos $30.000 al mes que incluya el portal del cliente, para que dejen de llamarme a preguntar.",
+  "Que en la prueba en paralelo el sistema detecte al menos una actuacion que a mi dependiente se le paso, o que un colega de lo contencioso que yo conozca me diga que SAMAI le funciona bien ahi.",
+  "Que en los 30 dias de prueba, comparando contra mi Excel, no se les escape ni una sola actuacion de SAMAI y me avisen antes de que yo la vea; y que un colega de lo contencioso que yo conozca me diga que lleva meses usandolo sin sustos. Ahi pagaria el Individual si me dejan tener hasta unos 80 procesos por ese precio.",
+  "Que en los 30 dias en paralelo me pesquen al menos una actuacion que mi servicio actual no me aviso o me aviso tarde, y que el plan ilimitado quede claramente por debajo de lo que pago hoy.",
+  "Un plan pequeno de unos $20.000 al mes para hasta 15 procesos, o que en la prueba me avisen de una actuacion que a mi se me paso y casi me cuesta un termino.",
+  "Que en los 30 dias de prueba LegalWeb me avise una actuacion que mi servicio actual no me aviso o me aviso tarde; con eso demostrado en mis propios procesos, me cambio al plan Individual.",
+  "Que un colega de confianza, con una firma parecida a la mia, me diga en persona que lleva un ano usandolo y que no se le ha pasado ni una actuacion.",
+  "Que un colega litigante que yo conozca me diga que la usa hace meses sin que se le escape una actuacion, o que en mis 30 dias de prueba en paralelo no falle ni una sola vez frente a mi revision en las tres ciudades, incluidos los juzgados que publican mal."
+ ],
+ "purchases_first_month_per_buyer": 1.0,
+ "price_answers": 20
+}

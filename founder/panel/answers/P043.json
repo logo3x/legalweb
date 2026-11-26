@@ -1,0 +1,13 @@
+{
+  "id": "P043",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "price",
+  "reason": "La prueba gratis la tomo, pero al terminar no pago: reviso yo mismo cada manana y me sale gratis, y con lo que facturo $59.900 fijos al mes me pesan; ademas si paso de 50 procesos me toca saltar a $120.000, que es mucho para lo que llevo.",
+  "objection": "Aunque me avisen, voy a seguir entrando a la Rama por desconfianza, entonces pagaria por algo que igual hago a mano; y la garantia solo devuelve la mensualidad, no el termino que se me venza.",
+  "would_change_my_mind": "Que en los 30 dias de prueba me pille una actuacion que a mi se me paso en mi Excel, y que haya un plan de unos $35.000 para mis procesos sin el salto a $120.000.",
+  "price_too_cheap": 10000,
+  "price_cheap": 25000,
+  "price_expensive": 45000,
+  "price_too_expensive": 65000
+}

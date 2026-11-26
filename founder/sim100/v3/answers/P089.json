@@ -1,0 +1,13 @@
+{
+  "id": "P089",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Ya tengo un dependiente que me revisa los procesos y me funciona; no voy a montar un Excel y cambiar mi rutina por una pagina que vi de pasada y que ningun colega me ha recomendado.",
+  "objection": "Si el sistema falla y se me pasa un termino, que me devuelvan $120.000 no me sirve de nada frente al cliente; la responsabilidad sigue siendo mia y yo a estas herramientas no les confio.",
+  "would_change_my_mind": "Que un colega de confianza, de una firma como la mia, me diga que lo usa hace mas de un ano y no se le ha pasado una sola actuacion, y que alguien venga a la oficina a mostrarmelo.",
+  "price_too_cheap": 40000,
+  "price_cheap": 90000,
+  "price_expensive": 250000,
+  "price_too_expensive": 450000
+}

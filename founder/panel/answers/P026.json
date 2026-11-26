@@ -1,0 +1,13 @@
+{
+  "id": "P026",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "trust",
+  "reason": "La prueba gratis de pronto si la hago, porque ya casi se me pasa un termino, pero pagar despues no creo: ningun colega mio la usa, no se quien responde si falla, y siendo como soy lo mas probable es que ni compare bien y me quede con el plan gratis de 3 procesos.",
+  "objection": "Si se les pasa una actuacion y a mi se me vence un termino, devolverme $59.900 no me arregla nada; el que responde ante el cliente soy yo, y a ustedes no los conozco.",
+  "would_change_my_mind": "Que un colega de mi juzgado me diga que la usa hace meses y no le ha fallado, o que en la prueba me avise de una actuacion que yo no habia visto.",
+  "price_too_cheap": 15000,
+  "price_cheap": 35000,
+  "price_expensive": 70000,
+  "price_too_expensive": 110000
+}

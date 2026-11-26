@@ -1,0 +1,13 @@
+{
+  "id": "P051",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "trust",
+  "reason": "No conozco esta empresa y ningun colega me la ha recomendado; yo reviso mis procesos con mi dependiente y en el juzgado, y asi no se me ha vencido un termino. No voy a confiar mis terminos a un aviso de WhatsApp de alguien que no conozco.",
+  "objection": "Si el sistema falla y se me pasa una actuacion, que me devuelvan $69.900 no me sirve de nada: la responsabilidad ante el cliente y el riesgo disciplinario son mios. Y aunque digan que el radicado es publico, les estaria entregando la lista completa de mis procesos.",
+  "would_change_my_mind": "Que un colega de confianza que litigue en mis mismos juzgados me diga que lleva un ano usandolo y que no le ha fallado ni una actuacion.",
+  "price_too_cheap": 20000,
+  "price_cheap": 40000,
+  "price_expensive": 70000,
+  "price_too_expensive": 110000
+}

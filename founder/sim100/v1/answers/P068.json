@@ -1,0 +1,13 @@
+{
+  "id": "P068",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "trust",
+  "reason": "Llevo anos revisando radicado por radicado y mi Excel no me ha fallado; no voy a pagar $120.000 al mes por un robot que depende de paginas de la Rama y de SAMAI que se caen y cambian cada rato. Usaria los 3 meses gratis y despues me quedaria en el plan gratuito o volveria a lo mio.",
+  "objection": "Si un dia el sistema no detecta una actuacion porque la pagina cambio y yo confie en el correo, se me vence un termino y la responsabilidad disciplinaria es mia, no de ellos. Igual tendria que seguir revisando a mano, entonces pago doble.",
+  "would_change_my_mind": "Que durante los 3 meses de prueba no se le escape ni una sola actuacion frente a mi revision manual en SAMAI, y que me avise expresamente cuando no pudo consultar un proceso en vez de quedarse callado.",
+  "price_too_cheap": 15000,
+  "price_cheap": 40000,
+  "price_expensive": 90000,
+  "price_too_expensive": 130000
+}

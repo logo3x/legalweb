@@ -1,0 +1,13 @@
+{
+  "id": "P099",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Llevo años entrando cada mañana a la consulta de procesos y controlando todo en mi Excel; no me ha fallado y no me cuesta plata. Haría la prueba gratis, pero al terminar me quedaría con el plan gratuito para los tres procesos más delicados y seguiría revisando el resto a mano.",
+  "objection": "Si de todas formas voy a seguir revisando yo misma porque la responsabilidad ante el cliente es mía, estaría pagando por algo que no me quita el trabajo; y la garantía solo me devuelve la mensualidad, no el término vencido.",
+  "would_change_my_mind": "Que durante los 30 días en paralelo el servicio me avise de una actuación que a mí se me pasó en mi revisión manual, o que el plan Individual bajara a unos $35.000.",
+  "price_too_cheap": 10000,
+  "price_cheap": 30000,
+  "price_expensive": 60000,
+  "price_too_expensive": 90000
+}

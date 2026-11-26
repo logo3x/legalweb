@@ -1,0 +1,13 @@
+{
+  "id": "P027",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Yo ya le pago a mi dependiente, que revisa estados y ademas va a los juzgados, saca copias y radica; una pagina no me reemplaza eso y no voy a pagar dos veces por la misma vigilancia. Tal vez deje corriendo la prueba gratis, pero al dia 30 no saco la tarjeta.",
+  "objection": "Las paginas de la Rama se caen y cambian cada rato; el dia que eso deje de consultar bien, devolverme $59.900 no me cubre un termino vencido frente a un cliente empresa.",
+  "would_change_my_mind": "Que en los 30 dias en paralelo el sistema me avise de una actuacion que a mi dependiente se le paso, con prueba proceso por proceso.",
+  "price_too_cheap": 15000,
+  "price_cheap": 30000,
+  "price_expensive": 70000,
+  "price_too_expensive": 110000
+}

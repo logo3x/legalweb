@@ -2,12 +2,12 @@
   "id": "P003",
   "buys": false,
   "purchases_first_month": 0,
-  "reason_code": "trust",
-  "reason": "No conozco a ningun colega que la use y yo no le entrego la vigilancia de mis procesos a una pagina que vi por primera vez. Mi dependiente revisa los despachos y asi seguimos; ni siquiera me pondria a organizar el Excel para la prueba.",
-  "objection": "Si se les pasa un auto y se me vence un termino, el que responde ante el cliente y ante la disciplinaria soy yo; devolverme $120.000 del mes no arregla nada. Dicen que hay NIT y un responsable, pero no se quienes son ni cuanto llevan.",
-  "would_change_my_mind": "Que un colega de confianza, de los que litigan laboral o ejecutivos como yo, me diga que la usa hace mas de un ano y que no le ha fallado; ahi si la pongo a correr en paralelo con el dependiente.",
-  "price_too_cheap": 40000,
-  "price_cheap": 90000,
-  "price_expensive": 250000,
-  "price_too_expensive": 450000
+  "reason_code": "habit",
+  "reason": "Ya pago un servicio de vigilancia hace anos y me funciona; con menos de 15 procesos no voy a pagar dos ni a tomarme el trabajo de cambiarme. Quiza haga la prueba gratis y me quede con el plan gratuito de 3 procesos, pero pagar no.",
+  "objection": "Para los pocos procesos que llevo, $59.900 al mes no me ahorra nada frente a lo que ya tengo, y el de $120.000 es demasiado. Cambiarme implica volver a cargar todo y confiar en una empresa que no conozco con mis terminos.",
+  "would_change_my_mind": "Que en la prueba en paralelo mi servicio actual se le pase una actuacion que LegalWeb si me aviso, y que el plan para mis 15 procesos cueste claramente menos de lo que pago hoy.",
+  "price_too_cheap": 10000,
+  "price_cheap": 25000,
+  "price_expensive": 45000,
+  "price_too_expensive": 60000
 }

@@ -1,0 +1,13 @@
+{
+  "id": "P086",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Yo ya tengo dependiente judicial que revisa estados y va a los juzgados; una alerta por WhatsApp no me saca copias ni me radica memoriales, asi que seria pagar doble por algo que hoy ya tengo cubierto. Probaria los 30 dias gratis por curiosidad, pero al terminar me quedaria en el plan gratuito de 3 procesos.",
+  "objection": "Varios de mis procesos de familia y civil municipal no se actualizan bien en la consulta de la Rama; lo que cuenta es el estado del juzgado y eso lo ve mi dependiente, no una pagina. Si la fuente no publica, la garantia no me cubre.",
+  "would_change_my_mind": "Que en la prueba en paralelo la herramienta le gane a mi dependiente en al menos una actuacion real que el haya pasado por alto, o que mi dependiente se vaya y yo quede sin quien revise.",
+  "price_too_cheap": 15000,
+  "price_cheap": 35000,
+  "price_expensive": 70000,
+  "price_too_expensive": 110000
+}

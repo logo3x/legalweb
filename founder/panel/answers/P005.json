@@ -1,13 +1,13 @@
 {
   "id": "P005",
-  "buys": false,
-  "purchases_first_month": 0,
-  "reason_code": "habit",
-  "reason": "Llevo anos entrando cada manana a la Rama Judicial y anotando en mi Excel; no me cuesta plata y confio en lo que veo con mis propios ojos. Haria la prueba gratis, y al terminar dejaria los tres procesos mas delicados en el plan gratuito y seguiria revisando el resto a mano.",
-  "objection": "Si de todas formas voy a seguir revisando a mano porque la responsabilidad ante el cliente es mia, estaria pagando por algo que ya hago; y la garantia solo me devuelve la mensualidad, no el termino que se me venza.",
-  "would_change_my_mind": "Que en los 30 dias de prueba el aviso me llegue antes de que yo vea una actuacion que se me paso en mi revision manual; ahi si pagaria el Individual.",
-  "price_too_cheap": 15000,
-  "price_cheap": 30000,
-  "price_expensive": 60000,
-  "price_too_expensive": 90000
+  "buys": true,
+  "purchases_first_month": 1,
+  "reason_code": "convenience",
+  "reason": "Con mas de cien procesos en la firma y SAMAI revisado a mano varias veces por semana, $120.000 al mes es menos de lo que me cuesta una hora de dependiente; si en los 30 dias en paralelo no se le escapa ninguna actuacion frente a mi revision, pago el Profesional.",
+  "objection": "No conozco a ningun colega que la use y no se quien esta detras; devolverme un mes de $120.000 no compensa un termino vencido en un proceso contencioso, asi que igual tendria que seguir revisando por un tiempo.",
+  "would_change_my_mind": "Que durante la prueba se le pase una sola actuacion de SAMAI que yo si vi a mano, o que no pueda verificar la empresa, el NIT y el responsable.",
+  "price_too_cheap": 30000,
+  "price_cheap": 80000,
+  "price_expensive": 200000,
+  "price_too_expensive": 350000
 }

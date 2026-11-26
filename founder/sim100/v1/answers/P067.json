@@ -1,0 +1,13 @@
+{
+  "id": "P067",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "trust",
+  "reason": "Llevo pocos procesos y los reviso yo misma en la Rama y en el despacho; despues del susto que tuve no le voy a confiar mis terminos a una pagina que no conozco y que ningun colega me ha recomendado. Con menos de 15 procesos, $120.000 al mes es mucho para mis ingresos, y si acaso me quedaria con lo gratis de 5 casos.",
+  "objection": "Si la plataforma no detecta una actuacion y se me vence un termino, quien responde? La responsabilidad disciplinaria sigue siendo mia, asi que igual tendria que revisar a mano.",
+  "would_change_my_mind": "Que un colega de confianza la use hace mas de un ano y me diga que nunca le ha fallado, y que el precio para pocos procesos baje a unos $40.000 al mes.",
+  "price_too_cheap": 10000,
+  "price_cheap": 30000,
+  "price_expensive": 60000,
+  "price_too_expensive": 90000
+}

@@ -1,0 +1,13 @@
+{
+  "id": "P081",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Ya pago una vigilancia judicial hace anos y me funciona; con menos de 15 procesos no voy a pagar $120.000 al mes ni a migrar todo por algo que ya tengo resuelto. Probaria los 3 meses gratis y me quedaria, si acaso, en el plan gratuito.",
+  "objection": "$120.000 al mes es mucho para los pocos procesos que llevo, y no se si la consulta a SAMAI es tan confiable como la del servicio que ya uso; si se le escapa una actuacion, el problema disciplinario es mio.",
+  "would_change_my_mind": "Un plan individual de unos $40.000 al mes para hasta 15 o 20 procesos, y haber comprobado durante la prueba que no se le escapa ninguna actuacion de SAMAI frente a mi servicio actual.",
+  "price_too_cheap": 10000,
+  "price_cheap": 30000,
+  "price_expensive": 60000,
+  "price_too_expensive": 90000
+}

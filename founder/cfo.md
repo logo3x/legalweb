@@ -4,17 +4,30 @@
 
 ## La nota del CFO
 
-- **El margen.** Cada suscripción deja **$71.950 al mes** (90 %) después de sus propios costos, con un ingreso medio de $79.900 (la mezcla que dio el panel: 4 planes Individual de $59.900 y 2 Profesional de $120.000). El margen por unidad no es el problema; el problema es el volumen.
-- **La línea que hay que mirar: el sueldo del fundador y la rampa.** Con un sueldo parcial de $3.500.000, el punto de equilibrio son **61 suscriptores de pago** y el año 1 pierde **$26.273.950** con la rampa supuesta (de 3 a 60 suscriptores). Sin sueldo (solo costos de caja, `numbers-caja.json`) el equilibrio baja a **12 suscriptores**, el año 1 deja **$15.726.050** y la inversión inicial se recupera en el mes 9. Es decir: como proyecto que el fundador sostiene con su tiempo, sobrevive con una docena de clientes; como negocio que paga a quien lo opera, necesita más de 60.
-- **Caja.** Se necesitan **$30.773.950** antes de que se pague solo si el fundador cobra; **$5.658.950** si no cobra. Si además el volumen sale la mitad de lo supuesto, sin sueldo todavía cierra el año en positivo ($2.811.025).
-- **Tres formas de mejorar el margen (cada una corrida con la herramienta):**
-  1. Subir el ingreso medio a $120.000 (más clientes en Profesional): el equilibrio baja de 61 a **39** suscriptores y la pérdida del año 1 cae a $11.878.050.
-  2. No bajar todo a $59.900: con ese ingreso medio el equilibrio sube a **84** suscriptores y el año 1 pierde $33.453.950. El plan Individual sirve para entrar, no para vivir de él.
-  3. Recortar el costo fijo que más pesa después del sueldo, el mercadeo ($600.000 estimado), solo cuando haya un canal con costo de adquisición medido; hoy es el 71 % de los costos de caja.
-- **Condiciones de dinero de la junta.** Garantía asequible: sí, reservada al 2 % del precio ($1.600 por suscripción), siempre que la tasa real de reclamos se mida. IA de pago e infraestructura propia: caben ($130.000 al mes estimados). Canal con costo de adquisición por debajo de $600.000: **sin dato todavía**.
-- **Lo que este CFO no sabe y el fundador sí:** cuántas firmas pagan hoy, el costo real del hosting, la tarifa negociada con Wompi y si hay otros ingresos. Casi todas las cifras de `numbers.json` son estimaciones marcadas como tales; reemplácelas por las reales y vuelva a correr la herramienta.
+- **El margen.** Cada suscripción deja **$84.880 al mes** (92 %) después de sus propios costos, con un ingreso medio de $91.950: la mezcla del panel de 100 (16 planes Profesional de $120.000 y 14 Individual de $59.900). El margen por unidad no es el problema; el volumen sí.
+- **La línea que hay que mirar: los registros al mes.** Con sueldo parcial del fundador ($3.500.000 estimado) el equilibrio son **52 suscriptores de pago** y el año 1 pierde **$21.632.080** con una rampa de 3 a 60 suscriptores. Sin sueldo (`numbers-caja.json`) el equilibrio son **10 suscriptores**, el año 1 deja **$20.367.920** y la inversión se recupera en el mes 8. La simulación (`sim/funnel_mc.md`) dice qué exige esa rampa: con 20 registros al mes la mediana es 16 clientes de pago al mes 12 (cubre la caja el 77 % de las veces y nunca el sueldo); con 40, cubre el sueldo el 9 % de las veces al mes 12 y el 45 % al mes 24; con 80, el 62 % y el 89 %.
+- **Caja.** Se necesitan **$27.209.280** antes de que se pague solo si el fundador cobra; **$5.420.080** si no.
+- **Tres formas de mejorar el margen (corridas con la herramienta):**
+  1. Individual a $69.900 con 80 procesos: el panel compró igual y el ingreso medio sube a unos $93.300.
+  2. Cobro recurrente: hoy cada periodo es un pago manual. No cambia el margen por unidad, pero cada punto menos de baja mensual vale más que cualquier ajuste de precio (la simulación usa 3–7 %).
+  3. Un precio 10 % menor sube el equilibrio de 52 a 58 suscriptores; un volumen 20 % menor deja el margen en −6 %. El volumen pesa más que el precio.
+- **Condiciones de dinero de la junta.** Garantía asequible: sí, reservada al 2 % del precio ($1.840 por suscripción), midiendo la tasa real de reclamos. IA de pago e infraestructura propia: caben ($130.000 al mes estimados). Canal con costo de adquisición medido: **sin dato**.
+- **Costos confirmados con fuentes públicas** (`verify/market-costs.md`): Wompi 2,65 % + $700 + IVA sobre la comisión; WhatsApp por Twilio cerca de USD 0,006 por mensaje; un servidor de 2 núcleos entre USD 6 y 24 al mes; correo transaccional entre USD 1 y 20 por 10.000 envíos. El servicio en la nube podría estar excluido de IVA (Estatuto Tributario, artículo 476); lo define un contador.
+- **Lo que este CFO no sabe y el fundador sí:** registros al mes, clientes de pago, bajas y costos reales. Reemplace las estimaciones de `numbers.json` y vuelva a correr la herramienta.
 
-Un contador debe revisar la estructura, el IVA sobre el servicio y la facturación electrónica antes de mover dinero. Esto no es asesoría financiera, tributaria ni legal.
+Un contador debe revisar la estructura, el IVA y la facturación electrónica antes de mover dinero. No es asesoría financiera, tributaria ni legal.
+
+## Simulación del embudo (5.000 corridas por fila)
+
+| Registros al mes | Pagos mes 12 (p10 / mediana / p90) | Pagos mes 24 | Ingreso mensual mes 12 | Cubre caja mes 12 | Cubre sueldo mes 12 | Cubre sueldo mes 24 | Caja acumulada mes 12 (sin sueldo) | Acumulado mes 12 (con sueldo) |
+| ---: | :-: | ---: | ---: | :-: | :-: | :-: | ---: | ---: |
+| 10 | 3 / 8 / 14 | 13 | $689.000 | 27 % | 0 % | 0 % | $-6.090.000 | $-48.090.000 |
+| 20 | 8 / 16 / 26 | 26 | $1.400.000 | 77 % | 0 % | 3 % | $-1.860.000 | $-43.860.000 |
+| 40 | 17 / 32 / 50 | 52 | $2.811.000 | 98 % | 9 % | 45 % | $6.330.000 | $-35.670.000 |
+| 80 | 35 / 65 / 97 | 105 | $5.617.000 | 100 % | 62 % | 89 % | $22.730.000 | $-19.270.000 |
+| 150 | 65 / 120 / 181 | 194 | $10.450.000 | 100 % | 94 % | 100 % | $51.060.000 | $9.060.000 |
+
+Supuestos: conversión de prueba a pago entre 4 % y 15 %, baja mensual entre 3 % y 7 %, ingreso medio entre $59.900 y $120.000, un mes de prueba. Código en `sim/funnel_mc.py`.
 
 ## Salida de la herramienta (escenario base, con sueldo parcial)
 
@@ -22,51 +35,51 @@ Un contador debe revisar la estructura, el IVA sobre el servicio y la facturaci�
 
 | line | per suscripcion-mes |
 | --- | ---: |
-| Price | $79,900.00 |
-| Comision Wompi (2,65% + $700 + IVA, tarifa publica por confirmar) | -$3,350.00 |
-| Alertas por WhatsApp y correo por suscriptor (estimado) | -$3,000.00 |
-| Reserva para la garantia de devolucion (2% del precio, estimado) | -$1,600.00 |
-| **Contribution** (what each suscripcion-mes leaves to pay the fixed costs) | **$71,950.00** (90%) |
+| Price | $91,950.00 |
+| Comision Wompi (2,65% + $700 + IVA sobre la comision) | -$3,730.00 |
+| Alertas por WhatsApp y correo por suscriptor (estimado con tarifas publicas) | -$1,500.00 |
+| Reserva para la garantia de devolucion (2% del precio, estimado) | -$1,840.00 |
+| **Contribution** (what each suscripcion-mes leaves to pay the fixed costs) | **$84,880.00** (92%) |
 
 ## The margin that matters
 
 Fixed costs: $4,342,000 a month (Hosting compartido actual (estimado) $45,000, Dominio y correo (estimado) $7,000, Servidor propio para la vigilancia nocturna con monitoreo (estimado) $50,000, IA de pago en vez de niveles gratuitos (estimado) $80,000, Envio de correo transaccional (estimado) $60,000, Mercadeo: pauta y contenido (estimado) $600,000, Sueldo parcial del fundador (estimado, medio tiempo) $3,500,000).
 
-- **Break-even: 61 suscripcion-mess a day.** Below that you lose money every month.
-- **Profit margin at your plan** (60 a day): **-1%** of every sale, after every cost.
+- **Break-even: 52 suscripcion-mess a day.** Below that you lose money every month.
+- **Profit margin at your plan** (60 a day): **14%** of every sale, after every cost.
 
 ## Year 1, month by month
 
 | month | suscripcion-mess a day | revenue | profit | cumulative (after $4,500,000 startup) |
 | ---: | ---: | ---: | ---: | ---: |
-| 1 | 3 | $239,700 | -$4,126,150 | -$8,626,150 |
-| 2 | 6 | $479,400 | -$3,910,300 | -$12,536,450 |
-| 3 | 10 | $799,000 | -$3,622,500 | -$16,158,950 |
-| 4 | 15 | $1,198,500 | -$3,262,750 | -$19,421,700 |
-| 5 | 20 | $1,598,000 | -$2,903,000 | -$22,324,700 |
-| 6 | 26 | $2,077,400 | -$2,471,300 | -$24,796,000 |
-| 7 | 32 | $2,556,800 | -$2,039,600 | -$26,835,600 |
-| 8 | 38 | $3,036,200 | -$1,607,900 | -$28,443,500 |
-| 9 | 44 | $3,515,600 | -$1,176,200 | -$29,619,700 |
-| 10 | 50 | $3,995,000 | -$744,500 | -$30,364,200 |
-| 11 | 55 | $4,394,500 | -$384,750 | -$30,748,950 |
-| 12 | 60 | $4,794,000 | -$25,000 | -$30,773,950 |
+| 1 | 3 | $275,850 | -$4,087,360 | -$8,587,360 |
+| 2 | 6 | $551,700 | -$3,832,720 | -$12,420,080 |
+| 3 | 10 | $919,500 | -$3,493,200 | -$15,913,280 |
+| 4 | 15 | $1,379,250 | -$3,068,800 | -$18,982,080 |
+| 5 | 20 | $1,839,000 | -$2,644,400 | -$21,626,480 |
+| 6 | 26 | $2,390,700 | -$2,135,120 | -$23,761,600 |
+| 7 | 32 | $2,942,400 | -$1,625,840 | -$25,387,440 |
+| 8 | 38 | $3,494,100 | -$1,116,560 | -$26,504,000 |
+| 9 | 44 | $4,045,800 | -$607,280 | -$27,111,280 |
+| 10 | 50 | $4,597,500 | -$98,000 | -$27,209,280 |
+| 11 | 55 | $5,057,250 | $326,400 | -$26,882,880 |
+| 12 | 60 | $5,517,000 | $750,800 | -$26,132,080 |
 
-- **Year 1 operating profit: -$26,273,950** on $28,684,100 of revenue.
-- After the $4,500,000 startup spend: -$30,773,950.
+- **Year 1 operating profit: -$21,632,080** on $33,010,050 of revenue.
+- After the $4,500,000 startup spend: -$26,132,080.
 - Startup money earned back: not within year 1.
-- Cash you need before it pays for itself: **$30,773,950**.
+- Cash you need before it pays for itself: **$27,209,280**.
 
 ## What if
 
 | scenario | margin at plan | break-even a day | year 1 profit |
 | --- | ---: | ---: | ---: |
-| Base plan | -1% | 61 | -$26,273,950 |
-| Price -10% | -12% | 68 | -$29,142,360 |
-| Volume -20% | -23% | 61 | -$31,439,960 |
-| Unit costs +15% | -2% | 62 | -$26,702,058 |
+| Base plan | 14% | 52 | -$21,632,080 |
+| Price -10% | 4% | 58 | -$24,933,085 |
+| Volume -20% | -6% | 52 | -$27,726,464 |
+| Unit costs +15% | 12% | 52 | -$22,012,800 |
 
 ## Red flags
 
-- Year 1 loses money on operations (-$26,273,950).
+- Year 1 loses money on operations (-$21,632,080).
 - The startup spend is not earned back within year 1.

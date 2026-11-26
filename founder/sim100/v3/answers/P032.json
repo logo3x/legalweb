@@ -1,0 +1,13 @@
+{
+  "id": "P032",
+  "buys": true,
+  "purchases_first_month": 1,
+  "reason_code": "need",
+  "reason": "Ya casi se me vence un termino y con mas de cien procesos entre tres abogados no puedo seguir confiando en la memoria y en WhatsApp; $120.000 al mes es menos de lo que me cuesta un solo susto. Pero solo pago si en los 30 dias en paralelo no se le escapa ninguna actuacion que mi dependiente si haya visto.",
+  "objection": "Las paginas de la Rama se caen y cambian cada rato; temo que un dia deje de consultar y yo, confiada, no me entere. Ademas no tengo un Excel de radicados: tendria que sentarme a armarlo y eso es justo lo que nunca hago.",
+  "would_change_my_mind": "Que durante la prueba se le pase una sola actuacion sin avisarme de la falla, o que armar la lista de radicados me quede a mi sola y nunca la termine.",
+  "price_too_cheap": 30000,
+  "price_cheap": 80000,
+  "price_expensive": 200000,
+  "price_too_expensive": 350000
+}

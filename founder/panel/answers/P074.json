@@ -1,0 +1,13 @@
+{
+  "id": "P074",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "price",
+  "reason": "Tomo los 30 dias gratis porque no me cuestan nada y solo piden radicados, pero al terminar no pago: con mas de cien procesos me toca el plan de $120.000 y mi dependiente ya revisa los juzgados, asi que seguiria con el y dejaria tres procesos delicados en el plan gratis.",
+  "objection": "No conozco esta empresa y la garantia solo me devuelve la mensualidad; si se les pasa un auto y se me vence un termino, el dano es mio y $120.000 no lo cubren. Igual tendria que seguir revisando a mano, entonces pagaria doble.",
+  "would_change_my_mind": "Que en la prueba en paralelo me pillen una actuacion que a mi dependiente se le paso, o que un colega de confianza me diga que lleva un ano usandolo sin fallas; y que el plan ilimitado no pase de unos $70.000.",
+  "price_too_cheap": 20000,
+  "price_cheap": 50000,
+  "price_expensive": 90000,
+  "price_too_expensive": 130000
+}

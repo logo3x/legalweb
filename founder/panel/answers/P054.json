@@ -1,0 +1,13 @@
+{
+  "id": "P054",
+  "buys": true,
+  "purchases_first_month": 1,
+  "reason_code": "convenience",
+  "reason": "Reviso radicado por radicado cada manana en tres ciudades y eso me come una hora diaria; si en los 30 dias en paralelo no se le escapa ninguna actuacion frente a mi Excel, $59.900 al mes los pago. Solo piden el radicado, que es publico, asi que mi miedo con los datos de clientes baja bastante.",
+  "objection": "No los conozco: si se les pasa un auto y se me vence un termino, que me devuelvan $59.900 no me arregla nada, la responsabilidad sigue siendo mia. Ademas mi Excel tiene nombres de clientes y no pienso mandarlo tal cual, y si paso de 50 procesos el salto a $120.000 me parece brusco.",
+  "would_change_my_mind": "Que en el mes de prueba se les escape una sola actuacion que yo si vi a mano, o que una consulta falle sin avisarme; ahi no pago y sigo con mi Excel.",
+  "price_too_cheap": 15000,
+  "price_cheap": 40000,
+  "price_expensive": 90000,
+  "price_too_expensive": 150000
+}

@@ -1,0 +1,13 @@
+{
+  "id": "P092",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "price",
+  "reason": "Uso los 30 dias gratis completos y despues me quedo en el plan gratuito con mis 3 procesos mas delicados; el resto lo sigo revisando yo a mano como siempre. El susto del termino me dolio, pero todavia no tanto como para sumar otro pago fijo mensual.",
+  "objection": "Son casi $840.000 al ano por algo que hoy hago gratis consultando la Rama yo mismo, y la garantia solo me devuelve la mensualidad, no el dano de un termino vencido.",
+  "would_change_my_mind": "Que durante la prueba me avisen de una actuacion que a mi se me paso en mi revision manual, o un plan de unos $35.000 para hasta 40 procesos.",
+  "price_too_cheap": 10000,
+  "price_cheap": 30000,
+  "price_expensive": 55000,
+  "price_too_expensive": 70000
+}

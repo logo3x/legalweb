@@ -1,0 +1,13 @@
+{
+  "id": "P057",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Llevo treinta años revisando yo misma, radicado por radicado, y con mi Excel no se me ha pasado un termino; consultar la Rama y SAMAI es gratis. Probaria los 30 dias porque no cuesta nada, pero al terminar seguiria revisando a mano igual, asi que estaria pagando por algo que no me quita trabajo.",
+  "objection": "Si se les pasa una actuacion, me devuelven $69.900 y yo respondo ante el cliente por un termino vencido; la garantia no cubre mi riesgo real, entonces no puedo dejar de revisar yo misma. Y en SAMAI, que es lo mio, no se que tan confiable es su consulta.",
+  "would_change_my_mind": "Que en los 30 dias de prueba me avisen todas las actuaciones de SAMAI sin fallar una y antes de que yo las vea, y que al menos una vez me salven de algo que a mi se me paso.",
+  "price_too_cheap": 15000,
+  "price_cheap": 30000,
+  "price_expensive": 60000,
+  "price_too_expensive": 90000
+}

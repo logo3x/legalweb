@@ -1,0 +1,13 @@
+{
+  "id": "P005",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Llevo anos entrando cada manana a la Rama Judicial y anotando en mi Excel; no me cuesta plata y confio en lo que veo con mis propios ojos. Haria la prueba gratis, y al terminar dejaria los tres procesos mas delicados en el plan gratuito y seguiria revisando el resto a mano.",
+  "objection": "Si de todas formas voy a seguir revisando a mano porque la responsabilidad ante el cliente es mia, estaria pagando por algo que ya hago; y la garantia solo me devuelve la mensualidad, no el termino que se me venza.",
+  "would_change_my_mind": "Que en los 30 dias de prueba el aviso me llegue antes de que yo vea una actuacion que se me paso en mi revision manual; ahi si pagaria el Individual.",
+  "price_too_cheap": 15000,
+  "price_cheap": 30000,
+  "price_expensive": 60000,
+  "price_too_expensive": 90000
+}

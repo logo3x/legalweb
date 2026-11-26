@@ -1,0 +1,13 @@
+{
+  "id": "P014",
+  "buys": true,
+  "purchases_first_month": 1,
+  "reason_code": "need",
+  "reason": "Consultar la Rama es gratis, si, pero yo no la consulto todos los dias y ya casi se me pasa un termino; con mas de cien procesos entre carpetas y WhatsApp, $120.000 al mes es menos de lo que me cuesta un solo susto. Si en los 30 dias en paralelo me avisa lo mismo o mas que mi revision a mano, pago el Profesional.",
+  "objection": "Que me toque a mi armar el Excel de radicados, que hoy no existe porque todo esta regado, y que la garantia solo me devuelva $120.000 si se les pasa una actuacion que a mi me puede costar un proceso.",
+  "would_change_my_mind": "Que durante la prueba se les escape una sola actuacion que yo si vi a mano, o que nunca saque el tiempo de juntar los radicados y la prueba se venza sin haberla usado.",
+  "price_too_cheap": 30000,
+  "price_cheap": 80000,
+  "price_expensive": 200000,
+  "price_too_expensive": 350000
+}

@@ -1,0 +1,13 @@
+{
+  "id": "P013",
+  "buys": true,
+  "purchases_first_month": 1,
+  "reason_code": "convenience",
+  "reason": "Reviso mas de cien radicados a mano cada manana sin apoyo administrativo; si en los 30 dias en paralelo no se le escapa ninguna actuacion frente a mi Excel, $120.000 al mes es menos de lo que vale una hora mia y lo pago.",
+  "objection": "Las paginas de la Rama se caen y cambian todo el tiempo; temo que un dia deje de consultar bien y yo ya me haya confiado. Devolverme un mes no compensa un termino vencido.",
+  "would_change_my_mind": "Que durante la prueba se le pase una sola actuacion que yo si vi a mano, o que el informe del lunes muestre consultas fallidas con frecuencia: ahi no pago.",
+  "price_too_cheap": 30000,
+  "price_cheap": 80000,
+  "price_expensive": 200000,
+  "price_too_expensive": 350000
+}

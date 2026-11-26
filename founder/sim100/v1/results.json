@@ -1,0 +1,245 @@
+{
+ "business": "LegalWeb (SaaS de vigilancia judicial para abogados en Colombia)",
+ "seed": 7,
+ "dealt": 100,
+ "answered": 100,
+ "skipped": [],
+ "buys": 14,
+ "passes": 86,
+ "buy_rate": 0.14,
+ "by_segment": [
+  [
+   "Socio de firma pequena, 2 a 10 abogados (80 a 300 procesos)",
+   30,
+   0.3
+  ],
+  [
+   "Abogado litigante independiente (20 a 80 procesos activos)",
+   50,
+   0.1
+  ],
+  [
+   "Abogado joven o que litiga poco (menos de 15 procesos)",
+   20,
+   0.0
+  ]
+ ],
+ "by_behaviour": [
+  [
+   "Adopta tecnologia pronto",
+   10,
+   0.5
+  ],
+  [
+   "Desordenado",
+   15,
+   0.4666666666666667
+  ],
+  [
+   "Revisa a mano",
+   25,
+   0.08
+  ],
+  [
+   "Tiene dependiente judicial",
+   15,
+   0.0
+  ],
+  [
+   "Ya paga un servicio de vigilancia",
+   15,
+   0.0
+  ],
+  [
+   "Desconfia de la tecnologia",
+   12,
+   0.0
+  ],
+  [
+   "Busca lo gratis",
+   8,
+   0.0
+  ]
+ ],
+ "by_income": [
+  [
+   "$115,028,000 and up",
+   34,
+   0.29411764705882354
+  ],
+  [
+   "$61,067,000 to $115,028,000",
+   33,
+   0.09090909090909091
+  ],
+  [
+   "under $61,067,000",
+   33,
+   0.030303030303030304
+  ]
+ ],
+ "why_not": [
+  [
+   "habit",
+   36,
+   [
+    "Ya tengo dependiente judicial que me revisa los estados y va a los juzgados, y me funciona. Un correo automatico no me saca copias, no radica memoriales ni habla con el secretario, asi que seria un gasto adicional y no un reemplazo.",
+    "Ya pago una vigilancia judicial hace años y me funciona; con menos de 15 procesos no voy a pagar $120.000 al mes por algo que ya tengo, y menos migrar todo. Si acaso me quedaría en el plan gratis de 5 casos para comparar."
+   ],
+   [
+    "P001",
+    "P004"
+   ]
+  ],
+  [
+   "trust",
+   29,
+   [
+    "Uso los 3 meses gratis porque no me cuestan nada, pero sigo revisando a mano en paralelo; si igual tengo que entrar a la Rama cada manana porque no me fio, no voy a pagar $120.000 al mes por un correo que duplica mi Excel.",
+    "La prueba gratis si la hago, pero a los 3 meses no creo que pague: yo ya reviso cada manana y no voy a soltar mi Excel por un robot que depende de paginas de la Rama que se caen y cambian cada rato. Si igual tengo que seguir revisando a mano por si acaso, estoy pagando $120.000 por un correo duplicado."
+   ],
+   [
+    "P011",
+    "P013"
+   ]
+  ],
+  [
+   "price",
+   20,
+   [
+    "La consulta de la Rama Judicial es gratis y ya tengo mi rutina de cada manana con el Excel; $120.000 al mes es $1.440.000 al ano por algo que hoy hago yo mismo. Usaria los 3 meses gratis y luego me quedaria en el plan gratuito o volveria a revisar a mano.",
+    "Llevo menos de 15 procesos y ya pago una vigilancia que me funciona; $120.000 al mes es mucho para ese volumen y cambiarme me da pereza. Probaria los 3 meses gratis y despues me quedaria en el plan gratuito de 5 casos o seguiria con lo que tengo."
+   ],
+   [
+    "P002",
+    "P003"
+   ]
+  ],
+  [
+   "need",
+   1,
+   [
+    "Llevo menos de 15 procesos y ya tengo quien me los revise; con mis ingresos, $120.000 al mes es casi el 4% de lo que gano y el plan gratis de 5 casos con revision semanal me cubre buena parte. Probaria los 3 meses con gusto, pero al terminar me quedaria en el gratuito."
+   ],
+   [
+    "P006"
+   ]
+  ]
+ ],
+ "why_yes": [
+  [
+   "need",
+   11,
+   [
+    "Consultar la Rama es gratis, pero con mas de cien procesos nadie en la firma lo hace todos los dias y ya casi se nos pasa un termino. Si en los tres meses gratis los correos llegan bien y no se le escapa ninguna actuacion, $120.000 al mes es menos de lo que cobro por una hora.",
+    "Mi primera reaccion fue que $120.000 es mucho, pero con mas de cien procesos en la firma eso es menos de lo que me cuesta una hora de dependiente, y ya casi se me vence un termino revisando a mano. Si en los tres meses gratis no se le escapa ninguna actuacion frente a mi Excel, lo pago."
+   ],
+   [
+    "P014",
+    "P020"
+   ]
+  ],
+  [
+   "convenience",
+   3,
+   [
+    "Reviso SAMAI a mano varias veces por semana para mas de cien procesos y eso me quita horas; si en tres meses de prueba las alertas no se le escapa ninguna actuacion frente a mi revision manual, $120.000 al mes para tres usuarios es menos de lo que me cuesta una hora de trabajo.",
+    "Consultar es gratis, pero revisar mas de cien radicados a mano cada manana entre Rama Judicial y SAMAI me cuesta horas que facturo mucho mas caro que $120.000. Si en los tres meses de prueba no se le escapa ni una actuacion frente a mi Excel, lo pago mes a mes, no el semestre."
+   ],
+   [
+    "P005",
+    "P034"
+   ]
+  ]
+ ],
+ "flip": [
+  "Que durante los tres meses gratis la herramienta me avise de una actuacion que a mi dependiente se le paso, o que mi dependiente se vaya y me toque reemplazarlo.",
+  "Que durante los 3 meses de prueba me avise de todas las actuaciones sin fallar ni una frente a mi propia revision, y que haya un plan individual de unos $50.000 al mes; no necesito 3 usuarios.",
+  "Un plan para pocos procesos (hasta unos 15) por alrededor de $40.000 al mes, y haber comprobado durante la prueba que no se le escapa ninguna actuacion frente a mi servicio actual.",
+  "Que durante los 3 meses detecte actuaciones que mi servicio actual no me avisó, y que cueste menos de lo que pago hoy, alrededor de $50.000 al mes para un abogado solo.",
+  "Un plan individual de unos $40.000 al mes para hasta 20 procesos con consulta diaria, y haber comprobado en la prueba que no se le escapo ninguna actuacion.",
+  "Que durante la prueba me avise a tiempo de una actuacion que yo no habia visto y me salve un termino; ahi si pago, sobre todo si baja a unos $70.000 al mes.",
+  "Que durante los 3 meses gratis no se le escape ni una actuacion frente a lo que reporta mi dependiente, y que el plan cueste alrededor de $50.000 al mes para mis pocos procesos.",
+  "Un plan para pocos procesos (unos 15) con revision diaria por alrededor de $40.000 al mes, y haber visto durante la prueba que no se le escapa ninguna actuacion frente a mi revision manual.",
+  "Que durante la prueba me avise de una actuacion que yo no habia visto y me salve un termino; ahi pago sin discutir. Tambien ayudaria un precio cercano a $60.000 al mes.",
+  "Que en los 3 meses de prueba no se le escape ni una sola actuacion frente a mi revision manual, y que me avise claramente cuando no pudo consultar un radicado en vez de quedarse callado; con eso y un precio cercano a $60.000 lo pagaria.",
+  "Un plan individual de un solo usuario alrededor de $50.000 al mes, y haber comprobado durante la prueba que no se le escapo ninguna actuacion de SAMAI frente a mi revision manual.",
+  "Que durante los 3 meses de prueba no se le escape ni una sola actuacion frente a mi revision manual, y que me avise claramente cuando no pudo consultar un proceso en vez de quedarse callado.",
+  "Que un colega de confianza me diga que lleva un ano usandolo y que nunca le ha fallado una notificacion; con eso y un precio cercano a $60.000 lo pensaria.",
+  "Que durante los 3 meses no se le escape ni una sola actuacion frente a mi Excel, y que me avise expresamente cuando no pudo consultar un radicado en vez de quedarse callado.",
+  "Que en los 3 meses de prueba me avise de una actuación que yo no había visto y que el plan ilimitado baje a unos $50.000 al mes, con claridad escrita sobre qué hacen con los datos.",
+  "Que durante los 3 meses gratis, corriendo en paralelo con mi servicio actual, LegalWeb me detecte todo lo que detecta el otro (y ojala algo que al otro se le escape) y que ademas me salga claramente mas barato; el portal para que el cliente empresa consulte solo y deje de llamarme es lo unico que de verdad me tienta.",
+  "Que dos o tres colegas litigantes de mi ciudad me digan que lo usan hace un ano sin que se les escape una actuacion, y que durante la prueba coincida al cien por ciento con lo que reporta mi dependiente.",
+  "Que durante los 3 meses de prueba el sistema me avise de una actuacion que a mi dependiente se le paso, y que cueste menos de lo que le pago a el.",
+  "Que durante los tres meses gratis la herramienta me avisara de actuaciones que mi dependiente no vio, o que el portal de clientes me quitara de verdad las llamadas de las empresas preguntando como va cada proceso.",
+  "Que en los 3 meses de prueba me avise de una actuacion que a mi oficina se le paso, o que mis clientes empresa empiecen a usar el portal y dejen de llamarme a preguntar como va cada proceso.",
+  "Un plan para abogado solo de unos $50.000 al mes, y haber comprobado durante la prueba que no se le escapo ni una sola actuacion frente a mi revision manual en las tres ciudades.",
+  "Que durante los 3 meses de prueba le coja a mi dependiente al menos una actuacion en SAMAI que el no vio, y que no se le pase ninguna de las que el si vio.",
+  "Que un colega de confianza de mi ciudad me diga que lleva meses usandola y que no le ha fallado ni una notificacion, y que durante la prueba me avise antes de que yo lo vea en el juzgado.",
+  "Usarlo los 3 meses gratis en paralelo con mi dependiente y comprobar que no se le escapa ni una sola actuacion que ella si encontro, y que me avisa cuando no pudo consultar la Rama en vez de quedarse callado.",
+  "Que durante los 3 meses no se le escape ni una sola actuacion frente a mi revision manual, que me digan claro quien esta detras y como protegen los datos, y un precio para independiente cercano a $50.000 al mes.",
+  "Que en los 3 meses de prueba detecte todas las actuaciones que mi dependiente encuentra, sin fallar ninguna, y que cueste alrededor de $50.000 al mes.",
+  "Que un colega de confianza que litigue en las mismas ciudades me diga que lleva un ano usandola sin que se le pase una sola actuacion, y que el precio para pocos procesos baje a unos $40.000.",
+  "Que durante los 3 meses de prueba me detecte al menos una actuacion que mi servicio actual no me aviso o me aviso tarde, y que la migracion de todos mis radicados sea subir un Excel y ya.",
+  "Que durante los 3 meses de prueba no se le escape ni una sola actuacion frente a mi revision manual, y que me digan por escrito que pasa y como me avisan cuando la consulta a la Rama falla.",
+  "Que colegas que conozco la usen hace rato sin que se les pase una actuación y que haya un plan individual por unos $50.000 al mes, más barato que lo que pago hoy.",
+  "Que me costara claramente menos que lo que pago hoy (unos $50.000 al mes) y que el portal para clientes de verdad me quitara las llamadas de las empresas preguntando como va cada proceso.",
+  "Un plan individual para pocos procesos (hasta unos 15-20 casos, un solo usuario) por unos $35.000 al mes con consulta diaria.",
+  "Que un colega de confianza que lleve procesos como los mios me diga que lo uso un ano completo sin que se le escapara una sola actuacion, y poder probarlo en paralelo con mi dependiente.",
+  "Que durante los tres meses de prueba me avisara de actuaciones en SAMAI antes o mejor que mi servicio actual, y que costara menos de lo que hoy pago, alrededor de $60.000 al mes.",
+  "Que mi dependiente se fuera o que yo comprobara durante los 3 meses gratis, comparando contra ella, que no se le escapa ni una sola actuacion en SAMAI; ahi quiza pagaria algo para tenerla como respaldo.",
+  "Que un colega de confianza que litigue en mis mismos juzgados me diga que lo usa hace un ano y nunca le ha fallado una notificacion, y que el precio para pocos procesos sea mucho mas bajo.",
+  "Un plan para independientes de un solo usuario por unos $50.000 al mes, y haber comprobado en los 3 meses de prueba que no se le escapo ni una sola actuacion frente a mi revision manual.",
+  "Que durante los 3 meses gratis me detecte actuaciones que mi servicio actual no vio o aviso tarde, y que ademas me salga claramente mas barato que lo que pago hoy, con la migracion de radicados hecha por ellos.",
+  "Un plan para independientes de unos $50.000 al mes, o haber comprobado en los 3 meses de prueba que no se le paso ninguna actuacion de SAMAI en mis procesos.",
+  "Correrlo en paralelo los 3 meses con mis procesos y comprobar que no se le escapa ninguna actuacion que mi dependiente si encontro, y que el portal de verdad me baja las llamadas de los clientes empresa.",
+  "Que en los 3 meses de prueba me avise de actuaciones que a mi dependiente se le pasaron, sin fallar ni una, y que me salga claramente más barato que lo que le pago hoy a él.",
+  "Que durante los 3 meses de prueba no se le escape una sola actuacion frente a mi revision manual, y que haya un contrato de confidencialidad y tratamiento de datos claro, con empresa colombiana identificable y otras firmas que conozca usandolo.",
+  "Un plan intermedio de unos $35.000 al mes para hasta 15 o 20 casos con revision diaria, sin usuarios adicionales que no necesito.",
+  "Que un colega de confianza que litigue en mis mismos juzgados me diga que lleva un ano usandolo y que no se le ha escapado ninguna actuacion.",
+  "Que un colega de confianza o una firma conocida me diga que lo usa hace mas de un ano sin que se le escape una actuacion, y un contrato de confidencialidad claro con la empresa identificada.",
+  "Que dos o tres colegas de confianza la usen y me digan que no les ha fallado, y que durante los 3 meses gratis detecte todo lo que detecta mi servicio actual (o algo que al mio se le paso), corriendo los dos en paralelo.",
+  "Que durante los 3 meses gratis no se le escape ni una sola actuacion frente a mi propia revision en mis tres ciudades, y que un colega de confianza que ya lo use me lo recomiende; ahi lo pagaria si costara cerca de $60.000.",
+  "Que dos o tres colegas que conozco la usen hace un ano sin que se les haya pasado una actuacion, y que me cueste mucho menos, tipo $40.000 al mes, como respaldo del dependiente.",
+  "Que un colega de confianza que litigue laboral o ejecutivo me diga que lleva un ano usandolo y que nunca le ha fallado una notificacion, y que el precio baje a algo cercano a $50.000 al mes.",
+  "Que durante los 3 meses de prueba no se le escape ni una sola actuacion de las que yo encuentro a mano en SAMAI, y que el precio ronde los $50.000 al mes.",
+  "Que durante la prueba me avise a tiempo de una actuacion que yo no habia visto y me salve un termino; ahi si pago, o si el plan bajara a unos $70.000 al mes.",
+  "Que un colega de confianza que lo use hace mas de un ano me muestre en persona que nunca le ha fallado, y que cueste menos de lo que le pago a mi dependiente.",
+  "Que durante los 3 meses me detecte actuaciones que mi servicio actual no vio o vio tarde, y que cueste claramente menos que lo que pago hoy, con migración de mis radicados sin trabajo de mi parte.",
+  "Que durante los 3 meses de prueba la herramienta detecte una actuacion que a mi dependiente se le paso, o que me quede sin la persona que hoy revisa los procesos.",
+  "Que durante los 3 meses gratis me detecte una actuacion que mi dependiente no vio, y que el aviso me llegue por WhatsApp y no solo por correo.",
+  "Que durante los tres meses gratis no se le escape ni una sola actuacion de las que mi dependiente si encuentra, y que por escrito asuman alguna responsabilidad o me avisen cuando la consulta de un proceso fallo. Ahi lo pagaria como respaldo, no como reemplazo.",
+  "Que durante los 3 meses de prueba, corriendo en paralelo con mi proveedor actual, no se le escape ni una sola actuacion y que ademas me den por escrito una garantia o poliza que responda si falla.",
+  "Que un colega de confianza la use hace mas de un ano y me diga que nunca le ha fallado, y que el precio para pocos procesos baje a unos $40.000 al mes.",
+  "Que durante los 3 meses de prueba no se le escape ni una sola actuacion frente a mi revision manual en SAMAI, y que me avise expresamente cuando no pudo consultar un proceso en vez de quedarse callado.",
+  "Que un colega de confianza que lleve un ano usandolo me diga que nunca le ha fallado un aviso, y que el precio este cerca de $60.000 al mes.",
+  "Que un colega de confianza que lo use hace mas de un ano me diga que nunca le ha fallado una actuacion, y que alguien me lo muestre en persona.",
+  "Que cueste claramente menos que lo que pago hoy (unos $40.000 al mes) y que durante los 3 meses de prueba no se le escape ni una sola actuacion de SAMAI frente a mi servicio actual.",
+  "Un plan intermedio de unos $40.000 al mes para hasta 15 o 20 procesos con revision diaria, y haber visto en los 3 meses de prueba que me aviso de alguna actuacion antes que mi dependiente.",
+  "Un plan para abogado individual de unos $40.000 al mes con hasta 20 procesos y un aviso claro cada dia de que la consulta si se hizo (o que fallo), para no tener que revisar dos veces.",
+  "Que dos o tres colegas de mi ciudad la usen hace mas de un ano sin que se les haya escapado una actuacion, y un contrato claro de confidencialidad y manejo de datos; ahi si pagaria si el plan gratis de 5 casos no me alcanza.",
+  "Probarla los 3 meses en paralelo con mi dependiente y comprobar que no se le escapa ni una sola actuacion en SAMAI, y que me avisa antes que el; ahi la pagaria como respaldo, pero a menor precio.",
+  "Que durante la prueba me avise sin fallar ni una actuación en todos mis procesos, que colegas que conozco la usen, y que el precio baje a unos $60.000 al mes.",
+  "Un plan para pocos procesos (hasta 15 o 20) con revision diaria por unos $40.000 al mes, y haber visto durante la prueba que no se le escapo ninguna actuacion frente a mi Excel.",
+  "Que un colega de confianza que lo lleve usando un ano me lo recomiende y me muestre que no se le ha escapado ninguna actuacion.",
+  "Que durante los 3 meses gratis yo lo compare contra mi revision manual y no se le escape ni una sola actuacion, y que me avise claramente cuando no pudo consultar un despacho en vez de quedarse callado.",
+  "Un plan individual de unos $40.000 al mes para hasta 15 o 20 procesos, y haber comprobado durante la prueba que no se le escapa ninguna actuacion de SAMAI frente a mi servicio actual.",
+  "Que durante los 3 meses no se le escape ni una sola actuacion frente a mi Excel, que me avise expresamente cuando no pudo consultar un despacho, y un precio cercano a $60.000 al mes.",
+  "Que durante los 3 meses gratis, corriendo en paralelo con mi servicio actual, LegalWeb detecte todo lo que el otro detecta (o algo que al otro se le pase) y ademas me salga claramente mas barato que lo que hoy pago.",
+  "Que un colega administrativista que conozco lo haya usado un ano sin perder una sola actuacion de SAMAI, y que me migren todos los radicados desde mi proveedor actual sin que yo haga nada.",
+  "Que durante los 3 meses detecte todas las actuaciones que encuentra mi dependiente, sin fallar ninguna, y que un colega de confianza me la recomiende; ahi lo pagaria como respaldo.",
+  "Que durante los 3 meses no se le escape ni una actuacion frente a mi revision manual, que me avise cuando una consulta falla en vez de quedarse callado, y un plan individual de un solo usuario cerca de $60.000 al mes.",
+  "Que un colega de confianza que lleve anos usandolo me diga que nunca le ha fallado una notificacion, y poder compararlo unos meses contra la revision de mi dependiente.",
+  "Que durante los 3 meses de prueba no se le escape ni una sola actuacion frente a lo que reporta mi dependiente, y que un par de colegas o firmas conocidas me confirmen que la usan.",
+  "Un plan intermedio de unos $40.000 al mes con 30 o 40 procesos y consulta diaria, o que durante la prueba el correo me avise de una actuacion que yo no habia visto.",
+  "Que durante los 3 meses no se le escape ni una sola actuacion de SAMAI frente a mi revision manual, y que un colega de confianza que ya lo use me lo recomiende, con claridad sobre el tratamiento de datos.",
+  "Que durante la prueba me avise a tiempo de una actuacion que a nosotros se nos habia pasado en alguno de nuestros procesos; ahi si veria que revisar a mano ya no es alternativa y pagaria.",
+  "Un plan individual de unos $50.000 al mes para un solo usuario, o comprobar durante la prueba que detecta en SAMAI actuaciones que a mi se me pasaron.",
+  "Que durante la prueba me avise de una actuacion que a mi dependiente se le paso, o un plan de unos $50.000 al mes para pocos procesos.",
+  "Que dos o tres colegas litigantes que yo conozca la usen hace mas de un ano, y que durante la prueba gratis no se le escape ni una sola actuacion frente a lo que reporta mi dependiente.",
+  "Que durante los 3 meses de prueba me avise de todas las actuaciones sin fallar ni una frente a mi revision manual, y que el precio quede cerca de $50.000 al mes.",
+  "Un plan para independientes de unos $50.000 al mes, y haber comprobado durante la prueba que no se le escapo ni una sola actuacion frente a mi revision manual."
+ ],
+ "purchases_first_month_per_buyer": 1.0,
+ "price_answers": 100
+}

@@ -1,0 +1,13 @@
+{
+  "id": "P038",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "price",
+  "reason": "Llevo menos de 15 procesos y los reviso en veinte minutos cada manana con mi Excel; con lo que gano, $59.900 al mes son casi $720.000 al ano por algo que hoy hago gratis. Haria la prueba y me quedaria con el plan gratuito de 3 procesos para los mas delicados.",
+  "objection": "Aunque me avisen, igual voy a seguir entrando a la Rama a verificar porque la responsabilidad ante el cliente es mia; que me devuelvan $59.900 no me arregla un termino vencido. Entonces pagaria y no me ahorraria la revision.",
+  "would_change_my_mind": "Un plan pequeno de hasta 15 procesos por unos $25.000 al mes, o que en la prueba me detecte una actuacion que a mi se me paso.",
+  "price_too_cheap": 8000,
+  "price_cheap": 20000,
+  "price_expensive": 35000,
+  "price_too_expensive": 50000
+}

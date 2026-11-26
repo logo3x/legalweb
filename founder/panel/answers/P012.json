@@ -1,13 +1,13 @@
 {
   "id": "P012",
-  "buys": false,
-  "purchases_first_month": 0,
-  "reason_code": "habit",
-  "reason": "Ya tengo un servicio de vigilancia hace anos que me funciona y mis procesos ya estan cargados alla; cambiarme es trabajo y riesgo para ganar muy poco. Como mucho corro la prueba gratis en paralelo y la dejo en el plan gratuito.",
-  "objection": "Tengo mas de 50 procesos en varias epocas del ano, asi que el plan de $59.900 no me alcanza y el de $120.000 no me sale mas barato que lo que ya pago. Y la garantia solo me devuelve un mes: si se les pasa un auto y se me vence un termino, esos $120.000 no me arreglan nada frente al cliente.",
-  "would_change_my_mind": "Que en los 30 dias en paralelo me pesquen al menos una actuacion que mi servicio actual no me aviso o me aviso tarde, y que el plan ilimitado quede claramente por debajo de lo que pago hoy.",
-  "price_too_cheap": 25000,
-  "price_cheap": 50000,
-  "price_expensive": 100000,
-  "price_too_expensive": 150000
+  "buys": true,
+  "purchases_first_month": 1,
+  "reason_code": "convenience",
+  "reason": "Reviso SAMAI a mano varias veces por semana y a mis 62 anos un auto que se me pase me cuesta mucho mas que $59.900. Si en los 30 dias en paralelo no se le escapa ninguna actuacion frente a mi propia revision, pago el plan Individual; el de $120.000 no, es mucho para los procesos que llevo.",
+  "objection": "El tope de 50 procesos: si paso de ahi me obligan a saltar a $120.000, el doble, por funciones (3 usuarios, portal del cliente) que trabajando solo no uso. Y la garantia solo devuelve el mes, no el dano de un termino vencido.",
+  "would_change_my_mind": "Que en la prueba en paralelo se le pase una sola actuacion de SAMAI que yo si vi, o que mis procesos activos superen los 50 y la unica salida sea el plan de $120.000.",
+  "price_too_cheap": 15000,
+  "price_cheap": 40000,
+  "price_expensive": 80000,
+  "price_too_expensive": 110000
 }

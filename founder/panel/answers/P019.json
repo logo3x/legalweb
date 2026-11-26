@@ -1,13 +1,13 @@
 {
   "id": "P019",
-  "buys": true,
-  "purchases_first_month": 1,
-  "reason_code": "convenience",
-  "reason": "Llevo procesos en tres ciudades y revisar la Rama a mano me quita horas; si en los 30 dias en paralelo no se le escapa ni una actuacion frente a mi propia revision, $59.900 por el plan Individual es menos de lo que me cuesta una hora de trabajo. Pago solo si la comparacion sale limpia, no por la promesa.",
-  "objection": "No conozco a ningun colega que la use y la garantia solo me devuelve un mes de $59.900: si se les pasa un auto y se me vence un termino, el dano es mio y vale mil veces mas. Ademas el tope de 50 procesos me queda justo y el salto a $120.000 es el doble por cosas que no necesito.",
-  "would_change_my_mind": "Que durante la prueba se les escape una sola actuacion que yo si vi, o que no me avisen de una consulta fallida; en ese caso cancelo y sigo como estoy.",
-  "price_too_cheap": 20000,
-  "price_cheap": 45000,
-  "price_expensive": 110000,
-  "price_too_expensive": 180000
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "trust",
+  "reason": "Ya le pago a mi dependiente para que revise estados y vaya a los juzgados, y confio en el, no en una pagina que ningun colega mio usa. Tal vez dejo correr la prueba gratis, pero al dia 30 no veo por que pagar por algo que ya tengo cubierto.",
+  "objection": "No conozco a nadie que la use ni se quien responde si se pasa una actuacion: devolverme $120.000 no me arregla un termino vencido, y muchos juzgados civiles y de familia publican tarde o mal en la pagina, que es justo lo que mi dependiente resuelve yendo en persona.",
+  "would_change_my_mind": "Que dos o tres colegas de mi ciudad que litigan en los mismos juzgados me digan que la usan hace meses, y que en la prueba en paralelo la herramienta pille al menos una actuacion que a mi dependiente se le paso.",
+  "price_too_cheap": 30000,
+  "price_cheap": 80000,
+  "price_expensive": 200000,
+  "price_too_expensive": 350000
 }

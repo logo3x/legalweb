@@ -1,0 +1,13 @@
+{
+  "id": "P047",
+  "buys": true,
+  "purchases_first_month": 1,
+  "reason_code": "convenience",
+  "reason": "Ya tengo dependiente que revisa y me funciona, pero la prueba en paralelo de 30 dias no me cuesta nada y, si no se le escapa ninguna actuacion, $120.000 al mes por procesos ilimitados y un portal para que mis clientes empresa dejen de llamarme es plata menor para la firma. Tomaria el Profesional como segunda capa, no como reemplazo.",
+  "objection": "Que dependa de consultas automaticas a la Rama Judicial y SAMAI, que se caen a cada rato: si me llegan avisos de 'consulta fallida' todos los dias termino revisando a mano igual, y la garantia solo me devuelve $120.000 cuando un termino vencido me cuesta muchisimo mas.",
+  "would_change_my_mind": "Que durante la prueba se le pase una sola actuacion que mi dependiente si vio, o que el portal del cliente resulte tan basico que no me ahorre las llamadas.",
+  "price_too_cheap": 30000,
+  "price_cheap": 90000,
+  "price_expensive": 250000,
+  "price_too_expensive": 450000
+}

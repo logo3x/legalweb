@@ -1,0 +1,13 @@
+{
+  "id": "P005",
+  "buys": true,
+  "purchases_first_month": 1,
+  "reason_code": "convenience",
+  "reason": "Con mas de cien procesos entre la firma, revisar SAMAI a mano varias veces por semana me cuesta mucho mas que $120.000 al mes. Tomaria el Profesional, pero solo si en los 30 dias en paralelo no se le escapa ninguna actuacion de SAMAI frente a mi revision.",
+  "objection": "No conozco a ningun colega que la use y no se quien esta detras; una garantia que solo devuelve la mensualidad no me cubre un termino vencido, asi que no podria dejar de revisar por mi cuenta al principio.",
+  "would_change_my_mind": "Que durante la prueba se le pase una sola actuacion de SAMAI que yo si vi, o que no pueda verificar la empresa y el NIT; ahi no pago.",
+  "price_too_cheap": 30000,
+  "price_cheap": 80000,
+  "price_expensive": 200000,
+  "price_too_expensive": 350000
+}

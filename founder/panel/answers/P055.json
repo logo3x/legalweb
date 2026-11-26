@@ -1,0 +1,13 @@
+{
+  "id": "P055",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Llevo menos de 15 procesos y ya le pago a mi dependiente, que revisa estados y va a los juzgados; en ella confio. No conozco a ningun colega que use esto, asi que no voy a sumar otro gasto mensual por algo que ya tengo cubierto.",
+  "objection": "No se quien esta detras ni si la consulta automatica es confiable; si se les pasa una actuacion, que me devuelvan $59.900 no me arregla un termino vencido frente a un cliente empresa.",
+  "would_change_my_mind": "Que un colega que yo conozca la use hace meses y me diga que no se le ha pasado nada, o que en la prueba en paralelo detecte algo que a mi dependiente se le escapo.",
+  "price_too_cheap": 10000,
+  "price_cheap": 25000,
+  "price_expensive": 50000,
+  "price_too_expensive": 80000
+}

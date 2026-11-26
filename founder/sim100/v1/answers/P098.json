@@ -1,0 +1,13 @@
+{
+  "id": "P098",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "trust",
+  "reason": "Yo ya tengo dependiente que revisa estados y va a los juzgados en las tres ciudades, y confio en el, no en una pagina que ningun colega mio usa. Si se le pasa una actuacion a un sistema que no conozco, el que responde por el termino vencido soy yo.",
+  "objection": "No se quien esta detras ni que pasa si la consulta a la Rama falla una madrugada y no me avisa; ademas los laborales y ejecutivos se mueven por estados y el dependiente igual tiene que ir al despacho.",
+  "would_change_my_mind": "Que dos o tres colegas litigantes que yo conozca la usen hace mas de un ano, y que durante la prueba gratis no se le escape ni una sola actuacion frente a lo que reporta mi dependiente.",
+  "price_too_cheap": 30000,
+  "price_cheap": 70000,
+  "price_expensive": 150000,
+  "price_too_expensive": 280000
+}

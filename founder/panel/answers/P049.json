@@ -1,0 +1,13 @@
+{
+  "id": "P049",
+  "buys": true,
+  "purchases_first_month": 1,
+  "reason_code": "convenience",
+  "reason": "Con mas de cien procesos, revisar radicado por radicado cada manana me quita una hora o mas, y $120.000 al mes es menos de lo que vale esa hora. Como solo entrego radicados, que son publicos, y puedo compararlo 30 dias contra mi Excel, pagaria el Profesional si en la prueba no se le escapa ninguna actuacion.",
+  "objection": "No los conozco: si se les pasa un auto y se me vence un termino, que me devuelvan $120.000 no me sirve de nada frente al cliente. Y mi Excel tiene nombres de clientes, tendria que limpiarlo antes de enviarlo.",
+  "would_change_my_mind": "Que durante la prueba en paralelo yo encuentre a mano una sola actuacion que ellos no me avisaron, o que tarden mas de un dia; ahi no pago y sigo con mi revision.",
+  "price_too_cheap": 40000,
+  "price_cheap": 90000,
+  "price_expensive": 220000,
+  "price_too_expensive": 350000
+}

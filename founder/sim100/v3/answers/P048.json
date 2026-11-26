@@ -1,0 +1,13 @@
+{
+  "id": "P048",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Ya tengo quien me revise los procesos y me funciona. Uso los 30 dias gratis para comparar y despues me quedo con el plan gratuito de 3 procesos para los mas delicados; no veo por que pagar otra mensualidad.",
+  "objection": "Estaria pagando dos veces por lo mismo: mi dependiente ya revisa los juzgados y ademas hace vueltas que una alerta por WhatsApp no hace. Y la garantia solo me devuelve $69.900, no el termino que se me venza.",
+  "would_change_my_mind": "Que durante la prueba en paralelo el sistema me avise de una actuacion que a mi dependiente se le paso; ahi si pagaria el plan Individual.",
+  "price_too_cheap": 10000,
+  "price_cheap": 30000,
+  "price_expensive": 60000,
+  "price_too_expensive": 90000
+}

@@ -1,0 +1,13 @@
+{
+  "id": "P044",
+  "buys": true,
+  "purchases_first_month": 1,
+  "reason_code": "need",
+  "reason": "Ya se me paso un termino por poco y con mas de cien procesos entre carpetas y WhatsApp no doy abasto; si en los 30 dias me avisa lo mismo que encuentra mi dependiente, pago el Profesional porque el de 50 procesos no me alcanza.",
+  "objection": "Las paginas de la Rama se caen y cambian cada rato; temo que esto deje de funcionar un dia y yo confiado. Ademas armar el Excel de radicados me da pereza, ni siquiera los tengo todos juntos.",
+  "would_change_my_mind": "Que durante la prueba se le escape una sola actuacion que mi dependiente si vio, o que nunca me siente a armar el Excel; ahi no pago.",
+  "price_too_cheap": 30000,
+  "price_cheap": 90000,
+  "price_expensive": 250000,
+  "price_too_expensive": 450000
+}

@@ -1,0 +1,13 @@
+{
+  "id": "P090",
+  "buys": true,
+  "purchases_first_month": 1,
+  "reason_code": "convenience",
+  "reason": "Consultar SAMAI es gratis, pero mi tiempo no: reviso decenas de procesos a mano varias veces por semana y un auto que se me pase me cuesta mucho mas que $59.900. Si en los 30 dias en paralelo no se le escapa ninguna actuacion frente a mi propia revision, pago el plan Individual.",
+  "objection": "Que la cobertura de SAMAI falle justo en lo contencioso administrativo, que es donde litigo, y que la garantia solo me devuelva un mes de $59.900 cuando el dano de un termino vencido es mio. Ademas, si paso de 50 procesos me toca saltar a $120.000, el doble.",
+  "would_change_my_mind": "Que durante la prueba se le pase una sola actuacion de SAMAI que yo si vi a mano, o que los avisos de consulta fallida sean tan frecuentes que igual tenga que revisar todo yo.",
+  "price_too_cheap": 15000,
+  "price_cheap": 40000,
+  "price_expensive": 90000,
+  "price_too_expensive": 150000
+}

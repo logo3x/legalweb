@@ -1,0 +1,13 @@
+{
+  "id": "P020",
+  "buys": true,
+  "purchases_first_month": 1,
+  "reason_code": "need",
+  "reason": "Ya casi se me vence un termino y revisar mas de cien radicados a mano cada manana no da garantia de nada. Si en los 30 dias el aviso coincide actuacion por actuacion con mi Excel, $120.000 al mes por el plan Profesional es menos de lo que me cuesta una hora de trabajo, pero no suelto mi revision manual de un dia para otro.",
+  "objection": "No conozco a ningun colega que la use y no se quien responde si se les pasa una actuacion: devolverme un mes de $120.000 no compensa un termino vencido ni una queja disciplinaria.",
+  "would_change_my_mind": "Que durante la prueba se les pase una sola actuacion que yo si vi en la Rama, o que una consulta falle y no me avisen ese mismo dia; ahi no pago nada y sigo con mi Excel.",
+  "price_too_cheap": 30000,
+  "price_cheap": 80000,
+  "price_expensive": 250000,
+  "price_too_expensive": 450000
+}

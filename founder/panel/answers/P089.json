@@ -1,0 +1,13 @@
+{
+  "id": "P089",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Ya tengo un dependiente que me revisa los procesos y me funciona; no voy a montar un Excel y depender de avisos por WhatsApp de una empresa que no conozco y que ningun colega me ha recomendado.",
+  "objection": "Si el sistema falla y se me pasa un termino, que me devuelvan $120.000 no me sirve de nada frente a un cliente empresa; la responsabilidad sigue siendo mia.",
+  "would_change_my_mind": "Que un colega de confianza me diga que lo lleva usando un ano con sus procesos y no le ha fallado una sola actuacion.",
+  "price_too_cheap": 40000,
+  "price_cheap": 90000,
+  "price_expensive": 250000,
+  "price_too_expensive": 450000
+}

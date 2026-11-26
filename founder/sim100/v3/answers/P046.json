@@ -1,0 +1,13 @@
+{
+  "id": "P046",
+  "buys": true,
+  "purchases_first_month": 1,
+  "reason_code": "need",
+  "reason": "Ya se me ha pasado un termino por poco y reviso SAMAI a mano varias veces por semana; si en los 30 dias de prueba me avisa lo mismo que yo encuentro, pago el Individual de $69.900. El de $120.000 no, es mucho para los procesos que llevo.",
+  "objection": "Que SAMAI se caiga o cambie y el aviso no llegue justo el dia que importa; devolverme el mes no me arregla un termino vencido.",
+  "would_change_my_mind": "Que durante la prueba se le pase una sola actuacion en SAMAI que yo si vi a mano, o que yo pase de 80 procesos y me toque el plan de $120.000.",
+  "price_too_cheap": 20000,
+  "price_cheap": 45000,
+  "price_expensive": 90000,
+  "price_too_expensive": 120000
+}

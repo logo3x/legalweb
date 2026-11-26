@@ -1,0 +1,13 @@
+{
+  "id": "P060",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Ya tengo quien me revise los procesos y me funciona; son pocos y los llevo en mi libreta y yendo al juzgado. No voy a confiarle mis terminos a una pagina que no conozco y que ningun colega me ha recomendado.",
+  "objection": "Si el aviso por WhatsApp falla o no lo veo, el termino se me vence igual y que me devuelvan $59.900 no me arregla nada frente al cliente. Ademas no me veo armando un Excel y pendiente del celular.",
+  "would_change_my_mind": "Que un colega de confianza que lo use hace mas de un ano me lo recomiende y me muestre en persona como le ha avisado sin fallar.",
+  "price_too_cheap": 15000,
+  "price_cheap": 30000,
+  "price_expensive": 60000,
+  "price_too_expensive": 90000
+}

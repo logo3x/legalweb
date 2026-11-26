@@ -3,11 +3,11 @@
   "buys": true,
   "purchases_first_month": 1,
   "reason_code": "need",
-  "reason": "Ya se me paso un termino por poco y trabajo sola, sin nadie que revise por mi; $59.900 al mes por el plan Individual lo pago si en la prueba veo que avisa lo mismo que yo encuentro a mano. El de $120.000 no, eso es mucho para los procesos que llevo.",
-  "objection": "Si paso de 50 procesos me toca saltar a $120.000, el doble, y eso no lo pago. Ademas no tengo ningun Excel de radicados: los tengo regados en carpetas y chats, y armarlo me da pereza; si no lo armo, ni empiezo la prueba.",
-  "would_change_my_mind": "Que en los 30 dias se le escape una sola actuacion que yo si vi a mano, o que el tope de 50 procesos me obligue al plan de $120.000.",
+  "reason": "Ya se me paso un termino por poco y no tengo dependiente ni quien revise por mi; si en los 30 dias de prueba me avisa por WhatsApp lo mismo que yo encuentro a mano, $59.900 es menos de lo que me cuesta un susto. Tomaria el Individual, no el Profesional.",
+  "objection": "Consultar la Rama es gratis y la pagina se cae a cada rato; no se si de verdad van a detectar todo, y devolverme un mes de $59.900 no me cubre un termino vencido. Ademas tendria que sentarme a armar el Excel de radicados, que hoy no tengo ordenado.",
+  "would_change_my_mind": "Que durante la prueba se les pase una sola actuacion que yo si vi a mano, o que el tope de 50 procesos me obligue a pasar al plan de $120.000.",
   "price_too_cheap": 15000,
-  "price_cheap": 40000,
+  "price_cheap": 35000,
   "price_expensive": 80000,
-  "price_too_expensive": 110000
+  "price_too_expensive": 130000
 }

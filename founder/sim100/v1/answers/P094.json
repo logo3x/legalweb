@@ -1,0 +1,13 @@
+{
+  "id": "P094",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "price",
+  "reason": "Uso los 3 meses gratis completos y despues dejo en el plan gratuito los 5 procesos mas delicados; el resto lo seguimos revisando a mano en la Rama Judicial como siempre, que no me cuesta nada. No es que $120.000 me quiebre, es que no pago una mensualidad mas mientras tenga como resolverlo gratis.",
+  "objection": "Consultar la Rama Judicial y SAMAI es gratis; me estarian cobrando por algo que hoy hago sin pagar, y no se si el correo de madrugada es tan confiable como para dejar de revisar yo misma. Si igual tengo que verificar, no me ahorra nada.",
+  "would_change_my_mind": "Que durante la prueba me avise a tiempo de una actuacion que a nosotros se nos habia pasado en alguno de nuestros procesos; ahi si veria que revisar a mano ya no es alternativa y pagaria.",
+  "price_too_cheap": 15000,
+  "price_cheap": 40000,
+  "price_expensive": 90000,
+  "price_too_expensive": 150000
+}

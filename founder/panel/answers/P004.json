@@ -3,11 +3,11 @@
   "buys": false,
   "purchases_first_month": 0,
   "reason_code": "habit",
-  "reason": "Ya pago un servicio de vigilancia hace anos y con menos de 15 procesos me funciona; cambiarme por ahorrar unos pesos me obliga a montar todo de nuevo y a confiar en alguien que no conozco. Tal vez haria la prueba gratis por curiosidad, pero al dia 30 lo mas probable es que me quede donde estoy o con el plan gratuito de 3 procesos.",
-  "objection": "Si no detectan una actuacion y se me vence un termino, devolverme $59.900 no me sirve de nada: el que responde ante el cliente empresa y ante el disciplinario soy yo. Esa garantia cubre la mensualidad, no el dano.",
-  "would_change_my_mind": "Que en los 30 dias en paralelo LegalWeb me avise una actuacion que mi servicio actual no detecto o detecto tarde; ahi si cancelo el otro y me paso al plan Individual.",
-  "price_too_cheap": 15000,
-  "price_cheap": 35000,
-  "price_expensive": 70000,
-  "price_too_expensive": 100000
+  "reason": "Ya pago un servicio de vigilancia hace anos y con menos de 15 procesos me funciona; cambiarme me da pereza y no veo un problema que me obligue. Tal vez dejo corriendo la prueba gratis, pero al final me quedo con lo que tengo o con el plan gratuito de 3 procesos.",
+  "objection": "No conozco esta empresa y ya tengo quien me vigile los procesos; pagar dos servicios a la vez no tiene sentido con mis ingresos, y soltar el que conozco por uno nuevo es un riesgo si se le pasa una actuacion.",
+  "would_change_my_mind": "Que en la prueba en paralelo LegalWeb me avise de una actuacion que mi servicio actual no detecto, y que ademas me salga mas barato que lo que pago hoy.",
+  "price_too_cheap": 10000,
+  "price_cheap": 25000,
+  "price_expensive": 50000,
+  "price_too_expensive": 70000
 }

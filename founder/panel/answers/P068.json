@@ -1,0 +1,13 @@
+{
+  "id": "P068",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Llevo anos revisando radicado por radicado con mi Excel y no voy a dejar de hacerlo; si igual tengo que entrar a SAMAI cada vez que su consulta falle, termino pagando por algo que no me quita trabajo. Probaria los 30 dias gratis, pero al final lo mas probable es que me quede con el plan gratuito de 3 procesos.",
+  "objection": "Las paginas de la Rama y SAMAI se caen y cambian a cada rato; cuando eso pase su robot deja de funcionar y la responsabilidad del termino vencido sigue siendo mia. Que me devuelvan $59.900 no me compensa una caducidad o un termino perdido.",
+  "would_change_my_mind": "Que en los 30 dias en paralelo no se le escape ni una sola actuacion de SAMAI frente a mi revision manual, incluso en los dias en que la pagina este caida, y que la garantia cubra algo mas que devolver la mensualidad.",
+  "price_too_cheap": 15000,
+  "price_cheap": 35000,
+  "price_expensive": 70000,
+  "price_too_expensive": 110000
+}

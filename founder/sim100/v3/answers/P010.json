@@ -1,0 +1,13 @@
+{
+  "id": "P010",
+  "buys": true,
+  "purchases_first_month": 1,
+  "reason_code": "need",
+  "reason": "Consultar la Rama es gratis, pero yo no la consulto todos los dias y ya casi se me vence un termino; $69.900 al mes es menos de lo que cobro por una hora y me llega al WhatsApp, que es donde vivo. Si en los 30 dias me avisa algo que yo no habia visto, pago el Individual.",
+  "objection": "Que la consulta falle justo en el proceso que importa y yo, confiado, deje de revisar a mano; una devolucion de $69.900 no me cubre un termino vencido. Y tener que armar el Excel de radicados, que hoy no tengo ordenado.",
+  "would_change_my_mind": "Si durante la prueba se le escapa una sola actuacion que yo si vi a mano, o si los avisos llegan tantos y tan ruidosos que termino ignorandolos, no pago.",
+  "price_too_cheap": 15000,
+  "price_cheap": 40000,
+  "price_expensive": 90000,
+  "price_too_expensive": 130000
+}

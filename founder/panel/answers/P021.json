@@ -1,0 +1,13 @@
+{
+  "id": "P021",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Ya tengo quien me revise los procesos y me funciona; la prueba gratis tal vez la haria, pero para eso tengo que armar un Excel de radicados que hoy no tengo, y en una semana normal no saco ese tiempo.",
+  "objection": "Tengo los radicados regados entre carpetas y chats de WhatsApp; organizarlos para enviarlos es justo el trabajo que nunca hago. Y si igual sigo pagando a quien me revisa, esto es un gasto doble.",
+  "would_change_my_mind": "Que me reciban los radicados como los tengo (fotos, chats, lista desordenada) y que en la prueba el sistema me avise una actuacion que mi dependiente no vio.",
+  "price_too_cheap": 15000,
+  "price_cheap": 35000,
+  "price_expensive": 80000,
+  "price_too_expensive": 130000
+}

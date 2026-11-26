@@ -1,0 +1,13 @@
+{
+  "id": "P004",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Ya pago una vigilancia judicial hace años y me funciona; con menos de 15 procesos no voy a pagar dos servicios ni a tomarme el trabajo de cambiarme. Probaría los 30 días gratis por curiosidad y luego me quedaría con lo que tengo, o a lo sumo con el plan gratuito de 3 procesos.",
+  "objection": "No los conozco y ya tengo quien me vigile los procesos; que solo pidan el radicado me tranquiliza un poco, pero cambiarme de proveedor me da pereza y devolverme un mes de $69.900 no compensa un término vencido.",
+  "would_change_my_mind": "Que en la prueba en paralelo LegalWeb me avise una actuacion que mi servicio actual dejo pasar, y que ademas me salga mas barato que lo que pago hoy.",
+  "price_too_cheap": 15000,
+  "price_cheap": 35000,
+  "price_expensive": 60000,
+  "price_too_expensive": 80000
+}

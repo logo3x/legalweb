@@ -1,0 +1,13 @@
+{
+  "id": "P022",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Ya tengo dependiente judicial que me revisa los estados y va a los juzgados, y me funciona. Una pagina no me saca copias ni me radica memoriales, asi que seria pagar un gasto adicional sin quitarme ninguno.",
+  "objection": "Si no me reemplaza al dependiente, es plata de mas; y si se les pasa una actuacion, que me devuelvan $69.900 no me sirve de nada frente a un termino vencido con un cliente empresa.",
+  "would_change_my_mind": "Que en los 30 dias en paralelo el sistema detecte al menos una actuacion que a mi dependiente se le paso o que avise claramente antes que el.",
+  "price_too_cheap": 15000,
+  "price_cheap": 35000,
+  "price_expensive": 70000,
+  "price_too_expensive": 110000
+}

@@ -1,0 +1,13 @@
+{
+  "id": "P023",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "price",
+  "reason": "Consultar la Rama Judicial es gratis y mi dependiente ya lo hace. Usaria los 30 dias de prueba y despues me quedaria con el plan gratuito de 3 procesos para los casos mas delicados; con mas de 100 procesos me toca el plan de $120.000 y hoy no veo por que pagarlo.",
+  "objection": "Estaria pagando por algo que la fuente publica da gratis y que mi dependiente ya revisa; ademas la garantia solo me devuelve la mensualidad, no el dano de un termino vencido.",
+  "would_change_my_mind": "Que en la prueba en paralelo el servicio detecte una actuacion que a mi dependiente se le paso, o que el portal del cliente me quite de verdad las llamadas de las empresas preguntando como va cada proceso.",
+  "price_too_cheap": 15000,
+  "price_cheap": 40000,
+  "price_expensive": 90000,
+  "price_too_expensive": 150000
+}

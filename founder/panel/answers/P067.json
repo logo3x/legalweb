@@ -1,0 +1,13 @@
+{
+  "id": "P067",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "trust",
+  "reason": "Yo llevo pocos procesos y los reviso yo misma, con mi agenda de papel y yendo al juzgado. Ningun colega de confianza me ha hablado de esto, y no voy a poner mis terminos en manos de una pagina que conozco desde hoy.",
+  "objection": "Si la plataforma no detecta una actuacion y se me vence un termino, me devuelven $59.900 y la que responde ante el cliente y ante el Consejo Superior soy yo. Esa garantia no cubre el dano real.",
+  "would_change_my_mind": "Que un colega que conozco y respeto me diga que la usa hace mas de un ano sin que le haya fallado, y que alguien me la instale y me la explique en persona.",
+  "price_too_cheap": 10000,
+  "price_cheap": 25000,
+  "price_expensive": 50000,
+  "price_too_expensive": 80000
+}

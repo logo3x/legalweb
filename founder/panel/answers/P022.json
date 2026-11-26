@@ -1,0 +1,13 @@
+{
+  "id": "P022",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Ya tengo dependiente judicial que me revisa estados y ademas va a los juzgados, saca copias y radica; una pagina que consulta la Rama no me reemplaza eso y no voy a pagar dos veces por lo mismo.",
+  "objection": "La Rama y SAMAI se caen o publican tarde y mal; si la fuente falla, el aviso tambien, y devolverme $59.900 no me cubre un termino vencido frente a un cliente empresa. Con mi dependiente tengo a quien llamar y quien responde.",
+  "would_change_my_mind": "Que en los 30 dias en paralelo el sistema detecte al menos una actuacion que a mi dependiente se le paso, o que mi dependiente se vaya o me falle.",
+  "price_too_cheap": 15000,
+  "price_cheap": 35000,
+  "price_expensive": 80000,
+  "price_too_expensive": 130000
+}

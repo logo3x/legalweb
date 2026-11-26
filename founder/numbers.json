@@ -1,19 +1,19 @@
 {
-  "business": "LegalWeb (oferta propuesta: planes Individual y Profesional; incluye sueldo parcial del fundador; casi todo son estimaciones)",
+  "business": "LegalWeb (oferta propuesta; ingreso medio segun el panel de 100: 16 Profesional + 14 Individual; incluye sueldo parcial del fundador; casi todo son estimaciones)",
   "unit": "suscripcion-mes",
-  "price": 79900,
+  "price": 91950,
   "variable": [
     {
-      "label": "Comision Wompi (2,65% + $700 + IVA, tarifa publica por confirmar)",
-      "cost": 3350
+      "label": "Comision Wompi (2,65% + $700 + IVA sobre la comision)",
+      "cost": 3730
     },
     {
-      "label": "Alertas por WhatsApp y correo por suscriptor (estimado)",
-      "cost": 3000
+      "label": "Alertas por WhatsApp y correo por suscriptor (estimado con tarifas publicas)",
+      "cost": 1500
     },
     {
       "label": "Reserva para la garantia de devolucion (2% del precio, estimado)",
-      "cost": 1600
+      "cost": 1840
     }
   ],
   "fixed_monthly": [

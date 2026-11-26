@@ -1,0 +1,13 @@
+{
+  "id": "P034",
+  "buys": true,
+  "purchases_first_month": 1,
+  "reason_code": "convenience",
+  "reason": "Consultar la Rama es gratis, pero revisar mas de cien radicados a mano cada manana me cuesta horas mias y de mi gente; si en los 30 dias en paralelo no se le escapa ninguna actuacion frente a mi Excel, $120.000 al mes es menos que una hora facturable y lo pago.",
+  "objection": "Que se les pase una actuacion en SAMAI, que es donde litigo: devolverme el mes no me repara un termino vencido ni la responsabilidad frente al cliente, asi que igual tendria que seguir revisando a mano lo critico.",
+  "would_change_my_mind": "Si durante la prueba en paralelo se les escapa una sola actuacion de SAMAI o me llegan avisos tarde, no pago y sigo con mi Excel.",
+  "price_too_cheap": 30000,
+  "price_cheap": 80000,
+  "price_expensive": 200000,
+  "price_too_expensive": 350000
+}

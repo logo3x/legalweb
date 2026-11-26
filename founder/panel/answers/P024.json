@@ -1,0 +1,13 @@
+{
+  "id": "P024",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Llevo treinta anos revisando mis radicados cada manana y mi Excel no me ha fallado; la prueba gratis tal vez la corro, pero al terminar me quedo con el plan gratuito de 3 procesos y sigo revisando a mano. Igual tendria que entrar a mirar, porque un aviso por WhatsApp no me quita la responsabilidad frente al cliente.",
+  "objection": "Si se les pasa una actuacion y se me vence un termino, me devuelven $59.900 y yo respondo con mi tarjeta profesional y mi patrimonio; esa garantia no cubre el dano real. Ademas llevo mas de 50 procesos en algunos meses y $120.000 es mucho para lo que facturo.",
+  "would_change_my_mind": "Que en los 30 dias de prueba me avisen de una actuacion que a mi se me paso en mi revision manual, y que el plan de $59.900 cubra hasta 80 procesos.",
+  "price_too_cheap": 15000,
+  "price_cheap": 35000,
+  "price_expensive": 60000,
+  "price_too_expensive": 90000
+}

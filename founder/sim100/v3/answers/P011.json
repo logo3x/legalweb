@@ -1,0 +1,13 @@
+{
+  "id": "P011",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "trust",
+  "reason": "Probaria los 30 dias gratis, pero seguiria entrando a la Rama cada manana porque el responsable ante el cliente soy yo; si igual reviso a mano, no voy a pagar por un aviso que duplica mi Excel.",
+  "objection": "Las paginas de la Rama se caen y cambian a cada rato; un mes de prueba no me demuestra que esto siga funcionando cuando cambien la consulta, y que me devuelvan $69.900 no me arregla un termino vencido.",
+  "would_change_my_mind": "Que en los 30 dias no se le pase ni una sola actuacion frente a mi Excel, incluyendo dias en que la Rama este caida y me avisen de verdad ese mismo dia que la consulta fallo; con eso si soltaria la revision diaria y pagaria el Individual.",
+  "price_too_cheap": 15000,
+  "price_cheap": 35000,
+  "price_expensive": 70000,
+  "price_too_expensive": 110000
+}

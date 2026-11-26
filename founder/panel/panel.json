@@ -1,5 +1,5 @@
 {
- "n": 20,
+ "n": 100,
  "seed": 7,
  "customer": {
   "business": "LegalWeb (SaaS de vigilancia judicial para abogados en Colombia)",
@@ -87,7 +87,7 @@
    "usted lleva procesos laborales y ejecutivos en tres ciudades distintas",
    "usted litiga en lo contencioso administrativo y revisa SAMAI varias veces por semana",
    "usted atiende clientes empresa que lo llaman a preguntar como va cada proceso",
-   "usted trabaja solo, sin secretaria, y revisa el correo desde el celular",
+   "usted casi no tiene apoyo administrativo y revisa el correo desde el celular",
    "usted ya vivio un susto por un termino que casi se le vence"
   ]
  },

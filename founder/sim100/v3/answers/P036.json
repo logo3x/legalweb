@@ -1,0 +1,13 @@
+{
+  "id": "P036",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Ya pago un servicio de vigilancia hace anos y me funciona para mis doce o trece procesos; cambiarme implica cargar todo de nuevo y aprender otra herramienta, y con lo que gano no voy a pagar dos servicios a la vez. Ademas, con tan pocos procesos, si algo me preocupa lo consulto yo misma en la Rama, que es gratis.",
+  "objection": "No veo que me de algo que mi servicio actual no me de ya; la garantia de devolverme un mes de $69.900 no compensa nada si se me pasa un termino con un cliente empresa.",
+  "would_change_my_mind": "Que en la prueba en paralelo LegalWeb me avise una actuacion que mi servicio actual no me aviso, y que ademas me salga mas barato que lo que pago hoy.",
+  "price_too_cheap": 10000,
+  "price_cheap": 25000,
+  "price_expensive": 50000,
+  "price_too_expensive": 70000
+}

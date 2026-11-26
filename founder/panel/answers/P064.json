@@ -1,0 +1,13 @@
+{
+  "id": "P064",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "trust",
+  "reason": "Yo ya le pago a mi dependiente, que va a los juzgados y me responde con nombre propio; una pagina que me devuelve $59.900 si se le pasa una actuacion no me cubre nada de lo que pierdo si se me vence un termino. La prueba gratis la dejaria correr al lado, pero al dia 31 no veo por que pagar por algo que no reemplaza a nadie.",
+  "objection": "Si la plataforma no detecta una actuacion y se me vence un termino, quien responde? Devolverme el mes no es responder: el que queda con la queja disciplinaria y el cliente perdido soy yo.",
+  "would_change_my_mind": "Que en los 30 dias de prueba la plataforma detecte al menos una actuacion que a mi dependiente se le paso, o que la garantia cubra de verdad el perjuicio con una poliza de responsabilidad y no solo la mensualidad.",
+  "price_too_cheap": 20000,
+  "price_cheap": 40000,
+  "price_expensive": 90000,
+  "price_too_expensive": 150000
+}

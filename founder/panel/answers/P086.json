@@ -1,0 +1,13 @@
+{
+  "id": "P086",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Ya le pago a mi dependiente, que revisa estados y ademas va a los juzgados, saca copias y radica memoriales; una pagina no me reemplaza eso y no voy a pagar dos veces por lo mismo. Tal vez dejo corriendo la prueba gratis, pero al dia 30 me quedo con lo que ya me funciona.",
+  "objection": "En civil y familia lo que importa son los estados y lo que pasa en el despacho, y muchos juzgados suben tarde o mal las actuaciones; si la fuente falla, la garantia de devolverme $59.900 no me sirve de nada frente a un termino vencido. Y sigo sin conocer a la empresa, asi solo pidan el radicado.",
+  "would_change_my_mind": "Que durante los 30 dias en paralelo la herramienta pesque al menos una actuacion que a mi dependiente se le paso, o que un colega de confianza que la use me la recomiende.",
+  "price_too_cheap": 15000,
+  "price_cheap": 30000,
+  "price_expensive": 60000,
+  "price_too_expensive": 100000
+}

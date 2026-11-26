@@ -1,0 +1,13 @@
+{
+  "id": "P007",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Yo no tengo ningun Excel de radicados: los procesos los llevo en la cabeza, en carpetas y en chats de WhatsApp, y sin quien me ayude nunca voy a sentarme a armar esa lista. Lo mas probable es que meta los 3 procesos que mas me preocupan en el plan gratuito y siga revisando el resto como siempre.",
+  "objection": "Para que esto me sirva tengo que reunir primero los radicados de todos mis procesos, y ese es justamente el desorden que no he podido arreglar; ademas, si igual me toca revisar a mano cuando una consulta falla, no se cuanto trabajo me quita de verdad.",
+  "would_change_my_mind": "Que me armen ustedes la lista: que yo les mande por WhatsApp fotos, autos o mi nombre y cedula y ustedes encuentren y carguen todos mis procesos sin que yo tenga que hacer un Excel; si en la prueba me pillan una actuacion que yo no habia visto, pago los $69.900.",
+  "price_too_cheap": 15000,
+  "price_cheap": 40000,
+  "price_expensive": 90000,
+  "price_too_expensive": 150000
+}

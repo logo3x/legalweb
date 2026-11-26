@@ -1,0 +1,13 @@
+{
+  "id": "P059",
+  "buys": true,
+  "purchases_first_month": 1,
+  "reason_code": "need",
+  "reason": "De entrada $120.000 me sono caro, pero en la firma llevamos mas de 80 procesos y ya casi se me vence un termino; repartido sale a menos de $1.500 por proceso y mucho menos que un dependiente. Si en los 30 dias me avisa lo mismo que yo encuentro revisando a mano, pago el Profesional.",
+  "objection": "No tengo un Excel de radicados: los tengo regados en carpetas y chats de WhatsApp, y armar esa lista es justo la tarea que siempre aplazo. Ademas no se si cubre bien los juzgados civiles y de familia de mi ciudad, donde la consulta de la Rama a veces ni carga.",
+  "would_change_my_mind": "Que en la prueba se le escape una sola actuacion de mis juzgados, o que yo nunca llegue a mandar la lista de radicados; en cualquiera de los dos casos no pago.",
+  "price_too_cheap": 25000,
+  "price_cheap": 80000,
+  "price_expensive": 180000,
+  "price_too_expensive": 300000
+}

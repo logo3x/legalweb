@@ -1,0 +1,13 @@
+{
+  "id": "P031",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Ya pago un servicio de vigilancia hace anos y con mas de 80 procesos me tocaria el plan de $120.000 encima de lo que ya pago. Haria la prueba en paralelo por curiosidad, pero al terminar me quedo con lo mio y con el gratuito de 3 procesos para los mas delicados.",
+  "objection": "Cambiarme implica migrar todos los radicados, reentrenar a la firma y confiar los terminos a una empresa nueva; devolverme un mes de $120.000 no compensa un termino vencido.",
+  "would_change_my_mind": "Que en los 30 dias de prueba LegalWeb me avise de una actuacion que mi servicio actual dejo pasar o aviso tarde.",
+  "price_too_cheap": 30000,
+  "price_cheap": 70000,
+  "price_expensive": 150000,
+  "price_too_expensive": 250000
+}

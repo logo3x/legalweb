@@ -1,0 +1,13 @@
+{
+  "id": "P041",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Ya tengo dependiente que me revisa los procesos y va a los juzgados, y yo misma entro a SAMAI varias veces por semana. Una pagina no me saca copias ni me habla con el secretario, asi que no me reemplaza a nadie y seria pagar dos veces por lo mismo.",
+  "objection": "Si se les pasa una actuacion, me devuelven $69.900 y yo me quedo con el termino vencido y el cliente encima; esa garantia no cubre el dano real. Confio en una persona que conozco, no en un sistema que consulta de madrugada.",
+  "would_change_my_mind": "Que en los 30 dias en paralelo el servicio detecte una actuacion en SAMAI que a mi dependiente y a mi se nos haya pasado; ahi lo pagaria como respaldo.",
+  "price_too_cheap": 15000,
+  "price_cheap": 35000,
+  "price_expensive": 70000,
+  "price_too_expensive": 110000
+}

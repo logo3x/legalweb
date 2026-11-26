@@ -1,0 +1,13 @@
+{
+  "id": "P098",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "trust",
+  "reason": "Yo ya le pago a un dependiente que revisa estados y va a los juzgados en las tres ciudades, y confio en el. No conozco a ningun colega que use esto, y por $120.000 no voy a cambiar la forma como cuido los terminos de la firma por una pagina que nadie me ha recomendado.",
+  "objection": "No se quien esta detras ni conozco a nadie que lo use. Si se les pasa una actuacion, me devuelven un mes de $120.000, pero el termino vencido y la responsabilidad profesional son mios. Ademas, la pagina no va al juzgado ni revisa lo que no aparece en el sistema; mi dependiente si.",
+  "would_change_my_mind": "Que un colega litigante que yo conozca me diga que lo ha usado un ano sin que se le escape nada, y que en la prueba en paralelo le gane a mi dependiente en al menos una actuacion real.",
+  "price_too_cheap": 30000,
+  "price_cheap": 80000,
+  "price_expensive": 200000,
+  "price_too_expensive": 350000
+}

@@ -1,0 +1,13 @@
+{
+  "id": "P092",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "price",
+  "reason": "Uso los 3 meses gratis completos y despues me quedo en el plan gratis con mis 5 procesos mas delicados; el resto los sigo revisando a mano como siempre. $120.000 al mes es mucho para los procesos que llevo.",
+  "objection": "Son $1.440.000 al ano por algo que hoy hago gratis consultando la Rama yo mismo, y el plan gratis ya me cubre los casos donde un termino vencido me doleria de verdad.",
+  "would_change_my_mind": "Un plan intermedio de unos $40.000 al mes con 30 o 40 procesos y consulta diaria, o que durante la prueba el correo me avise de una actuacion que yo no habia visto.",
+  "price_too_cheap": 10000,
+  "price_cheap": 30000,
+  "price_expensive": 60000,
+  "price_too_expensive": 90000
+}

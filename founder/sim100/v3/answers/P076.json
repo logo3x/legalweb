@@ -1,0 +1,13 @@
+{
+  "id": "P076",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "price",
+  "reason": "Hago la prueba de 30 dias porque es gratis y sin tarjeta, pero al terminar me quedo en el plan gratuito con mis 3 procesos mas delicados y sigo revisando el resto a mano como siempre. Mientras lo gratis me alcance, no pago.",
+  "objection": "Que solo pidan el radicado me tranquiliza a medias: mi Excel completo de procesos igual es mi cartera de clientes y no conozco a esta empresa. Y la garantia solo me devuelve $69.900 si se les pasa una actuacion, cuando el termino vencido me cuesta a mi el proceso.",
+  "would_change_my_mind": "Que durante los 30 dias la prueba en paralelo me muestre una actuacion que yo no vi a tiempo por mi cuenta; ahi si pagaria el Individual.",
+  "price_too_cheap": 15000,
+  "price_cheap": 35000,
+  "price_expensive": 60000,
+  "price_too_expensive": 90000
+}

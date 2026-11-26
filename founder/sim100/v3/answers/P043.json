@@ -1,0 +1,13 @@
+{
+  "id": "P043",
+  "buys": true,
+  "purchases_first_month": 1,
+  "reason_code": "convenience",
+  "reason": "Los $120.000 no los pago, pero el plan Individual de $69.900 me cubre hasta 80 procesos y me quita la revisada de cada manana radicado por radicado. Si en los 30 dias en paralelo no se le escapa ninguna actuacion frente a mi Excel, lo pago.",
+  "objection": "Que se le pase una actuacion y a mi se me venza un termino: que me devuelvan el mes no me arregla el problema con el cliente. Ademas mis ingresos son irregulares y cualquier cuota fija mensual me pesa en los meses flojos.",
+  "would_change_my_mind": "Que durante la prueba se le escape o me avise tarde una sola actuacion que yo si vi revisando a mano, o que el plan Individual suba de precio o baje el tope de procesos.",
+  "price_too_cheap": 15000,
+  "price_cheap": 40000,
+  "price_expensive": 80000,
+  "price_too_expensive": 100000
+}

@@ -3,11 +3,11 @@
   "buys": true,
   "purchases_first_month": 1,
   "reason_code": "need",
-  "reason": "Ya casi se me vence un termino y revisar mas de cien radicados a mano cada manana no da garantia de nada. Si en los 30 dias el aviso coincide actuacion por actuacion con mi Excel, $120.000 al mes por el plan Profesional es menos de lo que me cuesta una hora de trabajo, pero no suelto mi revision manual de un dia para otro.",
-  "objection": "No conozco a ningun colega que la use y no se quien responde si se les pasa una actuacion: devolverme un mes de $120.000 no compensa un termino vencido ni una queja disciplinaria.",
-  "would_change_my_mind": "Que durante la prueba se les pase una sola actuacion que yo si vi en la Rama, o que una consulta falle y no me avisen ese mismo dia; ahi no pago nada y sigo con mi Excel.",
-  "price_too_cheap": 30000,
-  "price_cheap": 80000,
-  "price_expensive": 250000,
-  "price_too_expensive": 450000
+  "reason": "Con mas de 100 procesos el plan de 50 no me sirve, asi que me toca el de $120.000, que me parece caro pero es menos de lo que me cuesta una manana a la semana revisando radicado por radicado. Ya casi se me vence un termino y si la prueba en paralelo no se le escapa nada frente a mi Excel, lo pago.",
+  "objection": "Que $120.000 al mes es bastante para algo que hoy hago gratis, y que la garantia solo me devuelve la mensualidad: si se les pasa una actuacion, el termino vencido y la responsabilidad siguen siendo mios. No voy a dejar de revisar a mano del todo.",
+  "would_change_my_mind": "Si en los 30 dias de prueba se les escapa una sola actuacion que yo si vi en mi revision manual, o si fallan las consultas con frecuencia, no pago.",
+  "price_too_cheap": 25000,
+  "price_cheap": 70000,
+  "price_expensive": 130000,
+  "price_too_expensive": 200000
 }

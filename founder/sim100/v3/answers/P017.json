@@ -1,0 +1,13 @@
+{
+  "id": "P017",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "price",
+  "reason": "Uso los 30 dias gratis sin dudarlo, pero al terminar me quedo en el plan gratuito con mis 3 procesos mas delicados y sigo revisando el resto a mano como siempre. Pagar todos los meses por algo que hoy hago gratis no me nace mientras no se me haya pasado una actuacion.",
+  "objection": "Aunque solo pidan radicados, igual les entrego el Excel con toda mi cartera de procesos a una empresa que no conozco, y la garantia apenas me devuelve $69.900 si se les pasa algo que a mi me puede costar un termino vencido.",
+  "would_change_my_mind": "Que durante la prueba el sistema me avise una actuacion que a mi se me paso en la revision manual; ahi si pago el plan Individual.",
+  "price_too_cheap": 10000,
+  "price_cheap": 30000,
+  "price_expensive": 60000,
+  "price_too_expensive": 90000
+}

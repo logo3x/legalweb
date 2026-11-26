@@ -1,0 +1,13 @@
+{
+  "id": "P020",
+  "buys": true,
+  "purchases_first_month": 1,
+  "reason_code": "need",
+  "reason": "Ya casi se me vence un termino revisando a mano y con mas de 80 procesos entre varios abogados el Excel no da abasto. Si en los 30 dias en paralelo no se le escapa ninguna actuacion que yo si vea, pago los $120.000; es menos de lo que me cuesta una manana de un abogado revisando radicados.",
+  "objection": "Me sigue pareciendo caro para lo que llevo y la garantia solo devuelve el mes: si se les pasa un auto y pierdo un termino, $120.000 no me cubren nada. Ademas la Rama se cae seguido y no se cuantas alertas de 'consulta fallida' voy a recibir que igual me obliguen a revisar a mano.",
+  "would_change_my_mind": "Que durante la prueba se les escape una sola actuacion que yo si encontre a mano, o que las consultas fallidas sean tantas que termine revisando igual todas las mananas.",
+  "price_too_cheap": 20000,
+  "price_cheap": 70000,
+  "price_expensive": 130000,
+  "price_too_expensive": 200000
+}

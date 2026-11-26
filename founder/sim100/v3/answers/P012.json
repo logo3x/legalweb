@@ -1,0 +1,13 @@
+{
+  "id": "P012",
+  "buys": true,
+  "purchases_first_month": 1,
+  "reason_code": "convenience",
+  "reason": "El Profesional de $120.000 no lo pago, es mucho para los procesos que llevo; pero el Individual de $69.900 me cubre hasta 80 procesos y me quita la revisada de SAMAI varias veces por semana. Solo lo pago si en los 30 dias en paralelo no se le escapa ni una actuacion frente a mi propia revision.",
+  "objection": "Que SAMAI lo consulten de verdad bien: en lo contencioso las actuaciones a veces aparecen tarde o mal cargadas, y la garantia solo me devuelve $69.900, no el termino que se me vencio. Ademas con mis ingresos cada suscripcion mensual la pienso dos veces.",
+  "would_change_my_mind": "Si durante la prueba se les pasa una sola actuacion de SAMAI que yo si vi a mano, o si la calculadora de terminos resulta que solo esta en el plan de $120.000 y la necesito, no pago.",
+  "price_too_cheap": 15000,
+  "price_cheap": 40000,
+  "price_expensive": 80000,
+  "price_too_expensive": 100000
+}

@@ -1,0 +1,13 @@
+{
+  "id": "P042",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Llevo menos de quince procesos y los reviso yo mismo en la pagina de la Rama y yendo al juzgado; con eso me basta. No voy a pagar una mensualidad a una plataforma que ningun colega mio me ha recomendado, y con el plan gratuito de 3 procesos menos razon tengo para pagar.",
+  "objection": "No conozco a nadie que la use. Que digan que tienen NIT y garantia no me dice nada: si se les pasa un auto y se me vence un termino, que me devuelvan $69.900 no me arregla el problema con el cliente.",
+  "would_change_my_mind": "Que un colega de confianza que litigue en mis mismos juzgados me diga que la usa hace un ano y nunca le ha fallado, y que haya un plan mas barato para pocos procesos.",
+  "price_too_cheap": 10000,
+  "price_cheap": 25000,
+  "price_expensive": 50000,
+  "price_too_expensive": 70000
+}

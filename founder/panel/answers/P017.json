@@ -1,13 +1,13 @@
 {
   "id": "P017",
-  "buys": true,
-  "purchases_first_month": 1,
-  "reason_code": "need",
-  "reason": "Ya casi se me vence un término y no quiero volver a pasar por eso; si en los 30 días en paralelo no se les escapa ni una actuación frente a mi revisión manual, $59.900 al mes es menos de lo que me cuesta una mañana de trabajo. Igual voy a seguir revisando a mano los procesos delicados, por lo menos un buen tiempo.",
-  "objection": "No los conozco y mi Excel tiene nombres de clientes y notas mías; tendría que armar una copia solo con los radicados antes de mandarles nada. Además, la garantía me devuelve un mes de $59.900, pero un término vencido me cuesta el proceso y la responsabilidad profesional, y eso no lo cubre nadie.",
-  "would_change_my_mind": "Que durante la prueba se les pase una sola actuación que yo sí vi a mano, o que una consulta falle y no me avisen ese mismo día: ahí lo dejo y sigo con mi Excel.",
-  "price_too_cheap": 20000,
-  "price_cheap": 45000,
-  "price_expensive": 110000,
-  "price_too_expensive": 180000
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Hago la prueba de 30 dias porque es gratis y sin tarjeta, pero al terminar me quedo con el plan gratuito de 3 procesos para los mas delicados y sigo revisando el resto a mano en la pagina de la Rama, que no me cuesta nada.",
+  "objection": "Consultar la Rama Judicial y SAMAI es gratis y ya lo hago; pagar todos los meses por algo que puedo hacer yo mismo me cuesta, y si paso de 50 procesos me toca saltar al plan de $120.000.",
+  "would_change_my_mind": "Que durante la prueba el servicio me avise de una actuacion que a mi se me paso en mi revision manual; con un susto real de terminos si pagaria el Individual.",
+  "price_too_cheap": 10000,
+  "price_cheap": 25000,
+  "price_expensive": 50000,
+  "price_too_expensive": 80000
 }

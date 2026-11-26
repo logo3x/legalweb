@@ -1,0 +1,13 @@
+{
+  "id": "P078",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "price",
+  "reason": "Llevo menos de 15 procesos y los reviso yo misma cada manana en media hora; la consulta de la Rama es gratis. Haria la prueba de 30 dias y despues me quedaria en el plan gratuito de 3 procesos para los mas delicados, sin pagar $69.900 por un cupo de 80 que no uso.",
+  "objection": "Estoy pagando por 80 procesos cuando tengo 12, y de todas formas no dejaria de revisar a mano porque la responsabilidad del termino sigue siendo mia; que me devuelvan un mes no me repara un termino vencido.",
+  "would_change_my_mind": "Un plan pequeno, de hasta 15 o 20 procesos, por unos $25.000 a $30.000 al mes, y que en la prueba me avise de una actuacion antes de que yo la vea.",
+  "price_too_cheap": 8000,
+  "price_cheap": 20000,
+  "price_expensive": 40000,
+  "price_too_expensive": 60000
+}

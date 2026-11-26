@@ -1,0 +1,13 @@
+{
+  "id": "P100",
+  "buys": true,
+  "purchases_first_month": 1,
+  "reason_code": "need",
+  "reason": "Ya casi se me vence un termino revisando a mano, y $69.900 por hasta 80 procesos me cabe; el de $120.000 no lo tomo, es mucho para lo que llevo. Pago solo si en los 30 dias en paralelo no se le escapa ninguna actuacion frente a mi Excel.",
+  "objection": "Que la garantia solo me devuelve el mes: si se les pasa una actuacion y pierdo un termino, $69.900 no me arreglan nada, asi que igual voy a seguir revisando a mano los procesos delicados y entonces pago por algo que no me quita del todo el trabajo.",
+  "would_change_my_mind": "Que durante la prueba se les pase una sola actuacion que yo si vi a mano, o que me avisen tarde; ahi no pago nada.",
+  "price_too_cheap": 20000,
+  "price_cheap": 45000,
+  "price_expensive": 90000,
+  "price_too_expensive": 120000
+}

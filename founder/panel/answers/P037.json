@@ -1,0 +1,13 @@
+{
+  "id": "P037",
+  "buys": true,
+  "purchases_first_month": 1,
+  "reason_code": "need",
+  "reason": "Mi primera reaccion fue quedarme en el gratuito, pero 3 procesos no me sirven de nada con mas de cien radicados en la firma. Si en los 30 dias en paralelo no se le escapa ninguna actuacion de SAMAI frente a mi revision manual, $120.000 por procesos ilimitados y 3 usuarios es menos de lo que me cuesta una hora perdida revisando.",
+  "objection": "Que la consulta a SAMAI falle seguido y termine revisando a mano igual; ademas la garantia solo devuelve el mes, que no es nada frente a un termino vencido en un proceso contencioso.",
+  "would_change_my_mind": "Si durante la prueba se le pasa una sola actuacion de SAMAI o los avisos de 'consulta fallida' son frecuentes, no pago y me quedo con mi revision o con otra herramienta que compare mejor.",
+  "price_too_cheap": 30000,
+  "price_cheap": 90000,
+  "price_expensive": 220000,
+  "price_too_expensive": 350000
+}

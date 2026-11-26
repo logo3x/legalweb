@@ -1,0 +1,222 @@
+[
+ {
+  "id": "P001",
+  "name": "Omar",
+  "age": 27,
+  "segment": "Abogado joven o que litiga poco (menos de 15 procesos)",
+  "income": 39034000,
+  "behaviour": "Tiene dependiente judicial",
+  "behaviour_how": "Le paga a una persona para que revise estados y vaya a los juzgados; confia en esa persona, no en una pagina.",
+  "objection": "Ya tengo quien me revise los procesos y me funciona",
+  "habit": "usted litiga en lo contencioso administrativo y revisa SAMAI varias veces por semana"
+ },
+ {
+  "id": "P002",
+  "name": "Raj",
+  "age": 45,
+  "segment": "Socio de firma pequena, 2 a 10 abogados (80 a 300 procesos)",
+  "income": 110860000,
+  "behaviour": "Busca lo gratis",
+  "behaviour_how": "Usa las pruebas gratuitas y los planes gratis mientras le alcancen; paga solo cuando no hay alternativa.",
+  "objection": "Con el plan gratuito me alcanza",
+  "habit": "usted trabaja solo, sin secretaria, y revisa el correo desde el celular"
+ },
+ {
+  "id": "P003",
+  "name": "Emil",
+  "age": 50,
+  "segment": "Socio de firma pequena, 2 a 10 abogados (80 a 300 procesos)",
+  "income": 238061000,
+  "behaviour": "Desconfia de la tecnologia",
+  "behaviour_how": "Prefiere el papel y lo presencial; solo adopta una herramienta si un colega de confianza se la recomienda.",
+  "objection": "No conozco a ningun colega que la use; quien esta detras",
+  "habit": "usted lleva procesos laborales y ejecutivos en tres ciudades distintas"
+ },
+ {
+  "id": "P004",
+  "name": "Owen",
+  "age": 59,
+  "segment": "Abogado joven o que litiga poco (menos de 15 procesos)",
+  "income": 53457000,
+  "behaviour": "Ya paga un servicio de vigilancia",
+  "behaviour_how": "Tiene contratado un software o servicio de vigilancia judicial hace anos y cambiarse le da pereza.",
+  "objection": "Y si la plataforma no detecta una actuacion y se me vence un termino, quien responde",
+  "habit": "usted atiende clientes empresa que lo llaman a preguntar como va cada proceso"
+ },
+ {
+  "id": "P005",
+  "name": "Sana",
+  "age": 62,
+  "segment": "Abogado litigante independiente (20 a 80 procesos activos)",
+  "income": 72606000,
+  "behaviour": "Revisa a mano",
+  "behaviour_how": "Entra cada manana a la consulta de procesos de la Rama Judicial, radicado por radicado, y lleva el control en un Excel.",
+  "objection": "Con el plan gratuito me alcanza",
+  "habit": "usted atiende clientes empresa que lo llaman a preguntar como va cada proceso"
+ },
+ {
+  "id": "P006",
+  "name": "Maya",
+  "age": 33,
+  "segment": "Abogado litigante independiente (20 a 80 procesos activos)",
+  "income": 79559000,
+  "behaviour": "Tiene dependiente judicial",
+  "behaviour_how": "Le paga a una persona para que revise estados y vaya a los juzgados; confia en esa persona, no en una pagina.",
+  "objection": "Con el plan gratuito me alcanza",
+  "habit": "usted litiga sobre todo en civil y familia en juzgados de su ciudad"
+ },
+ {
+  "id": "P007",
+  "name": "Selin",
+  "age": 39,
+  "segment": "Abogado joven o que litiga poco (menos de 15 procesos)",
+  "income": 26088000,
+  "behaviour": "Adopta tecnologia pronto",
+  "behaviour_how": "Prueba herramientas nuevas, usa IA en su trabajo y compara funciones antes de pagar.",
+  "objection": "$120.000 al mes es mucho para los procesos que llevo",
+  "habit": "usted atiende clientes empresa que lo llaman a preguntar como va cada proceso"
+ },
+ {
+  "id": "P008",
+  "name": "Ruby",
+  "age": 37,
+  "segment": "Abogado litigante independiente (20 a 80 procesos activos)",
+  "income": 50574000,
+  "behaviour": "Desordenado",
+  "behaviour_how": "Lleva los procesos en la cabeza, en carpetas y en chats de WhatsApp; ya se le ha pasado algun termino por poco.",
+  "objection": "Y si la plataforma no detecta una actuacion y se me vence un termino, quien responde",
+  "habit": "usted litiga sobre todo en civil y familia en juzgados de su ciudad"
+ },
+ {
+  "id": "P009",
+  "name": "Nora",
+  "age": 27,
+  "segment": "Socio de firma pequena, 2 a 10 abogados (80 a 300 procesos)",
+  "income": 229025000,
+  "behaviour": "Tiene dependiente judicial",
+  "behaviour_how": "Le paga a una persona para que revise estados y vaya a los juzgados; confia en esa persona, no en una pagina.",
+  "objection": "Consultar la Rama Judicial es gratis; por que pagaria por eso",
+  "habit": "usted litiga en lo contencioso administrativo y revisa SAMAI varias veces por semana"
+ },
+ {
+  "id": "P010",
+  "name": "Fatima",
+  "age": 28,
+  "segment": "Abogado litigante independiente (20 a 80 procesos activos)",
+  "income": 47485000,
+  "behaviour": "Desordenado",
+  "behaviour_how": "Lleva los procesos en la cabeza, en carpetas y en chats de WhatsApp; ya se le ha pasado algun termino por poco.",
+  "objection": "$120.000 al mes es mucho para los procesos que llevo",
+  "habit": "usted trabaja solo, sin secretaria, y revisa el correo desde el celular"
+ },
+ {
+  "id": "P011",
+  "name": "Tariq",
+  "age": 51,
+  "segment": "Abogado litigante independiente (20 a 80 procesos activos)",
+  "income": 53587000,
+  "behaviour": "Revisa a mano",
+  "behaviour_how": "Entra cada manana a la consulta de procesos de la Rama Judicial, radicado por radicado, y lleva el control en un Excel.",
+  "objection": "No quiero subir los datos de mis clientes a una plataforma que no conozco",
+  "habit": "usted litiga en lo contencioso administrativo y revisa SAMAI varias veces por semana"
+ },
+ {
+  "id": "P012",
+  "name": "Felix",
+  "age": 50,
+  "segment": "Abogado litigante independiente (20 a 80 procesos activos)",
+  "income": 78984000,
+  "behaviour": "Ya paga un servicio de vigilancia",
+  "behaviour_how": "Tiene contratado un software o servicio de vigilancia judicial hace anos y cambiarse le da pereza.",
+  "objection": "Consultar la Rama Judicial es gratis; por que pagaria por eso",
+  "habit": "usted atiende clientes empresa que lo llaman a preguntar como va cada proceso"
+ },
+ {
+  "id": "P013",
+  "name": "Zoe",
+  "age": 56,
+  "segment": "Abogado joven o que litiga poco (menos de 15 procesos)",
+  "income": 38892000,
+  "behaviour": "Busca lo gratis",
+  "behaviour_how": "Usa las pruebas gratuitas y los planes gratis mientras le alcancen; paga solo cuando no hay alternativa.",
+  "objection": "No quiero subir los datos de mis clientes a una plataforma que no conozco",
+  "habit": "usted litiga sobre todo en civil y familia en juzgados de su ciudad"
+ },
+ {
+  "id": "P014",
+  "name": "Dev",
+  "age": 36,
+  "segment": "Abogado litigante independiente (20 a 80 procesos activos)",
+  "income": 49971000,
+  "behaviour": "Ya paga un servicio de vigilancia",
+  "behaviour_how": "Tiene contratado un software o servicio de vigilancia judicial hace anos y cambiarse le da pereza.",
+  "objection": "No conozco a ningun colega que la use; quien esta detras",
+  "habit": "usted ya vivio un susto por un termino que casi se le vence"
+ },
+ {
+  "id": "P015",
+  "name": "Yusuf",
+  "age": 43,
+  "segment": "Socio de firma pequena, 2 a 10 abogados (80 a 300 procesos)",
+  "income": 210511000,
+  "behaviour": "Desconfia de la tecnologia",
+  "behaviour_how": "Prefiere el papel y lo presencial; solo adopta una herramienta si un colega de confianza se la recomienda.",
+  "objection": "Ya tengo quien me revise los procesos y me funciona",
+  "habit": "usted trabaja solo, sin secretaria, y revisa el correo desde el celular"
+ },
+ {
+  "id": "P016",
+  "name": "Theo",
+  "age": 28,
+  "segment": "Abogado litigante independiente (20 a 80 procesos activos)",
+  "income": 58007000,
+  "behaviour": "Revisa a mano",
+  "behaviour_how": "Entra cada manana a la consulta de procesos de la Rama Judicial, radicado por radicado, y lleva el control en un Excel.",
+  "objection": "No conozco a ningun colega que la use; quien esta detras",
+  "habit": "usted lleva procesos laborales y ejecutivos en tres ciudades distintas"
+ },
+ {
+  "id": "P017",
+  "name": "Alma",
+  "age": 61,
+  "segment": "Abogado litigante independiente (20 a 80 procesos activos)",
+  "income": 113303000,
+  "behaviour": "Revisa a mano",
+  "behaviour_how": "Entra cada manana a la consulta de procesos de la Rama Judicial, radicado por radicado, y lleva el control en un Excel.",
+  "objection": "No quiero subir los datos de mis clientes a una plataforma que no conozco",
+  "habit": "usted ya vivio un susto por un termino que casi se le vence"
+ },
+ {
+  "id": "P018",
+  "name": "Freya",
+  "age": 32,
+  "segment": "Socio de firma pequena, 2 a 10 abogados (80 a 300 procesos)",
+  "income": 256201000,
+  "behaviour": "Desordenado",
+  "behaviour_how": "Lleva los procesos en la cabeza, en carpetas y en chats de WhatsApp; ya se le ha pasado algun termino por poco.",
+  "objection": "No quiero subir los datos de mis clientes a una plataforma que no conozco",
+  "habit": "usted trabaja solo, sin secretaria, y revisa el correo desde el celular"
+ },
+ {
+  "id": "P019",
+  "name": "Harper",
+  "age": 50,
+  "segment": "Abogado litigante independiente (20 a 80 procesos activos)",
+  "income": 112844000,
+  "behaviour": "Adopta tecnologia pronto",
+  "behaviour_how": "Prueba herramientas nuevas, usa IA en su trabajo y compara funciones antes de pagar.",
+  "objection": "No conozco a ningun colega que la use; quien esta detras",
+  "habit": "usted lleva procesos laborales y ejecutivos en tres ciudades distintas"
+ },
+ {
+  "id": "P020",
+  "name": "Emma",
+  "age": 61,
+  "segment": "Socio de firma pequena, 2 a 10 abogados (80 a 300 procesos)",
+  "income": 223729000,
+  "behaviour": "Revisa a mano",
+  "behaviour_how": "Entra cada manana a la consulta de procesos de la Rama Judicial, radicado por radicado, y lleva el control en un Excel.",
+  "objection": "No conozco a ningun colega que la use; quien esta detras",
+  "habit": "usted ya vivio un susto por un termino que casi se le vence"
+ }
+]

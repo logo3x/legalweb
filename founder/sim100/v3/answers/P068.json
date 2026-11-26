@@ -1,0 +1,13 @@
+{
+  "id": "P068",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Llevo anos revisando radicado por radicado con mi Excel y no se me ha pasado un termino; probaria los 30 dias gratis, pero al final seguiria revisando a mano igual, asi que pagaria por algo que no me quita trabajo. Me quedaria con el plan gratuito de 3 procesos.",
+  "objection": "SAMAI y la consulta de la Rama se caen y cambian cada rato; cuando eso pase me van a avisar que la consulta fallo y me toca revisar a mano de todas formas. Y devolverme $69.900 no me repara un termino vencido.",
+  "would_change_my_mind": "Que en los 30 dias de prueba detecte, sin un solo fallo en SAMAI, una actuacion que a mi se me paso o la vi tarde; ahi si pagaria el plan Individual.",
+  "price_too_cheap": 15000,
+  "price_cheap": 35000,
+  "price_expensive": 70000,
+  "price_too_expensive": 110000
+}

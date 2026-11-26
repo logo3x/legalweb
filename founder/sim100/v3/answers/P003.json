@@ -1,0 +1,13 @@
+{
+  "id": "P003",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Ya pago un servicio de vigilancia hace años y me funciona; con menos de 15 procesos no voy a pagar dos ni a tomarme el trabajo de cambiarme. Probablemente haría la prueba gratis y me quedaría con el plan gratuito de 3 procesos, si acaso.",
+  "objection": "Cambiarme me da pereza y no veo qué gano frente a lo que ya tengo; $69.900 al mes por un plan de 80 procesos cuando llevo menos de 15 es pagar por capacidad que no uso.",
+  "would_change_my_mind": "Que en los 30 días de prueba en paralelo mi servicio actual se le pase una actuación que LegalWeb sí me avisó, y que hubiera un plan de hasta 15 procesos por unos $35.000 al mes, más barato que lo que pago hoy.",
+  "price_too_cheap": 10000,
+  "price_cheap": 25000,
+  "price_expensive": 50000,
+  "price_too_expensive": 70000
+}

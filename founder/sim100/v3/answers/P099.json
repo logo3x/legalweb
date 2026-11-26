@@ -1,0 +1,13 @@
+{
+  "id": "P099",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Yo reviso mis radicados cada manana y los llevo en mi Excel; me toma un rato pero no me cuesta nada y confio en lo que veo con mis propios ojos. Haria la prueba de 30 dias y despues me quedaria con el plan gratuito para los tres procesos mas delicados.",
+  "objection": "Si de todas formas voy a seguir entrando a la Rama para estar tranquila, estaria pagando $69.900 al mes por algo que ya hago; y la garantia solo me devuelve la mensualidad, no el termino que se me venza.",
+  "would_change_my_mind": "Que en los 30 dias de prueba el servicio me avise de una actuacion que a mi se me paso en la revision manual, sin fallar ni una sola vez en mis procesos.",
+  "price_too_cheap": 10000,
+  "price_cheap": 30000,
+  "price_expensive": 60000,
+  "price_too_expensive": 90000
+}

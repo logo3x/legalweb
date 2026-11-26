@@ -1,5 +1,7 @@
 # Precio: LegalWeb
 
+> **Actualización con el panel de 100 compradores.** Rango aceptable de la oferta propuesta: de $29.549 a $90.534, con indiferencia en $59.822; con el Individual a $69.900 y tope de 80 procesos: de $29.363 a $99.899. Esa variante compró igual (30 de 100) y sube el ingreso medio de unos $92.000 a $93.300, así que **la recomendación pasa a Individual $69.900 con hasta 80 procesos**. El tope lo mencionaron 29 de 100 con 50 procesos y 17 con 80. El plan Gratuito lo nombraron como refugio 42 de los 86 que pasaron con la oferta actual. Las cifras de abajo son del panel inicial de 20.
+
 ## 1. El precio, y por qué
 
 **Mantener Profesional en $120.000 y abrir un plan Individual en $59.900.** No bajar el Profesional.

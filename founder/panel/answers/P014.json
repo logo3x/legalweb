@@ -1,13 +1,13 @@
 {
   "id": "P014",
-  "buys": false,
-  "purchases_first_month": 0,
-  "reason_code": "habit",
-  "reason": "Ya pago un servicio de vigilancia hace anos y, mal que bien, me funciona. Probaria gratis en paralelo por curiosidad, pero al dia 30 no voy a pagar dos servicios ni a ponerme a migrar todo por una empresa que ningun colega me ha recomendado.",
-  "objection": "No conozco a nadie que la use. La garantia solo me devuelve $59.900 del mes, y si se me pasa un termino el dano es mio y vale mucho mas que eso; con mi proveedor actual al menos ya se como falla.",
-  "would_change_my_mind": "Que en los 30 dias de prueba LegalWeb me avise una actuacion que mi servicio actual no me aviso o me aviso tarde; con eso demostrado en mis propios procesos, me cambio al plan Individual.",
-  "price_too_cheap": 20000,
-  "price_cheap": 40000,
-  "price_expensive": 90000,
-  "price_too_expensive": 130000
+  "buys": true,
+  "purchases_first_month": 1,
+  "reason_code": "need",
+  "reason": "Consultar la Rama es gratis, pero yo no lo hago juicioso y ya casi se me pasa un termino; con mas de cien procesos y clientes empresa llamando a preguntar, $120.000 al mes es menos que una hora mia. Si en los 30 dias en paralelo me avisa lo mismo que encuentro a mano, pago el Profesional.",
+  "objection": "Que se quede en otra cosa que pruebo y abandono: armar el Excel de radicados cuando los tengo regados en carpetas y chats es justo el trabajo que nunca hago. Y la garantia solo me devuelve el mes, no el termino vencido.",
+  "would_change_my_mind": "Si durante la prueba se le escapa una sola actuacion que yo si vi en la Rama o en SAMAI, no pago y sigo como estoy.",
+  "price_too_cheap": 30000,
+  "price_cheap": 80000,
+  "price_expensive": 200000,
+  "price_too_expensive": 350000
 }

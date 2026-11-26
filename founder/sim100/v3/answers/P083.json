@@ -1,0 +1,13 @@
+{
+  "id": "P083",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "La prueba gratis la hago, pero al final voy a seguir entrando yo mismo a SAMAI y a la Rama porque no me fio de ningun robot, y pagar $69.900 al mes por algo que igual reviso a mano es pagar dos veces. Me quedo con el plan gratuito de 3 procesos para los mas delicados.",
+  "objection": "Las paginas de la Rama y SAMAI se caen y cambian a cada rato; el dia que dejen de consultar bien, la devolucion de un mes no me salva de un termino vencido y la responsabilidad sigue siendo mia.",
+  "would_change_my_mind": "Que en los 30 dias en paralelo no se le escape ni una sola actuacion de SAMAI frente a mi Excel, que me avise de verdad cuando la consulta falle, y que el plan individual este mas cerca de $40.000.",
+  "price_too_cheap": 15000,
+  "price_cheap": 35000,
+  "price_expensive": 60000,
+  "price_too_expensive": 80000
+}

@@ -1,5 +1,7 @@
 # La oferta: «Vigilancia en Paralelo»
 
+> **Actualización con el panel de 100 compradores.** Oferta publicada: 14 de 100. «Vigilancia en Paralelo»: **30 de 100**; 16 personas pasaron de no a sí y ninguna al revés. Quienes pasan por confianza bajan de 29 a 15 y por precio de 20 a 8; por hábito suben de 36 a 45. Quien revisa a mano pasa de 8 % a 48 %. Quien tiene dependiente, ya paga vigilancia, desconfía de la tecnología o busca lo gratis: 0 % con cualquier oferta. La segunda lectura de la competencia mostró además que varios rivales ya avisan por WhatsApp y entregan el auto en PDF: esos dos elementos de la pila igualan, no diferencian. Lo que nadie ofrece es el informe de verificación y el aviso de fallo. Las cifras de abajo son del panel inicial de 20.
+
 Método: el lente de Ofertas de `lenses.md` (resumen de un marco publicado; no son palabras de su autor).
 
 ## 1. Lo que ya se sabía

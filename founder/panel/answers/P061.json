@@ -1,0 +1,13 @@
+{
+  "id": "P061",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Ya pago un servicio de vigilancia hace anos y me funciona lo suficiente; cambiarme implica cargar todos mis radicados de tres ciudades y volver a confiar en alguien nuevo, y no tengo un dolor que lo justifique. Tal vez dejo corriendo la prueba gratis, pero pagar dos servicios a la vez no.",
+  "objection": "Las paginas de la Rama se caen y cambian cada rato; no creo que un proveedor nuevo aguante mejor que el que ya tengo, y la garantia solo me devuelve $59.900 cuando un termino vencido me cuesta el proceso y una queja disciplinaria.",
+  "would_change_my_mind": "Que en los 30 dias en paralelo LegalWeb me avise al menos una actuacion que mi servicio actual se haya saltado o haya avisado tarde, y que ademas cueste menos que lo que pago hoy.",
+  "price_too_cheap": 20000,
+  "price_cheap": 40000,
+  "price_expensive": 90000,
+  "price_too_expensive": 150000
+}

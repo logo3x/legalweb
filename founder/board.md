@@ -37,3 +37,20 @@ Los tres miembros aplican marcos publicados (resumidos en `lenses.md` de la skil
 ## La versión más fuerte de este negocio que ve la junta
 
 No es «la suite legal para abogados colombianos», que es lo que hoy presenta la landing. Es **un servicio de vigilancia judicial con confiabilidad demostrada y garantizada**: un nombre, una promesa («si la fuente lo publicó y no le avisamos, le devolvemos el mes»), un tablero público de detección y latencia, y aviso inmediato cuando una sincronización no se completó. Los vencimientos automáticos y el portal del cliente son la pila que lo vuelve difícil de dejar; el resto se oculta hasta que haya uso que lo justifique. Empieza en un subsegmento que se pueda dominar y acumula un dato que nadie más tiene: cuánto tarda de verdad cada despacho. Esto difiere de lo que se presentó, y la junta lo dice sin rodeos: el producto ya hace más de lo que necesita, y demuestra menos de lo que promete.
+
+## Segunda sesión, con la evidencia verificada
+
+**Voto: 3 «FUND IF». Puntaje promedio: 3,3 / 10** (Ofertas 4, Monopolio 3, Producto 3; antes 5, 4 y 5). Memos en `board2/`.
+
+La nota bajó porque la evidencia confirmó lo que antes era sospecha: el producto registra fallos como «sin novedades», calcula mal el 11,1 % de los términos, no detecta actuaciones en SAMAI y va por detrás de la competencia en WhatsApp, entrega del auto y frecuencia. Lo que subió: la oferta de verificación garantizada es un diferencial que nadie más tiene y duplica la compra en el panel.
+
+**Condiciones, ahora con fecha:**
+- [ ] Antes del 5 de diciembre de 2026: landing sin promesas no respaldadas; `setup.php` fuera de producción.
+- [ ] Antes del 31 de diciembre de 2026: defectos del núcleo corregidos con pruebas; 0 % de discrepancia en los 1.840 cálculos de términos; aviso el mismo día ante cualquier fallo y alerta si la tarea nocturna no corre.
+- [ ] Antes del 28 de febrero de 2027: 30 días en paralelo con 10 a 20 abogados reales de un solo nicho, cero omisiones documentadas y al menos 5 pagando.
+- [ ] Antes del 31 de marzo de 2027: un canal repetible con 40 o más registros al mes, costo por registro medido y cobro recurrente.
+- [ ] Ninguna función nueva fuera de la vigilancia hasta cumplir lo anterior.
+
+Si las dos últimas no se cumplen, el lente de Monopolio vota no financiar.
+
+**Dónde siguen sin estar de acuerdo:** Ofertas quiere una garantía más fuerte que devolver el mes; Producto pide congelar IA y facturación; Monopolio duda de que exista algo defendible si un competidor copia el informe de verificación.

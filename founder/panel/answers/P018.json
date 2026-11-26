@@ -1,13 +1,13 @@
 {
   "id": "P018",
-  "buys": true,
-  "purchases_first_month": 1,
-  "reason_code": "need",
-  "reason": "Ya se me paso un termino por poco y con mas de 80 procesos en la cabeza y en chats no doy abasto; $120.000 al mes por el plan Profesional es menos de lo que me cuesta un solo susto. Pero solo pago si en los 30 dias de prueba me aviso todo lo que yo vi por mi cuenta y nada se le escapo.",
-  "objection": "No tengo ningun Excel de radicados: los tengo regados en carpetas y WhatsApp, y armar esa lista es justo el trabajo que nunca hago. Ademas solo necesitan el radicado, bien, pero igual no los conozco y la garantia de devolverme un mes no me sirve de nada si se me vence un termino.",
-  "would_change_my_mind": "Que durante la prueba se les pase una sola actuacion que yo si vi, o que cargar mis procesos me toque a mi y me quite mas de una tarde; ahi lo dejo.",
-  "price_too_cheap": 30000,
-  "price_cheap": 80000,
-  "price_expensive": 250000,
-  "price_too_expensive": 450000
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Ya tengo un servicio de vigilancia hace anos y me funciona; armar el Excel, correr dos sistemas en paralelo y comparar actuacion por actuacion es trabajo que no voy a hacer en una semana normal por ahorrarme unos pesos.",
+  "objection": "No tengo un problema que resolver: mi proveedor actual no me ha fallado, y cambiar a una empresa que no conozco es arriesgar un termino vencido con un cliente empresa. La garantia me devuelve $59.900, no el proceso perdido.",
+  "would_change_my_mind": "Que mi servicio actual me deje pasar una actuacion o me suba el precio de forma notable; ahi si haria la prueba en paralelo.",
+  "price_too_cheap": 20000,
+  "price_cheap": 45000,
+  "price_expensive": 110000,
+  "price_too_expensive": 160000
 }

@@ -1,0 +1,13 @@
+{
+  "id": "P066",
+  "buys": true,
+  "purchases_first_month": 1,
+  "reason_code": "need",
+  "reason": "El plan gratuito de 3 procesos no me sirve con los que llevo, y mis clientes empresa me llaman a preguntar como va cada proceso; si en los 30 dias en paralelo no se le escapa ninguna actuacion frente a mi revision, pago el Individual de $59.900 y, si paso de 50 procesos, miro el Profesional por el portal del cliente.",
+  "objection": "Que la consulta a la Rama Judicial y a SAMAI falle seguido y termine revisando a mano igual; ademas la garantia solo devuelve el mes, no el dano de un termino vencido, y ya he probado otras herramientas que prometen lo mismo.",
+  "would_change_my_mind": "Si durante la prueba se le pasa una sola actuacion que yo si vi, o si me llegan avisos de consulta fallida todas las semanas, me quedo con mi metodo y el plan gratuito.",
+  "price_too_cheap": 20000,
+  "price_cheap": 45000,
+  "price_expensive": 110000,
+  "price_too_expensive": 180000
+}

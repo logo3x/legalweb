@@ -1,0 +1,13 @@
+{
+  "id": "P034",
+  "buys": true,
+  "purchases_first_month": 1,
+  "reason_code": "convenience",
+  "reason": "Consultar la Rama es gratis, pero mi hora no: reviso mas de cien radicados a mano cada manana y en SAMAI varias veces por semana. Si en los 30 dias en paralelo no se le escapa ninguna actuacion frente a mi Excel, $120.000 al mes por procesos ilimitados es menos de lo que facturo en media hora.",
+  "objection": "Que SAMAI no lo cubran tan bien como la Rama Judicial y se les pase un auto en lo contencioso; devolverme un mes de $120.000 no me compensa un termino vencido, asi que igual tendria que seguir revisando a mano los procesos delicados.",
+  "would_change_my_mind": "Si durante la prueba se les escapa una sola actuacion que yo si vi en SAMAI o en la Rama, o si las consultas fallan seguido y me toca revisar a mano de todas formas, no pago.",
+  "price_too_cheap": 30000,
+  "price_cheap": 80000,
+  "price_expensive": 200000,
+  "price_too_expensive": 350000
+}

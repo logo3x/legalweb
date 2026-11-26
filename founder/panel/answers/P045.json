@@ -1,0 +1,13 @@
+{
+  "id": "P045",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Ya pago un servicio de vigilancia hace anos y me funciona; no tengo quien me ayude a montar el Excel ni a comparar actuacion por actuacion durante un mes. Probaria gratis si acaso y me quedaria con los 3 procesos gratuitos para los mas delicados.",
+  "objection": "Cambiarme implica trabajo y riesgo para mis procesos, y la garantia solo me devuelve $59.900 cuando un termino vencido me cuesta el cliente y una queja disciplinaria.",
+  "would_change_my_mind": "Que en la prueba en paralelo LegalWeb me avise de una actuacion que mi servicio actual dejo pasar, y que ademas me salga mas barato que lo que pago hoy.",
+  "price_too_cheap": 15000,
+  "price_cheap": 35000,
+  "price_expensive": 70000,
+  "price_too_expensive": 100000
+}

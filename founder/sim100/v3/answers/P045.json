@@ -1,0 +1,13 @@
+{
+  "id": "P045",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Ya pago una vigilancia judicial hace anos y me funciona; no voy a pagar dos servicios ni a ponerme a migrar mis radicados yo solo, sin quien me ayude. Si acaso dejo los 3 procesos gratis para los mas delicados.",
+  "objection": "Cambiarme me da pereza y riesgo: tendria que armar el Excel, comparar actuacion por actuacion durante un mes y confiar en una empresa que no conozco, cuando lo que tengo no me ha fallado.",
+  "would_change_my_mind": "Que en la prueba en paralelo LegalWeb me avise una actuacion que mi servicio actual dejo pasar, y que salga claramente mas barato que lo que pago hoy.",
+  "price_too_cheap": 15000,
+  "price_cheap": 35000,
+  "price_expensive": 70000,
+  "price_too_expensive": 100000
+}

@@ -1,0 +1,13 @@
+{
+  "id": "P100",
+  "buys": true,
+  "purchases_first_month": 1,
+  "reason_code": "need",
+  "reason": "Ya casi se me vence un termino revisando radicado por radicado, y con mis procesos me alcanza el plan Individual de $59.900; el de $120.000 no lo tomo. Solo pago si en los 30 dias de prueba no se le escapa ninguna actuacion frente a mi Excel.",
+  "objection": "Que la consulta falle justo cuando la pagina de la Rama esta caida y yo me confie; devolverme un mes de $59.900 no me repara un termino vencido, asi que igual tendria que seguir revisando a mano los procesos delicados.",
+  "would_change_my_mind": "Si durante la prueba en paralelo se les pasa una sola actuacion que yo si vi a mano, o si supero los 50 procesos y me obligan a pagar los $120.000, no pago.",
+  "price_too_cheap": 15000,
+  "price_cheap": 40000,
+  "price_expensive": 80000,
+  "price_too_expensive": 120000
+}

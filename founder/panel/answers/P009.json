@@ -3,11 +3,11 @@
   "buys": false,
   "purchases_first_month": 0,
   "reason_code": "habit",
-  "reason": "Ya le pago a un dependiente que revisa estados y va a los juzgados, y yo misma entro a SAMAI varias veces por semana; esto seria pagar dos veces por algo que ya tengo cubierto. No es por la plata, $120.000 no me duele, es que no voy a sacar el tiempo para armar el Excel de 150 radicados y comparar un mes entero.",
-  "objection": "Una pagina no va al despacho ni me cuenta lo que no esta publicado; si igual tengo que conservar al dependiente, no veo que me quita de encima. Y que me devuelvan $120.000 si se les pasa una actuacion no compensa un termino vencido.",
-  "would_change_my_mind": "Que en la prueba en paralelo el sistema detecte al menos una actuacion que a mi dependiente se le paso, o que un colega de lo contencioso que yo conozca me diga que SAMAI le funciona bien ahi.",
-  "price_too_cheap": 30000,
-  "price_cheap": 70000,
-  "price_expensive": 180000,
-  "price_too_expensive": 300000
+  "reason": "Tengo menos de 15 procesos y los reviso yo mismo cada manana en la Rama con mi Excel; me toma un rato y me funciona. Probaria los 30 dias gratis, pero al terminar lo mas seguro es que me quede con el plan gratuito de 3 procesos y siga revisando a mano el resto.",
+  "objection": "Aunque me avisen, igual voy a entrar a revisar yo, porque si se me pasa un termino el responsable soy yo y que me devuelvan $59.900 no me arregla un proceso perdido. Entonces pagaria por algo que no me quita el trabajo.",
+  "would_change_my_mind": "Que en la prueba en paralelo me pesquen una actuacion que a mi se me paso, o un plan de unos $25.000 para hasta 15 procesos.",
+  "price_too_cheap": 8000,
+  "price_cheap": 20000,
+  "price_expensive": 45000,
+  "price_too_expensive": 60000
 }

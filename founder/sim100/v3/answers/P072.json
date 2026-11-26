@@ -1,0 +1,13 @@
+{
+  "id": "P072",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Ya le pago a mi dependiente para que revise estados y vaya a los juzgados, y confio en el, no en una pagina. Con menos de 15 procesos, sumar otro pago mensual no me cuadra; probaria los 30 dias gratis y me quedaria en el plan gratuito de 3 procesos.",
+  "objection": "Seria pagar doble: el dependiente igual tiene que ir al juzgado, y un aviso por WhatsApp no reemplaza eso. Que me devuelvan $69.900 si fallan no me sirve de nada frente a un termino vencido.",
+  "would_change_my_mind": "Que en la prueba en paralelo la herramienta detecte una actuacion que a mi dependiente se le paso, o un plan de unos $30.000 para hasta 15 procesos.",
+  "price_too_cheap": 10000,
+  "price_cheap": 25000,
+  "price_expensive": 50000,
+  "price_too_expensive": 70000
+}

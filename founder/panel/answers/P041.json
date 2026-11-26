@@ -1,0 +1,13 @@
+{
+  "id": "P041",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Ya tengo dependiente judicial que me revisa los procesos y va a los juzgados, y yo misma entro a SAMAI varias veces por semana. Una pagina que me avisa por WhatsApp no me reemplaza a esa persona, asi que seria pagar dos veces por lo mismo.",
+  "objection": "Si se les pasa una actuacion, me devuelven $59.900 y yo quedo con un termino vencido y la responsabilidad frente al cliente; esa garantia no cubre lo que realmente arriesgo. Ademas el aviso no va al juzgado ni saca copias.",
+  "would_change_my_mind": "Que en los 30 dias en paralelo el sistema detecte una actuacion en SAMAI que mi dependiente y yo no vimos a tiempo; ahi lo pagaria como respaldo, no como reemplazo.",
+  "price_too_cheap": 15000,
+  "price_cheap": 30000,
+  "price_expensive": 60000,
+  "price_too_expensive": 100000
+}

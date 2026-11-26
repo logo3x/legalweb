@@ -1,0 +1,13 @@
+{
+  "id": "P052",
+  "buys": true,
+  "purchases_first_month": 1,
+  "reason_code": "convenience",
+  "reason": "Con mas de cien procesos pierdo una hora cada manana radicado por radicado y los clientes empresa me llaman a preguntar; si en los 30 dias en paralelo no se le escapa ninguna actuacion frente a mi Excel, $120.000 al mes es menos de lo que me cuesta esa hora. Solo entrego radicados, que son publicos, asi que mi reparo de los datos queda cubierto.",
+  "objection": "No conozco a esta empresa y la garantia solo me devuelve el mes: si se les pasa un auto y se me vence un termino, el dano es mio y vale mucho mas que $120.000. Igual voy a seguir revisando a mano los procesos delicados.",
+  "would_change_my_mind": "Que durante la prueba se les pase una sola actuacion que yo si vi en mi revision manual, o que me pidan datos de los clientes mas alla del radicado.",
+  "price_too_cheap": 30000,
+  "price_cheap": 80000,
+  "price_expensive": 200000,
+  "price_too_expensive": 350000
+}

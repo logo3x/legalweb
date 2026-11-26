@@ -1,0 +1,13 @@
+{
+  "id": "P044",
+  "buys": true,
+  "purchases_first_month": 1,
+  "reason_code": "need",
+  "reason": "Ya se me paso un termino por poco y con mas de cien procesos entre carpetas y WhatsApp no doy abasto; si en los 30 dias en paralelo no se le escapa nada frente a lo que revisa mi dependiente, pago el Profesional de $120.000, que es menos de lo que cobro por una consulta.",
+  "objection": "Las paginas de la Rama se caen y cambian cada rato; me da miedo confiarme y que un dia esto deje de consultar sin que yo me entere, y devolverme un mes no me arregla un termino vencido. Ademas, armar el Excel de radicados me toca a mi y los tengo regados.",
+  "would_change_my_mind": "Que durante la prueba se le pase una sola actuacion que mi dependiente si vio, o que los avisos de consulta fallida sean tantos que igual me toque revisar todo a mano.",
+  "price_too_cheap": 30000,
+  "price_cheap": 80000,
+  "price_expensive": 200000,
+  "price_too_expensive": 350000
+}

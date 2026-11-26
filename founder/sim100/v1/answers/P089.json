@@ -1,0 +1,13 @@
+{
+  "id": "P089",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Ya tengo una dependiente que me revisa los procesos todos los dias y me funciona; no voy a confiarle los terminos de mis clientes empresa a un programa que nadie de mi confianza me ha recomendado.",
+  "objection": "Si el sistema no detecta una actuacion y se me vence un termino, el que responde ante el cliente soy yo, no la pagina web. Ademas no me gusta subir los radicados de mis clientes ni entrar con mi cuenta de Google.",
+  "would_change_my_mind": "Que un colega de confianza que lleve anos usandolo me diga que nunca le ha fallado una notificacion, y poder compararlo unos meses contra la revision de mi dependiente.",
+  "price_too_cheap": 30000,
+  "price_cheap": 70000,
+  "price_expensive": 150000,
+  "price_too_expensive": 300000
+}

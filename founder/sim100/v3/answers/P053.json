@@ -1,0 +1,13 @@
+{
+  "id": "P053",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Ya pago un servicio de vigilancia hace anos y me funciona; cambiar 200 procesos a un proveedor que ningun colega mio conoce me da pereza y riesgo. La prueba gratis tal vez la corro, pero al dia 30 lo mas probable es que siga con lo que tengo.",
+  "objection": "No conozco a nadie que la use. Si se les pasa un auto y se me vence un termino, devolverme $120.000 del mes no me cubre nada frente al cliente.",
+  "would_change_my_mind": "Que en los 30 dias en paralelo me avise una actuacion que mi servicio actual no detecto, o que un colega de confianza me la recomiende.",
+  "price_too_cheap": 40000,
+  "price_cheap": 80000,
+  "price_expensive": 180000,
+  "price_too_expensive": 280000
+}

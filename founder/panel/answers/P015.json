@@ -2,12 +2,12 @@
   "id": "P015",
   "buys": false,
   "purchases_first_month": 0,
-  "reason_code": "habit",
-  "reason": "Ya tengo quien me revise los procesos y me funciona; no voy a montar mis radicados en una plataforma que no conozco y que ningun colega me ha recomendado. Para una firma con mas de cien procesos el precio no es el problema, el problema es confiarle los terminos a un sistema.",
-  "objection": "Si se les pasa una actuacion me devuelven $120.000, pero el termino vencido y la responsabilidad ante el cliente son mios. Esa garantia no cubre lo que realmente arriesgo, y ademas tendria que seguir pagando a mi dependiente para verificar.",
-  "would_change_my_mind": "Que un colega de confianza, con una firma parecida a la mia, me diga en persona que lleva un ano usandolo y que no se le ha pasado ni una actuacion.",
-  "price_too_cheap": 40000,
-  "price_cheap": 80000,
-  "price_expensive": 200000,
-  "price_too_expensive": 350000
+  "reason_code": "trust",
+  "reason": "Ya casi se me vence un termino y eso me duele, pero no le entrego la vigilancia de mis procesos a una pagina que nunca he oido nombrar y que ningun colega me ha recomendado. Sigo revisando yo mismo con mi libreta y mi dependiente, que es lo que conozco.",
+  "objection": "Si el sistema falla y no me avisa, el que responde ante el cliente y ante el Consejo Superior soy yo; que me devuelvan $59.900 no me arregla un termino vencido. Ademas, igual tendria que seguir revisando a mano, entonces pago doble.",
+  "would_change_my_mind": "Que un colega litigante de mi confianza me diga que lo usa hace mas de un ano y que nunca le ha fallado un aviso; ahi haria la prueba y probablemente tomaria el plan de $59.900.",
+  "price_too_cheap": 15000,
+  "price_cheap": 35000,
+  "price_expensive": 60000,
+  "price_too_expensive": 90000
 }

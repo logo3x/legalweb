@@ -2,20 +2,20 @@
 
 **Verdict: Not yet**
 
-- ✓ Each suscripcion-mes earns $71950.00 before fixed costs (90% contribution).
-- ✗ Year 1 operating LOSS: $26,273,950.
-- ✓ 6 of 20 simulated buyers buy (30%, the bar is 25%).
+- ✓ Each suscripcion-mes earns $84880.00 before fixed costs (92% contribution).
+- ✗ Year 1 operating LOSS: $21,632,080.
+- ✓ 30 of 100 simulated buyers buy (30%, the bar is 25%).
 
 | key number | |
 | --- | ---: |
-| Price | $79900.00 a suscripcion-mes |
-| Profit margin at plan | -1% per suscripcion-mes |
-| Break-even | 61 suscripcion-mess a day |
-| Year 1 operating profit | $-26,273,950 |
+| Price | $91950.00 a suscripcion-mes |
+| Profit margin at plan | 14% per suscripcion-mes |
+| Break-even | 52 suscripcion-mess a day |
+| Year 1 operating profit | $-21,632,080 |
 | Startup spend | $4,500,000 |
-| Cash needed before it pays for itself | $30,773,950 |
+| Cash needed before it pays for itself | $27,209,280 |
 | Startup money earned back | not in year 1 |
-| Buyer panel | 6 buy · 14 pass |
+| Buyer panel | 30 buy · 70 pass |
 
 ## The idea
 
@@ -27,24 +27,24 @@
 
 ## Summary
 
-**Veredicto: todavía no («Not yet»).** Calculado por `compile.py`, no escrito a mano.
+**Veredicto: todavía no («Not yet»).** Calculado por `compile.py`, no escrito a mano. El detalle completo está en `RESULTADO.md`.
 
 **Qué tiene que cambiar, y qué lo cambia:**
-1. **El año 1 pierde $26.273.950** si el negocio le paga al fundador medio tiempo. El equilibrio son 61 suscriptores de pago y la rampa supuesta apenas llega a 60 en el mes 12. Lo cambia el volumen real y el ingreso medio (`cfo.md`, `pricing.md`). Sin sueldo, el equilibrio son 12 suscriptores y el año cierra en positivo: como proyecto sostenido por el fundador es viable; como negocio que paga a quien lo opera, aún no.
-2. **La promesa central no está respaldada por el código.** El calendario judicial marca mal cinco festivos al año, una consulta fallida se registra como «sincronizada» y el abogado no se entera, y SAMAI no detecta actuaciones aunque la landing lo promete (`code-audit.md`). Lo cambian entre 15 y 23 días de trabajo, en el orden de `ops.md`.
-3. **La oferta que hoy está publicada no vende.** En el panel simulado la compró 1 de 20 (5 %). La oferta propuesta sube a 6 de 20 (30 %), pero todavía no existe.
+1. **El año 1 pierde $21.632.080** si el negocio le paga al fundador medio tiempo: el equilibrio son 52 suscriptores de pago. Sin sueldo el equilibrio son 10 y el año deja $20.367.920. Lo cambia el volumen: la simulación muestra que con 20 registros al mes se cubre la caja pero nunca el sueldo, y que para vivir del proyecto hacen falta unos 80 registros al mes (`cfo.md`).
+2. **La promesa central no está respaldada por el código**, comprobado ejecutándolo: el calendario judicial da mal el 11,1 % de los términos (6,2 % vence más tarde de lo correcto), un fallo del servicio de actuaciones se registra como «sin novedades», nada avisa si la tarea nocturna se cae y SAMAI no detecta actuaciones (`verify/`). Lo cambian unas tres semanas de trabajo, en el orden de `ops.md`.
+3. **La oferta publicada vende poco**: 14 de 100 en el panel simulado. La oferta propuesta sube a 30 de 100, pero todavía no existe en el producto.
 
-**Qué es y para quién.** LegalWeb es un servicio web que consulta cada madrugada los procesos de un abogado colombiano en la Rama Judicial y le avisa cuando hay una actuación nueva. Es para el litigante independiente o la firma pequeña que lleva entre 20 y 150 procesos y hoy los revisa a mano.
+**Qué es y para quién.** LegalWeb consulta cada madrugada los procesos de un abogado colombiano en la Rama Judicial y le avisa cuando hay una actuación nueva. Es para el litigante independiente o la firma pequeña que lleva entre 20 y 150 procesos y hoy los revisa a mano.
 
-**Los tres números del veredicto.** Contribución de $71.950 por suscripción al mes (90 %); equilibrio en 61 suscriptores con sueldo o 12 sin él; año 1 con pérdida de $26.273.950 en el escenario base.
+**Los tres números del veredicto.** Contribución de $84.880 por suscripción al mes (92 %); equilibrio en 52 suscriptores con sueldo o 10 sin él; año 1 con pérdida de $21.632.080 en el escenario base.
 
-**En qué coinciden la junta y el panel.** En que el problema no es el precio sino la confianza: «si no ve una actuación, la que responde soy yo». La junta (3 «financiar si», promedio 4,7 sobre 10) pidió confiabilidad medida, aviso cuando falla, una promesa única y un canal demostrado; el panel pasó por confianza y hábito 16 veces de 19 y solo 2 por precio. **En qué difieren:** un miembro de la junta creía que había margen para subir el precio; el panel puso el tope aceptable alrededor de $110.000 a $120.000 y pidió un plan individual más barato.
+**En qué coinciden la junta y el panel.** En que el problema es la confianza y el hábito, no el precio: con la oferta actual pasan 36 por hábito, 29 por confianza y 20 por precio. La junta, con la evidencia verificada, votó 3 «financiar si» con promedio 3,3 de 10 y puso fechas. **En qué difieren:** la junta quiere una garantía más fuerte; el panel dice que ninguna devolución compensa un término vencido y que solo paga si la prueba no omite nada.
 
-**El mayor riesgo y qué se hará.** Que una actuación no avisada le cueste un término a un cliente. Se corrige el calendario, se hacen visibles los fallos, se añade una señal de vida a la tarea nocturna, y la promesa pasa de «sin perder un término» a «si no pudimos consultar, usted se entera».
+**El mayor riesgo y qué se hará.** Que un término mal calculado o una actuación no avisada le cueste un proceso a un cliente que ya confía en el producto. Se corrige el calendario, se hace visible cada fallo y se retiran de la landing las promesas que el código no cumple.
 
-**Qué se necesita para empezar.** Entre 15 y 23 días de desarrollo, unos $5.700.000 de caja si el fundador no cobra ($30.800.000 si cobra), y la primera prueba real: la cohorte que el 12 de diciembre de 2026 cae al plan Gratuito, seguida de diez pilotos en paralelo desde el 12 de enero de 2027.
+**Qué se necesita para empezar.** Unas tres semanas de desarrollo, alrededor de $5.400.000 de caja si el fundador no cobra ($27.200.000 si cobra), y una prueba real: de 10 a 20 litigantes que revisan a mano, 30 días en paralelo con su método, desde el 12 de enero de 2027.
 
-**Lo único que hay que hacer esta semana.** Corregir el calendario judicial (un día de trabajo) y hacer que una consulta fallida deje de marcarse como sincronizada. Son los dos defectos que hoy pueden hacerle perder un término a un cliente que ya confía en el producto.
+**Lo único que hay que hacer esta semana.** Corregir el calendario judicial y quitar de la landing «sin errores de conteo», «secreto profesional garantizado» y la vigilancia de actuaciones en SAMAI.
 
 El panel son compradores simulados y los números son proyecciones sobre estimaciones; los confirman clientes reales y cotizaciones reales. No es asesoría financiera, legal ni tributaria.
 
@@ -87,6 +87,23 @@ Los tres miembros aplican marcos publicados (resumidos en `lenses.md` de la skil
 ### La versión más fuerte de este negocio que ve la junta
 
 No es «la suite legal para abogados colombianos», que es lo que hoy presenta la landing. Es **un servicio de vigilancia judicial con confiabilidad demostrada y garantizada**: un nombre, una promesa («si la fuente lo publicó y no le avisamos, le devolvemos el mes»), un tablero público de detección y latencia, y aviso inmediato cuando una sincronización no se completó. Los vencimientos automáticos y el portal del cliente son la pila que lo vuelve difícil de dejar; el resto se oculta hasta que haya uso que lo justifique. Empieza en un subsegmento que se pueda dominar y acumula un dato que nadie más tiene: cuánto tarda de verdad cada despacho. Esto difiere de lo que se presentó, y la junta lo dice sin rodeos: el producto ya hace más de lo que necesita, y demuestra menos de lo que promete.
+
+### Segunda sesión, con la evidencia verificada
+
+**Voto: 3 «FUND IF». Puntaje promedio: 3,3 / 10** (Ofertas 4, Monopolio 3, Producto 3; antes 5, 4 y 5). Memos en `board2/`.
+
+La nota bajó porque la evidencia confirmó lo que antes era sospecha: el producto registra fallos como «sin novedades», calcula mal el 11,1 % de los términos, no detecta actuaciones en SAMAI y va por detrás de la competencia en WhatsApp, entrega del auto y frecuencia. Lo que subió: la oferta de verificación garantizada es un diferencial que nadie más tiene y duplica la compra en el panel.
+
+**Condiciones, ahora con fecha:**
+- [ ] Antes del 5 de diciembre de 2026: landing sin promesas no respaldadas; `setup.php` fuera de producción.
+- [ ] Antes del 31 de diciembre de 2026: defectos del núcleo corregidos con pruebas; 0 % de discrepancia en los 1.840 cálculos de términos; aviso el mismo día ante cualquier fallo y alerta si la tarea nocturna no corre.
+- [ ] Antes del 28 de febrero de 2027: 30 días en paralelo con 10 a 20 abogados reales de un solo nicho, cero omisiones documentadas y al menos 5 pagando.
+- [ ] Antes del 31 de marzo de 2027: un canal repetible con 40 o más registros al mes, costo por registro medido y cobro recurrente.
+- [ ] Ninguna función nueva fuera de la vigilancia hasta cumplir lo anterior.
+
+Si las dos últimas no se cumplen, el lente de Monopolio vota no financiar.
+
+**Dónde siguen sin estar de acuerdo:** Ofertas quiere una garantía más fuerte que devolver el mes; Producto pide congelar IA y facturación; Monopolio duda de que exista algo defendible si un competidor copia el informe de verificación.
 
 ## The competition
 
@@ -262,9 +279,9 @@ No leídos o sin resultado:
 
 ## The buyer panel
 
-> **Cómo leer esto.** Hubo dos pruebas con las mismas 20 tarjetas (semilla 7, modo rápido). La **oferta que hoy está en la landing** obtuvo **1 compra de 20 (5 %)**; sus resultados completos están en `founder/panel-v1/results.md`. Lo que sigue es la **oferta propuesta**, que todavía no existe en el producto: **6 de 20 (30 %)**. Son compradores simulados y los modelos de lenguaje tienden a ser complacientes: lea el 30 % como un techo, no como un pronóstico. Con 20 compradores casi todas las filas son muestras delgadas («thin»).
+> **Cómo leer esto.** Tres ofertas, las mismas 100 tarjetas (semilla 7). **Oferta publicada hoy: 14 de 100** (`sim100/v1/results.md`). **Oferta propuesta: 30 de 100** (este archivo). **Igual, con Individual a $69.900 y 80 procesos: 30 de 100** (`sim100/v3/results.md`). La oferta propuesta aún no existe en el producto. Son compradores simulados y los modelos tienden a decir que sí: es un techo. Los paneles iniciales de 20 están en `panel-quick-v1/` y `panel-quick-v2/`.
 
-**6 buy · 14 pass** (30% buy) out of 20 simulated buyers. Seed 7, so the same cards can be dealt again.
+**30 buy · 70 pass** (30% buy) out of 100 simulated buyers. Seed 7, so the same cards can be dealt again.
 
 These are simulated buyers, not customers. Use this to find objections and weak spots, then confirm the big ones with real people before you spend.
 
@@ -272,65 +289,68 @@ These are simulated buyers, not customers. Use this to find objections and weak 
 
 | group | buyers | buy rate |
 | --- | ---: | ---: |
-| Abogado litigante independiente (20 a 80 procesos activos) | 10 | 40% |
-| Socio de firma pequena, 2 a 10 abogados (80 a 300 procesos) | 6 | 33%  (thin) |
-| Abogado joven o que litiga poco (menos de 15 procesos) | 4 | 0%  (thin) |
+| Socio de firma pequena, 2 a 10 abogados (80 a 300 procesos) | 30 | 50% |
+| Abogado litigante independiente (20 a 80 procesos activos) | 50 | 30% |
+| Abogado joven o que litiga poco (menos de 15 procesos) | 20 | 0% |
 
 ### By buying behaviour
 
 | group | buyers | buy rate |
 | --- | ---: | ---: |
-| Desordenado | 3 | 100%  (thin) |
-| Adopta tecnologia pronto | 2 | 50%  (thin) |
-| Revisa a mano | 5 | 40%  (thin) |
-| Tiene dependiente judicial | 3 | 0%  (thin) |
-| Busca lo gratis | 2 | 0%  (thin) |
-| Desconfia de la tecnologia | 2 | 0%  (thin) |
-| Ya paga un servicio de vigilancia | 3 | 0%  (thin) |
+| Adopta tecnologia pronto | 10 | 80% |
+| Desordenado | 15 | 67% |
+| Revisa a mano | 25 | 48% |
+| Tiene dependiente judicial | 15 | 0% |
+| Ya paga un servicio de vigilancia | 15 | 0% |
+| Desconfia de la tecnologia | 12 | 0% |
+| Busca lo gratis | 8 | 0% |
 
 ### By income
 
 | group | buyers | buy rate |
 | --- | ---: | ---: |
-| $112,844,000 and up | 7 | 57%  (thin) |
-| under $53,457,000 | 6 | 33%  (thin) |
-| $53,457,000 to $112,844,000 | 7 | 0%  (thin) |
+| $115,028,000 and up | 34 | 47% |
+| $61,067,000 to $115,028,000 | 33 | 30% |
+| under $61,067,000 | 33 | 12% |
 
 ### Why they pass
 
 | reason | buyers | in their words |
 | --- | ---: | --- |
-| habit | 9 | "Ya tengo dependiente que me revisa los estados y va a los juzgados, y con menos de 15 procesos yo mismo entro a SAMAI varias veces por semana. Probaria los 30 dias gratis por curiosidad, pero al terminar me quedaria con el plan gratuito de 3 procesos y no pagaria." (P001) · "Ya pago un servicio de vigilancia hace anos y con menos de 15 procesos me funciona; cambiarme por ahorrar unos pesos me obliga a montar todo de nuevo y a confiar en alguien que no conozco. Tal vez haria la prueba gratis por curiosidad, pero al dia 30 lo mas probable es que me quede donde estoy o con el plan gratuito de 3 procesos." (P004) |
-| price | 3 | "Uso los 30 dias gratis con todos los procesos de la firma y despues vuelvo a lo de siempre: la consulta en la Rama y en SAMAI es gratis y ya la tenemos montada. El plan de 50 procesos no me cubre y el de $120.000 es un gasto fijo mas que tendria que justificarles a mis socios." (P002) · "Llevo menos de 15 procesos y gano poco mas de dos millones al mes; revisarlos a mano me toma unos minutos. Haria la prueba gratis por curiosidad, pero al terminar me quedaria con el plan gratuito de 3 procesos para los mas delicados y seguiria revisando el resto yo misma." (P007) |
-| trust | 2 | "No conozco a ningun colega que la use y yo no le entrego la vigilancia de mis procesos a una pagina que vi por primera vez. Mi dependiente revisa los despachos y asi seguimos; ni siquiera me pondria a organizar el Excel para la prueba." (P003) · "La prueba gratis sin tarjeta si la haria, pero al dia 30 lo mas probable es que siga con mi Excel: no conozco a ningun colega que la use y, mientras no confie del todo, igual tendria que seguir revisando a mano, asi que estaria pagando por algo que no me quita trabajo. Ademas en los meses que paso de 50 procesos el plan que me toca es el de $120.000, y eso ya lo pienso dos veces." (P016) |
+| habit | 45 | "Ya tengo dependiente que me revisa estados y va a los juzgados, y me funciona; una pagina no me saca copias ni me habla con el secretario. Pagar esto seria pagar dos veces por lo mismo." (P001) · "La consulta de la Rama es gratis y yo ya la hago cada manana con mi Excel; haria la prueba gratis, pero al final seguiria revisando a mano porque la responsabilidad ante el cliente es mia y no dejaria de verificar, asi que estaria pagando por algo que igual repito." (P002) |
+| trust | 15 | "Ya casi se me vence un termino y eso me duele, pero no le entrego la vigilancia de mis procesos a una pagina que nunca he oido nombrar y que ningun colega me ha recomendado. Sigo revisando yo mismo con mi libreta y mi dependiente, que es lo que conozco." (P015) · "Hago la prueba gratis porque no me cuesta nada, pero al terminar no pago: con unos 40 procesos igual voy a seguir entrando a la Rama cada manana, porque si a ustedes se les cae la consulta el termino se me vence a mi, no a ustedes. Pagar por algo que no me deja soltar el Excel es pagar doble trabajo." (P016) |
+| price | 8 | "Consultar la Rama Judicial es gratis y mi dependiente ya lo hace. Usaria los 30 dias de prueba y despues me quedaria con el plan gratuito de 3 procesos para los casos mas delicados; con mas de 100 procesos me toca el plan de $120.000 y hoy no veo por que pagarlo." (P023) · "Llevo menos de 15 procesos y los reviso en veinte minutos cada manana con mi Excel; con lo que gano, $59.900 al mes son casi $720.000 al ano por algo que hoy hago gratis. Haria la prueba y me quedaria con el plan gratuito de 3 procesos para los mas delicados." (P038) |
+| need | 2 | "Llevo menos de 15 procesos y los reviso yo misma cada manana en la Rama; con unos $2 millones al mes de ingreso, $59.900 es plata que no necesito gastar. Haria la prueba y despues me quedaria con el plan gratuito para los 3 procesos mas delicados." (P050) · "Haria la prueba de 30 dias sin dudarlo, pero al terminar me quedo con el plan gratuito para los tres procesos mas delicados. SAMAI ya lo reviso yo varias veces por semana y con unos 30 procesos me alcanza el tiempo." (P095) |
 
 ### Why they buy
 
 | reason | buyers | in their words |
 | --- | ---: | --- |
-| need | 5 | "Ya se me ha pasado un termino por poco y llevo todo en la cabeza y en WhatsApp; si en los 30 dias veo que me avisa lo mismo que yo encuentro revisando a mano, $59.900 es menos de lo que me cuesta un susto. Tomaria el Individual y dejaria por fuera los procesos quietos para no pasar de 50." (P008) · "Ya se me paso un termino por poco y trabajo sola, sin nadie que revise por mi; $59.900 al mes por el plan Individual lo pago si en la prueba veo que avisa lo mismo que yo encuentro a mano. El de $120.000 no, eso es mucho para los procesos que llevo." (P010) |
-| convenience | 1 | "Llevo procesos en tres ciudades y revisar la Rama a mano me quita horas; si en los 30 dias en paralelo no se le escapa ni una actuacion frente a mi propia revision, $59.900 por el plan Individual es menos de lo que me cuesta una hora de trabajo. Pago solo si la comparacion sale limpia, no por la promesa." (P019) |
+| need | 17 | "Ya se me paso un termino por poco y no tengo dependiente ni quien revise por mi; si en los 30 dias de prueba me avisa por WhatsApp lo mismo que yo encuentro a mano, $59.900 es menos de lo que me cuesta un susto. Tomaria el Individual, no el Profesional." (P010) · "Consultar la Rama es gratis, pero yo no lo hago juicioso y ya casi se me pasa un termino; con mas de cien procesos y clientes empresa llamando a preguntar, $120.000 al mes es menos que una hora mia. Si en los 30 dias en paralelo me avisa lo mismo que encuentro a mano, pago el Profesional." (P014) |
+| convenience | 13 | "Con mas de cien procesos en la firma y SAMAI revisado a mano varias veces por semana, $120.000 al mes es menos de lo que me cuesta una hora de dependiente; si en los 30 dias en paralelo no se le escapa ninguna actuacion frente a mi revision, pago el Profesional." (P005) · "Reviso radicado por radicado cada manana y eso me come casi una hora; si en los 30 dias en paralelo no se le escapa ni una actuacion frente a mi Excel, pago el Individual de $59.900 porque es menos de lo que vale una hora mia. Si se le pasa una sola, no pago nada." (P011) |
 
 ### What would flip a no
 
-- Que en la prueba en paralelo el sistema detecte una actuacion que a mi dependiente y a mi se nos paso, o que mi carga suba a 30 o mas procesos y ya no alcance a revisarlos a mano.
-- Que durante la prueba en paralelo me avise de una actuacion que a nosotros se nos paso con nuestra revision; ahi si pagaria el Profesional sin discutir.
-- Que un colega de confianza, de los que litigan laboral o ejecutivos como yo, me diga que la usa hace mas de un ano y que no le ha fallado; ahi si la pongo a correr en paralelo con el dependiente.
-- Que en los 30 dias en paralelo LegalWeb me avise una actuacion que mi servicio actual no detecto o detecto tarde; ahi si cancelo el otro y me paso al plan Individual.
-- Que en los 30 dias de prueba el aviso me llegue antes de que yo vea una actuacion que se me paso en mi revision manual; ahi si pagaria el Individual.
-- Que en los 30 dias de prueba el sistema me avise de una actuacion que a mi dependiente se le paso; ahi si pagaria el Individual como respaldo.
-- Un plan para hasta 15 procesos por unos $30.000 al mes que incluya el portal del cliente, para que dejen de llamarme a preguntar.
-- Que en la prueba en paralelo el sistema detecte al menos una actuacion que a mi dependiente se le paso, o que un colega de lo contencioso que yo conozca me diga que SAMAI le funciona bien ahi.
-- Que en los 30 dias de prueba, comparando contra mi Excel, no se les escape ni una sola actuacion de SAMAI y me avisen antes de que yo la vea; y que un colega de lo contencioso que yo conozca me diga que lleva meses usandolo sin sustos. Ahi pagaria el Individual si me dejan tener hasta unos 80 procesos por ese precio.
-- Que en los 30 dias en paralelo me pesquen al menos una actuacion que mi servicio actual no me aviso o me aviso tarde, y que el plan ilimitado quede claramente por debajo de lo que pago hoy.
-- Un plan pequeno de unos $20.000 al mes para hasta 15 procesos, o que en la prueba me avisen de una actuacion que a mi se me paso y casi me cuesta un termino.
-- Que en los 30 dias de prueba LegalWeb me avise una actuacion que mi servicio actual no me aviso o me aviso tarde; con eso demostrado en mis propios procesos, me cambio al plan Individual.
+- Que en los 30 dias en paralelo el sistema agarre algo que a mi dependiente se le paso, o que mi dependiente se me vaya.
+- Que en los 30 dias de prueba el servicio me avise de una actuacion que a mi se me paso en la revision manual, y que el plan de $59.900 cubra todos mis procesos.
+- Que en la prueba en paralelo mi servicio actual se le pase una actuacion que LegalWeb si me aviso, y que el plan para mis 15 procesos cueste claramente menos de lo que pago hoy.
+- Que en la prueba en paralelo LegalWeb me avise de una actuacion que mi servicio actual no detecto, y que ademas me salga mas barato que lo que pago hoy.
+- Que en los 30 dias en paralelo LegalWeb detecte una actuacion que mi revision actual dejo pasar, o un plan de unos $25.000 para hasta 15 procesos.
+- Que ustedes me armen la lista de mis procesos a partir de mi nombre o cedula, sin que yo tenga que hacer el Excel, y que durante la prueba me avisen de una actuacion que a mi se me hubiera pasado.
+- Que en los 30 dias en paralelo la plataforma detecte algo que a mi dependiente se le paso, o que exista un plan de unos $25.000 para hasta 15 procesos que use como segundo control.
+- Que en la prueba en paralelo me pesquen una actuacion que a mi se me paso, o un plan de unos $25.000 para hasta 15 procesos.
+- Que un colega litigante de mi confianza me diga que lo usa hace mas de un ano y que nunca le ha fallado un aviso; ahi haria la prueba y probablemente tomaria el plan de $59.900.
+- Ver en los 30 dias de paralelo que no se les escapa ni una sola actuacion frente a mi Excel, incluidas las semanas en que la Rama se cae, y que me avisan de verdad cada fallo el mismo dia; con eso y varios meses de historial pagaria el Individual.
+- Que durante la prueba el servicio me avise de una actuacion que a mi se me paso en mi revision manual; con un susto real de terminos si pagaria el Individual.
+- Que mi servicio actual me deje pasar una actuacion o me suba el precio de forma notable; ahi si haria la prueba en paralelo.
 
 Buyers say they would buy **1.0 times** in the first month on average.
 
-20 buyers gave all four price answers. Run founder-pricing's van_westendorp.py on the answers folder.
+100 buyers gave all four price answers. Run founder-pricing's van_westendorp.py on the answers folder.
 
 ## Pricing
+
+> **Actualización con el panel de 100 compradores.** Rango aceptable de la oferta propuesta: de $29.549 a $90.534, con indiferencia en $59.822; con el Individual a $69.900 y tope de 80 procesos: de $29.363 a $99.899. Esa variante compró igual (30 de 100) y sube el ingreso medio de unos $92.000 a $93.300, así que **la recomendación pasa a Individual $69.900 con hasta 80 procesos**. El tope lo mencionaron 29 de 100 con 50 procesos y 17 con 80. El plan Gratuito lo nombraron como refugio 42 de los 86 que pasaron con la oferta actual. Las cifras de abajo son del panel inicial de 20.
 
 ### 1. El precio, y por qué
 
@@ -370,6 +390,8 @@ El plan Gratuito actual (5 casos para siempre) lo nombraron como refugio 11 de l
 Son compradores simulados: sirven para escoger qué probar, no como prueba. Nunca se usan como testimonios. No se anuncia ningún precio «antes» que no se haya cobrado.
 
 ## The offer
+
+> **Actualización con el panel de 100 compradores.** Oferta publicada: 14 de 100. «Vigilancia en Paralelo»: **30 de 100**; 16 personas pasaron de no a sí y ninguna al revés. Quienes pasan por confianza bajan de 29 a 15 y por precio de 20 a 8; por hábito suben de 36 a 45. Quien revisa a mano pasa de 8 % a 48 %. Quien tiene dependiente, ya paga vigilancia, desconfía de la tecnología o busca lo gratis: 0 % con cualquier oferta. La segunda lectura de la competencia mostró además que varios rivales ya avisan por WhatsApp y entregan el auto en PDF: esos dos elementos de la pila igualan, no diferencian. Lo que nadie ofrece es el informe de verificación y el aviso de fallo. Las cifras de abajo son del panel inicial de 20.
 
 Método: el lente de Ofertas de `lenses.md` (resumen de un marco publicado; no son palabras de su autor).
 
@@ -445,17 +467,30 @@ Compraron los desordenados (3 de 3), quienes ya tuvieron un susto con un términ
 
 ### La nota del CFO
 
-- **El margen.** Cada suscripción deja **$71.950 al mes** (90 %) después de sus propios costos, con un ingreso medio de $79.900 (la mezcla que dio el panel: 4 planes Individual de $59.900 y 2 Profesional de $120.000). El margen por unidad no es el problema; el problema es el volumen.
-- **La línea que hay que mirar: el sueldo del fundador y la rampa.** Con un sueldo parcial de $3.500.000, el punto de equilibrio son **61 suscriptores de pago** y el año 1 pierde **$26.273.950** con la rampa supuesta (de 3 a 60 suscriptores). Sin sueldo (solo costos de caja, `numbers-caja.json`) el equilibrio baja a **12 suscriptores**, el año 1 deja **$15.726.050** y la inversión inicial se recupera en el mes 9. Es decir: como proyecto que el fundador sostiene con su tiempo, sobrevive con una docena de clientes; como negocio que paga a quien lo opera, necesita más de 60.
-- **Caja.** Se necesitan **$30.773.950** antes de que se pague solo si el fundador cobra; **$5.658.950** si no cobra. Si además el volumen sale la mitad de lo supuesto, sin sueldo todavía cierra el año en positivo ($2.811.025).
-- **Tres formas de mejorar el margen (cada una corrida con la herramienta):**
-  1. Subir el ingreso medio a $120.000 (más clientes en Profesional): el equilibrio baja de 61 a **39** suscriptores y la pérdida del año 1 cae a $11.878.050.
-  2. No bajar todo a $59.900: con ese ingreso medio el equilibrio sube a **84** suscriptores y el año 1 pierde $33.453.950. El plan Individual sirve para entrar, no para vivir de él.
-  3. Recortar el costo fijo que más pesa después del sueldo, el mercadeo ($600.000 estimado), solo cuando haya un canal con costo de adquisición medido; hoy es el 71 % de los costos de caja.
-- **Condiciones de dinero de la junta.** Garantía asequible: sí, reservada al 2 % del precio ($1.600 por suscripción), siempre que la tasa real de reclamos se mida. IA de pago e infraestructura propia: caben ($130.000 al mes estimados). Canal con costo de adquisición por debajo de $600.000: **sin dato todavía**.
-- **Lo que este CFO no sabe y el fundador sí:** cuántas firmas pagan hoy, el costo real del hosting, la tarifa negociada con Wompi y si hay otros ingresos. Casi todas las cifras de `numbers.json` son estimaciones marcadas como tales; reemplácelas por las reales y vuelva a correr la herramienta.
+- **El margen.** Cada suscripción deja **$84.880 al mes** (92 %) después de sus propios costos, con un ingreso medio de $91.950: la mezcla del panel de 100 (16 planes Profesional de $120.000 y 14 Individual de $59.900). El margen por unidad no es el problema; el volumen sí.
+- **La línea que hay que mirar: los registros al mes.** Con sueldo parcial del fundador ($3.500.000 estimado) el equilibrio son **52 suscriptores de pago** y el año 1 pierde **$21.632.080** con una rampa de 3 a 60 suscriptores. Sin sueldo (`numbers-caja.json`) el equilibrio son **10 suscriptores**, el año 1 deja **$20.367.920** y la inversión se recupera en el mes 8. La simulación (`sim/funnel_mc.md`) dice qué exige esa rampa: con 20 registros al mes la mediana es 16 clientes de pago al mes 12 (cubre la caja el 77 % de las veces y nunca el sueldo); con 40, cubre el sueldo el 9 % de las veces al mes 12 y el 45 % al mes 24; con 80, el 62 % y el 89 %.
+- **Caja.** Se necesitan **$27.209.280** antes de que se pague solo si el fundador cobra; **$5.420.080** si no.
+- **Tres formas de mejorar el margen (corridas con la herramienta):**
+  1. Individual a $69.900 con 80 procesos: el panel compró igual y el ingreso medio sube a unos $93.300.
+  2. Cobro recurrente: hoy cada periodo es un pago manual. No cambia el margen por unidad, pero cada punto menos de baja mensual vale más que cualquier ajuste de precio (la simulación usa 3–7 %).
+  3. Un precio 10 % menor sube el equilibrio de 52 a 58 suscriptores; un volumen 20 % menor deja el margen en −6 %. El volumen pesa más que el precio.
+- **Condiciones de dinero de la junta.** Garantía asequible: sí, reservada al 2 % del precio ($1.840 por suscripción), midiendo la tasa real de reclamos. IA de pago e infraestructura propia: caben ($130.000 al mes estimados). Canal con costo de adquisición medido: **sin dato**.
+- **Costos confirmados con fuentes públicas** (`verify/market-costs.md`): Wompi 2,65 % + $700 + IVA sobre la comisión; WhatsApp por Twilio cerca de USD 0,006 por mensaje; un servidor de 2 núcleos entre USD 6 y 24 al mes; correo transaccional entre USD 1 y 20 por 10.000 envíos. El servicio en la nube podría estar excluido de IVA (Estatuto Tributario, artículo 476); lo define un contador.
+- **Lo que este CFO no sabe y el fundador sí:** registros al mes, clientes de pago, bajas y costos reales. Reemplace las estimaciones de `numbers.json` y vuelva a correr la herramienta.
 
-Un contador debe revisar la estructura, el IVA sobre el servicio y la facturación electrónica antes de mover dinero. Esto no es asesoría financiera, tributaria ni legal.
+Un contador debe revisar la estructura, el IVA y la facturación electrónica antes de mover dinero. No es asesoría financiera, tributaria ni legal.
+
+### Simulación del embudo (5.000 corridas por fila)
+
+| Registros al mes | Pagos mes 12 (p10 / mediana / p90) | Pagos mes 24 | Ingreso mensual mes 12 | Cubre caja mes 12 | Cubre sueldo mes 12 | Cubre sueldo mes 24 | Caja acumulada mes 12 (sin sueldo) | Acumulado mes 12 (con sueldo) |
+| ---: | :-: | ---: | ---: | :-: | :-: | :-: | ---: | ---: |
+| 10 | 3 / 8 / 14 | 13 | $689.000 | 27 % | 0 % | 0 % | $-6.090.000 | $-48.090.000 |
+| 20 | 8 / 16 / 26 | 26 | $1.400.000 | 77 % | 0 % | 3 % | $-1.860.000 | $-43.860.000 |
+| 40 | 17 / 32 / 50 | 52 | $2.811.000 | 98 % | 9 % | 45 % | $6.330.000 | $-35.670.000 |
+| 80 | 35 / 65 / 97 | 105 | $5.617.000 | 100 % | 62 % | 89 % | $22.730.000 | $-19.270.000 |
+| 150 | 65 / 120 / 181 | 194 | $10.450.000 | 100 % | 94 % | 100 % | $51.060.000 | $9.060.000 |
+
+Supuestos: conversión de prueba a pago entre 4 % y 15 %, baja mensual entre 3 % y 7 %, ingreso medio entre $59.900 y $120.000, un mes de prueba. Código en `sim/funnel_mc.py`.
 
 ### Salida de la herramienta (escenario base, con sueldo parcial)
 
@@ -463,53 +498,53 @@ Un contador debe revisar la estructura, el IVA sobre el servicio y la facturaci�
 
 | line | per suscripcion-mes |
 | --- | ---: |
-| Price | $79,900.00 |
-| Comision Wompi (2,65% + $700 + IVA, tarifa publica por confirmar) | -$3,350.00 |
-| Alertas por WhatsApp y correo por suscriptor (estimado) | -$3,000.00 |
-| Reserva para la garantia de devolucion (2% del precio, estimado) | -$1,600.00 |
-| **Contribution** (what each suscripcion-mes leaves to pay the fixed costs) | **$71,950.00** (90%) |
+| Price | $91,950.00 |
+| Comision Wompi (2,65% + $700 + IVA sobre la comision) | -$3,730.00 |
+| Alertas por WhatsApp y correo por suscriptor (estimado con tarifas publicas) | -$1,500.00 |
+| Reserva para la garantia de devolucion (2% del precio, estimado) | -$1,840.00 |
+| **Contribution** (what each suscripcion-mes leaves to pay the fixed costs) | **$84,880.00** (92%) |
 
 ### The margin that matters
 
 Fixed costs: $4,342,000 a month (Hosting compartido actual (estimado) $45,000, Dominio y correo (estimado) $7,000, Servidor propio para la vigilancia nocturna con monitoreo (estimado) $50,000, IA de pago en vez de niveles gratuitos (estimado) $80,000, Envio de correo transaccional (estimado) $60,000, Mercadeo: pauta y contenido (estimado) $600,000, Sueldo parcial del fundador (estimado, medio tiempo) $3,500,000).
 
-- **Break-even: 61 suscripcion-mess a day.** Below that you lose money every month.
-- **Profit margin at your plan** (60 a day): **-1%** of every sale, after every cost.
+- **Break-even: 52 suscripcion-mess a day.** Below that you lose money every month.
+- **Profit margin at your plan** (60 a day): **14%** of every sale, after every cost.
 
 ### Year 1, month by month
 
 | month | suscripcion-mess a day | revenue | profit | cumulative (after $4,500,000 startup) |
 | ---: | ---: | ---: | ---: | ---: |
-| 1 | 3 | $239,700 | -$4,126,150 | -$8,626,150 |
-| 2 | 6 | $479,400 | -$3,910,300 | -$12,536,450 |
-| 3 | 10 | $799,000 | -$3,622,500 | -$16,158,950 |
-| 4 | 15 | $1,198,500 | -$3,262,750 | -$19,421,700 |
-| 5 | 20 | $1,598,000 | -$2,903,000 | -$22,324,700 |
-| 6 | 26 | $2,077,400 | -$2,471,300 | -$24,796,000 |
-| 7 | 32 | $2,556,800 | -$2,039,600 | -$26,835,600 |
-| 8 | 38 | $3,036,200 | -$1,607,900 | -$28,443,500 |
-| 9 | 44 | $3,515,600 | -$1,176,200 | -$29,619,700 |
-| 10 | 50 | $3,995,000 | -$744,500 | -$30,364,200 |
-| 11 | 55 | $4,394,500 | -$384,750 | -$30,748,950 |
-| 12 | 60 | $4,794,000 | -$25,000 | -$30,773,950 |
+| 1 | 3 | $275,850 | -$4,087,360 | -$8,587,360 |
+| 2 | 6 | $551,700 | -$3,832,720 | -$12,420,080 |
+| 3 | 10 | $919,500 | -$3,493,200 | -$15,913,280 |
+| 4 | 15 | $1,379,250 | -$3,068,800 | -$18,982,080 |
+| 5 | 20 | $1,839,000 | -$2,644,400 | -$21,626,480 |
+| 6 | 26 | $2,390,700 | -$2,135,120 | -$23,761,600 |
+| 7 | 32 | $2,942,400 | -$1,625,840 | -$25,387,440 |
+| 8 | 38 | $3,494,100 | -$1,116,560 | -$26,504,000 |
+| 9 | 44 | $4,045,800 | -$607,280 | -$27,111,280 |
+| 10 | 50 | $4,597,500 | -$98,000 | -$27,209,280 |
+| 11 | 55 | $5,057,250 | $326,400 | -$26,882,880 |
+| 12 | 60 | $5,517,000 | $750,800 | -$26,132,080 |
 
-- **Year 1 operating profit: -$26,273,950** on $28,684,100 of revenue.
-- After the $4,500,000 startup spend: -$30,773,950.
+- **Year 1 operating profit: -$21,632,080** on $33,010,050 of revenue.
+- After the $4,500,000 startup spend: -$26,132,080.
 - Startup money earned back: not within year 1.
-- Cash you need before it pays for itself: **$30,773,950**.
+- Cash you need before it pays for itself: **$27,209,280**.
 
 ### What if
 
 | scenario | margin at plan | break-even a day | year 1 profit |
 | --- | ---: | ---: | ---: |
-| Base plan | -1% | 61 | -$26,273,950 |
-| Price -10% | -12% | 68 | -$29,142,360 |
-| Volume -20% | -23% | 61 | -$31,439,960 |
-| Unit costs +15% | -2% | 62 | -$26,702,058 |
+| Base plan | 14% | 52 | -$21,632,080 |
+| Price -10% | 4% | 58 | -$24,933,085 |
+| Volume -20% | -6% | 52 | -$27,726,464 |
+| Unit costs +15% | 12% | 52 | -$22,012,800 |
 
 ### Red flags
 
-- Year 1 loses money on operations (-$26,273,950).
+- Year 1 loses money on operations (-$21,632,080).
 - The startup spend is not earned back within year 1.
 
 ## Marketing

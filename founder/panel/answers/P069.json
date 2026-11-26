@@ -1,0 +1,13 @@
+{
+  "id": "P069",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "trust",
+  "reason": "Ya pase un susto con un termino y por eso mismo no le suelto la vigilancia a una pagina que no conozco; reviso yo misma la Rama, que es gratis, y lo anoto en mi agenda. Ningun colega me ha hablado de esto.",
+  "objection": "Si el aviso falla y se me vence un termino, que me devuelvan $59.900 no me sirve de nada: la responsabilidad ante el cliente sigue siendo mia, asi que igual tendria que seguir revisando a mano.",
+  "would_change_my_mind": "Que un colega de confianza que litigue en mis mismos juzgados me diga que lo usa hace meses y que no le ha fallado ni una actuacion.",
+  "price_too_cheap": 15000,
+  "price_cheap": 30000,
+  "price_expensive": 60000,
+  "price_too_expensive": 90000
+}

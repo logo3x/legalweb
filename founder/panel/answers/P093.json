@@ -1,0 +1,13 @@
+{
+  "id": "P093",
+  "buys": true,
+  "purchases_first_month": 1,
+  "reason_code": "convenience",
+  "reason": "Solo piden el radicado, que es publico, y puedo correrlo 30 dias al lado de mi Excel sin dar tarjeta; si en ese mes no se le escapa ninguna actuacion de SAMAI frente a mi revision manual, $59.900 es menos de lo que me cuesta una manana perdida revisando radicado por radicado.",
+  "objection": "Mi Excel no trae solo radicados: tiene nombres de clientes y notas, asi que tendria que limpiarlo antes de enviarlo, y no se que tan bien cubren SAMAI, que es donde esta casi todo lo mio. Ademas la garantia solo devuelve la mensualidad, no el dano de un termino vencido, asi que igual no voy a dejar de revisar del todo.",
+  "would_change_my_mind": "Si durante la prueba se les pasa una sola actuacion de SAMAI que yo si vi a mano, o si tengo mas de 50 procesos y me toca saltar a $120.000, no pago.",
+  "price_too_cheap": 15000,
+  "price_cheap": 40000,
+  "price_expensive": 90000,
+  "price_too_expensive": 150000
+}

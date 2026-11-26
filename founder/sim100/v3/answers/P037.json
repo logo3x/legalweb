@@ -1,0 +1,13 @@
+{
+  "id": "P037",
+  "buys": true,
+  "purchases_first_month": 1,
+  "reason_code": "need",
+  "reason": "Mi primer impulso fue quedarme en el gratuito, pero 3 procesos no me sirven de nada con mas de cien en la firma. Si en los 30 dias en paralelo no se le escapa ni una actuacion de SAMAI frente a mi revision manual, pago el Profesional: $120.000 para tres usuarios es menos de lo que nos cuesta una tarde revisando radicados.",
+  "objection": "Que la cobertura de SAMAI sea realmente tan buena como la de la Rama Judicial: en lo contencioso es donde las herramientas de vigilancia que he probado fallan o llegan tarde, y la garantia solo me devuelve un mes, no el termino vencido.",
+  "would_change_my_mind": "Una sola actuacion de SAMAI no avisada o avisada tarde durante la prueba en paralelo y no pago; me quedaria con mi revision manual.",
+  "price_too_cheap": 30000,
+  "price_cheap": 90000,
+  "price_expensive": 220000,
+  "price_too_expensive": 350000
+}

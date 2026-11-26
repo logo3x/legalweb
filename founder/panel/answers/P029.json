@@ -1,0 +1,13 @@
+{
+  "id": "P029",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Ya le pago a mi dependiente, que revisa estados y ademas va a los juzgados, saca copias y radica memoriales; una pagina no me reemplaza eso y seria un gasto adicional encima del que ya tengo. La prueba gratis la correria, pero al dia 30 lo mas probable es que me quede en el plan gratuito de 3 procesos.",
+  "objection": "Que no me ahorra nada: sigo necesitando al dependiente para lo presencial, y en civil y familia muchos juzgados de mi ciudad publican estados y traslados en micrositios o no actualizan bien la consulta de procesos, asi que no se si lo que ustedes consultan es lo que realmente me notifica.",
+  "would_change_my_mind": "Que en los 30 dias de prueba la herramienta le coja a mi dependiente al menos una actuacion que se le paso en mis propios procesos, y que el plan de 50 procesos costara alrededor de $35.000.",
+  "price_too_cheap": 10000,
+  "price_cheap": 30000,
+  "price_expensive": 60000,
+  "price_too_expensive": 90000
+}

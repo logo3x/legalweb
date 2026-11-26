@@ -1,0 +1,13 @@
+{
+  "id": "P096",
+  "buys": true,
+  "purchases_first_month": 1,
+  "reason_code": "need",
+  "reason": "Ya casi se me vence un termino una vez y no quiero repetirlo; por $69.900 al mes, si en los 30 dias en paralelo no se le escapa ninguna actuacion frente a mi revision manual, pago el plan Individual. El informe de los lunes y el aviso cuando falla una consulta es lo que no me dan las otras herramientas que he probado.",
+  "objection": "Si no detectan una actuacion y se me vence el termino, la garantia solo me devuelve $69.900; el dano y la responsabilidad frente al cliente siguen siendo mios, asi que igual tendria que seguir revisando a mano los procesos criticos.",
+  "would_change_my_mind": "Que durante la prueba se les pase una sola actuacion que yo si vi en la Rama o en SAMAI, o que los avisos lleguen tarde; ahi cancelo y me quedo con mi metodo.",
+  "price_too_cheap": 20000,
+  "price_cheap": 45000,
+  "price_expensive": 95000,
+  "price_too_expensive": 140000
+}

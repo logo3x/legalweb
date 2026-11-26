@@ -1,0 +1,13 @@
+{
+  "id": "P091",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "trust",
+  "reason": "Ya le pago a un dependiente que revisa estados y va a los juzgados, y en el confio. No conozco a ningun colega que use esto, y por 120 mil no voy a cambiar la forma en que la firma vigila 200 procesos de clientes empresa.",
+  "objection": "No se quien esta detras ni si alguien de mi medio lo usa; una devolucion de la mensualidad no me cubre un termino vencido, y de todas formas necesito al dependiente para ir al juzgado.",
+  "would_change_my_mind": "Que un colega litigante que yo conozca me diga que lo usa hace meses, o que en la prueba en paralelo la herramienta detecte una actuacion que a mi dependiente se le paso.",
+  "price_too_cheap": 30000,
+  "price_cheap": 80000,
+  "price_expensive": 200000,
+  "price_too_expensive": 350000
+}

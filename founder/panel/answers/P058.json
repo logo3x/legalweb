@@ -1,0 +1,13 @@
+{
+  "id": "P058",
+  "buys": true,
+  "purchases_first_month": 1,
+  "reason_code": "need",
+  "reason": "Con mas de cien procesos repartidos entre carpetas y WhatsApp ya casi se me vence un termino, y $120.000 al mes es menos de lo que me cuesta un dependiente por un par de dias. Si en los 30 dias en paralelo no se le escapa ninguna actuacion que yo si vea, pago el Profesional.",
+  "objection": "La garantia solo me devuelve la mensualidad: si no detectan una actuacion y se me vence un termino, el que responde ante el cliente y ante el Consejo Superior soy yo, no ellos. Igual tendria que seguir revisando a mano los procesos delicados.",
+  "would_change_my_mind": "Que durante la prueba se les pase una sola actuacion que mi revision si encontro, o que me toque a mi armar el Excel de radicados desde cero y nunca lo termine.",
+  "price_too_cheap": 30000,
+  "price_cheap": 80000,
+  "price_expensive": 200000,
+  "price_too_expensive": 350000
+}

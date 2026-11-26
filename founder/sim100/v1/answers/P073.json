@@ -1,0 +1,13 @@
+{
+  "id": "P073",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "price",
+  "reason": "Llevo menos de 15 procesos y gano unos 2,6 millones al mes; revisarlos a mano me toma un rato cada manana y me sale gratis. Usaria los 3 meses de prueba y despues me quedaria en el plan gratuito de 5 casos o volveria a mi Excel, no pagaria $120.000 mensuales.",
+  "objection": "Las paginas de la Rama se caen y cambian a cada rato; si el sistema deja de consultar una madrugada y yo confio en el correo, se me pasa un termino y el que responde ante el cliente soy yo, asi que igual tendria que seguir revisando a mano.",
+  "would_change_my_mind": "Un plan para abogado individual de unos $40.000 al mes con hasta 20 procesos y un aviso claro cada dia de que la consulta si se hizo (o que fallo), para no tener que revisar dos veces.",
+  "price_too_cheap": 10000,
+  "price_cheap": 30000,
+  "price_expensive": 60000,
+  "price_too_expensive": 90000
+}
