@@ -1,0 +1,27 @@
+{
+  "business": "LegalWeb (escenario con plan Individual y sueldo parcial del fundador; casi todo son estimaciones)",
+  "unit": "suscripcion-mes",
+  "price": 96900,
+  "variable": [
+    {"label": "Comision Wompi (2,65% + $700 + IVA, tarifa publica por confirmar)", "cost": 3890},
+    {"label": "Alertas por WhatsApp y correo por suscriptor (estimado)", "cost": 3000},
+    {"label": "Reserva para la garantia de devolucion (2% del precio, estimado)", "cost": 1940}
+  ],
+  "fixed_monthly": [
+    {"label": "Hosting compartido actual (estimado)", "cost": 45000},
+    {"label": "Dominio y correo (estimado)", "cost": 7000},
+    {"label": "Servidor propio para la vigilancia nocturna con monitoreo (estimado)", "cost": 50000},
+    {"label": "IA de pago en vez de niveles gratuitos (estimado)", "cost": 80000},
+    {"label": "Envio de correo transaccional (estimado)", "cost": 60000},
+    {"label": "Mercadeo: pauta y contenido (estimado)", "cost": 600000},
+    {"label": "Sueldo parcial del fundador (estimado, medio tiempo)", "cost": 3500000}
+  ],
+  "startup": [
+    {"label": "Migracion de la vigilancia a servidor propio y monitoreo (estimado)", "cost": 1500000},
+    {"label": "Prueba de canal: primeros anuncios y webinar (estimado)", "cost": 1500000},
+    {"label": "Registro de marca y terminos revisados por abogado (estimado)", "cost": 1500000}
+  ],
+  "days_per_month": 1,
+  "plan_per_day": 60,
+  "ramp_per_day": [3, 6, 10, 15, 20, 26, 32, 38, 44, 50, 55, 60]
+}

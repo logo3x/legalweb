@@ -1,0 +1,5 @@
+LegalWeb (legalweb.com.co): vigilancia judicial automatica para abogados en Colombia.
+Usted pega sus radicados (o los sube desde Excel) y cada madrugada LegalWeb consulta la Rama Judicial y SAMAI; si aparece una actuacion nueva le llega un correo con el proceso, el despacho y la fecha. Incluye calculadora de terminos en dias habiles, tablero de vencimientos, portal para que su cliente vea el estado del proceso y asistente de IA que oculta los datos personales antes de enviarlos.
+Precio: plan Profesional $120.000 COP al mes (o $600.000 por 6 meses), casos ilimitados y hasta 3 usuarios. Plan Firma $250.000 COP al mes, hasta 10 usuarios.
+Para empezar: 3 meses gratis con todo incluido, sin tarjeta, registro con su cuenta de Google. Al terminar la prueba puede seguir gratis con hasta 5 casos activos y sincronizacion semanal, o pagar el plan.
+La pregunta para usted: al terminar los 3 meses gratis, pagaria el plan Profesional de $120.000 COP al mes? Los precios que indique son por mes, en pesos colombianos.
