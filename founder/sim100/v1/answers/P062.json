@@ -1,0 +1,13 @@
+{
+  "id": "P062",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Ya tengo una persona que me revisa los procesos y me funciona; uso los 3 meses gratis con gusto, pero al terminar no pago $120.000 al mes por algo que ya tengo resuelto.",
+  "objection": "No voy a confiar los terminos de mas de cien procesos a un correo automatico sin seguir revisando a mano, asi que terminaria pagando doble: el dependiente y la plataforma. Y el plan gratis de 5 casos no me sirve para nada con mi volumen.",
+  "would_change_my_mind": "Que durante los 3 meses de prueba la herramienta detecte una actuacion que a mi dependiente se le paso, o que me quede sin la persona que hoy revisa los procesos.",
+  "price_too_cheap": 15000,
+  "price_cheap": 40000,
+  "price_expensive": 90000,
+  "price_too_expensive": 150000
+}

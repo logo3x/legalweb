@@ -1,0 +1,13 @@
+{
+  "id": "P064",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "trust",
+  "reason": "Yo ya le pago a mi dependiente para que revise estados y vaya a los juzgados, y a el le puedo reclamar de frente. Una pagina que me manda un correo de madrugada no me responde si se le pasa una actuacion, y yo ya tuve un susto con un termino.",
+  "objection": "Si la plataforma no detecta una actuacion y se me vence un termino, quien responde? El correo no dice nada de garantia ni de responsabilidad, y la Rama Judicial se cae o publica tarde a cada rato.",
+  "would_change_my_mind": "Que durante los tres meses gratis no se le escape ni una sola actuacion de las que mi dependiente si encuentra, y que por escrito asuman alguna responsabilidad o me avisen cuando la consulta de un proceso fallo. Ahi lo pagaria como respaldo, no como reemplazo.",
+  "price_too_cheap": 30000,
+  "price_cheap": 60000,
+  "price_expensive": 120000,
+  "price_too_expensive": 180000
+}

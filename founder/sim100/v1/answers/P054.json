@@ -1,0 +1,13 @@
+{
+  "id": "P054",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "trust",
+  "reason": "No conozco a LegalWeb y no voy a montar los radicados y datos de mis clientes en una plataforma de la que no se quien esta detras. Mi revision manual con el Excel me quita tiempo, pero me funciona y no me cuesta $120.000 al mes.",
+  "objection": "No se quien responde si el sistema no me avisa de una actuacion y se me vence un termino; igual tendria que seguir revisando a mano para estar tranquila, y ademas quedan mis procesos y clientes en manos de un tercero desconocido.",
+  "would_change_my_mind": "Que durante los 3 meses gratis no se le escape ni una sola actuacion frente a mi propia revision en mis tres ciudades, y que un colega de confianza que ya lo use me lo recomiende; ahi lo pagaria si costara cerca de $60.000.",
+  "price_too_cheap": 15000,
+  "price_cheap": 40000,
+  "price_expensive": 80000,
+  "price_too_expensive": 120000
+}

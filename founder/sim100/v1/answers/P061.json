@@ -1,0 +1,13 @@
+{
+  "id": "P061",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Yo ya pago una vigilancia judicial hace años y me funciona; pasar mis procesos de tres ciudades a otro sistema me da pereza y no veo qué gano. Probaría los 3 meses gratis en paralelo, pero pagar otros $120.000 encima de lo que ya pago, no.",
+  "objection": "Las páginas de la Rama se caen y cambian cada rato; si esto deja de consultar una madrugada y se me pasa un término en un ejecutivo, la responsabilidad es mía, no de ellos. Con el servicio actual al menos sé cómo responde.",
+  "would_change_my_mind": "Que durante los 3 meses me detecte actuaciones que mi servicio actual no vio o vio tarde, y que cueste claramente menos que lo que pago hoy, con migración de mis radicados sin trabajo de mi parte.",
+  "price_too_cheap": 25000,
+  "price_cheap": 60000,
+  "price_expensive": 110000,
+  "price_too_expensive": 160000
+}

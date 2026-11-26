@@ -1,0 +1,67 @@
+[
+ {
+  "registros_mes": 10,
+  "pagos_m12_p10": 3,
+  "pagos_m12_mediana": 8,
+  "pagos_m12_p90": 14,
+  "pagos_m24_mediana": 13,
+  "mrr_m12_mediana": 689000.0,
+  "prob_cubre_caja_m12": 0.27,
+  "prob_cubre_sueldo_m12": 0.0,
+  "prob_cubre_sueldo_m24": 0.0,
+  "caja_acum_m12_mediana": -6090000.0,
+  "acum_con_sueldo_m12_mediana": -48090000.0
+ },
+ {
+  "registros_mes": 20,
+  "pagos_m12_p10": 8,
+  "pagos_m12_mediana": 16,
+  "pagos_m12_p90": 26,
+  "pagos_m24_mediana": 26,
+  "mrr_m12_mediana": 1400000.0,
+  "prob_cubre_caja_m12": 0.77,
+  "prob_cubre_sueldo_m12": 0.0,
+  "prob_cubre_sueldo_m24": 0.03,
+  "caja_acum_m12_mediana": -1860000.0,
+  "acum_con_sueldo_m12_mediana": -43860000.0
+ },
+ {
+  "registros_mes": 40,
+  "pagos_m12_p10": 17,
+  "pagos_m12_mediana": 32,
+  "pagos_m12_p90": 50,
+  "pagos_m24_mediana": 52,
+  "mrr_m12_mediana": 2811000.0,
+  "prob_cubre_caja_m12": 0.98,
+  "prob_cubre_sueldo_m12": 0.09,
+  "prob_cubre_sueldo_m24": 0.45,
+  "caja_acum_m12_mediana": 6330000.0,
+  "acum_con_sueldo_m12_mediana": -35670000.0
+ },
+ {
+  "registros_mes": 80,
+  "pagos_m12_p10": 35,
+  "pagos_m12_mediana": 65,
+  "pagos_m12_p90": 97,
+  "pagos_m24_mediana": 105,
+  "mrr_m12_mediana": 5617000.0,
+  "prob_cubre_caja_m12": 1.0,
+  "prob_cubre_sueldo_m12": 0.62,
+  "prob_cubre_sueldo_m24": 0.89,
+  "caja_acum_m12_mediana": 22730000.0,
+  "acum_con_sueldo_m12_mediana": -19270000.0
+ },
+ {
+  "registros_mes": 150,
+  "pagos_m12_p10": 65,
+  "pagos_m12_mediana": 120,
+  "pagos_m12_p90": 181,
+  "pagos_m24_mediana": 194,
+  "mrr_m12_mediana": 10450000.0,
+  "prob_cubre_caja_m12": 1.0,
+  "prob_cubre_sueldo_m12": 0.94,
+  "prob_cubre_sueldo_m24": 1.0,
+  "caja_acum_m12_mediana": 51060000.0,
+  "acum_con_sueldo_m12_mediana": 9060000.0
+ }
+]

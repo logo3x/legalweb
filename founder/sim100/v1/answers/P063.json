@@ -1,0 +1,13 @@
+{
+  "id": "P063",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Ya tengo a una persona que me revisa los procesos y me avisa por WhatsApp; me funciona y no voy a pagar otros $120.000 al mes por algo que me llega a un correo que apenas miro desde el celular. Seguramente me quedaria con los 5 casos gratis para los mas delicados.",
+  "objection": "No se si puedo confiarle un termino a un sistema que no conozco: si un dia no detecta una actuacion, el que responde ante el cliente soy yo. Y ademas tendria que sentarme a organizar y cargar todos mis radicados, que hoy tengo regados en carpetas y chats.",
+  "would_change_my_mind": "Que durante los 3 meses gratis me detecte una actuacion que mi dependiente no vio, y que el aviso me llegue por WhatsApp y no solo por correo.",
+  "price_too_cheap": 20000,
+  "price_cheap": 50000,
+  "price_expensive": 100000,
+  "price_too_expensive": 150000
+}

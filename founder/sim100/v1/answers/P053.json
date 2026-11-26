@@ -1,0 +1,13 @@
+{
+  "id": "P053",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Ya pago una vigilancia judicial hace anos y me funciona; migrar mas de cien radicados sin apoyo administrativo me da pereza, y menos por una herramienta que ningun colega mio usa. Tal vez me registre a la prueba gratis por curiosidad, pero no cancelaria lo que tengo para pagar esta.",
+  "objection": "No se quien esta detras ni conozco a nadie que la use; si un dia deja de consultar la Rama y se me pasa una actuacion, el termino vencido y la responsabilidad son mios.",
+  "would_change_my_mind": "Que dos o tres colegas de confianza la usen y me digan que no les ha fallado, y que durante los 3 meses gratis detecte todo lo que detecta mi servicio actual (o algo que al mio se le paso), corriendo los dos en paralelo.",
+  "price_too_cheap": 30000,
+  "price_cheap": 70000,
+  "price_expensive": 150000,
+  "price_too_expensive": 220000
+}
