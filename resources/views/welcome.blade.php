@@ -811,7 +811,7 @@
                 <div class="pain-card">
                     <p class="pain-q">“Reviso la consulta de procesos uno por uno, todos los días.”</p>
                     <p class="pain-why">Con 30 o 40 procesos son horas a la semana entre la consulta de la Rama Judicial, SAMAI y páginas que se caen justo cuando más las necesitas.</p>
-                    <p class="pain-fix"><strong>LegalWeb lo hace por ti cada madrugada</strong> en la Rama Judicial y te avisa por correo solo cuando hay algo nuevo, con lo que cambió. De SAMAI importas tus procesos contencioso administrativos y te avisamos si cambian sus datos generales (despacho, estado o partes); las actuaciones de SAMAI se revisan allí.</p>
+                    <p class="pain-fix"><strong>LegalWeb lo hace por ti cada madrugada</strong> en la Rama Judicial y te avisa por correo solo cuando hay algo nuevo, con lo que cambió. Si una consulta falla, te avisamos ese mismo día para que revises a mano, y cada lunes recibes un informe de verificación con la fecha de la última consulta exitosa de cada proceso: el silencio nunca significa «sin novedades». De SAMAI importas tus procesos contencioso administrativos y te avisamos si cambian sus datos generales (despacho, estado o partes); las actuaciones de SAMAI se revisan allí.</p>
                     <div class="pain-example"><b>Ejemplo</b>A las 3:00 a.m. se revisan tus 40 procesos. A las 7:00 tienes en tu correo: «Auto que admite la demanda · Juzgado 3.º Civil del Circuito de Medellín».</div>
                 </div>
                 <div class="pain-card">

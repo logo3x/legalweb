@@ -8,6 +8,8 @@ Schedule::command('app:check-deadlines')->dailyAt('08:00');
 
 Schedule::command('app:notify-sync-failures')->dailyAt('08:10');
 
+Schedule::command('app:send-verification-reports')->weeklyOn(1, '08:15');
+
 Schedule::command('app:sync-tyba-actuaciones --retry-failed')->hourly();
 
 Schedule::call(function () {

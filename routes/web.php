@@ -214,6 +214,12 @@ Route::get('/cron/{token}/{task?}', function (string $token, ?string $task = nul
         // si la sincronizacion nocturna no corrio o fallo en masa.
         Artisan::call('app:notify-sync-failures');
         $results[] = 'notify-sync-failures: OK';
+
+        // Lunes: informe de verificacion semanal de cada abogado (se envia una sola vez por semana).
+        if (now()->isMonday()) {
+            Artisan::call('app:send-verification-reports');
+            $results[] = 'verification-reports: '.trim(Artisan::output());
+        }
     }
 
     // Tarea: send-reminders (cada 5 min)
