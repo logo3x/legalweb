@@ -10,9 +10,11 @@ use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\User;
 use App\Notifications\NewFirmRegistered;
+use App\Notifications\WelcomeNotification;
 use App\Services\DemoDataService;
 use App\Services\N8nWebhook;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Laravel\Socialite\Facades\Socialite;
@@ -120,9 +122,25 @@ class GoogleController extends Controller
             'member' => ['id' => $user->id, 'name' => $user->name, 'email' => $user->email, 'role' => $user->role],
         ], $user->firm_id);
 
+        $this->sendWelcome($user, new WelcomeNotification(isNewFirm: false, firmName: $user->firm?->name));
+
         Auth::login($user, remember: true);
 
         return redirect('/admin');
+    }
+
+    /**
+     * Correo de bienvenida inmediato. Queda registrado como 'bienvenida' para que el
+     * correo de ciclo de vida diario no lo repita.
+     */
+    private function sendWelcome(User $user, WelcomeNotification $notification): void
+    {
+        try {
+            $user->notify($notification);
+            DB::table('lifecycle_emails')->updateOrInsert(['user_id' => $user->id, 'key' => 'bienvenida'], ['sent_at' => now()]);
+        } catch (\Throwable $e) {
+            Log::warning('Error enviando correo de bienvenida: '.$e->getMessage());
+        }
     }
 
     /**
@@ -163,6 +181,8 @@ class GoogleController extends Controller
         }
 
         app(DemoDataService::class)->seedForFirm($firm, $user);
+
+        $this->sendWelcome($user, new WelcomeNotification);
 
         // Notificar a superadmins y emails configurados
         $this->notifyNewFirmRegistered($firm, $user);
