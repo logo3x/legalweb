@@ -1,0 +1,13 @@
+{
+  "id": "P004",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "Ya pago una vigilancia judicial hace anos y me funciona; con menos de 15 procesos no voy a pagar $120.000 al mes por algo que ya tengo, ni a tomarme el trabajo de pasar todo a otra plataforma. Si acaso la pruebo gratis y me quedo con los 5 casos sin pagar.",
+  "objection": "Si la plataforma no detecta una actuacion y se me vence un termino, quien responde? Un correo de madrugada no me dice nada sobre quien asume la responsabilidad, y mis clientes son empresas que me llaman a pedir cuentas.",
+  "would_change_my_mind": "Que me garanticen por escrito que responden si se les pasa una actuacion, y que el precio para mis pocos procesos sea claramente menor de lo que pago hoy, con la migracion de mis radicados hecha por ellos.",
+  "price_too_cheap": 15000,
+  "price_cheap": 40000,
+  "price_expensive": 80000,
+  "price_too_expensive": 120000
+}

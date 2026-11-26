@@ -1,0 +1,95 @@
+{
+ "n": 20,
+ "seed": 7,
+ "customer": {
+  "business": "LegalWeb (SaaS de vigilancia judicial para abogados en Colombia)",
+  "target": "abogados litigantes en Colombia, independientes o en firmas de 1 a 10 abogados, que llevan procesos activos en la Rama Judicial o en lo contencioso administrativo. Todos los valores en pesos colombianos (COP); el signo $ significa COP",
+  "where": "Colombia (Bogota, Medellin, Cali, Barranquilla, Bucaramanga y ciudades intermedias)",
+  "age": [
+   27,
+   62
+  ],
+  "segments": [
+   {
+    "name": "Abogado litigante independiente (20 a 80 procesos activos)",
+    "share": 0.5,
+    "income": [
+     42000000,
+     120000000
+    ]
+   },
+   {
+    "name": "Socio de firma pequena, 2 a 10 abogados (80 a 300 procesos)",
+    "share": 0.3,
+    "income": [
+     110000000,
+     320000000
+    ]
+   },
+   {
+    "name": "Abogado joven o que litiga poco (menos de 15 procesos)",
+    "share": 0.2,
+    "income": [
+     24000000,
+     55000000
+    ]
+   }
+  ],
+  "behaviours": [
+   {
+    "name": "Revisa a mano",
+    "share": 0.25,
+    "how": "Entra cada manana a la consulta de procesos de la Rama Judicial, radicado por radicado, y lleva el control en un Excel."
+   },
+   {
+    "name": "Tiene dependiente judicial",
+    "share": 0.15,
+    "how": "Le paga a una persona para que revise estados y vaya a los juzgados; confia en esa persona, no en una pagina."
+   },
+   {
+    "name": "Ya paga un servicio de vigilancia",
+    "share": 0.15,
+    "how": "Tiene contratado un software o servicio de vigilancia judicial hace anos y cambiarse le da pereza."
+   },
+   {
+    "name": "Desordenado",
+    "share": 0.15,
+    "how": "Lleva los procesos en la cabeza, en carpetas y en chats de WhatsApp; ya se le ha pasado algun termino por poco."
+   },
+   {
+    "name": "Desconfia de la tecnologia",
+    "share": 0.12,
+    "how": "Prefiere el papel y lo presencial; solo adopta una herramienta si un colega de confianza se la recomienda."
+   },
+   {
+    "name": "Adopta tecnologia pronto",
+    "share": 0.1,
+    "how": "Prueba herramientas nuevas, usa IA en su trabajo y compara funciones antes de pagar."
+   },
+   {
+    "name": "Busca lo gratis",
+    "share": 0.08,
+    "how": "Usa las pruebas gratuitas y los planes gratis mientras le alcancen; paga solo cuando no hay alternativa."
+   }
+  ],
+  "objections": [
+   "Y si la plataforma no detecta una actuacion y se me vence un termino, quien responde",
+   "Consultar la Rama Judicial es gratis; por que pagaria por eso",
+   "Ya tengo quien me revise los procesos y me funciona",
+   "$120.000 al mes es mucho para los procesos que llevo",
+   "No quiero subir los datos de mis clientes a una plataforma que no conozco",
+   "No conozco a ningun colega que la use; quien esta detras",
+   "Con el plan gratuito me alcanza",
+   "Las paginas de la Rama se caen y cambian; esto va a dejar de funcionar"
+  ],
+  "habits": [
+   "usted litiga sobre todo en civil y familia en juzgados de su ciudad",
+   "usted lleva procesos laborales y ejecutivos en tres ciudades distintas",
+   "usted litiga en lo contencioso administrativo y revisa SAMAI varias veces por semana",
+   "usted atiende clientes empresa que lo llaman a preguntar como va cada proceso",
+   "usted trabaja solo, sin secretaria, y revisa el correo desde el celular",
+   "usted ya vivio un susto por un termino que casi se le vence"
+  ]
+ },
+ "pitch": "LegalWeb (legalweb.com.co): vigilancia judicial automatica para abogados en Colombia.\nUsted pega sus radicados (o los sube desde Excel) y cada madrugada LegalWeb consulta la Rama Judicial y SAMAI; si aparece una actuacion nueva le llega un correo con el proceso, el despacho y la fecha. Incluye calculadora de terminos en dias habiles, tablero de vencimientos, portal para que su cliente vea el estado del proceso y asistente de IA que oculta los datos personales antes de enviarlos.\nPrecio: plan Profesional $120.000 COP al mes (o $600.000 por 6 meses), casos ilimitados y hasta 3 usuarios. Plan Firma $250.000 COP al mes, hasta 10 usuarios.\nPara empezar: 3 meses gratis con todo incluido, sin tarjeta, registro con su cuenta de Google. Al terminar la prueba puede seguir gratis con hasta 5 casos activos y sincronizacion semanal, o pagar el plan.\nLa pregunta para usted: al terminar los 3 meses gratis, pagaria el plan Profesional de $120.000 COP al mes? Los precios que indique son por mes, en pesos colombianos."
+}

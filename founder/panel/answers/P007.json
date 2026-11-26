@@ -1,0 +1,13 @@
+{
+  "id": "P007",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "price",
+  "reason": "Gano unos $2.170.000 al mes y llevo menos de 15 procesos; $120.000 es mas del 5% de mi ingreso por algo que hoy resuelvo revisando la Rama y SAMAI a mano en un rato. La prueba de 3 meses la uso feliz, pero al terminar me quedo en el plan gratis con mis 5 casos mas activos y el resto lo sigo revisando yo.",
+  "objection": "El plan esta pensado para casos ilimitados y 3 usuarios, y yo soy una sola con pocos procesos: pago por capacidad que no uso. Ademas, si un correo de actuacion nueva no llega y se me pasa un termino, la responsable sigo siendo yo, asi que igual tendria que verificar.",
+  "would_change_my_mind": "Un plan individual para un solo usuario y hasta unos 20 procesos, con sincronizacion diaria y el portal para clientes, por unos $40.000 al mes.",
+  "price_too_cheap": 10000,
+  "price_cheap": 30000,
+  "price_expensive": 60000,
+  "price_too_expensive": 90000
+}
