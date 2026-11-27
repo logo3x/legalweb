@@ -709,7 +709,7 @@ class CaseSyncService
         }
 
         if (! empty($a['con_documentos'])) {
-            $parts[] = 'Tiene documentos anexos en la Rama Judicial (autos, memoriales u oficios): ábralos con el botón «Documentos» de la actuación.';
+            $parts[] = 'Tiene documentos anexos en la Rama Judicial (autos, memoriales u oficios): están abajo, en esta misma actuación, y en el botón «Documentos» de la lista.';
         }
 
         // Si despues de todo no logramos extraer nada significativo, dejamos

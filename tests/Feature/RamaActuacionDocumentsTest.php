@@ -135,6 +135,30 @@ class RamaActuacionDocumentsTest extends TestCase
         $this->assertSame(1, Document::count());
     }
 
+    public function test_editing_an_actuacion_shows_its_rama_documents(): void
+    {
+        Http::fake([
+            '*/Proceso/DocumentosActuacion/3989003451' => Http::response([[
+                'idRegDocumento' => 4032290001,
+                'nombre' => '10OFICIO.pdf',
+                'descripcion' => 'Cargado el: 2026-10-15, tamaño: .30 KB',
+                'tipo' => 'pdf',
+                'fechaCarga' => '2026-10-15T00:00:00',
+            ]]),
+        ]);
+        $event = CaseEvent::factory()->create(['legal_case_id' => $this->case->id, 'title' => 'Elaboración De Oficios Telegramas', 'event_date' => '2026-10-15', 'rama_ref' => 'r:3989003451', 'rama_documents' => true]);
+        $manual = CaseEvent::factory()->create(['legal_case_id' => $this->case->id, 'title' => 'Llamada con el cliente', 'event_date' => '2026-10-15']);
+
+        Livewire::test(EventsRelationManager::class, ['ownerRecord' => $this->case, 'pageClass' => ViewLegalCase::class])
+            ->mountTableAction('edit', $event)
+            ->assertSchemaComponentVisible('ramaDocuments');
+
+        Livewire::test(EventsRelationManager::class, ['ownerRecord' => $this->case, 'pageClass' => ViewLegalCase::class])
+            ->mountTableAction('edit', $manual)
+            ->assertSchemaComponentHidden('ramaDocuments');
+
+    }
+
     public function test_rama_outage_shows_a_message_instead_of_failing(): void
     {
         Http::fake(['*/Proceso/DocumentosActuacion/*' => Http::response('error', 500)]);

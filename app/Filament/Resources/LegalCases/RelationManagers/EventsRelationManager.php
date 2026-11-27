@@ -21,11 +21,14 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\View as SchemaView;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class EventsRelationManager extends RelationManager
@@ -60,6 +63,25 @@ class EventsRelationManager extends RelationManager
                 Textarea::make('description')
                     ->label('Descripción')
                     ->columnSpanFull(),
+                // Los anexos de la Rama tambien se ven al abrir la actuacion, no solo con el boton de la lista.
+                Section::make('Documentos anexos en la Rama Judicial')
+                    ->key('ramaDocuments')
+                    ->icon('heroicon-o-paper-clip')
+                    ->compact()
+                    ->columnSpanFull()
+                    ->visible(fn (?CaseEvent $record): bool => $this->eventHasRamaDocuments($record))
+                    ->schema([
+                        SchemaView::make('filament.modals.rama-documents')
+                            ->viewData(function (?CaseEvent $record): array {
+                                [$documentos, $error] = $record ? $this->fetchRamaDocuments($record) : [[], null];
+
+                                return [
+                                    'documentos' => $documentos,
+                                    'error' => $error,
+                                    'guardados' => $record ? $this->savedDocumentUrls($record) : [],
+                                ];
+                            }),
+                    ]),
                 DateTimePicker::make('event_date')
                     ->label('Fecha del Evento')
                     ->required(),
@@ -186,7 +208,7 @@ class EventsRelationManager extends RelationManager
             ->label('Documentos')
             ->icon('heroicon-o-paper-clip')
             ->color('gray')
-            ->visible(fn (CaseEvent $record): bool => $record->rama_documents && str_starts_with((string) $record->rama_ref, 'r:'))
+            ->visible(fn (CaseEvent $record): bool => $this->eventHasRamaDocuments($record))
             ->modalHeading(fn (CaseEvent $record): string => 'Documentos de «'.$record->title.'»')
             ->modalDescription(fn (CaseEvent $record): string => 'Publicados por el despacho en la Rama Judicial para la actuación del '.$record->event_date->format('d/m/Y').'.')
             ->modalContent(function (CaseEvent $record): View {
@@ -195,7 +217,7 @@ class EventsRelationManager extends RelationManager
                 return view('filament.modals.rama-documents', [
                     'documentos' => $documentos,
                     'error' => $error,
-                    'guardados' => Document::where('legal_case_id', $record->legal_case_id)->whereNotNull('external_url')->pluck('external_url')->all(),
+                    'guardados' => $this->savedDocumentUrls($record),
                 ]);
             })
             ->modalSubmitActionLabel('Guardar en Documentos del caso')
@@ -210,7 +232,7 @@ class EventsRelationManager extends RelationManager
                     return;
                 }
 
-                $existentes = Document::where('legal_case_id', $record->legal_case_id)->whereNotNull('external_url')->pluck('external_url')->all();
+                $existentes = $this->savedDocumentUrls($record);
                 $guardados = 0;
 
                 foreach ($documentos as $doc) {
@@ -247,12 +269,30 @@ class EventsRelationManager extends RelationManager
     private function fetchRamaDocuments(CaseEvent $record): array
     {
         try {
-            return [app(TybaService::class)->actuacionDocuments(substr((string) $record->rama_ref, 2)), null];
+            // Los anexos de una actuacion no cambian: se guardan un rato para que abrir y cerrar
+            // la actuacion no consulte la Rama cada vez.
+            $idRegActuacion = substr((string) $record->rama_ref, 2);
+            $documentos = Cache::remember('rama-docs:'.$idRegActuacion, now()->addMinutes(30), fn (): array => app(TybaService::class)->actuacionDocuments($idRegActuacion));
+
+            return [$documentos, null];
         } catch (\Throwable $e) {
             Log::warning('Documentos de actuacion: la Rama no respondio', ['event' => $record->id, 'error' => $e->getMessage()]);
 
             return [[], 'La Rama Judicial no respondió. Intente de nuevo en unos minutos.'];
         }
+    }
+
+    private function eventHasRamaDocuments(?CaseEvent $record): bool
+    {
+        return $record !== null && $record->rama_documents && str_starts_with((string) $record->rama_ref, 'r:');
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function savedDocumentUrls(CaseEvent $record): array
+    {
+        return Document::where('legal_case_id', $record->legal_case_id)->whereNotNull('external_url')->pluck('external_url')->all();
     }
 
     private function clientCanReceiveEmail(): bool
