@@ -2,16 +2,19 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Resources\Clients\ClientResource;
 use App\Models\Client;
 use App\Models\LegalCase;
 use App\Services\SamaiService;
 use App\Services\TybaService;
 use App\Services\UsageLimiter;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
+use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Schema;
@@ -69,6 +72,27 @@ class BuscarProcesosTyba extends Page implements HasForms
      * @var list<string>
      */
     public array $avisos = [];
+
+    /**
+     * Cedula/NIT buscado que no es de ningun cliente: la Rama ya no busca por documento, asi que
+     * se pide el nombre de la persona para buscar por el (y, si el abogado quiere, guardarla como cliente).
+     *
+     * @var array{numero: string, tipo: int}|null
+     */
+    public ?array $documentoSinCliente = null;
+
+    public string $nombresPersona = '';
+
+    public string $apellidosPersona = '';
+
+    public bool $buscoPorPersona = false;
+
+    /**
+     * Tipos de documento de la busqueda (1-5) con su codigo en Clientes.
+     *
+     * @var array<int, string>
+     */
+    private const TIPO_DOCUMENTO_CLIENTE = [1 => 'CC', 2 => 'CE', 3 => 'NIT', 4 => 'PP', 5 => 'TI'];
 
     public function mount(): void
     {
@@ -285,6 +309,8 @@ class BuscarProcesosTyba extends Page implements HasForms
         $this->errorMessage = null;
         $this->avisos = [];
         $this->procesos = [];
+        $this->documentoSinCliente = null;
+        $this->buscoPorPersona = false;
 
         if ($term === '') {
             return;
@@ -353,7 +379,116 @@ class BuscarProcesosTyba extends Page implements HasForms
             $this->errorMessage = implode(' ', $errores);
         }
 
+        // El documento no es de un cliente: en vez de "0 procesos", se pide el nombre de la persona.
+        if ($this->documentoSinCliente !== null) {
+            $this->avisos = [];
+            $this->errorMessage = null;
+            $this->hasSearched = false;
+        }
+
         $this->loadExistingRadicados();
+    }
+
+    /**
+     * Busca los procesos de la persona con la cedula/NIT indicado usando el nombre que escribe
+     * el abogado. No crea ningun cliente: eso queda como opcion despues de ver los resultados.
+     */
+    public function buscarPorNombreDePersona(): void
+    {
+        if ($this->documentoSinCliente === null) {
+            return;
+        }
+
+        $this->validate([
+            'nombresPersona' => ['required', 'string', 'min:2', 'max:100'],
+            'apellidosPersona' => ['required', 'string', 'min:2', 'max:100'],
+        ], attributes: [
+            'nombresPersona' => 'nombres',
+            'apellidosPersona' => 'apellidos',
+        ]);
+
+        if (! UsageLimiter::attempt('judicial')) {
+            return;
+        }
+
+        if (function_exists('set_time_limit')) {
+            @set_time_limit(120);
+        }
+
+        $nombre = $this->nombreCompletoPersona();
+        $this->errorMessage = null;
+        $this->avisos = [];
+        $this->procesos = [];
+        $this->searchedTerm = $nombre;
+        $this->searchedMode = 'nombre';
+        $this->searchedSource = 'rama';
+        $this->hasSearched = true;
+        $this->buscoPorPersona = true;
+
+        try {
+            $this->procesos = collect(app(TybaService::class)->searchByPartyName($nombre))
+                ->filter(fn ($proceso): bool => is_array($proceso) && ! empty($proceso['radicado']))
+                ->map(fn (array $proceso): array => $proceso + ['fuente' => 'rama'])
+                ->unique('radicado')
+                ->values()
+                ->all();
+            $this->avisos[] = "Buscamos por el nombre {$nombre} y dejamos solo los procesos donde aparece como parte. Revise que sean de la persona con documento {$this->documentoSinCliente['numero']}: puede haber homónimos.";
+        } catch (\Throwable $e) {
+            $this->errorMessage = 'No pudimos conectar con la Rama Judicial. Intente en unos minutos.';
+            Log::warning('BuscarProcesosTyba: error Rama por nombre de persona', ['error' => $e->getMessage()]);
+        }
+
+        $this->loadExistingRadicados();
+    }
+
+    /**
+     * Guarda como cliente a la persona buscada (documento y nombre), para no volver a escribirlo
+     * y para que la vigilancia nocturna le busque procesos nuevos.
+     */
+    public function guardarComoCliente(): void
+    {
+        if ($this->documentoSinCliente === null || ! $this->buscoPorPersona) {
+            return;
+        }
+
+        $numero = $this->documentoSinCliente['numero'];
+        $cliente = Client::where('document_number', $numero)->first() ?? Client::create([
+            'firm_id' => auth()->user()->firm_id,
+            'user_id' => auth()->id(),
+            'document_type' => self::TIPO_DOCUMENTO_CLIENTE[$this->documentoSinCliente['tipo']] ?? 'CC',
+            'document_number' => $numero,
+            'first_name' => trim($this->nombresPersona),
+            'last_name' => trim($this->apellidosPersona),
+            'is_demo' => false,
+        ]);
+
+        $this->documentoSinCliente = null;
+
+        Notification::make()
+            ->title('Cliente guardado')
+            ->body("{$cliente->first_name} {$cliente->last_name} ya está en Clientes. La próxima vez puede buscarlo por su documento.")
+            ->success()
+            ->actions([
+                Action::make('completar')
+                    ->label('Completar sus datos')
+                    ->url(ClientResource::getUrl('edit', ['record' => $cliente])),
+            ])
+            ->send();
+    }
+
+    public function urlRegistrarCliente(): string
+    {
+        return ClientResource::getUrl('create', array_filter([
+            'document_number' => $this->documentoSinCliente['numero'] ?? null,
+            'document_type' => self::TIPO_DOCUMENTO_CLIENTE[$this->documentoSinCliente['tipo'] ?? 1] ?? 'CC',
+            'first_name' => trim($this->nombresPersona),
+            'last_name' => trim($this->apellidosPersona),
+        ]));
+    }
+
+    protected function nombreCompletoPersona(): string
+    {
+        return (string) preg_replace('/\s+/', ' ', trim($this->nombresPersona.' '.$this->apellidosPersona));
     }
 
     /**
@@ -416,7 +551,9 @@ class BuscarProcesosTyba extends Page implements HasForms
         }
 
         if (! $cliente) {
-            throw new \DomainException('La Rama Judicial ya no permite consultar procesos por cédula o NIT en su sistema público. Busque por nombre (apellidos y nombres) o por número de radicado. Si el documento es de uno de sus clientes, regístrelo en Clientes y lo buscaremos por su nombre.');
+            $this->documentoSinCliente = ['numero' => $documento, 'tipo' => $tipoDocumento];
+
+            return [];
         }
 
         $this->avisos[] = "La Rama Judicial ya no permite consultar por cédula o NIT, así que buscamos por el nombre de su cliente {$nombre} y dejamos solo los procesos donde aparece como parte. Revise que sean de esa persona: puede haber homónimos.";

@@ -50,23 +50,34 @@ class TybaService
             return $found;
         }
 
-        $tokens = array_values(array_filter(
-            explode(' ', self::normalizeName($fullName)),
-            fn (string $token): bool => mb_strlen($token) >= 2,
-        ));
-
-        // Con una sola palabra habria demasiados homonimos.
-        if (count($tokens) < 2) {
-            return [];
-        }
-
         try {
-            $byName = $this->searchByName(implode(' ', $tokens));
+            return $this->searchByPartyName($fullName);
         } catch (\Throwable $e) {
             Log::warning('Tyba API: error busqueda por nombre del cliente', ['error' => $e->getMessage()]);
 
             return [];
         }
+    }
+
+    /**
+     * Procesos donde una persona aparece como parte: busca por su nombre (el orden de las
+     * palabras no importa) y deja solo los procesos que tienen todas las palabras entre las partes.
+     * Con menos de dos palabras no busca: habria demasiados homonimos.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function searchByPartyName(string $fullName): array
+    {
+        $tokens = array_values(array_filter(
+            explode(' ', self::normalizeName($fullName)),
+            fn (string $token): bool => mb_strlen($token) >= 2,
+        ));
+
+        if (count($tokens) < 2) {
+            return [];
+        }
+
+        $byName = $this->searchByName(implode(' ', $tokens));
 
         return array_values(array_filter($byName, function (array $proceso) use ($tokens): bool {
             $sujetos = self::normalizeName((string) ($proceso['sujetos'] ?? ''));

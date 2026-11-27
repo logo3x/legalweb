@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Filament\Pages\BuscarProcesosTyba;
+use App\Filament\Resources\Clients\Pages\CreateClient;
 use App\Filament\Resources\LegalCases\Pages\ListLegalCases;
 use App\Models\CaseEvent;
 use App\Models\CaseType;
@@ -205,20 +206,56 @@ class SamaiIntegrationTest extends TestCase
         $this->assertSame(['11001310300120240015800'], array_column($found, 'radicado'), 'Solo los procesos donde aparece el nombre completo.');
     }
 
-    public function test_search_by_document_explains_when_it_is_not_a_client(): void
+    public function test_document_of_a_non_client_asks_for_the_name_and_searches_without_registering(): void
     {
         [$user] = $this->firmUserAndClient();
         Http::fake([
             '*/DocumentoIdentificacion*' => Http::response(['StatusCode' => 404], 404),
+            '*/NombreRazonSocial*' => Http::response(['procesos' => [
+                ['llaveProceso' => '68001400300120250012300', 'despacho' => 'Juzgado 1 Civil', 'departamento' => 'SANTANDER', 'sujetosProcesales' => 'Demandante: LUISA FERNANDA ROJAS DIAZ | Demandado: BANCO'],
+                ['llaveProceso' => '68001400300120250099900', 'despacho' => 'Juzgado 2 Civil', 'departamento' => 'SANTANDER', 'sujetosProcesales' => 'Demandante: LUISA ROJAS PINTO'],
+            ], 'paginacion' => ['cantidadPaginas' => 1]]),
             '*/corporaciones' => Http::response(['ok' => true, 'data' => []]),
         ]);
-
         $this->actingAs($user);
 
-        Livewire::test(BuscarProcesosTyba::class)
+        $page = Livewire::test(BuscarProcesosTyba::class)
             ->fillForm(['termino' => '1098631735'])
             ->call('buscar')
-            ->assertSee('ya no permite consultar procesos por cédula');
+            ->assertSet('documentoSinCliente', ['numero' => '1098631735', 'tipo' => 1])
+            ->assertSee('no es de ninguno de sus clientes')
+            ->assertSee('Regístrelo con este documento')
+            ->assertDontSee('proceso(s) encontrado(s)')
+            ->call('buscarPorNombreDePersona')
+            ->assertHasErrors(['nombresPersona', 'apellidosPersona'])
+            ->set('nombresPersona', 'Luisa Fernanda')
+            ->set('apellidosPersona', 'Rojas Díaz')
+            ->call('buscarPorNombreDePersona')
+            ->assertHasNoErrors()
+            ->assertSee('68001400300120250012300')
+            ->assertDontSee('68001400300120250099900')
+            ->assertSee('Guardar como cliente');
+
+        $this->assertFalse(Client::where('document_number', '1098631735')->exists(), 'Buscar no registra a nadie.');
+
+        $page->call('guardarComoCliente')
+            ->assertNotified('Cliente guardado')
+            ->assertSet('documentoSinCliente', null);
+
+        $client = Client::where('document_number', '1098631735')->sole();
+        $this->assertSame(['CC', 'Luisa Fernanda', 'Rojas Díaz', $user->firm_id, $user->id], [$client->document_type, $client->first_name, $client->last_name, $client->firm_id, $client->user_id]);
+    }
+
+    public function test_register_link_prefills_the_client_form(): void
+    {
+        [$user] = $this->firmUserAndClient();
+        $this->actingAs($user);
+
+        Livewire::withQueryParams(['document_number' => '1098631735', 'document_type' => 'CC', 'first_name' => 'Luisa'])
+            ->test(CreateClient::class)
+            ->assertSet('data.document_number', '1098631735')
+            ->assertSet('data.document_type', 'CC')
+            ->assertSet('data.first_name', 'Luisa');
     }
 
     public function test_samai_corporations_failure_is_not_retried_on_every_request(): void

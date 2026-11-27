@@ -31,7 +31,7 @@
     </form>
 
     {{-- Oculto de entrada: Livewire oculta por sí mismo solo los indicadores con un modificador, no ".delay.block". --}}
-    <div wire:loading.delay.block wire:target="buscar" aria-live="polite" data-lw-loading style="display: none;">
+    <div wire:loading.delay.block wire:target="buscar,buscarPorNombreDePersona" aria-live="polite" data-lw-loading style="display: none;">
         <div style="display: flex; align-items: center; gap: 10px; background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 10px; padding: 14px 18px; margin-bottom: 14px; font-size: 14px; color: #1E40AF;">
             <span class="lw-spinner"></span>
             <span>Consultando las fuentes judiciales&hellip; la Rama Judicial puede tardar hasta un minuto.</span>
@@ -45,7 +45,42 @@
         @endforeach
     </div>
 
-    <div wire:loading.remove wire:target="buscar">
+    <div wire:loading.remove wire:target="buscar,buscarPorNombreDePersona">
+    @if($documentoSinCliente)
+        <section aria-labelledby="lw-persona-titulo" style="border: 1px solid #E2E8F0; border-radius: 12px; background: #fff; padding: 18px 20px; margin-bottom: 16px;">
+            <h3 id="lw-persona-titulo" style="margin: 0 0 4px; font-size: 15px; font-weight: 600; color: #0F172A;">
+                El documento {{ $documentoSinCliente['numero'] }} no es de ninguno de sus clientes
+            </h3>
+            <p style="margin: 0 0 14px; font-size: 13.5px; color: #475569; line-height: 1.55; max-width: 72ch;">
+                La Rama Judicial ya no busca por cédula o NIT. Escriba el nombre de esta persona y buscamos sus procesos; no hace falta registrarla como cliente.
+            </p>
+            <form wire:submit="buscarPorNombreDePersona" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; align-items: start;">
+                <div>
+                    <label for="lw-nombres" style="display: block; margin-bottom: 6px; font-size: 14px; font-weight: 500; color: #0F172A;">Nombres</label>
+                    <x-filament::input.wrapper :valid="! $errors->has('nombresPersona')">
+                        <x-filament::input type="text" id="lw-nombres" wire:model="nombresPersona" placeholder="Ej: MARIA FERNANDA" autocomplete="off" maxlength="100" />
+                    </x-filament::input.wrapper>
+                    @error('nombresPersona')<p style="margin: 4px 0 0; font-size: 13px; color: #B91C1C;">{{ $message }}</p>@enderror
+                </div>
+                <div>
+                    <label for="lw-apellidos" style="display: block; margin-bottom: 6px; font-size: 14px; font-weight: 500; color: #0F172A;">Apellidos</label>
+                    <x-filament::input.wrapper :valid="! $errors->has('apellidosPersona')">
+                        <x-filament::input type="text" id="lw-apellidos" wire:model="apellidosPersona" placeholder="Ej: GARCIA LOPEZ" autocomplete="off" maxlength="100" />
+                    </x-filament::input.wrapper>
+                    @error('apellidosPersona')<p style="margin: 4px 0 0; font-size: 13px; color: #B91C1C;">{{ $message }}</p>@enderror
+                </div>
+                <div style="padding-top: 28px;">
+                    <x-filament::button type="submit" icon="heroicon-o-magnifying-glass">Buscar por nombre</x-filament::button>
+                </div>
+            </form>
+            <p style="margin: 14px 0 0; font-size: 13px; color: #475569;">
+                ¿Es su cliente?
+                <a href="{{ $this->urlRegistrarCliente() }}" wire:navigate style="color: #1D4ED8; font-weight: 600; text-decoration: underline;">Regístrelo con este documento</a>
+                y la próxima vez lo encontramos solo con la cédula.
+            </p>
+        </section>
+    @endif
+
     @if($errorMessage)
         <div style="background: #FEE2E2; border: 1px solid #FECACA; border-radius: 10px; padding: 14px 18px; margin-bottom: 16px; color: #991B1B; font-size: 14px;">
             {{ $errorMessage }}
@@ -88,6 +123,18 @@
                 En {{ $labelFuente }}, por {{ $labelMode }}: <code style="background: #fff; padding: 2px 8px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; color: #1E3A5F;">{{ $searchedTerm }}</code>
             </div>
         </div>
+
+        @if($buscoPorPersona && $documentoSinCliente)
+            <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; border: 1px solid #E2E8F0; border-radius: 10px; background: #fff; padding: 12px 16px; margin-bottom: 18px; font-size: 13.5px; color: #334155; line-height: 1.5;">
+                <span style="flex: 1 1 320px;">
+                    ¿Guardar a <strong style="color: #0F172A;">{{ $searchedTerm }}</strong> (documento {{ $documentoSinCliente['numero'] }}) como cliente? Así la próxima vez lo encuentra solo con la cédula.
+                </span>
+                <span style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <x-filament::button wire:click="guardarComoCliente" size="sm" icon="heroicon-o-user-plus">Guardar como cliente</x-filament::button>
+                    <x-filament::button color="gray" size="sm" tag="a" href="{{ $this->urlRegistrarCliente() }}">Registrar con más datos</x-filament::button>
+                </span>
+            </div>
+        @endif
 
         @if(empty($procesos))
             <div style="text-align: center; padding: 48px 24px; color: #64748B; background: #F8FAFC; border-radius: 12px; border: 1px dashed #CBD5E1;">
