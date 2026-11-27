@@ -170,8 +170,10 @@ class RamaActuacionDocumentsTest extends TestCase
 
         $this->assertSame(0, Document::count());
 
-        $html = view('filament.modals.rama-documents', ['documentos' => [], 'error' => 'La Rama Judicial no respondió. Intente de nuevo en unos minutos.', 'guardados' => []])->render();
-        $this->assertStringContainsString('La Rama Judicial no respondió', $html);
+        $html = view('filament.modals.rama-documents', ['documentos' => [], 'error' => 'El sistema de consulta de la Rama Judicial no está respondiendo en este momento.', 'guardados' => [], 'radicado' => '68081400300120260062800'])->render();
+        $this->assertStringContainsString('no está respondiendo', $html);
+        $this->assertStringContainsString('consultaprocesos.ramajudicial.gov.co/Procesos/NumeroRadicacion', $html);
+        $this->assertStringContainsString('68081400300120260062800', $html);
     }
 
     public function test_documents_modal_lists_each_file_with_its_download_link(): void

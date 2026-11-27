@@ -107,4 +107,41 @@ class ClientEventNoticeTest extends TestCase
         $html = (string) (new CaseUpdatedNotification($this->case->fresh(), $this->event))->toMail($this->client)->render();
         $this->assertStringContainsString('Ver estado de mi caso', $html);
     }
+
+    public function test_client_email_leaves_out_notes_meant_for_the_lawyer(): void
+    {
+        $this->event->forceFill([
+            'title' => 'Auto Decide',
+            'event_type' => 'actuacion',
+            'event_date' => '2026-10-15 00:00:00',
+            'rama_documents' => true,
+            'description' => 'resuelve aclaracion
+
+Tiene documentos anexos en la Rama Judicial (autos, memoriales u oficios): están abajo, en esta misma actuación, y en el botón «Documentos» de la lista.',
+        ])->save();
+
+        $html = (string) (new CaseUpdatedNotification($this->case, $this->event->fresh()))->toMail($this->client)->render();
+
+        $this->assertStringContainsString('resuelve aclaracion', $html);
+        $this->assertStringContainsString('Tipo: Actuación | Fecha: 15/10/2026', $html);
+        $this->assertStringNotContainsString('15/10/2026 00:00', $html);
+        $this->assertStringContainsString('El despacho publicó documentos en esta actuación', $html);
+        $this->assertStringNotContainsString('botón «Documentos»', $html);
+    }
+
+    public function test_lawyer_can_preview_the_email_before_sending_it(): void
+    {
+        $this->actingAs($this->admin);
+
+        $table = $this->eventsTable();
+        $preview = (fn (CaseEvent $record) => $this->clientEmailPreview($record))->call($table->instance(), $this->event)->render();
+        $this->assertStringContainsString('Ver el correo', $preview);
+
+        $mail = (new CaseUpdatedNotification($this->case, $this->event))->toMail($this->client);
+        $html = view('filament.modals.client-email-preview', ['subject' => $mail->subject, 'html' => (string) $mail->render()])->render();
+
+        $this->assertStringContainsString('Ver el correo', $html);
+        $this->assertStringContainsString('srcdoc=', $html);
+        $this->assertStringContainsString('Asunto: <strong style="color: #0F172A;">Actualizacion en su caso', $html);
+    }
 }

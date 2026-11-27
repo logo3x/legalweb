@@ -78,6 +78,7 @@ class EventsRelationManager extends RelationManager
                                 return [
                                     'documentos' => $documentos,
                                     'error' => $error,
+                                    'radicado' => $this->getOwnerRecord()->external_case_number,
                                     'guardados' => $record ? $this->savedDocumentUrls($record) : [],
                                 ];
                             }),
@@ -161,9 +162,11 @@ class EventsRelationManager extends RelationManager
                     ->disabled(fn (): bool => ! $this->clientCanReceiveEmail())
                     ->tooltip(fn (): ?string => $this->clientCanReceiveEmail() ? null : $this->clientEmailProblem())
                     ->requiresConfirmation()
+                    ->modalWidth('3xl')
                     ->modalIcon('heroicon-o-envelope')
                     ->modalHeading('Avisar al cliente por correo')
                     ->modalDescription(fn (CaseEvent $record): string => 'Se enviará ahora a '.$this->getOwnerRecord()->client->email.' un correo con la actuación «'.$record->title.'» del '.$record->event_date->format('d/m/Y').'.')
+                    ->modalContent(fn (CaseEvent $record): View => $this->clientEmailPreview($record))
                     ->modalSubmitActionLabel('Enviar correo')
                     ->action(function (CaseEvent $record): void {
                         $case = $this->getOwnerRecord();
@@ -217,6 +220,7 @@ class EventsRelationManager extends RelationManager
                 return view('filament.modals.rama-documents', [
                     'documentos' => $documentos,
                     'error' => $error,
+                    'radicado' => $this->getOwnerRecord()->external_case_number,
                     'guardados' => $this->savedDocumentUrls($record),
                 ]);
             })
@@ -278,8 +282,22 @@ class EventsRelationManager extends RelationManager
         } catch (\Throwable $e) {
             Log::warning('Documentos de actuacion: la Rama no respondio', ['event' => $record->id, 'error' => $e->getMessage()]);
 
-            return [[], 'La Rama Judicial no respondió. Intente de nuevo en unos minutos.'];
+            return [[], 'El sistema de consulta de la Rama Judicial no está respondiendo en este momento (la falla es de la Rama, no de LegalWeb). Intente de nuevo más tarde.'];
         }
+    }
+
+    /**
+     * El correo tal como lo recibira el cliente, para revisarlo antes de enviarlo.
+     */
+    private function clientEmailPreview(CaseEvent $record): View
+    {
+        $case = $this->getOwnerRecord();
+        $mail = (new CaseUpdatedNotification($case, $record))->toMail($case->client);
+
+        return view('filament.modals.client-email-preview', [
+            'subject' => $mail->subject,
+            'html' => (string) $mail->render(),
+        ]);
     }
 
     private function eventHasRamaDocuments(?CaseEvent $record): bool

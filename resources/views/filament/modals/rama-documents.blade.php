@@ -1,7 +1,13 @@
 {{-- Documentos publicados por el despacho en una actuacion de la Rama Judicial. --}}
 <div style="display: flex; flex-direction: column; gap: 10px;">
     @if ($error)
-        <p style="margin: 0; padding: 12px 14px; border-radius: 10px; background: #FEF2F2; color: #991B1B; font-size: 13.5px;">{{ $error }}</p>
+        <div style="padding: 12px 14px; border-radius: 10px; background: #FEF2F2; color: #991B1B; font-size: 13.5px;">
+            <p style="margin: 0;">{{ $error }}</p>
+            <p style="margin: 6px 0 0;">
+                Mientras tanto puede buscarlo en la
+                <a href="https://consultaprocesos.ramajudicial.gov.co/Procesos/NumeroRadicacion" target="_blank" rel="noopener" style="color: #991B1B; font-weight: 600; text-decoration: underline;">consulta de procesos de la Rama</a>@if (filled($radicado ?? null)) con el radicado <span style="font-family: 'JetBrains Mono', monospace;">{{ $radicado }}</span>@endif.
+            </p>
+        </div>
     @elseif ($documentos === [])
         <p style="margin: 0; font-size: 13.5px; color: #475569;">La Rama Judicial no tiene documentos publicados para esta actuación en este momento.</p>
     @else
