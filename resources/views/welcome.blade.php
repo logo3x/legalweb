@@ -371,27 +371,33 @@
         [x-cloak] { display: none !important; }
 
         /* Pricing */
-        .plan-grid {
-            display: flex; flex-wrap: wrap; gap: 24px;
-            justify-content: center; align-items: stretch; margin-bottom: 40px;
-        }
-        .plan { position: relative; flex: 1 1 240px; max-width: 300px; }
-        .plan .recommended {
-            position: absolute; top: -13px; left: 50%; transform: translateX(-50%); z-index: 3;
-        }
-        .plan-card {
-            background: var(--white); border-radius: var(--radius-2xl); padding: 32px;
-            border: 1px solid var(--border-default); box-shadow: var(--shadow-sm);
-            height: 100%; display: flex; flex-direction: column;
-        }
-        .plan-card.featured { border: 2px solid var(--brand-blue); box-shadow: var(--shadow-lg); }
-        .plan-card .price {
-            font-family: var(--font-display); font-size: 3rem;
-            font-weight: 800; line-height: 1;
-        }
-        .plan-card .price.free { color: var(--green-600); }
-        .plan-card .price.paid { color: var(--brand-blue); }
-        .plan-card .price-suffix { font-size: var(--text-base); color: var(--text-muted); font-weight: 600; }
+        /* Planes: una fila comparable, limites en lista, un solo plan destacado. */
+        .lw-planes { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; align-items: stretch; margin-bottom: 28px; }
+        .lw-plan { position: relative; display: flex; flex-direction: column; padding: 28px 24px 24px; background: var(--white); border: 1px solid var(--border-default); border-radius: 14px; }
+        .lw-plan--destacado { border: 2px solid var(--brand-navy); padding: 27px 23px 23px; }
+        .lw-plan__sello { position: absolute; top: -12px; left: 22px; margin: 0; padding: 3px 10px; border-radius: 999px; background: var(--brand-navy); color: #FFFFFF; font-size: 12.5px; font-weight: 600; }
+        .lw-plan__nombre { margin: 0 0 6px; font-family: var(--font-display); font-size: 1.35rem; font-weight: 700; color: var(--brand-navy); }
+        .lw-plan__para { margin: 0 0 20px; min-height: 2.9em; font-size: 14.5px; line-height: 1.45; color: #475569; }
+        .lw-plan__precio { margin: 0; display: flex; flex-direction: column; gap: 2px; }
+        .lw-plan__monto { font-family: var(--font-display); font-size: 2.15rem; font-weight: 700; line-height: 1.1; letter-spacing: -0.02em; color: #0F172A; white-space: nowrap; }
+        .lw-plan__periodo { font-size: 14px; font-weight: 500; color: #475569; white-space: nowrap; }
+        .lw-plan__nota { margin: 6px 0 20px; min-height: 2.8em; line-height: 1.4; font-size: 13.5px; color: #475569; }
+        .lw-plan__incluye { list-style: none; margin: 0 0 24px; padding: 18px 0 0; border-top: 1px solid var(--border-default); display: flex; flex-direction: column; gap: 10px; }
+        .lw-plan__incluye li { display: flex; gap: 8px; align-items: flex-start; font-size: 14.5px; line-height: 1.4; color: #1E293B; }
+        .lw-plan__incluye svg { flex-shrink: 0; margin-top: 2px; color: var(--brand-blue); }
+        .lw-plan__cta { margin-top: auto; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #CBD5E1; background: var(--white); color: var(--brand-navy); font-size: 15px; font-weight: 600; text-decoration: none; transition: background-color .2s ease, border-color .2s ease; }
+        .lw-plan__cta:hover { background: #F1F5F9; border-color: #94A3B8; }
+        .lw-plan__cta--solido { background: var(--brand-navy); border-color: var(--brand-navy); color: #FFFFFF; }
+        .lw-plan__cta--solido:hover { background: #16304F; border-color: #16304F; }
+        .lw-plan__cta:focus-visible { outline: 3px solid rgba(58, 134, 255, .45); outline-offset: 2px; }
+        .lw-planes-todos { padding: 22px 24px; background: var(--white); border: 1px solid var(--border-default); border-radius: 14px; }
+        .lw-planes-todos__titulo { margin: 0 0 12px; font-size: 15px; font-weight: 700; color: var(--brand-navy); }
+        .lw-planes-todos ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 8px 24px; }
+        .lw-planes-todos li { position: relative; padding-left: 16px; font-size: 14.5px; line-height: 1.45; color: #334155; }
+        .lw-planes-todos li::before { content: ''; position: absolute; left: 0; top: .55em; width: 6px; height: 6px; border-radius: 50%; background: var(--brand-blue); }
+        .lw-planes-pie { margin: 20px 0 0; text-align: center; font-size: 13.5px; color: #475569; }
+        @media (max-width: 1080px) { .lw-planes { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 28px; } }
+        @media (max-width: 600px) { .lw-planes { grid-template-columns: 1fr; } .lw-plan__para, .lw-plan__nota { min-height: 0; } }
         .incluye-panel {
             background: var(--white); border: 1px solid var(--border-default);
             border-radius: var(--radius-2xl); padding: 32px; box-shadow: var(--shadow-sm);
@@ -576,47 +582,6 @@
         .lw-stagger.is-in > *:nth-child(7) { transition-delay: 840ms; }
         .lw-stagger.is-in > *:nth-child(8) { transition-delay: 980ms; }
 
-        /* Plan card featured: shimmer del borde + halo respirando + tilt sutil */
-        .plan-card.featured {
-            position: relative;
-            transition: transform .45s var(--ease-out-emil), box-shadow .45s var(--ease-out-emil);
-            animation: lwPlanBreathe 4.5s ease-in-out infinite;
-        }
-        @keyframes lwPlanBreathe {
-            0%, 100% { box-shadow: 0 12px 32px rgba(58,134,255,.18), 0 2px 6px rgba(58,134,255,.10); }
-            50%      { box-shadow: 0 22px 48px rgba(58,134,255,.32), 0 4px 12px rgba(58,134,255,.18); }
-        }
-        .plan-card.featured::after {
-            content: ''; position: absolute; inset: -2px;
-            border-radius: inherit; pointer-events: none;
-            background: linear-gradient(135deg, rgba(58,134,255,.0) 25%, rgba(58,134,255,.55) 50%, rgba(58,134,255,.0) 75%);
-            background-size: 250% 250%;
-            mask: linear-gradient(#000, #000) content-box, linear-gradient(#000, #000);
-            mask-composite: exclude;
-            -webkit-mask: linear-gradient(#000, #000) content-box, linear-gradient(#000, #000);
-            -webkit-mask-composite: xor;
-            padding: 2px;
-            opacity: .85;
-            animation: lwShimmer 3.6s linear infinite;
-        }
-        /* Halo radial detras de la tarjeta destacada — pulse lento */
-        .plan-card.featured::before {
-            content: ''; position: absolute; inset: -40px;
-            border-radius: 32px;
-            background: radial-gradient(circle at 50% 50%, rgba(58,134,255,.18), transparent 65%);
-            z-index: -1;
-            animation: lwHaloPulse 4.5s ease-in-out infinite;
-            pointer-events: none;
-        }
-        @keyframes lwHaloPulse {
-            0%, 100% { opacity: .5; transform: scale(.92); }
-            50%      { opacity: 1;  transform: scale(1.04); }
-        }
-        @keyframes lwShimmer {
-            0% { background-position: 200% 50%; }
-            100% { background-position: -100% 50%; }
-        }
-
         /* CTA primary: shimmer barrido periodico (cada 4s) atrae al ojo */
         .btn-primary {
             position: relative;
@@ -636,12 +601,6 @@
             0%   { transform: translateX(-110%); }
             55%  { transform: translateX(110%); }
             100% { transform: translateX(110%); }
-        }
-        @media (hover: hover) and (pointer: fine) {
-            .plan-card.featured:hover {
-                transform: translateY(-4px);
-                box-shadow: 0 24px 48px rgba(58,134,255,.28), 0 4px 12px rgba(58,134,255,.14);
-            }
         }
 
         /* Feat cards: hover refinado con curva Emil + gating touch */
@@ -688,7 +647,6 @@
             .lw-hero-pill, .lw-hero-h1, .lw-hero-lead, .lw-hero-cta, .lw-hero-trust,
             .lw-hero-visual, .lw-hero-badge { animation: none !important; }
             .lw-reveal.before { opacity: 1 !important; transform: none !important; }
-            .plan-card.featured::after { animation: none !important; }
             .lw-parallax { transform: none !important; }
         }
     </style>
@@ -1029,116 +987,114 @@
     </section>
 
     {{-- Pricing --}}
+    @php
+        // Planes de la landing. Si cambian precios o limites, se cambian aqui (y en Planes del panel).
+        $planes = [
+            [
+                'nombre' => 'Gratuito',
+                'para' => 'Para empezar a vigilar sus primeros procesos.',
+                'precio' => '$0',
+                'periodo' => 'para siempre',
+                'nota' => 'Los 3 primeros meses con todo incluido. Sin tarjeta.',
+                'incluye' => ['5 procesos activos', '1 usuario', 'Revisión semanal', '10 consultas de IA al mes'],
+                'cta' => 'Comenzar gratis',
+                'google' => true,
+                'destacado' => false,
+            ],
+            [
+                'nombre' => 'Individual',
+                'para' => 'Para el abogado litigante independiente.',
+                'precio' => '$59.900',
+                'periodo' => 'COP al mes',
+                'nota' => 'o $299.500 por 6 meses',
+                'incluye' => ['Hasta 80 procesos activos', '1 usuario', 'Revisión diaria y aviso de fallos', '30 consultas de IA al mes'],
+                'cta' => 'Empezar',
+                'google' => false,
+                'destacado' => false,
+            ],
+            [
+                'nombre' => 'Profesional',
+                'para' => 'Para quien lleva muchos procesos o trabaja con apoyo.',
+                'precio' => '$120.000',
+                'periodo' => 'COP al mes',
+                'nota' => 'o $600.000 por 6 meses',
+                'incluye' => ['Procesos ilimitados', 'Hasta 3 usuarios', 'IA sin límite', 'Portal del cliente y vigilancia de clientes'],
+                'cta' => 'Suscribirme',
+                'google' => false,
+                'destacado' => true,
+            ],
+            [
+                'nombre' => 'Firma',
+                'para' => 'Para firmas que reparten los casos entre su equipo.',
+                'precio' => '$250.000',
+                'periodo' => 'COP al mes',
+                'nota' => 'o $1.250.000 por 6 meses',
+                'incluye' => ['Todo lo de Profesional', 'Hasta 10 usuarios', 'Permisos por caso para cada abogado'],
+                'cta' => 'Empezar con mi equipo',
+                'google' => false,
+                'destacado' => false,
+            ],
+        ];
+    @endphp
     <section id="planes" class="std" style="background: var(--surface-page);">
-        <div class="container" style="max-width: 1140px;">
+        <div class="container" style="max-width: 1180px;">
             <div class="section-head lw-reveal before">
-                <h2>3 meses gratis con todo incluido.</h2>
-                <p>Después siga gratis con el plan Gratuito (hasta 5 casos activos), pase a <strong>Individual</strong> por $59.900 COP/mes con hasta 80 procesos, o a <strong>Profesional</strong> por $120.000 COP/mes con casos ilimitados. Sus datos se conservan siempre.</p>
+                <h2>Empiece gratis. Pague cuando lo necesite.</h2>
+                <p>Los primeros 3 meses tiene todo incluido. Después siga gratis con 5 procesos o elija el plan que se ajuste a su volumen. Sin permanencia: sus datos se conservan siempre.</p>
             </div>
 
-            <div class="plan-grid lw-reveal before lw-stagger">
-                <div class="plan">
-                    <div class="plan-card">
-                        <div class="eyebrow green" style="align-self: flex-start; margin-bottom: 16px;">Prueba gratuita</div>
-                        <h3 style="font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 700; color: var(--brand-navy); margin: 0 0 6px;">Empieza gratis</h3>
-                        <p style="font-size: var(--text-sm); color: var(--text-muted); margin: 0 0 22px; line-height: 1.5;">Todo el producto durante 3 meses. Luego, gratis para siempre con hasta 5 casos activos, 1 usuario y 10 consultas de IA al mes.</p>
-                        <div style="margin-bottom: 22px; min-height: 70px;">
-                            <div style="display: flex; align-items: baseline; gap: 8px;">
-                                <span class="price free">$0</span>
-                                <span class="price-suffix">para empezar</span>
-                            </div>
-                            <div style="font-size: var(--text-sm); color: var(--text-faint); margin-top: 8px;">Sin tarjeta de crédito</div>
-                        </div>
-                        <a href="{{ route('auth.google') }}" class="btn btn-success btn-full" style="margin-top: auto;">
-                            <svg width="16" height="16" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="white" fill-opacity=".85"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="white" fill-opacity=".95"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="white" fill-opacity=".75"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="white" fill-opacity=".85"/></svg>
-                            Comenzar gratis
+            <div class="lw-planes lw-reveal before lw-stagger">
+                @foreach($planes as $plan)
+                    <article @class(['lw-plan', 'lw-plan--destacado' => $plan['destacado']])>
+                        @if($plan['destacado'])
+                            <p class="lw-plan__sello">Recomendado</p>
+                        @endif
+                        <h3 class="lw-plan__nombre">{{ $plan['nombre'] }}</h3>
+                        <p class="lw-plan__para">{{ $plan['para'] }}</p>
+
+                        <p class="lw-plan__precio">
+                            <span class="lw-plan__monto">{{ $plan['precio'] }}</span>
+                            <span class="lw-plan__periodo">{{ $plan['periodo'] }}</span>
+                        </p>
+                        <p class="lw-plan__nota">{{ $plan['nota'] }}</p>
+
+                        <ul class="lw-plan__incluye">
+                            @foreach($plan['incluye'] as $item)
+                                <li>
+                                    <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M16.7 5.3a1 1 0 0 1 0 1.4l-8 8a1 1 0 0 1-1.4 0l-4-4a1 1 0 1 1 1.4-1.4L8 12.58l7.3-7.3a1 1 0 0 1 1.4 0Z" clip-rule="evenodd"/></svg>
+                                    <span>{{ $item }}</span>
+                                </li>
+                            @endforeach
+                        </ul>
+
+                        <a href="{{ route('auth.google') }}" @class(['lw-plan__cta', 'lw-plan__cta--solido' => $plan['destacado']])>
+                            @if($plan['google'])
+                                <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                            @endif
+                            {{ $plan['cta'] }}
                         </a>
-                        <div style="font-size: 13px; color: var(--text-faint); text-align: center; margin-top: 12px;">Configúralo en 60 segundos</div>
-                    </div>
-                </div>
-
-                <div class="plan">
-                    <div class="plan-card">
-                        <div class="eyebrow" style="align-self: flex-start; margin-bottom: 16px;">Abogado independiente</div>
-                        <h3 style="font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 700; color: var(--brand-navy); margin: 0 0 6px;">Individual</h3>
-                        <p style="font-size: var(--text-sm); color: var(--text-muted); margin: 0 0 22px; line-height: 1.5;">1 usuario y hasta 80 procesos activos con revisión diaria, aviso de fallos e informe de los lunes.</p>
-                        <div style="margin-bottom: 22px; min-height: 70px;">
-                            <div style="display: flex; align-items: baseline; gap: 8px;">
-                                <span class="price paid">$59.900</span>
-                                <span class="price-suffix">COP / mes</span>
-                            </div>
-                            <div style="font-size: var(--text-sm); color: var(--text-faint); margin-top: 8px;">o $299.500 por 6 meses</div>
-                        </div>
-                        <a href="{{ route('auth.google') }}" class="btn btn-primary btn-full" style="margin-top: auto;">Empezar</a>
-                        <div style="font-size: 13px; color: var(--text-faint); text-align: center; margin-top: 12px;">30 consultas de IA al mes</div>
-                    </div>
-                </div>
-
-                <div class="plan">
-                    <div class="recommended">
-                        <span class="badge badge-info-solid">Recomendado</span>
-                    </div>
-                    <div class="plan-card featured">
-                        <div class="eyebrow" style="align-self: flex-start; margin-bottom: 16px;">Suscripción</div>
-                        <h3 style="font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 700; color: var(--brand-navy); margin: 0 0 6px;">Profesional</h3>
-                        <p style="font-size: var(--text-sm); color: var(--text-muted); margin: 0 0 22px; line-height: 1.5;">Casos ilimitados y hasta 3 usuarios. Cuando termine tu prueba, sigue con todo igual.</p>
-                        <div style="margin-bottom: 22px; min-height: 70px;">
-                            <div style="display: flex; align-items: baseline; gap: 8px;">
-                                <span class="price paid">$120.000</span>
-                                <span class="price-suffix">COP / mes</span>
-                            </div>
-                            <div style="font-size: var(--text-sm); color: var(--text-faint); margin-top: 8px;">o $600.000 por 6 meses · cancela cuando quieras</div>
-                        </div>
-                        <a href="{{ route('auth.google') }}" class="btn btn-primary btn-full" style="margin-top: auto;">Suscribirme</a>
-                        <div style="font-size: 13px; color: var(--text-faint); text-align: center; margin-top: 12px;">Mismas funciones que la prueba</div>
-                    </div>
-                </div>
-
-                <div class="plan">
-                    <div class="plan-card">
-                        <div class="eyebrow" style="align-self: flex-start; margin-bottom: 16px;">Para equipos</div>
-                        <h3 style="font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 700; color: var(--brand-navy); margin: 0 0 6px;">Firma</h3>
-                        <p style="font-size: var(--text-sm); color: var(--text-muted); margin: 0 0 22px; line-height: 1.5;">Todo lo del plan Profesional para firmas de hasta 10 usuarios.</p>
-                        <div style="margin-bottom: 22px; min-height: 70px;">
-                            <div style="display: flex; align-items: baseline; gap: 8px;">
-                                <span class="price paid">$250.000</span>
-                                <span class="price-suffix">COP / mes</span>
-                            </div>
-                            <div style="font-size: var(--text-sm); color: var(--text-faint); margin-top: 8px;">o $1.250.000 por 6 meses</div>
-                        </div>
-                        <a href="{{ route('auth.google') }}" class="btn btn-primary btn-full" style="margin-top: auto;">Empezar con mi equipo</a>
-                        <div style="font-size: 13px; color: var(--text-faint); text-align: center; margin-top: 12px;">Permisos por caso para cada abogado</div>
-                    </div>
-                </div>
+                    </article>
+                @endforeach
             </div>
 
-            <div class="incluye-panel">
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
-                    <svg width="20" height="20" fill="none" stroke="var(--brand-blue)" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-                    <h3 style="font-family: var(--font-display); font-size: var(--text-xl); font-weight: 700; color: var(--brand-navy); margin: 0;">La prueba, Profesional y Firma incluyen todo</h3>
-                </div>
-                <ul class="incluye-grid lw-reveal before lw-stagger" style="list-style: none; padding: 0; margin: 0;">
+            <div class="lw-planes-todos">
+                <p class="lw-planes-todos__titulo">En todos los planes</p>
+                <ul>
                     @foreach([
-                        'Casos y clientes ilimitados',
-                        'Importación y vigilancia de la Rama Judicial',
-                        'Alertas de actuaciones por correo',
-                        'Vigilancia de clientes en la Rama Judicial',
+                        'Importación desde la Rama Judicial y SAMAI',
+                        'Avisos de actuaciones por correo',
                         'Calculadora de términos en días hábiles',
-                        'Asistente IA jurídico',
-                        'Portal del cliente y reportes PDF',
-                        '21 flujos procesales + facturación por caso',
-                        'Equipo de trabajo con permisos por caso',
-                    ] as $feat)
-                        <li>
-                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                            <span>{{ $feat }}</span>
-                        </li>
+                        '21 flujos procesales y facturación por caso',
+                        'Informe de los lunes con la última consulta de cada proceso',
+                        'Sus datos se conservan aunque cambie de plan',
+                    ] as $item)
+                        <li>{{ $item }}</li>
                     @endforeach
                 </ul>
             </div>
 
-            <p style="text-align: center; font-size: var(--text-sm); color: var(--text-faint); margin-top: 28px;">
-                Precios en pesos colombianos. El plan Gratuito incluye hasta 5 casos activos, 1 usuario, 10 consultas de IA al mes y sincronización semanal; no incluye la vigilancia de clientes.
+            <p class="lw-planes-pie">
+                Precios en pesos colombianos. Puede cambiar de plan o cancelar cuando quiera. El plan Gratuito no incluye la vigilancia de clientes.
             </p>
         </div>
     </section>
