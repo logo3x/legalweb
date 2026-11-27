@@ -115,28 +115,35 @@ class CaseImporter
             return ['error' => 'Error al crear caso', 'detail' => 'No se pudo crear el caso.', 'imported' => false, 'message' => null, 'case' => null];
         }
 
+        // Misma descripcion que la vigilancia nocturna (anotacion, termino, publicacion, documentos)
+        // y el id de la actuacion en la Rama, para que la consulta siguiente no la duplique.
+        $sync = app(CaseSyncService::class);
         $actuacionesCount = 0;
+
         foreach ($info['actuaciones'] ?? [] as $a) {
-            $date = null;
-            foreach (['d/m/Y', 'j/m/Y', 'Y-m-d'] as $fmt) {
-                try {
-                    $date = Carbon::createFromFormat($fmt, trim($a['fecha']));
-                    break;
-                } catch (\Exception) {
-                }
-            }
+            $date = $sync->parseDate((string) $a['fecha']);
+
             if (! $date) {
                 continue;
             }
 
-            CaseEvent::create([
-                'legal_case_id' => $case->id,
-                'title' => $a['tipo'].($a['ciclo'] ? " ({$a['ciclo']})" : ''),
-                'event_date' => $date,
-                'event_type' => 'actuacion',
-                'description' => 'Importado desde Rama Judicial. Radicado: '.$radicado,
-                'user_id' => $userId,
-            ]);
+            try {
+                CaseEvent::create([
+                    'legal_case_id' => $case->id,
+                    'title' => $a['tipo'].(! empty($a['ciclo']) ? " ({$a['ciclo']})" : ''),
+                    'event_date' => $date,
+                    'event_day' => $date->toDateString(),
+                    'rama_ref' => $a['ref'] ?? null,
+                    'rama_documents' => ! empty($a['con_documentos']),
+                    'event_type' => 'actuacion',
+                    'description' => $sync->buildEventDescription($a) ?: null,
+                    'user_id' => $userId,
+                ]);
+            } catch (QueryException) {
+                // La Rama repitio la misma actuacion: se omite.
+                continue;
+            }
+
             $actuacionesCount++;
         }
 

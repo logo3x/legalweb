@@ -17,6 +17,7 @@ use Illuminate\Support\Carbon;
     'event_date',
     'event_day',
     'rama_ref',
+    'rama_documents',
     'event_type',
     'is_milestone',
     'user_id',
@@ -32,6 +33,7 @@ class CaseEvent extends Model
             'event_date' => 'datetime',
             'event_day' => 'date',
             'is_milestone' => 'boolean',
+            'rama_documents' => 'boolean',
         ];
     }
 

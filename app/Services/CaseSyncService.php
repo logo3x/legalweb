@@ -162,7 +162,7 @@ class CaseSyncService
             $newDescription = $this->buildEventDescription($actuacion);
 
             if ($existing) {
-                $this->refreshExistingEvent($existing, $date, $newDescription);
+                $this->refreshExistingEvent($existing, $date, $newDescription, ! empty($actuacion['con_documentos']));
 
                 continue;
             }
@@ -176,6 +176,7 @@ class CaseSyncService
                     'event_date' => $date,
                     'event_day' => $eventDay,
                     'rama_ref' => $ref,
+                    'rama_documents' => ! empty($actuacion['con_documentos']),
                     'event_type' => 'actuacion',
                     'description' => $newDescription,
                     'user_id' => $case->user_id,
@@ -502,9 +503,13 @@ class CaseSyncService
     /**
      * Normaliza la hora y reemplaza descripciones genericas de versiones anteriores.
      */
-    private function refreshExistingEvent(CaseEvent $existing, Carbon $date, string $newDescription): void
+    private function refreshExistingEvent(CaseEvent $existing, Carbon $date, string $newDescription, bool $hasDocuments = false): void
     {
         $updates = [];
+
+        if ($existing->rama_documents !== $hasDocuments) {
+            $updates['rama_documents'] = $hasDocuments;
+        }
 
         if ($existing->event_date && $existing->event_date->format('H:i:s') !== '00:00:00') {
             $updates['event_date'] = $date;
@@ -512,7 +517,8 @@ class CaseSyncService
 
         $oldDescGeneric = $existing->description === null
             || str_contains($existing->description, 'Sincronizado desde Rama Judicial. Radicado:')
-            || str_contains($existing->description, 'Sincronizado automaticamente. Radicado:');
+            || str_contains($existing->description, 'Sincronizado automaticamente. Radicado:')
+            || str_contains($existing->description, 'Importado desde Rama Judicial. Radicado:');
 
         if ($oldDescGeneric && $newDescription !== '') {
             $updates['description'] = $newDescription;
@@ -669,7 +675,7 @@ class CaseSyncService
      *
      * @param  array<string, mixed>  $a
      */
-    private function buildEventDescription(array $a): string
+    public function buildEventDescription(array $a): string
     {
         $parts = [];
         $fecha = $a['fecha'] ?? '';
@@ -703,7 +709,7 @@ class CaseSyncService
         }
 
         if (! empty($a['con_documentos'])) {
-            $parts[] = 'Tiene documentos asociados en la Rama Judicial.';
+            $parts[] = 'Tiene documentos anexos en la Rama Judicial (autos, memoriales u oficios): ábralos con el botón «Documentos» de la actuación.';
         }
 
         // Si despues de todo no logramos extraer nada significativo, dejamos
@@ -848,7 +854,7 @@ class CaseSyncService
         };
     }
 
-    private function parseDate(string $date): ?Carbon
+    public function parseDate(string $date): ?Carbon
     {
         $formats = ['d/m/Y', 'Y-m-d', 'd-m-Y'];
 

@@ -4,7 +4,10 @@ namespace App\Filament\Resources\LegalCases\RelationManagers;
 
 use App\Filament\Resources\LegalCases\RelationManagers\Concerns\ChecksCasePermissions;
 use App\Models\CaseEvent;
+use App\Models\Document;
 use App\Notifications\CaseUpdatedNotification;
+use App\Services\TybaService;
+use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
@@ -22,6 +25,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Log;
 
 class EventsRelationManager extends RelationManager
@@ -124,6 +128,7 @@ class EventsRelationManager extends RelationManager
                     ->label('Nueva Actuación'),
             ])
             ->recordActions([
+                $this->ramaDocumentsAction(),
                 // Accion inmediata con confirmacion: el abogado ve a que correo se envia y si salio.
                 Action::make('notify_client')
                     ->label('Avisar al cliente')
@@ -170,6 +175,84 @@ class EventsRelationManager extends RelationManager
                     DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    /**
+     * Ver, descargar y guardar en Documentos del caso los archivos que el despacho publico en la actuacion.
+     */
+    private function ramaDocumentsAction(): Action
+    {
+        return Action::make('rama_documents')
+            ->label('Documentos')
+            ->icon('heroicon-o-paper-clip')
+            ->color('gray')
+            ->visible(fn (CaseEvent $record): bool => $record->rama_documents && str_starts_with((string) $record->rama_ref, 'r:'))
+            ->modalHeading(fn (CaseEvent $record): string => 'Documentos de «'.$record->title.'»')
+            ->modalDescription(fn (CaseEvent $record): string => 'Publicados por el despacho en la Rama Judicial para la actuación del '.$record->event_date->format('d/m/Y').'.')
+            ->modalContent(function (CaseEvent $record): View {
+                [$documentos, $error] = $this->fetchRamaDocuments($record);
+
+                return view('filament.modals.rama-documents', [
+                    'documentos' => $documentos,
+                    'error' => $error,
+                    'guardados' => Document::where('legal_case_id', $record->legal_case_id)->whereNotNull('external_url')->pluck('external_url')->all(),
+                ]);
+            })
+            ->modalSubmitActionLabel('Guardar en Documentos del caso')
+            ->modalSubmitAction(fn (Action $action): Action => $action->visible(static::userHasCasePermission($this->getOwnerRecord(), 'documents.upload')))
+            ->modalCancelActionLabel('Cerrar')
+            ->action(function (CaseEvent $record): void {
+                [$documentos, $error] = $this->fetchRamaDocuments($record);
+
+                if ($error !== null || $documentos === []) {
+                    Notification::make()->title('No hay documentos para guardar')->body($error)->warning()->send();
+
+                    return;
+                }
+
+                $existentes = Document::where('legal_case_id', $record->legal_case_id)->whereNotNull('external_url')->pluck('external_url')->all();
+                $guardados = 0;
+
+                foreach ($documentos as $doc) {
+                    if (in_array($doc['url'], $existentes, true)) {
+                        continue;
+                    }
+
+                    Document::create([
+                        'legal_case_id' => $record->legal_case_id,
+                        'case_event_id' => $record->id,
+                        'name' => mb_substr($doc['nombre'], 0, 250),
+                        'description' => trim('Anexo de la actuación «'.$record->title.'» del '.$record->event_date->format('d/m/Y').' en la Rama Judicial. '.$doc['descripcion']),
+                        'file_type' => $doc['tipo'] !== '' ? mb_substr($doc['tipo'], 0, 50) : null,
+                        'external_url' => $doc['url'],
+                        'responsible' => 'juzgado',
+                        'status' => 'recibido',
+                        'received_at' => $doc['fecha'] ? Carbon::createFromFormat('d/m/Y', $doc['fecha'])->startOfDay() : now(),
+                        'uploaded_by' => auth()->id(),
+                    ]);
+                    $guardados++;
+                }
+
+                Notification::make()
+                    ->title($guardados > 0 ? ($guardados === 1 ? 'Documento guardado' : "{$guardados} documentos guardados") : 'Ya estaban guardados')
+                    ->body('Están en la pestaña Documentos del caso, con el enlace de descarga de la Rama Judicial.')
+                    ->success()
+                    ->send();
+            });
+    }
+
+    /**
+     * @return array{0: list<array{id: string, nombre: string, descripcion: string, tipo: string, fecha: ?string, url: string}>, 1: ?string}
+     */
+    private function fetchRamaDocuments(CaseEvent $record): array
+    {
+        try {
+            return [app(TybaService::class)->actuacionDocuments(substr((string) $record->rama_ref, 2)), null];
+        } catch (\Throwable $e) {
+            Log::warning('Documentos de actuacion: la Rama no respondio', ['event' => $record->id, 'error' => $e->getMessage()]);
+
+            return [[], 'La Rama Judicial no respondió. Intente de nuevo en unos minutos.'];
+        }
     }
 
     private function clientCanReceiveEmail(): bool

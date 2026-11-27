@@ -540,6 +540,44 @@ class TybaService
     }
 
     /**
+     * Documentos que el despacho publico en una actuacion (autos, memoriales, oficios).
+     * Lanza una excepcion si la Rama no responde; lista vacia si no hay documentos.
+     *
+     * @return list<array{id: string, nombre: string, descripcion: string, tipo: string, fecha: ?string, url: string}>
+     */
+    public function actuacionDocuments(string $idRegActuacion): array
+    {
+        $response = Http::timeout(20)->get("{$this->apiBase}/Proceso/DocumentosActuacion/".rawurlencode($idRegActuacion));
+
+        if ($response->status() === 404) {
+            return [];
+        }
+
+        $response->throw();
+
+        return collect($response->json() ?? [])
+            ->filter(fn ($doc): bool => is_array($doc) && filled($doc['idRegDocumento'] ?? null))
+            ->map(fn (array $doc): array => [
+                'id' => (string) $doc['idRegDocumento'],
+                'nombre' => trim((string) ($doc['nombre'] ?? '')) ?: 'Documento',
+                'descripcion' => trim((string) ($doc['descripcion'] ?? '')),
+                'tipo' => strtolower(trim((string) ($doc['tipo'] ?? ''))),
+                'fecha' => $this->formatDate((string) ($doc['fechaCarga'] ?? '')) ?: null,
+                'url' => $this->documentDownloadUrl((string) $doc['idRegDocumento']),
+            ])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Enlace publico de descarga de un documento de la Rama (el mismo que usa su consulta web).
+     */
+    public function documentDownloadUrl(string $idRegDocumento): string
+    {
+        return "{$this->apiBase}/Descarga/Documento/".rawurlencode($idRegDocumento);
+    }
+
+    /**
      * @param  array<int, array<string, mixed>>  $rawSujetos
      * @return array<int, array{rol: string, nombre: string, documento: string}>
      */
