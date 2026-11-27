@@ -47,6 +47,7 @@ class MyDayAndLifecycleTest extends TestCase
 
     public function test_my_day_shows_what_needs_attention_today(): void
     {
+        $this->travelTo(now()->setDate(2026, 11, 23)->setTime(9, 0)); // lunes habil: +2 dias = miercoles
         Reminder::factory()->create(['firm_id' => $this->firm->id, 'user_id' => $this->admin->id, 'legal_case_id' => $this->case->id, 'type' => 'vencimiento', 'title' => 'Subsanar demanda', 'due_date' => now()->addDays(2)]);
         Reminder::factory()->create(['firm_id' => $this->firm->id, 'user_id' => $this->admin->id, 'legal_case_id' => $this->case->id, 'type' => 'audiencia', 'title' => 'Audiencia inicial', 'due_date' => now()->addHours(3)]);
         Reminder::factory()->create(['firm_id' => $this->firm->id, 'user_id' => $this->admin->id, 'type' => 'vencimiento', 'title' => 'Termino lejano', 'due_date' => now()->addDays(20)]);
@@ -58,7 +59,7 @@ class MyDayAndLifecycleTest extends TestCase
         Livewire::test(MyDay::class)
             ->assertSee('Andrea')
             ->assertSee('Subsanar demanda')
-            ->assertSee('Vence en 2 día(s)', false)
+            ->assertSee('En 2 día(s) hábil(es)', false)
             ->assertSee('Audiencia inicial')
             ->assertSee('Auto admite demanda')
             ->assertSee('Poder firmado')

@@ -271,12 +271,14 @@ class PlanLimitsTest extends TestCase
         $subscription = $this->subscribe($this->free, ['trial_ends_at' => now()->addDays(20)]);
         $this->actingAs($this->admin);
 
+        $this->assertTrue(PlanOverview::canView());
         Livewire::test(PlanOverview::class)->assertSee('Prueba gratuita')->assertSee('20 días de prueba');
 
         $subscription->update(['trial_ends_at' => now()->subDay()]);
         Livewire::test(PlanOverview::class)->assertSee('Plan Gratuito')->assertSee('0 de 5 casos activos')->assertSee('Mejorar plan');
 
+        // En un plan pagado holgado el bloque no aparece en el Escritorio: no hay nada que decidir.
         $this->subscribe($this->firmPlan);
-        Livewire::test(PlanOverview::class)->assertSee('Plan Firma')->assertSee('Casos ilimitados')->assertDontSee('Mejorar plan');
+        $this->assertFalse(PlanOverview::canView());
     }
 }

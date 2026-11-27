@@ -8,6 +8,7 @@ use App\Filament\Resources\LegalCases\LegalCaseResource;
 use App\Models\CaseEvent;
 use App\Models\Document;
 use App\Models\Reminder;
+use App\Services\CasePendingSummary;
 use Filament\Widgets\Widget;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -102,21 +103,20 @@ class MyDay extends Widget
      */
     private function deadlines(): array
     {
-        return Reminder::with('legalCase')
-            ->where('is_completed', false)
-            ->where('type', 'vencimiento')
-            ->where('due_date', '<=', now()->addDays(3)->endOfDay())
-            ->where('due_date', '>=', now()->subDays(7)->startOfDay())
-            ->orderBy('due_date')
-            ->limit(5)
-            ->get()
-            ->map(fn (Reminder $reminder): array => [
-                'when' => $reminder->due_date,
-                'title' => $reminder->title,
-                'case' => $reminder->legalCase?->case_number,
-                'url' => $reminder->legalCase ? LegalCaseResource::getUrl('view', ['record' => $reminder->legalCase]) : null,
-                'days' => (int) now()->startOfDay()->diffInDays($reminder->due_date->copy()->startOfDay(), false),
+        // Misma fuente que la pagina Vencimientos: terminos de etapas y recordatorios de
+        // vencimiento, en dias habiles, que vencen en los proximos 3 dias habiles o ya vencieron.
+        return app(CasePendingSummary::class)
+            ->deadlinesFor(auth()->user(), 7)
+            ->filter(fn (array $item): bool => $item['remaining'] <= 3)
+            ->take(5)
+            ->map(fn (array $item): array => [
+                'when' => $item['date'],
+                'title' => $item['title'],
+                'case' => $item['case_number'],
+                'url' => $item['case_url'],
+                'days' => $item['remaining'],
             ])
+            ->values()
             ->all();
     }
 

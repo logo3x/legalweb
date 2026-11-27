@@ -98,19 +98,38 @@ class CasePendingSummary
             ->where('due_date', '>=', now()->subDays(7)->startOfDay())
             ->where('due_date', '<=', $until)
             ->get()
-            ->map(fn (Reminder $reminder): array => [
-                'kind' => 'vencimiento',
-                'title' => (string) $reminder->title,
-                'detail' => $reminder->description,
-                'case_number' => $reminder->legalCase?->case_number,
-                'case_url' => $reminder->legalCase ? LegalCaseResource::getUrl('view', ['record' => $reminder->legalCase]) : null,
-                'date' => $reminder->due_date,
-                'remaining' => $this->calendar->businessDaysBetween(now(), $reminder->due_date),
-            ]);
+            ->map(function (Reminder $reminder): array {
+                $date = $this->nextBusinessDay($reminder->due_date);
+
+                return [
+                    'kind' => 'vencimiento',
+                    'title' => (string) $reminder->title,
+                    'detail' => $reminder->description,
+                    'case_number' => $reminder->legalCase?->case_number,
+                    'case_url' => $reminder->legalCase ? LegalCaseResource::getUrl('view', ['record' => $reminder->legalCase]) : null,
+                    'date' => $date,
+                    'remaining' => $this->calendar->businessDaysBetween(now(), $date),
+                ];
+            });
 
         return $steps->concat($reminders)
             ->sortBy(fn (array $item): int => $item['date']->getTimestamp())
             ->values();
+    }
+
+    /**
+     * Un termino que vence en dia inhabil se corre al siguiente dia habil; si no, un recordatorio
+     * para el sabado contaria 0 dias habiles y apareceria como "vence hoy".
+     */
+    private function nextBusinessDay(Carbon $date): Carbon
+    {
+        $day = $date->copy();
+
+        for ($i = 0; $i < 40 && ! $this->calendar->isBusinessDay($day); $i++) {
+            $day->addDay();
+        }
+
+        return $day;
     }
 
     /**

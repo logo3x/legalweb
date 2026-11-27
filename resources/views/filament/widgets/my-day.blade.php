@@ -6,10 +6,10 @@
     $total = count($data['agenda']) + count($data['deadlines']) + count($data['news']) + count($data['documents']);
 
     $columns = [
-        ['key' => 'deadlines', 'title' => 'Vencimientos', 'subtitle' => 'Próximos 3 días', 'color' => '#DC2626', 'bg' => '#FEF2F2', 'empty' => 'Ningún término por vencer.', 'link' => url('/admin/vencimientos')],
-        ['key' => 'agenda', 'title' => 'Agenda', 'subtitle' => 'Hoy y mañana', 'color' => '#2563EB', 'bg' => '#EFF6FF', 'empty' => 'Sin audiencias ni reuniones.', 'link' => url('/admin/reminders')],
-        ['key' => 'news', 'title' => 'Novedades judiciales', 'subtitle' => 'Últimas 24 horas', 'color' => '#7C3AED', 'bg' => '#F5F3FF', 'empty' => 'Sin actuaciones nuevas.', 'link' => url('/admin/case-events')],
-        ['key' => 'documents', 'title' => 'Documentos de clientes', 'subtitle' => 'Últimos 3 días', 'color' => '#059669', 'bg' => '#ECFDF5', 'empty' => 'Ningún documento nuevo.', 'link' => url('/admin/documents')],
+        ['key' => 'deadlines', 'title' => 'Vencimientos', 'subtitle' => 'Próximos 3 días hábiles', 'urgent' => true, 'empty' => 'Ningún término por vencer.', 'link' => url('/admin/vencimientos')],
+        ['key' => 'agenda', 'title' => 'Agenda', 'subtitle' => 'Hoy y mañana', 'urgent' => false, 'empty' => 'Sin audiencias ni reuniones.', 'link' => url('/admin/reminders')],
+        ['key' => 'news', 'title' => 'Novedades judiciales', 'subtitle' => 'Últimas 24 horas', 'urgent' => false, 'empty' => 'Sin actuaciones nuevas.', 'link' => url('/admin/case-events')],
+        ['key' => 'documents', 'title' => 'Documentos de clientes', 'subtitle' => 'Últimos 3 días', 'urgent' => false, 'empty' => 'Ningún documento nuevo.', 'link' => url('/admin/documents')],
     ];
 @endphp
 
@@ -32,13 +32,13 @@
         <div class="lw-myday-grid" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px;">
             @foreach($columns as $column)
                 @php $items = $data[$column['key']]; @endphp
-                <div style="border: 1px solid #eef2f7; border-radius: 10px; padding: 14px; background: {{ $column['bg'] }}; display: flex; flex-direction: column; min-height: 150px;">
+                <div style="border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px; background: #f8fafc; display: flex; flex-direction: column; min-height: 150px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                         <div>
-                            <div style="font-size: 14px; font-weight: 700; color: {{ $column['color'] }};">{{ $column['title'] }}</div>
+                            <a href="{{ $column['link'] }}" style="font-size: 14px; font-weight: 700; color: #0f172a; text-decoration: none;">{{ $column['title'] }}</a>
                             <div style="font-size: 11px; color: #6b7280;">{{ $column['subtitle'] }}</div>
                         </div>
-                        <span style="min-width: 26px; text-align: center; padding: 2px 8px; border-radius: 999px; font-size: 13px; font-weight: 700; color: #fff; background: {{ count($items) ? $column['color'] : '#cbd5e1' }};">{{ count($items) }}</span>
+                        <span style="min-width: 26px; text-align: center; padding: 2px 8px; border-radius: 999px; font-size: 13px; font-weight: 700; color: #fff; background: {{ count($items) ? ($column['urgent'] ? '#b91c1c' : '#475569') : '#cbd5e1' }};">{{ count($items) }}</span>
                     </div>
 
                     @forelse($items as $item)
@@ -47,11 +47,11 @@
                             <div style="font-size: 11.5px; color: #6b7280; margin-top: 2px;">
                                 @if($column['key'] === 'deadlines')
                                     @if($item['days'] < 0)
-                                        <strong style="color: #DC2626;">Venció hace {{ abs($item['days']) }} día(s)</strong>
+                                        <strong style="color: #b91c1c;">Venció hace {{ abs($item['days']) }} día(s) hábil(es)</strong>
                                     @elseif($item['days'] === 0)
-                                        <strong style="color: #DC2626;">Vence hoy</strong>
+                                        <strong style="color: #b91c1c;">Vence hoy</strong>
                                     @else
-                                        Vence en {{ $item['days'] }} día(s) · {{ $item['when']->format('d/m') }}
+                                        En {{ $item['days'] }} día(s) hábil(es) · {{ $item['when']->format('d/m') }}
                                     @endif
                                 @elseif($column['key'] === 'agenda')
                                     {{ $item['kind'] }} · {{ $item['when']->isToday() ? 'Hoy' : 'Mañana' }} {{ $item['when']->format('g:i a') }}

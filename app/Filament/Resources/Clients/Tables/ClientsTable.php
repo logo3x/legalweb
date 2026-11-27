@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Clients\Tables;
 
+use App\Models\Client;
 use App\Models\LegalCase;
 use App\Services\TybaService;
 use App\Services\UsageLimiter;
@@ -12,7 +13,6 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
-use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
@@ -25,48 +25,47 @@ class ClientsTable
     {
         return $table
             ->stackedOnMobile()
+            ->modifyQueryUsing(fn ($query) => $query->withCount(['legalCases as active_cases_count' => fn ($q) => $q->whereIn('status', ['abierto', 'en_progreso', 'en_espera'])]))
             ->columns([
-                TextColumn::make('document_type')
-                    ->label('Tipo Doc.')
-                    ->sortable(),
-                TextColumn::make('document_number')
-                    ->label('Documento')
-                    ->searchable(),
+                // Nombre completo con el documento debajo: una sola columna en lugar de cuatro.
                 TextColumn::make('first_name')
-                    ->label('Nombres')
-                    ->searchable()
-                    ->description(fn ($record) => $record->is_demo ? 'Ejemplo' : null)
-                    ->sortable(),
-                TextColumn::make('last_name')
-                    ->label('Apellidos')
-                    ->searchable()
-                    ->sortable(),
+                    ->label('Cliente')
+                    ->formatStateUsing(fn (Client $record): string => trim("{$record->first_name} {$record->last_name}"))
+                    ->searchable(['first_name', 'last_name', 'document_number'])
+                    ->sortable(['first_name', 'last_name'])
+                    ->weight('medium')
+                    ->description(fn (Client $record): string => trim("{$record->document_type} {$record->document_number}").($record->is_demo ? ' · Ejemplo' : '')),
+                // Sin correo no se le pueden enviar avisos: se marca para que el abogado lo complete.
                 TextColumn::make('email')
-                    ->label('Correo')
-                    ->searchable()
-                    ->toggleable(),
-                TextColumn::make('phone')
-                    ->label('Teléfono')
-                    ->searchable()
-                    ->toggleable(),
+                    ->label('Contacto')
+                    ->searchable(['email', 'phone'])
+                    ->description(fn (Client $record): ?string => $record->phone ?: null)
+                    ->placeholder('Sin correo')
+                    ->color(fn (Client $record): ?string => blank($record->email) ? 'warning' : null)
+                    ->icon(fn (Client $record): ?string => blank($record->email) ? 'heroicon-m-exclamation-circle' : null)
+                    ->tooltip(fn (Client $record): ?string => blank($record->email) ? 'Agregue el correo para poder avisarle de sus actuaciones.' : null),
+                TextColumn::make('active_cases_count')
+                    ->label('Casos activos')
+                    ->sortable()
+                    ->alignCenter(),
+                TextColumn::make('process_monitoring_enabled')
+                    ->label('Vigilancia')
+                    ->state(fn (Client $record): ?string => $record->process_monitoring_enabled ? 'Activa' : null)
+                    ->icon(fn (?string $state): ?string => $state ? 'heroicon-m-shield-check' : null)
+                    ->color('success')
+                    ->placeholder('—')
+                    ->tooltip(fn (Client $record): ?string => $record->process_monitoring_enabled
+                        ? ($record->process_monitoring_last_at ? 'Última revisión: '.$record->process_monitoring_last_at->format('d/m/Y H:i') : 'Aún sin revisar')
+                        : 'Cada noche buscamos su documento en la Rama Judicial y le avisamos si aparece en procesos nuevos.'),
                 TextColumn::make('city')
                     ->label('Ciudad')
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
+                // En firmas con un solo abogado la columna siempre diria lo mismo.
                 TextColumn::make('user.name')
                     ->label('Abogado')
                     ->sortable()
-                    ->toggleable(),
-                TextColumn::make('legal_cases_count')
-                    ->label('Casos')
-                    ->counts('legalCases')
-                    ->sortable(),
-                IconColumn::make('process_monitoring_enabled')
-                    ->label('Vigilancia')
-                    ->boolean()
-                    ->tooltip(fn ($record): string => $record->process_monitoring_last_at
-                        ? 'Ultima revision: '.$record->process_monitoring_last_at->format('d/m/Y H:i')
-                        : 'Aun sin revisar')
+                    ->visible(fn (): bool => (auth()->user()?->firm?->users()->count() ?? 0) > 1)
                     ->toggleable(),
             ])
             ->filters([
@@ -74,9 +73,9 @@ class ClientsTable
             ])
             ->recordActions([
                 Action::make('buscar_procesos')
-                    ->label('Buscar Procesos')
+                    ->label('Buscar procesos')
                     ->icon('heroicon-o-magnifying-glass')
-                    ->color('info')
+                    ->color('gray')
                     ->modalWidth('3xl')
                     ->modalHeading(fn ($record) => "Procesos de {$record->first_name} {$record->last_name}")
                     ->modalSubmitAction(false)
@@ -103,7 +102,9 @@ class ClientsTable
                             'totalFound' => count($procesos),
                         ]);
                     }),
-                EditAction::make(),
+                EditAction::make()
+                    ->iconButton()
+                    ->tooltip('Editar'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

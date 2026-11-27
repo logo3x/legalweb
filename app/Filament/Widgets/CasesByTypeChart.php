@@ -13,6 +13,11 @@ class CasesByTypeChart extends ApexChartWidget
 
     protected static ?int $sort = 2;
 
+    /**
+     * Vive en Reportes (solo administradores), no en el Escritorio.
+     */
+    protected static bool $isDiscovered = false;
+
     public static function canView(): bool
     {
         $firmId = auth()->user()?->firm_id;
@@ -32,6 +37,8 @@ class CasesByTypeChart extends ApexChartWidget
             ->withCount(['legalCases' => fn ($q) => $q->where('firm_id', $firmId)])
             ->get()
             ->filter(fn ($t) => ! empty($t->name) && (int) $t->legal_cases_count > 0)
+            ->groupBy(fn ($t) => mb_strtolower(trim($t->name)))
+            ->map(fn ($group) => tap($group->first(), fn ($t) => $t->legal_cases_count = $group->sum('legal_cases_count')))
             ->values();
 
         $series = $types->pluck('legal_cases_count')->map(fn ($v) => (int) $v)->values()->toArray();

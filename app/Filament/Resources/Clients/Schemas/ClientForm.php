@@ -125,6 +125,7 @@ class ClientForm
             TextInput::make('email')
                 ->label('Correo electrónico')
                 ->email()
+                ->helperText('Necesario para avisarle de las actuaciones de su caso y compartirle el portal.')
                 ->maxLength(255),
             TextInput::make('phone')
                 ->label('Teléfono')

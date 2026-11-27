@@ -15,9 +15,9 @@ class ListClients extends ListRecords
     {
         return [
             Action::make('buscar_procesos_tyba')
-                ->label('Buscar Procesos')
+                ->label('Buscar procesos')
                 ->icon('heroicon-o-magnifying-glass')
-                ->color('info')
+                ->color('gray')
                 ->url(route('filament.admin.pages.buscar-procesos-tyba'))
                 ->tooltip('Consultar procesos en la Rama Judicial por nombre, sin necesidad de tener al cliente registrado'),
             CreateAction::make(),

@@ -13,6 +13,11 @@ class CasesByStatusChart extends ApexChartWidget
 
     protected static ?int $sort = 3;
 
+    /**
+     * Vive en Reportes (solo administradores), no en el Escritorio.
+     */
+    protected static bool $isDiscovered = false;
+
     public static function canView(): bool
     {
         $firmId = auth()->user()?->firm_id;

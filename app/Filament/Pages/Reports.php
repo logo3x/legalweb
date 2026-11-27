@@ -2,6 +2,8 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Widgets\CasesByStatusChart;
+use App\Filament\Widgets\CasesByTypeChart;
 use App\Services\GeneratedFileStore;
 use App\Services\ReportService;
 use BackedEnum;
@@ -32,6 +34,19 @@ class Reports extends Page
     public static function canAccess(): bool
     {
         return (bool) auth()->user()?->isAdmin();
+    }
+
+    /**
+     * @return array<class-string>
+     */
+    protected function getHeaderWidgets(): array
+    {
+        return [CasesByTypeChart::class, CasesByStatusChart::class];
+    }
+
+    public function getHeaderWidgetsColumns(): int|array
+    {
+        return ['default' => 1, 'lg' => 2];
     }
 
     public function getReportData(): array
