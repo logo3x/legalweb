@@ -47,57 +47,57 @@ class SubscriptionStatusNotification extends Notification implements ShouldQueue
 
         [$subject, $tone, $eyebrow, $heading, $intro, $lines, $highlight, $actionLabel, $footer] = match ($this->stage) {
             self::STAGE_UPCOMING => [
-                'Su suscripcion se renueva pronto - LegalWeb',
+                'Su suscripción se renueva pronto - LegalWeb',
                 'info',
-                'Renovacion proxima',
-                "Dr(a). {$name}, su suscripcion vence pronto",
+                'Renovación próxima',
+                "Dr(a). {$name}, su suscripción vence pronto",
                 "Su plan <strong>{$plan->name}</strong> vence el <strong>{$ends}</strong> ({$price} COP/mes).",
                 [$autoRenew
-                    ? 'Le cobraremos la renovacion automaticamente a su '.e($card).' el dia anterior al vencimiento; en su extracto aparecera como '.e(WompiRecurringService::statementName()).'. No tiene que hacer nada; si prefiere otro medio de pago, puede quitar la tarjeta en Mi Plan.'
+                    ? 'Le cobraremos la renovación automáticamente a su '.e($card).' el día anterior al vencimiento; en su extracto aparecerá como '.e(WompiRecurringService::statementName()).'. No tiene que hacer nada; si prefiere otro medio de pago, puede quitar la tarjeta en Mi Plan.'
                     : 'Para que su cuenta siga activa sin interrupciones, realice el pago antes de esa fecha.'],
                 null,
                 'Renovar ahora',
                 'Si tiene dudas, responda este correo y le ayudamos.',
             ],
             self::STAGE_OVERDUE => [
-                'Su suscripcion vencio - tiene 3 dias de gracia',
+                'Su suscripción venció - tiene 3 días de gracia',
                 'warning',
                 'Pago pendiente',
-                'Su suscripcion vencio',
-                "Vencio el <strong>{$ends}</strong>. Le dimos 3 dias adicionales para que pueda regularizar el pago sin perder acceso.",
+                'Su suscripción venció',
+                "Venció el <strong>{$ends}</strong>. Le dimos 3 días adicionales para que pueda regularizar el pago sin perder acceso.",
                 [],
                 "Monto a pagar: <strong>{$price} COP</strong>.",
                 'Pagar ahora',
-                'Despues de 3 dias sin pago, su cuenta entrara a modo solo-lectura.',
+                'Después de 3 días sin pago, su cuenta entrará a modo solo lectura.',
             ],
             self::STAGE_GRACE_ENDING => [
-                'Su cuenta entrara a solo-lectura manana - LegalWeb',
+                'Su cuenta entrará a solo lectura mañana - LegalWeb',
                 'danger',
-                'Ultimo aviso',
-                'Manana su cuenta entra a solo-lectura',
-                'Su periodo de gracia termina manana.',
-                ['Si no realiza el pago, manana su cuenta entrara a modo <strong>solo-lectura</strong>: podra ver sus casos pero no crear ni editar nada.'],
+                'Último aviso',
+                'Mañana su cuenta entra a solo lectura',
+                'Su periodo de gracia termina mañana.',
+                ['Si no realiza el pago, mañana su cuenta entrará a modo <strong>solo lectura</strong>: podrá ver sus casos pero no crear ni editar nada.'],
                 null,
-                'Pagar ahora para evitar suspension',
+                'Pagar ahora para evitar suspensión',
                 'Los datos siguen seguros. Puede reactivar pagando en cualquier momento.',
             ],
             self::STAGE_SUSPENDED => [
-                'Cuenta en modo solo-lectura por falta de pago',
+                'Cuenta en modo solo lectura por falta de pago',
                 'danger',
                 'Cuenta limitada',
-                'Su cuenta esta en modo solo-lectura',
-                'La suscripcion no fue renovada, asi que entramos en modo solo-lectura.',
-                ['Puede consultar sus casos pero no crear ni editar nuevos registros. La sincronizacion automatica con la Rama Judicial tambien esta pausada.'],
+                'Su cuenta está en modo solo lectura',
+                'La suscripción no fue renovada, así que entramos en modo solo lectura.',
+                ['Puede consultar sus casos pero no crear ni editar nuevos registros. La sincronización automática con la Rama Judicial también está pausada.'],
                 null,
-                'Reactivar suscripcion',
-                'Sus datos estan completos. En 30 dias sin pago archivaremos la cuenta y le avisaremos antes.',
+                'Reactivar suscripción',
+                'Sus datos están completos. En 30 días sin pago archivaremos la cuenta y le avisaremos antes.',
             ],
             default => [
-                'Aviso sobre su suscripcion - LegalWeb',
+                'Aviso sobre su suscripción - LegalWeb',
                 'info',
                 null,
-                'Aviso sobre su suscripcion',
-                'Hay un cambio en el estado de su suscripcion.',
+                'Aviso sobre su suscripción',
+                'Hay un cambio en el estado de su suscripción.',
                 [],
                 null,
                 'Revisar Mi Plan',
@@ -123,13 +123,13 @@ class SubscriptionStatusNotification extends Notification implements ShouldQueue
     public function toDatabase(object $notifiable): array
     {
         $messages = [
-            self::STAGE_UPCOMING => ['Su suscripcion se renueva pronto', 'info'],
-            self::STAGE_OVERDUE => ['Su suscripcion vencio - 3 dias de gracia', 'warning'],
-            self::STAGE_GRACE_ENDING => ['Su cuenta sera limitada manana', 'danger'],
-            self::STAGE_SUSPENDED => ['Cuenta en solo-lectura por falta de pago', 'danger'],
+            self::STAGE_UPCOMING => ['Su suscripción se renueva pronto', 'info'],
+            self::STAGE_OVERDUE => ['Su suscripción venció - 3 días de gracia', 'warning'],
+            self::STAGE_GRACE_ENDING => ['Su cuenta será limitada mañana', 'danger'],
+            self::STAGE_SUSPENDED => ['Cuenta en solo lectura por falta de pago', 'danger'],
         ];
 
-        [$title, $color] = $messages[$this->stage] ?? ['Aviso de suscripcion', 'info'];
+        [$title, $color] = $messages[$this->stage] ?? ['Aviso de suscripción', 'info'];
 
         return \Filament\Notifications\Notification::make()
             ->title($title)

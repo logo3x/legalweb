@@ -58,11 +58,11 @@ class ReminderDueNotification extends Notification implements ShouldQueue
         $due = $this->reminder->due_date;
         $diffDays = $due ? max(0, (int) $now->diffInDays($due, false)) : null;
         $pill = match (true) {
-            $due && $due->isPast() => 'VENCIDO',
-            $diffDays === 0 => 'VENCE HOY',
-            $diffDays === 1 => 'VENCE MA&Ntilde;ANA',
-            $diffDays !== null && $diffDays <= 7 => 'VENCE EN '.$diffDays.' D&Iacute;AS',
-            default => 'RECORDATORIO PR&Oacute;XIMO',
+            $due && $due->isPast() => 'Vencido',
+            $diffDays === 0 => 'Vence hoy',
+            $diffDays === 1 => 'Vence mañana',
+            $diffDays !== null && $diffDays <= 7 => 'Vence en '.$diffDays.' días',
+            default => 'Recordatorio próximo',
         };
 
         $ctaUrl = $this->reminder->legal_case_id
@@ -76,7 +76,7 @@ class ReminderDueNotification extends Notification implements ShouldQueue
             ->view('emails.vencimiento', [
                 'lawyerName' => 'Dr(a). '.($notifiable->name ?? ''),
                 'pillText' => $pill,
-                'headline' => 'Tienes un recordatorio activo en tu agenda',
+                'headline' => 'Tiene un recordatorio pendiente en su agenda',
                 'title' => $this->reminder->title,
                 'dueAt' => $due?->translatedFormat('d \\d\\e F \\d\\e Y · g:i a'),
                 'priorityLabel' => ucfirst($this->reminder->priority ?? 'media'),

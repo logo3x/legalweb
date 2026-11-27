@@ -67,6 +67,9 @@ class MonthlyReportNotification extends Notification implements ShouldQueue
                 'as' => "Reporte_{$this->case->case_number}_{$this->periodo}.pdf",
                 'mime' => 'application/pdf',
             ])
-            ->with($this->case->user?->firm?->emailBrand() ?? []);
+            // Datos para la plantilla (logo y nombre de la firma); with() los agregaria como lineas del texto.
+            ->when(true, function (MailMessage $mail): void {
+                $mail->viewData = [...($this->case->user?->firm?->emailBrand() ?? []), 'audience' => 'client'];
+            });
     }
 }

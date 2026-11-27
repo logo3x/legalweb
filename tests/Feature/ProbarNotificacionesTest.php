@@ -91,7 +91,6 @@ class ProbarNotificacionesTest extends TestCase
         $user = User::factory()->create(['firm_id' => Firm::factory()->create()->id]);
         $html = (string) (new VerificationReportNotification([], ['total' => 0, 'ok' => 0, 'error' => 0, 'stale' => 0, 'new_events' => 0]))->toMail($user)->render();
 
-        $this->assertStringContainsString('Para que nuestros avisos no terminen en spam, agregue', $html);
-        $this->assertStringContainsString(config('mail.from.address').'</strong> a sus contactos', $html);
+        $this->assertStringContainsString('Para que estos avisos no lleguen a spam, agregue '.config('mail.from.address').' a sus contactos.', $html);
     }
 }

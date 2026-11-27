@@ -159,12 +159,12 @@ class WompiAutoRenewTest extends TestCase
 
         $html = (string) (new SubscriptionStatusNotification($this->current, SubscriptionStatusNotification::STAGE_UPCOMING))->toMail($this->admin)->render();
 
-        $this->assertStringContainsString('cobraremos la renovacion automaticamente', mb_strtolower($html));
+        $this->assertStringContainsString('cobraremos la renovación automáticamente', mb_strtolower($html));
         $this->assertStringContainsString('VISA terminada en 4242', $html);
-        $this->assertStringContainsString('en su extracto aparecera como CITORA', $html);
+        $this->assertStringContainsString('en su extracto aparecerá como CITORA', $html);
 
         config(['services.wompi.statement_name' => 'LEGALWEB']);
         $html = (string) (new SubscriptionStatusNotification($this->current, SubscriptionStatusNotification::STAGE_UPCOMING))->toMail($this->admin)->render();
-        $this->assertStringContainsString('en su extracto aparecera como LEGALWEB', $html);
+        $this->assertStringContainsString('en su extracto aparecerá como LEGALWEB', $html);
     }
 }

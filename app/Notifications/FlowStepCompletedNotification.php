@@ -49,7 +49,10 @@ class FlowStepCompletedNotification extends Notification implements ShouldQueue
 
         return $mail
             ->line("Atentamente, {$firmName}")
-            ->salutation('Este es un mensaje automatico de LegalWeb. No responda a este correo.')
-            ->with($this->case->user?->firm?->emailBrand() ?? []);
+            ->salutation('Mensaje automático enviado por LegalWeb. Por favor no responda a este correo.')
+            // Datos para la plantilla (logo y nombre de la firma); with() los agregaria como lineas del texto.
+            ->when(true, function (MailMessage $mail): void {
+                $mail->viewData = [...($this->case->user?->firm?->emailBrand() ?? []), 'audience' => 'client'];
+            });
     }
 }

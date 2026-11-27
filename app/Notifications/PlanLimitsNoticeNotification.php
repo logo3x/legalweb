@@ -40,17 +40,17 @@ class PlanLimitsNoticeNotification extends Notification implements ShouldQueue
         $isFinal = $this->stage === self::STAGE_FINAL;
 
         return (new MailMessage)
-            ->subject($isFinal ? 'En 3 dias su cuenta pasa al plan Gratuito - LegalWeb' : 'Su prueba de LegalWeb termina pronto')
+            ->subject($isFinal ? 'En 3 días su cuenta pasa al plan Gratuito - LegalWeb' : 'Su prueba de LegalWeb termina pronto')
             ->view('emails.legalweb-mail', [
                 'tone' => $isFinal ? 'warning' : 'info',
-                'eyebrow' => $isFinal ? 'Ultimo aviso' : 'Su prueba gratuita',
-                'heading' => $isFinal ? 'En 3 dias su cuenta pasa al plan Gratuito' : 'Su prueba gratuita termina pronto',
+                'eyebrow' => $isFinal ? 'Último aviso' : 'Su prueba gratuita',
+                'heading' => $isFinal ? 'En 3 días su cuenta pasa al plan Gratuito' : 'Su prueba gratuita termina pronto',
                 'intro' => "A partir del <strong>{$date}</strong> su cuenta pasa al plan <strong>Gratuito</strong>. Sus casos, clientes y documentos se conservan completos.",
                 'lines' => [
-                    'El plan Gratuito incluye hasta <strong>5 casos activos</strong>, 1 usuario, 10 consultas de IA al mes y sincronizacion semanal con la Rama Judicial.',
+                    'El plan Gratuito incluye hasta <strong>5 casos activos</strong>, 1 usuario, 10 consultas de IA al mes y sincronización semanal con la Rama Judicial.',
                     'La vigilancia de clientes queda incluida solo en los planes Profesional y Firma.',
                 ],
-                'highlight' => 'Con el plan Individual ($59.900/mes) sigue con hasta 80 procesos y revision diaria. Con Profesional ($120.000/mes, o $600.000 por 6 meses) tiene casos ilimitados, 3 usuarios y todas las funciones.',
+                'highlight' => 'Con el plan Individual ($59.900/mes) sigue con hasta 80 procesos y revisión diaria. Con Profesional ($120.000/mes, o $600.000 por 6 meses) tiene casos ilimitados, 3 usuarios y todas las funciones.',
                 'actionUrl' => url('/admin/planes'),
                 'actionLabel' => 'Ver planes',
                 'footerNote' => 'Si tiene dudas, responda este correo y le ayudamos.',
@@ -63,7 +63,7 @@ class PlanLimitsNoticeNotification extends Notification implements ShouldQueue
     public function toDatabase(object $notifiable): array
     {
         return FilamentNotification::make()
-            ->title($this->stage === self::STAGE_FINAL ? 'En 3 dias su cuenta pasa al plan Gratuito' : 'Su prueba gratuita termina pronto')
+            ->title($this->stage === self::STAGE_FINAL ? 'En 3 días su cuenta pasa al plan Gratuito' : 'Su prueba gratuita termina pronto')
             ->body('Desde el '.$this->startsAt->format('d/m/Y').' aplican los limites del plan Gratuito (5 casos activos, 1 usuario).')
             ->icon('heroicon-o-credit-card')
             ->iconColor($this->stage === self::STAGE_FINAL ? 'warning' : 'info')

@@ -142,6 +142,18 @@ Tiene documentos anexos en la Rama Judicial (autos, memoriales u oficios): está
 
         $this->assertStringContainsString('Ver el correo', $html);
         $this->assertStringContainsString('srcdoc=', $html);
-        $this->assertStringContainsString('Asunto: <strong style="color: #0F172A;">Actualizacion en su caso', $html);
+        $this->assertStringContainsString('Asunto: <strong style="color: #0F172A;">Actualización en su caso', $html);
+    }
+
+    public function test_client_email_uses_the_firm_footer_without_printing_brand_data_as_text(): void
+    {
+        $firmName = e($this->case->user->firm->name);
+        $html = (string) (new CaseUpdatedNotification($this->case, $this->event))->toMail($this->client)->render();
+
+        $this->assertStringContainsString("Mensaje de {$firmName} enviado a través de", $html);
+        $this->assertSame(1, substr_count($html, "Atentamente, {$firmName}"));
+        $this->assertStringNotContainsString('>client<', str_replace([' ', '
+'], '', $html));
+        $this->assertStringNotContainsString('Ajustar avisos', $html);
     }
 }

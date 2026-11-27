@@ -1,180 +1,51 @@
+{{--
+    Plantilla de los correos armados con MailMessage (line, action, greeting...).
+    Usa el mismo marco que los demas correos: resources/views/components/mail.
+--}}
 @php
-    $appName = config('app.name', 'LegalWeb');
-    $hasFirmBrand = ! empty($firmLogo ?? null);
-    $brandName = $hasFirmBrand ? ($firmName ?: $appName) : $appName;
-    $brandLogoUrl = $hasFirmBrand ? $firmLogo : url('/images/logo-icon-email.png');
-    $brandTagline = $hasFirmBrand
-        ? 'Caso gestionado a traves de LegalWeb'
-        : 'Control inteligente de procesos legales';
-    $year = now()->format('Y');
-    $primaryColor = '#3A86FF';
-    $brandColor = '#1E3A5F';
-    $btnColor = match ($level ?? 'info') {
-        'success' => '#10B981',
-        'error' => '#EF4444',
-        default => '#3A86FF',
+    $tone = match ($level ?? 'info') {
+        'error' => 'danger',
+        'success' => 'success',
+        default => null,
     };
-    $accentColor = match ($level ?? 'info') {
-        'success' => '#10B981',
-        'error' => '#EF4444',
-        default => '#3A86FF',
-    };
+    $firstLine = collect($introLines ?? [])->first();
+    $preheader = is_string($firstLine) ? \Illuminate\Support\Str::limit(strip_tags(str_replace(['**', '__'], '', $firstLine)), 110) : null;
 @endphp
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta name="color-scheme" content="light">
-    <meta name="supported-color-schemes" content="light">
-    <title>{{ $appName }}</title>
-    <style>
-        @media only screen and (max-width: 600px) {
-            .container { width: 100% !important; }
-            .content { padding: 24px 18px !important; }
-            .btn { display: block !important; width: auto !important; }
-            .header-band { padding: 22px 18px !important; }
-        }
-    </style>
-</head>
-<body style="margin:0;padding:0;background:#F5F7FA;font-family:'Inter','Segoe UI',Helvetica,Arial,sans-serif;color:#374151;-webkit-font-smoothing:antialiased;">
+<x-mail.layout
+    :title="$greeting ?? config('app.name')"
+    :preheader="$preheader"
+    :firm-logo="$firmLogo ?? null"
+    :firm-name="$firmName ?? null"
+    :audience="$audience ?? 'account'"
+>
+    <h1 style="margin:0 0 18px;font-size:22px;line-height:1.3;font-weight:700;color:#0F172A;letter-spacing:-0.01em;">
+        {{ filled($greeting ?? null) ? $greeting : (($level ?? '') === 'error' ? 'Atención' : 'Hola') }}
+    </h1>
 
-    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#F5F7FA;padding:32px 12px;">
-        <tr>
-            <td align="center">
+    @foreach($introLines as $line)
+        @if($loop->first && $tone)
+            <x-mail.notice :tone="$tone">{{ \App\Notifications\SafeMailMarkdown::render($line) }}</x-mail.notice>
+        @else
+            <div class="lw-md" style="margin:0 0 14px;">{{ \App\Notifications\SafeMailMarkdown::render($line) }}</div>
+        @endif
+    @endforeach
 
-                <table class="container" width="600" cellpadding="0" cellspacing="0" role="presentation" style="max-width:600px;background:#ffffff;border-radius:14px;overflow:hidden;box-shadow:0 4px 24px rgba(15,23,42,0.06);">
+    @isset($actionText)
+        <x-mail.button :href="$actionUrl">{{ $actionText }}</x-mail.button>
+    @endisset
 
-                    {{-- Header con logo --}}
-                    <tr>
-                        <td class="header-band" align="center" bgcolor="{{ $brandColor }}" style="padding:32px 24px 28px;background-color:{{ $brandColor }};background-image:linear-gradient(135deg,{{ $brandColor }} 0%,#2C4A75 100%);">
-                            <a href="{{ url('/') }}" style="text-decoration:none;display:inline-block;">
-                                @if($hasFirmBrand)
-                                    {{-- Logo de firma: cuadro blanco para asegurar legibilidad si no es transparente --}}
-                                    <img src="{{ $brandLogoUrl }}" alt="{{ $brandName }}" width="180" height="auto" style="display:block;width:180px;max-width:180px;height:auto;border:0;outline:none;border-radius:12px;margin:0 auto 12px;background:#ffffff;padding:10px;box-shadow:0 6px 18px rgba(0,0,0,0.15);">
-                                @else
-                                    {{-- Icono LegalWeb: PNG transparente, va directo sobre el header azul --}}
-                                    <img src="{{ $brandLogoUrl }}" alt="{{ $brandName }}" width="96" height="96" style="display:block;width:96px;height:96px;border:0;outline:none;margin:0 auto 10px;">
-                                @endif
-                                <div style="color:#ffffff;font-size:24px;font-weight:800;letter-spacing:-0.02em;font-family:'Inter','Segoe UI',Helvetica,Arial,sans-serif;">{{ $brandName }}</div>
-                                <div style="color:rgba(255,255,255,0.85);font-size:13px;margin-top:4px;font-weight:500;font-family:'Inter','Segoe UI',Helvetica,Arial,sans-serif;">{{ $brandTagline }}</div>
-                            </a>
-                        </td>
-                    </tr>
+    @foreach($outroLines as $line)
+        <div class="lw-md" style="margin:0 0 14px;">{{ \App\Notifications\SafeMailMarkdown::render($line) }}</div>
+    @endforeach
 
-                    {{-- Indicador de nivel (color band) --}}
-                    @if(($level ?? 'info') !== 'info')
-                        <tr>
-                            <td style="height:4px;background:{{ $accentColor }};font-size:0;line-height:0;">&nbsp;</td>
-                        </tr>
-                    @endif
+    @if(filled($salutation ?? null))
+        <div class="lw-md" style="margin:24px 0 0;font-size:14px;line-height:1.6;color:#475569;">{{ \App\Notifications\SafeMailMarkdown::render($salutation) }}</div>
+    @endif
 
-                    {{-- Cuerpo del mensaje --}}
-                    <tr>
-                        <td class="content" style="padding:36px 40px;">
-
-                            {{-- Saludo --}}
-                            @if(! empty($greeting))
-                                <h1 style="margin:0 0 18px 0;font-size:22px;font-weight:700;color:{{ $brandColor }};line-height:1.3;letter-spacing:-0.01em;">
-                                    {{ $greeting }}
-                                </h1>
-                            @else
-                                <h1 style="margin:0 0 18px 0;font-size:22px;font-weight:700;color:{{ $brandColor }};line-height:1.3;">
-                                    @if(($level ?? '') === 'error')
-                                        Atenci&oacute;n
-                                    @else
-                                        Hola
-                                    @endif
-                                </h1>
-                            @endif
-
-                            {{-- Lineas introductorias --}}
-                            @foreach($introLines as $line)
-                                <p style="margin:0 0 14px 0;font-size:15px;line-height:1.65;color:#374151;">
-                                    {{ \App\Notifications\SafeMailMarkdown::render($line) }}
-                                </p>
-                            @endforeach
-
-                            {{-- Boton de accion --}}
-                            @isset($actionText)
-                                <table cellpadding="0" cellspacing="0" role="presentation" style="margin:24px 0;">
-                                    <tr>
-                                        <td align="center" style="border-radius:10px;background:{{ $btnColor }};box-shadow:0 6px 16px rgba(58,134,255,0.28);">
-                                            <a class="btn" href="{{ $actionUrl }}" target="_blank" style="display:inline-block;padding:14px 32px;color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;border-radius:10px;">
-                                                {{ $actionText }}
-                                            </a>
-                                        </td>
-                                    </tr>
-                                </table>
-                            @endisset
-
-                            {{-- Lineas de cierre --}}
-                            @foreach($outroLines as $line)
-                                <p style="margin:0 0 14px 0;font-size:15px;line-height:1.65;color:#374151;">
-                                    {{ \App\Notifications\SafeMailMarkdown::render($line) }}
-                                </p>
-                            @endforeach
-
-                            {{-- Despedida --}}
-                            <div style="margin-top:28px;padding-top:20px;border-top:1px solid #e5e7eb;">
-                                @if(! empty($salutation))
-                                    <p style="margin:0;font-size:14px;color:#6b7280;line-height:1.6;">
-                                        {{ \App\Notifications\SafeMailMarkdown::render($salutation) }}
-                                    </p>
-                                @else
-                                    <p style="margin:0;font-size:14px;color:#6b7280;line-height:1.6;">
-                                        Atentamente,<br>
-                                        <strong style="color:{{ $brandColor }};">{{ $brandName }}</strong>
-                                    </p>
-                                @endif
-                            </div>
-
-                            {{-- Subcopy / fallback URL --}}
-                            @isset($actionText)
-                                <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-top:24px;background:#F9FAFB;border-radius:8px;">
-                                    <tr>
-                                        <td style="padding:14px 16px;font-size:12px;color:#6b7280;line-height:1.6;">
-                                            <span style="color:#9ca3af;">&iquest;Tiene problemas con el bot&oacute;n?</span> Copie y pegue este enlace en su navegador:<br>
-                                            <a href="{{ $actionUrl }}" style="color:{{ $primaryColor }};word-break:break-all;text-decoration:none;">{{ $displayableActionUrl ?? $actionUrl }}</a>
-                                        </td>
-                                    </tr>
-                                </table>
-                            @endisset
-
-                        </td>
-                    </tr>
-
-                    {{-- Footer --}}
-                    <tr>
-                        <td style="padding:24px 32px;background:#F9FAFB;border-top:1px solid #e5e7eb;text-align:center;">
-                            <p style="margin:0 0 6px 0;font-size:12px;color:#6b7280;line-height:1.6;">
-                                Este mensaje fue enviado autom&aacute;ticamente. Por favor no responda a este correo.
-                            </p>
-                            <p style="margin:0 0 6px 0;font-size:12px;color:#6b7280;line-height:1.6;">
-                                Para que nuestros avisos no terminen en spam, agregue <strong>{{ config('mail.from.address') }}</strong> a sus contactos.
-                            </p>
-                            <p style="margin:0 0 10px 0;font-size:12px;color:#9ca3af;line-height:1.6;">
-                                <a href="{{ url('/portal/terminos') }}" style="color:#6b7280;text-decoration:underline;">T&eacute;rminos y Condiciones</a>
-                                &nbsp;&middot;&nbsp;
-                                <a href="{{ url('/portal/privacidad') }}" style="color:#6b7280;text-decoration:underline;">Pol&iacute;tica de Privacidad</a>
-                            </p>
-                            <p style="margin:0;font-size:11px;color:#9ca3af;">
-                                &copy; {{ $year }} {{ $brandName }}. Todos los derechos reservados.
-                            </p>
-                            @if($hasFirmBrand)
-                                <p style="margin:8px 0 0 0;font-size:10px;color:#cbd5e1;line-height:1.6;">
-                                    Plataforma de gesti&oacute;n por <strong style="color:#94a3b8;">{{ $appName }}</strong>
-                                </p>
-                            @endif
-                        </td>
-                    </tr>
-
-                </table>
-
-            </td>
-        </tr>
-    </table>
-
-</body>
-</html>
+    @isset($actionText)
+        <p style="margin:22px 0 0;font-size:13px;line-height:1.55;color:#475569;">
+            Si el botón no abre, copie este enlace en su navegador:<br>
+            <a href="{{ $actionUrl }}" style="color:#1D4ED8;word-break:break-all;">{{ $displayableActionUrl ?? $actionUrl }}</a>
+        </p>
+    @endisset
+</x-mail.layout>

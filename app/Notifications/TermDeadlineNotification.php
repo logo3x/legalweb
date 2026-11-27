@@ -64,10 +64,10 @@ class TermDeadlineNotification extends Notification implements ShouldQueue
         $stepName = $this->progress->flowStep->name ?? 'Etapa procesal';
 
         $pill = match (true) {
-            $this->daysRemaining < 0 => 'T&Eacute;RMINO VENCIDO',
-            $this->daysRemaining === 0 => 'VENCE HOY',
-            $this->daysRemaining === 1 => 'VENCE MA&Ntilde;ANA',
-            default => 'VENCE EN '.$this->daysRemaining.' D&Iacute;AS H&Aacute;BILES',
+            $this->daysRemaining < 0 => 'Término vencido',
+            $this->daysRemaining === 0 => 'Vence hoy',
+            $this->daysRemaining === 1 => 'Vence mañana',
+            default => 'Vence en '.$this->daysRemaining.' días hábiles',
         };
 
         // Fecha real calculada con el calendario judicial (festivos y vacancia incluidos).
@@ -78,13 +78,13 @@ class TermDeadlineNotification extends Notification implements ShouldQueue
             ->view('emails.vencimiento', [
                 'lawyerName' => 'Dr(a). '.($notifiable->name ?? ''),
                 'pillText' => $pill,
-                'headline' => 'Un t&eacute;rmino procesal del caso est&aacute; pr&oacute;ximo a vencer',
+                'headline' => 'Un término procesal del caso está por vencer',
                 'title' => $stepName,
                 'dueAt' => $dueDate->translatedFormat('d \\d\\e F \\d\\e Y'),
                 'priorityLabel' => $this->daysRemaining <= 1 ? 'Urgente' : 'Alta',
                 'caseNumber' => $this->case->case_number,
                 'despacho' => $this->case->court,
-                'description' => $this->case->title.' · Por favor tome las acciones necesarias para evitar el vencimiento del termino.',
+                'description' => $this->case->title.' · Revise las actuaciones necesarias para que el término no se venza.',
                 'ctaUrl' => url("/admin/legal-cases/{$this->case->id}"),
                 'ctaLabel' => 'Ver caso',
             ]);

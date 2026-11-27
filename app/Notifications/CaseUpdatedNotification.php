@@ -33,9 +33,9 @@ class CaseUpdatedNotification extends Notification implements ShouldQueue
         $firmName = $this->case->user->firm?->name ?? 'Su abogado';
 
         $mail = (new MailMessage)
-            ->subject("Actualizacion en su caso - {$this->case->case_number}")
+            ->subject("Actualización en su caso - {$this->case->case_number}")
             ->greeting("Estimado(a) {$this->case->client->full_name}")
-            ->line("Le informamos que hay una nueva actuacion en su caso **{$this->case->title}**:")
+            ->line("Le informamos que hay una nueva actuación en su caso **{$this->case->title}**:")
             ->line("**{$this->event->title}**")
             ->line('Tipo: '.(self::EVENT_TYPES[$this->event->event_type] ?? ucfirst((string) $this->event->event_type)).' | Fecha: '.$this->eventDate());
 
@@ -53,8 +53,11 @@ class CaseUpdatedNotification extends Notification implements ShouldQueue
 
         return $mail
             ->line("Atentamente, {$firmName}")
-            ->salutation('Este es un mensaje automatico de LegalWeb. No responda a este correo.')
-            ->with($this->case->user?->firm?->emailBrand() ?? []);
+            ->salutation('Mensaje automático enviado por LegalWeb. Por favor no responda a este correo.')
+            // Datos para la plantilla (logo y nombre de la firma); with() los agregaria como lineas del texto.
+            ->when(true, function (MailMessage $mail): void {
+                $mail->viewData = [...($this->case->user?->firm?->emailBrand() ?? []), 'audience' => 'client'];
+            });
     }
 
     /**
