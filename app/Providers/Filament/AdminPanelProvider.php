@@ -107,6 +107,10 @@ class AdminPanelProvider extends PanelProvider
                 fn () => view('filament.tour'),
             )
             ->renderHook(
+                'panels::simple-layout.start',
+                fn () => view('filament.auth-aside'),
+            )
+            ->renderHook(
                 'panels::auth.login.form.after',
                 fn () => view('filament.login-google-button'),
             )

@@ -698,8 +698,8 @@
     {{-- Sticky Navbar --}}
     <nav class="nav-shell" id="main-nav">
         <div class="container row">
-            <a href="/" aria-label="LegalWeb">
-                <img src="/images/logo.svg" alt="LegalWeb" style="height: 38px;">
+            <a href="/" aria-label="LegalWeb" class="lw-anima" style="display: inline-flex; height: 38px; text-decoration: none;">
+                @include('filament.brand.marca')
             </a>
             <div class="links">
                 <a href="#por-que">¿Por qué LegalWeb?</a>

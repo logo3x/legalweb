@@ -51,26 +51,26 @@
     .lw-marca-legal { color: var(--lw-marino); }
     .lw-marca-web { color: var(--lw-azul); }
 
-    /* Pantallas de acceso: marca grande y animada. */
+    /* Pantallas de acceso: marca grande. La animacion corre dentro de .lw-anima (acceso y landing). */
     .fi-simple-header .fi-logo { height: 4.25rem !important; }
     .fi-simple-header .lw-marca { gap: .75rem; }
     .fi-simple-header .lw-marca-nombre { font-size: 2.05rem; }
 
-    .fi-simple-header .lw-marca-tramo { stroke-dasharray: 1; animation: lw-dibuja-tramo .42s cubic-bezier(.65, 0, .35, 1) both; }
-    .fi-simple-header .lw-marca-tramo:nth-child(1) { animation-delay: .2s; }
-    .fi-simple-header .lw-marca-tramo:nth-child(2) { animation-delay: .33s; }
-    .fi-simple-header .lw-marca-tramo:nth-child(3) { animation-delay: .46s; }
-    .fi-simple-header .lw-marca-tramo:nth-child(4) { animation-delay: .59s; }
+    :is(.fi-simple-header, .lw-anima) .lw-marca-tramo { stroke-dasharray: 1; animation: lw-dibuja-tramo .42s cubic-bezier(.65, 0, .35, 1) both; }
+    :is(.fi-simple-header, .lw-anima) .lw-marca-tramo:nth-child(1) { animation-delay: .2s; }
+    :is(.fi-simple-header, .lw-anima) .lw-marca-tramo:nth-child(2) { animation-delay: .33s; }
+    :is(.fi-simple-header, .lw-anima) .lw-marca-tramo:nth-child(3) { animation-delay: .46s; }
+    :is(.fi-simple-header, .lw-anima) .lw-marca-tramo:nth-child(4) { animation-delay: .59s; }
 
-    .fi-simple-header .lw-marca-base { transform-box: fill-box; transform-origin: 50% 50%; animation: lw-ensancha .4s cubic-bezier(.16, 1, .3, 1) .55s both; }
-    .fi-simple-header .lw-marca-poste { transform-box: fill-box; transform-origin: 50% 100%; animation: lw-levanta .45s cubic-bezier(.16, 1, .3, 1) .7s both; }
-    .fi-simple-header .lw-marca-brazo { transform-box: fill-box; transform-origin: 50% 50%; animation: lw-ensancha .45s cubic-bezier(.16, 1, .3, 1) .95s both; }
-    .fi-simple-header .lw-marca-plato { transform-box: view-box; animation: lw-cuelga .5s cubic-bezier(.16, 1, .3, 1) 1.15s both, lw-equilibrio 1.3s cubic-bezier(.37, 0, .63, 1) 1.6s both; }
-    .fi-simple-header .lw-marca-plato-izq { transform-origin: 40px 43px; }
-    .fi-simple-header .lw-marca-plato-der { transform-origin: 80px 43px; animation-name: lw-cuelga, lw-equilibrio-der; }
-    .fi-simple-header .lw-marca-punto { transform-box: fill-box; transform-origin: 50% 50%; animation: lw-cae-punto .45s cubic-bezier(.16, 1, .3, 1) 1.5s both; }
-    .fi-simple-header .lw-marca-pulso { transform-box: fill-box; transform-origin: 50% 50%; animation: lw-late 1.1s cubic-bezier(.16, 1, .3, 1) 2s both; }
-    .fi-simple-header .lw-marca-nombre { animation: lw-aparece .5s cubic-bezier(.16, 1, .3, 1) .4s both; }
+    :is(.fi-simple-header, .lw-anima) .lw-marca-base { transform-box: fill-box; transform-origin: 50% 50%; animation: lw-ensancha .4s cubic-bezier(.16, 1, .3, 1) .55s both; }
+    :is(.fi-simple-header, .lw-anima) .lw-marca-poste { transform-box: fill-box; transform-origin: 50% 100%; animation: lw-levanta .45s cubic-bezier(.16, 1, .3, 1) .7s both; }
+    :is(.fi-simple-header, .lw-anima) .lw-marca-brazo { transform-box: fill-box; transform-origin: 50% 50%; animation: lw-ensancha .45s cubic-bezier(.16, 1, .3, 1) .95s both; }
+    :is(.fi-simple-header, .lw-anima) .lw-marca-plato { transform-box: view-box; animation: lw-cuelga .5s cubic-bezier(.16, 1, .3, 1) 1.15s both, lw-equilibrio 1.3s cubic-bezier(.37, 0, .63, 1) 1.6s both; }
+    :is(.fi-simple-header, .lw-anima) .lw-marca-plato-izq { transform-origin: 40px 43px; }
+    :is(.fi-simple-header, .lw-anima) .lw-marca-plato-der { transform-origin: 80px 43px; animation-name: lw-cuelga, lw-equilibrio-der; }
+    :is(.fi-simple-header, .lw-anima) .lw-marca-punto { transform-box: fill-box; transform-origin: 50% 50%; animation: lw-cae-punto .45s cubic-bezier(.16, 1, .3, 1) 1.5s both; }
+    :is(.fi-simple-header, .lw-anima) .lw-marca-pulso { transform-box: fill-box; transform-origin: 50% 50%; animation: lw-late 1.1s cubic-bezier(.16, 1, .3, 1) 2s both; }
+    :is(.fi-simple-header, .lw-anima) .lw-marca-nombre { animation: lw-aparece .5s cubic-bezier(.16, 1, .3, 1) .4s both; }
 
     @keyframes lw-dibuja-tramo { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
     @keyframes lw-ensancha { from { transform: scaleX(0); } to { transform: scaleX(1); } }
@@ -84,7 +84,7 @@
     @keyframes lw-aparece { from { opacity: 0; transform: translateX(-6px); } to { opacity: 1; transform: translateX(0); } }
 
     @media (prefers-reduced-motion: reduce) {
-        .fi-simple-header .lw-marca *, .fi-simple-header .lw-marca-nombre { animation: none !important; }
+        :is(.fi-simple-header, .lw-anima) .lw-marca * { animation: none !important; }
     }
 </style>
 @endonce
