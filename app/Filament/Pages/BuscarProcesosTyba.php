@@ -15,11 +15,13 @@ use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -539,36 +541,112 @@ class BuscarProcesosTyba extends Page implements HasForms
                 : 'Importar '.count($this->radicadosParaImportar($arguments)).' procesos')
             ->modalDescription(fn (array $arguments): string => $this->descripcionImportacion($arguments))
             ->modalSubmitActionLabel(fn (): string => $this->debeRegistrarPersona() ? 'Registrar e importar' : 'Importar')
-            ->schema(fn (): array => $this->clienteParaImportar() !== null || $this->debeRegistrarPersona() ? [] : [
-                Select::make('client_id')
-                    ->label('Cliente')
-                    ->helperText('Los casos importados quedan a nombre de este cliente.')
-                    ->options(fn (): array => Client::query()
-                        ->orderBy('first_name')
-                        ->get()
-                        ->mapWithKeys(fn (Client $client): array => [$client->id => trim("{$client->first_name} {$client->last_name}").' · '.$client->document_number])
-                        ->all())
-                    ->searchable()
-                    ->required()
-                    ->createOptionForm([
-                        Select::make('document_type')
-                            ->label('Tipo de documento')
-                            ->options(array_combine(self::TIPO_DOCUMENTO_CLIENTE, ['Cédula de Ciudadanía', 'Cédula de Extranjería', 'NIT', 'Pasaporte', 'Tarjeta de Identidad']))
-                            ->default('CC')
-                            ->required(),
-                        TextInput::make('document_number')->label('Número de documento')->required()->maxLength(20),
-                        TextInput::make('first_name')->label('Nombres')->required()->maxLength(100),
-                        TextInput::make('last_name')->label('Apellidos')->required()->maxLength(100),
-                    ])
-                    ->createOptionUsing(fn (array $data): int => (Client::where('document_number', $data['document_number'])->first() ?? Client::create($data + [
-                        'firm_id' => auth()->user()->firm_id,
-                        'user_id' => auth()->id(),
-                        'is_demo' => false,
-                    ]))->id),
-            ])
+            ->schema(fn (): array => $this->clienteParaImportar() !== null || $this->debeRegistrarPersona() ? [] : $this->esquemaClienteDeImportacion())
             ->action(function (array $data, array $arguments): void {
-                $this->importar($this->radicadosParaImportar($arguments), isset($data['client_id']) ? (int) $data['client_id'] : null);
+                $clientId = ($data['destino'] ?? 'existente') === 'nuevo'
+                    ? $this->crearClienteDeImportacion($data)->id
+                    : (isset($data['client_id']) ? (int) $data['client_id'] : null);
+
+                $this->importar($this->radicadosParaImportar($arguments), $clientId);
             });
+    }
+
+    /**
+     * Campos del modal para elegir un cliente registrado o crear uno nuevo ahi mismo
+     * (con el nombre buscado ya escrito).
+     *
+     * @return array<int, mixed>
+     */
+    protected function esquemaClienteDeImportacion(): array
+    {
+        $hayClientes = Client::query()->exists();
+        [$nombres, $apellidos] = $this->nombreBuscadoSeparado();
+        $esNuevo = fn (Get $get): bool => $get('destino') === 'nuevo';
+
+        return [
+            ToggleButtons::make('destino')
+                ->label('¿A nombre de qué cliente?')
+                ->options(['existente' => 'Un cliente registrado', 'nuevo' => 'Un cliente nuevo'])
+                ->icons(['existente' => 'heroicon-o-user', 'nuevo' => 'heroicon-o-user-plus'])
+                ->default($hayClientes ? 'existente' : 'nuevo')
+                ->inline()
+                ->live()
+                ->required(),
+            Select::make('client_id')
+                ->label('Cliente')
+                ->helperText('Los casos importados quedan a nombre de este cliente.')
+                ->options(fn (): array => Client::query()
+                    ->orderBy('first_name')
+                    ->get()
+                    ->mapWithKeys(fn (Client $client): array => [$client->id => trim("{$client->first_name} {$client->last_name}").' · '.$client->document_number])
+                    ->all())
+                ->searchable()
+                ->visible(fn (Get $get): bool => ! $esNuevo($get))
+                ->required(fn (Get $get): bool => ! $esNuevo($get)),
+            Grid::make(2)
+                ->visible($esNuevo)
+                ->schema([
+                    Select::make('document_type')
+                        ->label('Tipo de documento')
+                        ->options(array_combine(self::TIPO_DOCUMENTO_CLIENTE, ['Cédula de Ciudadanía', 'Cédula de Extranjería', 'NIT', 'Pasaporte', 'Tarjeta de Identidad']))
+                        ->default('CC')
+                        ->required($esNuevo),
+                    TextInput::make('document_number')
+                        ->label('Número de documento')
+                        ->helperText('Si ya existe un cliente con este documento, se usa ese.')
+                        ->required($esNuevo)
+                        ->maxLength(20),
+                    TextInput::make('first_name')->label('Nombres')->default($nombres)->required($esNuevo)->maxLength(100),
+                    TextInput::make('last_name')->label('Apellidos')->default($apellidos)->required($esNuevo)->maxLength(100),
+                    TextInput::make('email')
+                        ->label('Correo (opcional)')
+                        ->helperText('Para avisarle de las novedades de sus procesos.')
+                        ->email()
+                        ->maxLength(150)
+                        ->columnSpanFull(),
+                ]),
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    protected function crearClienteDeImportacion(array $data): Client
+    {
+        $numero = trim((string) $data['document_number']);
+
+        return Client::where('document_number', $numero)->first() ?? Client::create([
+            'firm_id' => auth()->user()->firm_id,
+            'user_id' => auth()->id(),
+            'document_type' => in_array($data['document_type'] ?? null, self::TIPO_DOCUMENTO_CLIENTE, true) ? $data['document_type'] : 'CC',
+            'document_number' => $numero,
+            'first_name' => trim((string) $data['first_name']),
+            'last_name' => trim((string) $data['last_name']),
+            'email' => filled($data['email'] ?? null) ? trim((string) $data['email']) : null,
+            'is_demo' => false,
+        ]);
+    }
+
+    /**
+     * Separa el nombre buscado en nombres y apellidos (en Colombia, los dos ultimos son los apellidos).
+     *
+     * @return array{0: string, 1: string}
+     */
+    protected function nombreBuscadoSeparado(): array
+    {
+        if ($this->searchedMode !== 'nombre' || blank($this->searchedTerm)) {
+            return ['', ''];
+        }
+
+        $palabras = preg_split('/\s+/', mb_convert_case(mb_strtolower(trim($this->searchedTerm)), MB_CASE_TITLE, 'UTF-8')) ?: [];
+        $cantidadNombres = match (true) {
+            count($palabras) >= 4 => count($palabras) - 2,
+            count($palabras) === 3 => 1,
+            count($palabras) === 2 => 1,
+            default => count($palabras),
+        };
+
+        return [implode(' ', array_slice($palabras, 0, $cantidadNombres)), implode(' ', array_slice($palabras, $cantidadNombres))];
     }
 
     /**

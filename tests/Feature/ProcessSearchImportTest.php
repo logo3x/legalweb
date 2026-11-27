@@ -135,13 +135,49 @@ class ProcessSearchImportTest extends TestCase
 
     public function test_client_is_required_when_the_search_was_not_by_a_client_document(): void
     {
+        Client::factory()->create(['firm_id' => $this->firm->id, 'user_id' => $this->admin->id]);
+
         Livewire::test(BuscarProcesosTyba::class)
             ->fillForm(['termino' => 'Luisa Fernanda Rojas Diaz', 'fuente' => 'rama'])
             ->call('buscar')
-            ->callAction('importar', data: ['client_id' => null], arguments: ['modo' => 'uno', 'radicado' => self::PRIMERO])
+            ->callAction('importar', data: ['destino' => 'existente', 'client_id' => null], arguments: ['modo' => 'uno', 'radicado' => self::PRIMERO])
             ->assertHasActionErrors(['client_id' => 'required']);
 
         $this->assertSame(0, LegalCase::count());
+    }
+
+    public function test_a_new_client_can_be_created_from_the_import_modal_with_the_searched_name(): void
+    {
+        Livewire::test(BuscarProcesosTyba::class)
+            ->fillForm(['termino' => 'LUISA FERNANDA ROJAS DIAZ', 'fuente' => 'rama'])
+            ->call('buscar')
+            ->mountAction('importar', ['modo' => 'uno', 'radicado' => self::PRIMERO])
+            ->assertActionDataSet(['destino' => 'nuevo', 'first_name' => 'Luisa Fernanda', 'last_name' => 'Rojas Diaz'])
+            ->setActionData(['document_number' => '1098631735', 'email' => 'luisa@example.com'])
+            ->callMountedAction()
+            ->assertHasNoActionErrors()
+            ->assertNotified('Caso importado a nombre de Luisa Fernanda Rojas Diaz');
+
+        $client = Client::where('document_number', '1098631735')->sole();
+        $this->assertSame(['CC', 'luisa@example.com', $this->firm->id], [$client->document_type, $client->email, $client->firm_id]);
+        $this->assertSame($client->id, LegalCase::where('external_case_number', self::PRIMERO)->sole()->client_id);
+    }
+
+    public function test_new_client_document_is_required_and_reuses_an_existing_client(): void
+    {
+        $existing = Client::factory()->create(['firm_id' => $this->firm->id, 'user_id' => $this->admin->id, 'document_number' => '555']);
+
+        Livewire::test(BuscarProcesosTyba::class)
+            ->fillForm(['termino' => 'Luisa Fernanda Rojas Diaz', 'fuente' => 'rama'])
+            ->call('buscar')
+            ->callAction('importar', data: ['destino' => 'nuevo', 'document_number' => ''], arguments: ['modo' => 'uno', 'radicado' => self::PRIMERO])
+            ->assertHasActionErrors(['document_number' => 'required'])
+            ->setActionData(['document_number' => '555'])
+            ->callMountedAction()
+            ->assertHasNoActionErrors();
+
+        $this->assertSame(1, Client::count());
+        $this->assertSame($existing->id, LegalCase::where('external_case_number', self::PRIMERO)->sole()->client_id);
     }
 
     public function test_already_imported_processes_have_no_import_button(): void
