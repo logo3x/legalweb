@@ -290,6 +290,8 @@ class TybaService
                     'document' => '***'.substr($cleanDoc, -4),
                     'error' => str_replace($cleanDoc, '***'.substr($cleanDoc, -4), $e->getMessage()),
                 ]);
+                // Sin respuesta util de la Rama: se busca por el nombre del cliente en vez de mostrar "0 procesos".
+                $this->documentSearchUnavailable = $this->documentSearchUnavailable || $page === 1;
                 break;
             }
 
@@ -310,7 +312,8 @@ class TybaService
                 break;
             }
 
-            if (! $response->successful()) {
+            if (! $response->successful() || ! is_array($response->json('procesos'))) {
+                $this->documentSearchUnavailable = $this->documentSearchUnavailable || $page === 1;
                 break;
             }
 

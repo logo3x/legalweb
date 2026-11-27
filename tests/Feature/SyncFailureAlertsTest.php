@@ -238,4 +238,24 @@ class SyncFailureAlertsTest extends TestCase
         Livewire::test(BuscarProcesosTyba::class)
             ->assertSeeHtml('data-lw-loading style="display: none;"');
     }
+
+    public function test_client_search_falls_back_to_the_name_when_the_document_query_fails(): void
+    {
+        Http::fake(function (Request $request) {
+            if (str_contains($request->url(), 'DocumentoIdentificacion')) {
+                throw new ConnectionException('cURL error 28: Operation timed out');
+            }
+
+            return Http::response(['procesos' => [
+                ['llaveProceso' => self::RADICADO, 'sujetosProcesales' => 'Demandante: ANGIE VANESSA SOTO ARANGO'],
+                ['llaveProceso' => '11001400300120260099900', 'sujetosProcesales' => 'Demandante: OTRA PERSONA'],
+            ], 'paginacion' => ['cantidadPaginas' => 1]]);
+        });
+        $tyba = app(TybaService::class);
+
+        $procesos = $tyba->searchClientProcesses('1098765432', 1, 'Angie Vanessa Soto Arango');
+
+        $this->assertTrue($tyba->documentSearchUnavailable());
+        $this->assertSame([self::RADICADO], array_column($procesos, 'radicado'));
+    }
 }
