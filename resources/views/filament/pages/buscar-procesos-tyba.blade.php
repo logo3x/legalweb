@@ -30,10 +30,11 @@
         </div>
     </form>
 
-    <div wire:loading.delay.block wire:target="buscar" aria-live="polite" data-lw-loading>
+    {{-- Oculto de entrada: Livewire oculta por sí mismo solo los indicadores con un modificador, no ".delay.block". --}}
+    <div wire:loading.delay.block wire:target="buscar" aria-live="polite" data-lw-loading style="display: none;">
         <div style="display: flex; align-items: center; gap: 10px; background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 10px; padding: 14px 18px; margin-bottom: 14px; font-size: 14px; color: #1E40AF;">
             <span class="lw-spinner"></span>
-            <span>Consultando las fuentes judiciales&hellip; puede tardar hasta 20 segundos.</span>
+            <span>Consultando las fuentes judiciales&hellip; la Rama Judicial puede tardar hasta un minuto.</span>
         </div>
         @foreach([72, 58, 66] as $width)
             <div class="lw-skeleton">

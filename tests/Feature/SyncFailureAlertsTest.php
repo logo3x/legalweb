@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Console\Commands\SyncTybaActuaciones;
+use App\Filament\Pages\BuscarProcesosTyba;
 use App\Jobs\SyncCaseActuaciones;
 use App\Models\Firm;
 use App\Models\LegalCase;
@@ -11,12 +12,15 @@ use App\Notifications\SyncFailuresNotification;
 use App\Notifications\SystemNewsNotification;
 use App\Services\CaseSyncService;
 use App\Services\TybaService;
+use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
+use Livewire\Livewire;
 use Mockery\MockInterface;
 use Tests\TestCase;
 
@@ -204,5 +208,34 @@ class SyncFailureAlertsTest extends TestCase
             Http::assertSent(fn (Request $request): bool => str_contains($request->url(), "/Procesos/Consulta/{$endpoint}")
                 && ($request->data()['SoloActivos'] ?? null) === 'false');
         }
+    }
+
+    public function test_name_search_keeps_the_first_page_when_a_later_page_fails(): void
+    {
+        Http::fake(function (Request $request) {
+            if (($request->data()['pagina'] ?? 1) > 1) {
+                throw new ConnectionException('cURL error 28: Operation timed out');
+            }
+
+            return Http::response([
+                'procesos' => [['llaveProceso' => self::RADICADO, 'despacho' => 'JUZGADO 1 CIVIL', 'sujetosProcesales' => 'Demandante: ANGIE SOTO']],
+                'paginacion' => ['cantidadPaginas' => 3],
+            ]);
+        });
+
+        $procesos = app(TybaService::class)->searchByName('ANGIE SOTO');
+
+        $this->assertSame([self::RADICADO], array_column($procesos, 'radicado'));
+    }
+
+    public function test_search_page_loading_indicator_starts_hidden(): void
+    {
+        $user = User::factory()->create(['firm_id' => Firm::factory()->create()->id, 'role' => 'admin']);
+        Filament::setCurrentPanel('admin');
+        $this->actingAs($user);
+
+        // Livewire no oculta por si mismo "wire:loading.delay.block": sin display:none se queda visible tras la busqueda.
+        Livewire::test(BuscarProcesosTyba::class)
+            ->assertSeeHtml('data-lw-loading style="display: none;"');
     }
 }

@@ -200,14 +200,25 @@ class TybaService
         $allProcesos = [];
         $page = 1;
         $maxPages = 3;
+        $startedAt = microtime(true);
 
         do {
-            $response = Http::timeout(15)
-                ->get("{$this->apiBase}/Procesos/Consulta/NombreRazonSocial", [
-                    'nombre' => $name,
-                    'SoloActivos' => 'false',
-                    'pagina' => $page,
-                ]);
+            // Con SoloActivos=false la Rama tarda 15-20 s en responder por nombre.
+            try {
+                $response = Http::timeout(45)
+                    ->get("{$this->apiBase}/Procesos/Consulta/NombreRazonSocial", [
+                        'nombre' => $name,
+                        'SoloActivos' => 'false',
+                        'pagina' => $page,
+                    ]);
+            } catch (\Throwable $e) {
+                // Si falla una pagina adicional se conservan las que ya llegaron.
+                if ($page === 1) {
+                    throw $e;
+                }
+
+                break;
+            }
 
             if (! $response->successful()) {
                 break;
@@ -239,7 +250,8 @@ class TybaService
 
             $totalPages = $data['paginacion']['cantidadPaginas'] ?? 1;
             $page++;
-        } while ($page <= $totalPages && $page <= $maxPages);
+            // Sin pedir mas paginas tras casi un minuto: la pagina web tiene un limite de tiempo.
+        } while ($page <= $totalPages && $page <= $maxPages && microtime(true) - $startedAt < 50);
 
         return array_values($allProcesos);
     }
