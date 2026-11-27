@@ -161,4 +161,13 @@ class CollaboratorCasePermissionsTest extends TestCase
             ->assertActionVisible('compartir')
             ->assertActionVisible('edit');
     }
+
+    public function test_ai_progress_panel_starts_hidden_and_follows_the_modal_submit(): void
+    {
+        $html = view('filament.partials.ai-progress', ['pasos' => ['Uno', 'La IA está redactando el borrador…', 'Tres']])->render();
+
+        $this->assertStringContainsString('wire:target="callMountedAction"', $html);
+        $this->assertStringContainsString('style="display: none;"', $html);
+        $this->assertStringContainsString('La IA está redactando el borrador…', $html);
+    }
 }

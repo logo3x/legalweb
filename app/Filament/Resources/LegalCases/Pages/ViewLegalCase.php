@@ -29,6 +29,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Components\View;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
@@ -111,7 +112,14 @@ class ViewLegalCase extends ViewRecord
                             ->default(fn (): ?string => session('ai_model'))
                             ->placeholder('Automatico (el primero disponible)')
                             ->helperText($this->aiDataNotice()),
+                        View::make('filament.partials.ai-progress')
+                            ->viewData(['pasos' => [
+                                'Preparando los datos del caso y ocultando los datos personales…',
+                                'La IA está redactando el borrador…',
+                                'Armando el documento Word…',
+                            ]]),
                     ])
+                    ->modalSubmitActionLabel('Generar borrador')
                     ->action(function (array $data) {
                         if (! $this->aiAllowed()) {
                             return;
