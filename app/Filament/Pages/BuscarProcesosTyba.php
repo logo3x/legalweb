@@ -3,8 +3,11 @@
 namespace App\Filament\Pages;
 
 use App\Filament\Resources\Clients\ClientResource;
+use App\Filament\Resources\LegalCases\LegalCaseResource;
 use App\Models\Client;
+use App\Models\ImportLog;
 use App\Models\LegalCase;
+use App\Services\CaseImporter;
 use App\Services\SamaiService;
 use App\Services\TybaService;
 use App\Services\UsageLimiter;
@@ -86,6 +89,23 @@ class BuscarProcesosTyba extends Page implements HasForms
     public string $apellidosPersona = '';
 
     public bool $buscoPorPersona = false;
+
+    /**
+     * Cliente registrado cuyo documento se busco: los casos importados quedan a su nombre.
+     */
+    public ?int $clienteBuscadoId = null;
+
+    /**
+     * Radicados marcados para importar en lote.
+     *
+     * @var list<string>
+     */
+    public array $seleccionados = [];
+
+    /**
+     * Maximo de procesos por lote: cada uno consulta la Rama y la pagina tiene un limite de tiempo.
+     */
+    public const MAX_IMPORTAR_POR_LOTE = 15;
 
     /**
      * Tipos de documento de la busqueda (1-5) con su codigo en Clientes.
@@ -311,6 +331,8 @@ class BuscarProcesosTyba extends Page implements HasForms
         $this->procesos = [];
         $this->documentoSinCliente = null;
         $this->buscoPorPersona = false;
+        $this->clienteBuscadoId = null;
+        $this->seleccionados = [];
 
         if ($term === '') {
             return;
@@ -424,6 +446,7 @@ class BuscarProcesosTyba extends Page implements HasForms
         $this->searchedSource = 'rama';
         $this->hasSearched = true;
         $this->buscoPorPersona = true;
+        $this->seleccionados = [];
 
         try {
             $this->procesos = collect(app(TybaService::class)->searchByPartyName($nombre))
@@ -447,8 +470,28 @@ class BuscarProcesosTyba extends Page implements HasForms
      */
     public function guardarComoCliente(): void
     {
-        if ($this->documentoSinCliente === null || ! $this->buscoPorPersona) {
+        $cliente = $this->registrarPersonaComoCliente();
+
+        if ($cliente === null) {
             return;
+        }
+
+        Notification::make()
+            ->title('Cliente guardado')
+            ->body("{$cliente->first_name} {$cliente->last_name} ya está en Clientes. La próxima vez puede buscarlo por su documento.")
+            ->success()
+            ->actions([
+                Action::make('completar')
+                    ->label('Completar sus datos')
+                    ->url(ClientResource::getUrl('edit', ['record' => $cliente])),
+            ])
+            ->send();
+    }
+
+    protected function registrarPersonaComoCliente(): ?Client
+    {
+        if ($this->documentoSinCliente === null || ! $this->buscoPorPersona) {
+            return null;
         }
 
         $numero = $this->documentoSinCliente['numero'];
@@ -463,16 +506,247 @@ class BuscarProcesosTyba extends Page implements HasForms
         ]);
 
         $this->documentoSinCliente = null;
+        $this->clienteBuscadoId = $cliente->id;
+
+        return $cliente;
+    }
+
+    /**
+     * Importa uno, los marcados o todos los procesos nuevos de la busqueda. Si se busco por el
+     * documento de un cliente, quedan a su nombre; si la persona no es cliente, se registra al
+     * importar; en otro caso el abogado elige (o crea) el cliente en el modal.
+     */
+    public function importarAction(): Action
+    {
+        return Action::make('importar')
+            ->label(fn (array $arguments): string => match ($arguments['modo'] ?? 'uno') {
+                'todos' => 'Importar todos los nuevos ('.count($this->radicadosNuevos()).')',
+                'seleccionados' => 'Importar seleccionados ('.count($this->radicadosParaImportar(['modo' => 'seleccionados'])).')',
+                default => $this->debeRegistrarPersona() ? 'Registrar cliente e importar' : 'Importar caso',
+            })
+            ->icon('heroicon-o-arrow-down-tray')
+            ->size('sm')
+            // Un solo color fuerte por pantalla: con varios resultados, el azul queda para el lote.
+            ->color(fn (array $arguments): string => match ($arguments['modo'] ?? 'uno') {
+                'seleccionados' => 'primary',
+                'todos' => 'gray',
+                default => count($this->radicadosNuevos()) > 1 ? 'gray' : 'primary',
+            })
+            ->visible(fn (): bool => LegalCaseResource::canCreate())
+            ->disabled(fn (array $arguments): bool => $this->radicadosParaImportar($arguments) === [])
+            ->modalHeading(fn (array $arguments): string => count($this->radicadosParaImportar($arguments)) === 1
+                ? 'Importar el proceso '.($this->radicadosParaImportar($arguments)[0] ?? '')
+                : 'Importar '.count($this->radicadosParaImportar($arguments)).' procesos')
+            ->modalDescription(fn (array $arguments): string => $this->descripcionImportacion($arguments))
+            ->modalSubmitActionLabel(fn (): string => $this->debeRegistrarPersona() ? 'Registrar e importar' : 'Importar')
+            ->schema(fn (): array => $this->clienteParaImportar() !== null || $this->debeRegistrarPersona() ? [] : [
+                Select::make('client_id')
+                    ->label('Cliente')
+                    ->helperText('Los casos importados quedan a nombre de este cliente.')
+                    ->options(fn (): array => Client::query()
+                        ->orderBy('first_name')
+                        ->get()
+                        ->mapWithKeys(fn (Client $client): array => [$client->id => trim("{$client->first_name} {$client->last_name}").' · '.$client->document_number])
+                        ->all())
+                    ->searchable()
+                    ->required()
+                    ->createOptionForm([
+                        Select::make('document_type')
+                            ->label('Tipo de documento')
+                            ->options(array_combine(self::TIPO_DOCUMENTO_CLIENTE, ['Cédula de Ciudadanía', 'Cédula de Extranjería', 'NIT', 'Pasaporte', 'Tarjeta de Identidad']))
+                            ->default('CC')
+                            ->required(),
+                        TextInput::make('document_number')->label('Número de documento')->required()->maxLength(20),
+                        TextInput::make('first_name')->label('Nombres')->required()->maxLength(100),
+                        TextInput::make('last_name')->label('Apellidos')->required()->maxLength(100),
+                    ])
+                    ->createOptionUsing(fn (array $data): int => (Client::where('document_number', $data['document_number'])->first() ?? Client::create($data + [
+                        'firm_id' => auth()->user()->firm_id,
+                        'user_id' => auth()->id(),
+                        'is_demo' => false,
+                    ]))->id),
+            ])
+            ->action(function (array $data, array $arguments): void {
+                $this->importar($this->radicadosParaImportar($arguments), isset($data['client_id']) ? (int) $data['client_id'] : null);
+            });
+    }
+
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return list<string>
+     */
+    protected function radicadosParaImportar(array $arguments): array
+    {
+        $nuevos = $this->radicadosNuevos();
+
+        return match ($arguments['modo'] ?? 'uno') {
+            'todos' => $nuevos,
+            'seleccionados' => array_values(array_intersect($nuevos, array_map('strval', $this->seleccionados))),
+            default => in_array((string) ($arguments['radicado'] ?? ''), $nuevos, true) ? [(string) $arguments['radicado']] : [],
+        };
+    }
+
+    /**
+     * Radicados de la busqueda que la firma todavia no tiene como caso.
+     *
+     * @return list<string>
+     */
+    protected function radicadosNuevos(): array
+    {
+        return collect($this->procesos)
+            ->pluck('radicado')
+            ->map(fn ($radicado): string => (string) $radicado)
+            ->reject(fn (string $radicado): bool => in_array($radicado, $this->existingRadicados, true))
+            ->values()
+            ->all();
+    }
+
+    protected function debeRegistrarPersona(): bool
+    {
+        return $this->documentoSinCliente !== null && $this->buscoPorPersona;
+    }
+
+    protected function clienteParaImportar(): ?Client
+    {
+        return $this->clienteBuscadoId ? Client::find($this->clienteBuscadoId) : null;
+    }
+
+    /**
+     * @param  array<string, mixed>  $arguments
+     */
+    protected function descripcionImportacion(array $arguments): string
+    {
+        $cantidad = count($this->radicadosParaImportar($arguments));
+        $cliente = $this->clienteParaImportar();
+
+        $para = match (true) {
+            $this->debeRegistrarPersona() => 'Registraremos a '.$this->nombreCompletoPersona()." (documento {$this->documentoSinCliente['numero']}) como cliente y ",
+            $cliente !== null => 'Quedarán a nombre de '.trim("{$cliente->first_name} {$cliente->last_name}").'. ',
+            default => '',
+        };
+
+        $lote = $cantidad > self::MAX_IMPORTAR_POR_LOTE
+            ? ' Se importan '.self::MAX_IMPORTAR_POR_LOTE.' por vez: al terminar, vuelva a pulsar para seguir con el resto.'
+            : '';
+
+        $accion = $this->debeRegistrarPersona() ? 'traeremos' : 'Traemos';
+
+        return "{$para}{$accion} de la Rama Judicial (o SAMAI) los datos, las partes y las actuaciones de cada proceso. Después LegalWeb consulta las actuaciones nuevas cada noche.{$lote}";
+    }
+
+    /**
+     * @param  list<string>  $radicados
+     */
+    protected function importar(array $radicados, ?int $clientId): void
+    {
+        if ($radicados === []) {
+            return;
+        }
+
+        $cliente = $this->debeRegistrarPersona()
+            ? $this->registrarPersonaComoCliente()
+            : ($this->clienteParaImportar() ?? ($clientId ? Client::find($clientId) : null));
+
+        if ($cliente === null) {
+            Notification::make()->title('Elija el cliente de los casos')->warning()->send();
+
+            return;
+        }
+
+        $importer = new CaseImporter(auth()->user());
+
+        if (($limite = $importer->caseLimitMessage()) !== null) {
+            Notification::make()->title('Alcanzó el límite de casos activos')->body($limite)->warning()->persistent()->send();
+
+            return;
+        }
+
+        if (! UsageLimiter::attempt('judicial')) {
+            return;
+        }
+
+        if (function_exists('set_time_limit')) {
+            @set_time_limit(300);
+        }
+
+        $limits = auth()->user()->firm?->planLimits();
+        $cupo = $limits?->maxActiveCases() === null ? PHP_INT_MAX : max(0, $limits->maxActiveCases() - $limits->activeCasesCount());
+        $porImportar = array_slice($radicados, 0, min(self::MAX_IMPORTAR_POR_LOTE, $cupo));
+        $inicio = microtime(true);
+        $resultados = [];
+
+        foreach ($porImportar as $radicado) {
+            // Margen para no pasar el limite de tiempo del servidor: lo que falte se importa en otra pasada.
+            if (microtime(true) - $inicio > 90) {
+                break;
+            }
+
+            $resultado = $importer->import($radicado, $cliente->id, auth()->id());
+
+            $resultados[] = [
+                'radicado' => $radicado,
+                'status' => match (true) {
+                    $resultado['error'] !== null && str_contains($resultado['error'], 'ya existe') => 'duplicado',
+                    $resultado['error'] !== null => 'error',
+                    ! $resultado['imported'] => 'no_encontrado',
+                    default => 'ok',
+                },
+                'msg' => $resultado['error'] ?? $resultado['message'] ?? 'No se encontró en la Rama Judicial ni en SAMAI.',
+                'case_number' => $resultado['case']?->case_number,
+                'case_id' => $resultado['case']?->id,
+            ];
+        }
+
+        $this->loadExistingRadicados();
+        $this->seleccionados = array_values(array_diff(array_map('strval', $this->seleccionados), $this->existingRadicados));
+
+        $resumen = collect($resultados)->countBy('status');
+        $importados = $resumen->get('ok', 0);
+        $pendientes = count($radicados) - count($resultados);
+
+        if (count($resultados) > 1) {
+            ImportLog::create([
+                'firm_id' => auth()->user()->firm_id,
+                'user_id' => auth()->id(),
+                'total_radicados' => count($resultados),
+                'importados' => $importados,
+                'duplicados' => $resumen->get('duplicado', 0),
+                'no_encontrados' => $resumen->get('no_encontrado', 0),
+                'errores' => $resumen->get('error', 0),
+                'detalle' => $resultados,
+            ]);
+        }
+
+        $detalle = array_filter([
+            $resumen->get('duplicado') ? $resumen->get('duplicado').' ya estaban importados' : null,
+            $resumen->get('no_encontrado') ? $resumen->get('no_encontrado').' no se encontraron en la Rama ni en SAMAI' : null,
+            $resumen->get('error') ? $resumen->get('error').' con error' : null,
+            $pendientes > 0 ? "{$pendientes} quedan por importar: pulse de nuevo para seguir" : null,
+        ]);
+
+        $primerCaso = collect($resultados)->firstWhere('status', 'ok');
 
         Notification::make()
-            ->title('Cliente guardado')
-            ->body("{$cliente->first_name} {$cliente->last_name} ya está en Clientes. La próxima vez puede buscarlo por su documento.")
-            ->success()
-            ->actions([
-                Action::make('completar')
-                    ->label('Completar sus datos')
-                    ->url(ClientResource::getUrl('edit', ['record' => $cliente])),
-            ])
+            ->title(match (true) {
+                $importados === 0 => 'No se importó ningún caso',
+                $importados === 1 => 'Caso importado a nombre de '.trim("{$cliente->first_name} {$cliente->last_name}"),
+                default => "{$importados} casos importados a nombre de ".trim("{$cliente->first_name} {$cliente->last_name}"),
+            })
+            ->body(implode('. ', array_merge(
+                $importados > 0 ? ['Con sus actuaciones; las nuevas se consultan cada noche'] : [],
+                $detalle,
+            )).'.')
+            ->color($importados > 0 ? 'success' : 'warning')
+            ->actions($importados === 1 && $primerCaso ? [
+                Action::make('ver_caso')
+                    ->label('Ver caso')
+                    ->url(LegalCaseResource::getUrl('view', ['record' => $primerCaso['case_id']])),
+            ] : ($importados > 1 ? [
+                Action::make('ver_casos')
+                    ->label('Ver casos')
+                    ->url(LegalCaseResource::getUrl('index')),
+            ] : []))
+            ->persistent()
             ->send();
     }
 
@@ -545,6 +819,8 @@ class BuscarProcesosTyba extends Page implements HasForms
         $nombre = $cliente ? trim("{$cliente->first_name} {$cliente->last_name}") : '';
 
         $procesos = $service->searchClientProcesses($documento, $tipoDocumento, $nombre);
+
+        $this->clienteBuscadoId = $cliente?->id;
 
         if (! $service->documentSearchUnavailable()) {
             return $procesos;

@@ -146,6 +146,16 @@
                 </p>
             </div>
         @else
+            @if($totalNuevos > 1 && \App\Filament\Resources\LegalCases\LegalCaseResource::canCreate())
+                <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; margin-bottom: 12px; font-size: 13.5px; color: #475569;">
+                    <span>Marque los procesos que quiere importar, o impórtelos todos. Los que ya tiene no se repiten.</span>
+                    <span style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        {{ ($this->importarAction)(['modo' => 'seleccionados']) }}
+                        {{ ($this->importarAction)(['modo' => 'todos']) }}
+                    </span>
+                </div>
+            @endif
+
             <div>
                 @foreach($procesos as $p)
                     @php $yaImportado = in_array($p['radicado'], $existingRadicados); @endphp
@@ -155,7 +165,12 @@
                         <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap;">
                             <div style="flex: 1; min-width: 0;">
                                 <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap;">
-                                    <span style="font-size: 13.5px; font-weight: 600; color: #0F172A; font-family: 'JetBrains Mono', monospace; letter-spacing: -.01em;">{{ $p['radicado'] }}</span>
+                                    @if(! $yaImportado && $totalNuevos > 1 && \App\Filament\Resources\LegalCases\LegalCaseResource::canCreate())
+                                        <input type="checkbox" id="lw-sel-{{ $p['radicado'] }}" wire:model.live="seleccionados" value="{{ $p['radicado'] }}"
+                                               aria-label="Seleccionar el proceso {{ $p['radicado'] }} para importar"
+                                               style="width: 18px; height: 18px; accent-color: #2563EB; cursor: pointer; margin: 0;">
+                                    @endif
+                                    <label for="lw-sel-{{ $p['radicado'] }}" style="font-size: 13.5px; font-weight: 600; color: #0F172A; font-family: 'JetBrains Mono', monospace; letter-spacing: -.01em; cursor: {{ $yaImportado ? 'default' : 'pointer' }};">{{ $p['radicado'] }}</label>
                                     @if(($p['fuente'] ?? '') === 'samai')
                                         <span style="display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; background: #EDE9FE; color: #5B21B6;">SAMAI</span>
                                     @elseif(($p['fuente'] ?? '') === 'rama' && $searchedSource === 'todas')
@@ -188,6 +203,7 @@
                                     <a href="{{ $p['url'] }}" target="_blank" rel="noopener" style="font-size: 12px; font-weight: 600; color: #3A86FF; text-decoration: underline;">Ver en SAMAI</a>
                                 @endif
                                 @if(! $yaImportado)
+                                    {{ ($this->importarAction)(['modo' => 'uno', 'radicado' => $p['radicado']]) }}
                                     <button
                                         type="button"
                                         data-radicado="{{ $p['radicado'] }}"
@@ -203,18 +219,6 @@
                 @endforeach
             </div>
 
-            @if($totalNuevos > 0)
-                <div style="margin-top: 16px; padding: 16px 18px; background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 10px; display: flex; gap: 12px; align-items: flex-start;">
-                    <svg width="20" height="20" fill="none" stroke="#D97706" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink: 0; margin-top: 2px;"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    <div style="font-size: 13px; color: #78350F; line-height: 1.55;">
-                        <strong>Para importar:</strong> copia el radicado del proceso nuevo y ve a
-                        <a href="{{ url('/admin/cases/create') }}" style="color: #1D4ED8; font-weight: 600; text-decoration: underline;">Casos &rarr; Nuevo caso</a>,
-                        o usa la
-                        <a href="{{ url('/admin/cases?action=importar-masivo') }}" style="color: #1D4ED8; font-weight: 600; text-decoration: underline;">importación masiva</a>
-                        para varios a la vez.
-                    </div>
-                </div>
-            @endif
         @endif
     @endif
     </div>
