@@ -9,6 +9,7 @@
     <meta property="og:description" content="Importa tu radicado y LegalWeb vigila la Rama Judicial cada noche. Te avisa por correo apenas aparezca una nueva actuación.">
     <meta property="og:type" content="website">
     <meta property="og:image" content="https://legalweb.com.co/images/og-cover.png">
+    <link rel="icon" href="/images/logo-icon.svg" type="image/svg+xml">
     <link rel="icon" href="/images/favicon.ico" type="image/x-icon">
     {{-- Google Analytics --}}
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-2Q7KJTB5MT"></script>

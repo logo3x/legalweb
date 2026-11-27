@@ -61,6 +61,7 @@ class AdminPanelProvider extends PanelProvider
             ->globalSearchFieldKeyBindingSuffix()
             ->unsavedChangesAlerts()
             ->brandName('LegalWeb')
+            ->favicon(asset('images/logo-icon.svg'))
             ->brandLogo(function () {
                 $firm = auth()->user()?->firm;
 
@@ -78,14 +79,10 @@ class AdminPanelProvider extends PanelProvider
                     );
                 }
 
-                return new HtmlString(
-                    '<div style="display:flex;align-items:center;gap:.55rem;line-height:1;">'
-                    .'<img src="'.asset('images/logo-icon.svg').'" alt="LegalWeb" style="height:2rem;width:auto;display:block;">'
-                    .'<span style="font-family:Poppins,Inter,sans-serif;font-weight:700;font-size:1.05rem;color:#1E3A5F;letter-spacing:-.01em;">LegalWeb</span>'
-                    .'</div>'
-                );
+                // Marca dibujada en SVG; en las pantallas de acceso se arma con una animacion corta.
+                return new HtmlString(view('filament.brand.marca')->render());
             })
-            ->brandLogoHeight('4rem')
+            ->brandLogoHeight(fn (): string => auth()->user()?->firm?->logo_path ? '4rem' : '2.4rem')
             ->colors([
                 'primary' => Color::Blue, // Escala de azul con buen contraste; su tono 500 equivale al acento de marca #3A86FF.
                 'danger' => Color::Red,
